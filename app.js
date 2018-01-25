@@ -1,5 +1,6 @@
 // SMUM CHECKIN PROJECT
 // This project is thanks to contributions of people like Kush Jain.
+
 fillDate()
 
 gotoTab("tab1")
@@ -1797,11 +1798,6 @@ console.log("IN ADD SERVICE");
 }
 
 function saveServiceDate(serviceDateTime, serviceTypeId, serviceCategory, isUSDA){
-
-console.log(serviceDateTime)
-
-console.log(client.lastServed);
-
 	lastServedArray = client.lastServed;
 	let record = {'serviceDateTime': serviceDateTime, 'serviceTypeId': serviceTypeId, 'serviceCategory': serviceCategory , 'isUSDA': isUSDA};
 	lastServedArray.unshift(record);
