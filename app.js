@@ -1,5 +1,5 @@
 // SMUM CHECKIN PROJECT
-
+// This project is thanks to contributions of people like Kush Jain.
 fillDate()
 
 gotoTab("tab1")
