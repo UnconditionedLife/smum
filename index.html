@@ -88,16 +88,16 @@
             <section id="content3">
                <div class="topFormButtonsDiv">
                   <input class="solidButton" onclick="newClientForm()" type="button" value="New Client">
-                  <input id="clientLeftSlider" class="leftSlider sliderActive" onclick="toggleClientViewEdit('view')" type="button" value="View">
-                  <input id="clientRightSlider" class="rightSlider" onclick="toggleClientViewEdit('edit')" type="button" value="Edit">
+                  <input id="clientLeftSlider" class="leftSlider sliderActive" onclick="uiToggleClientViewEdit('view')" type="button" value="View">
+                  <input id="clientRightSlider" class="rightSlider" onclick="uiToggleClientViewEdit('edit')" type="button" value="Edit">
                </div>
                <container id="clientFormContainer"></container>
             </section>
             <section id="content4">
                <div class="topFormButtonsDiv">
                   <input class="solidButton" onclick="newDependentRow()" type="button" value="New Dependent">
-                  <input id="dependentdLeftSlider" class="leftSlider sliderActive" onclick="toggleDependentsViewEdit('view')" type="button" value="View">
-                  <input id="dependentdRightSlider" class="rightSlider" onclick="toggleDependentsViewEdit('edit')" type="button" value="Edit">
+                  <input id="dependentdLeftSlider" class="leftSlider sliderActive" onclick="uiToggleDependentsViewEdit('view')" type="button" value="View">
+                  <input id="dependentdRightSlider" class="rightSlider" onclick="uiToggleDependentsViewEdit('edit')" type="button" value="Edit">
                </div>
                <container id="dependentsFormContainer"></container>
             </section>
@@ -224,10 +224,10 @@
          <div></div>
          <div></div>
          <div class="lableDiv">Password</div>
-         <div class=""><input id="loginPassword" type="password" class="inputBox userForm"> <i class="fa fa-eye fa-lg" style="float: right;" aria-hidden="true" onclick='showHidePassword()'></i></div>
+         <div class=""><input id="loginPassword" type="password" class="inputBox userForm"> <i class="fa fa-eye fa-lg" style="float: right;" aria-hidden="true" onclick='uiShowHidePassword()'></i></div>
          <div></div>
          <div class="span4" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-            <input class="solidButton" onclick="loginUser()" type="button" value="Login">
+            <input class="solidButton" onclick="cogLoginUser()" type="button" value="Login">
          </div>
       </div>
    </div>

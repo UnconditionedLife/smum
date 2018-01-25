@@ -1,118 +1,34 @@
 // SMUM CHECKIN PROJECT
 // This project is thanks to contributions of people like Kush Jain.
+// FUNCTION naming covention Prefix:
+// -->   ui....  interact with User Interface [HTML]
+// -->   nav...  provide Nav Section and Tab navigation
+// -->   util..  provide general utility
+// -->   db....  interact with AWS DynamoDB service
+// -->   cog...  interact with AWS Cognito service
+// Function naming syntax [prefix][action][subject]
 
-fillDate()
+// GLOBAL VARS
+let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 
-gotoTab("tab1")
+uiFillDate()
+uiShowHideLogin('show')
+navGotoTab("tab1")
 
-let api = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); clientSearchResults()}
 }
-
-$(document.body).on('change','.clientForm',function(){saveButton('client', 'Save')});
-$(document.body).on('change','.serviceTypeForm',function(){saveButton('serviceType', 'Save')});
-
-function saveButton(form, action){
-	if (action === 'Save') {
-		if ($('#'+form+'SaveButton').val() !== 'Save'){
-			$('#'+form+'SaveButton').val('Save')
-			$('#'+form+'SaveButton').removeClass('saving')
-			$('#'+form+'SaveButton').removeClass('saved')
-			$('#'+form+'SaveButton').removeClass('failed')
-		}
-		return
-	} else {
-		$('#'+form+'SaveButton').val(action)
-
-console.log(action)
-		action = action.toLowerCase()
-		action = action.replace(/[#_!.*]/g, '')
-
-console.log(action)
-
-		$('#'+form+'SaveButton').addClass(action)
-	}
-}
-
-
-function gotoNav(nav){
-	for (let i = 0; i < 5; i++) $("#nav"+i).removeClass("navActive")
-	$("#"+nav).addClass("navActive")
-	$("#"+currentNavTab).hide()
-	switch (nav) {
-		case "nav1": // SERVICES
-			currentNavTab = "clientsDiv"
-			break
-		case "nav2": // PROGRAMS
-			currentNavTab = "programsDiv"
-			break
-		case "nav3": // ADMIN
-			currentNavTab = "adminDiv"
-			break
-		case "nav4": // USER
-			fillUserData()
-			displayUserEdit()
-			currentNavTab = "userDiv"
-			break
-		case "nav5": // LOGINOUT
-			// currentNavTab = "logInOut"
-			if ($('#nav5').html() === 'Login'){
-				showHideLogin('show')
-			} else {
-				logoutUser()
-				$('#nav5').html('Login')
-				$('#nav4').html('')
-			}
-		}
-	$("#"+currentNavTab).show()
-}
-
-
-function navSwitch(link){
-	switch (link) {
-		case "clients":
-			gotoNav("nav1")
-			gotoTab("tab1")
-			displayServicesView()
-			break
-		case "newClient":
-			gotoNav("nav2")
-			addClient()
-			break
-		case "admin":
-			gotoNav("nav3")
-			gotoTab("aTab1")
-			showServiceTypes()
-			 // admin() show service form
-			break
-		case "user":
-			gotoNav("nav4")
-			gotoTab("uTab1")
-			// userProfile()
-			break
-		case "logInOut":
-			gotoNav("nav5")
-
-	}
-}
-
-function showServiceTypes(){
-	// $('#serviceTypesContainer').html(getTemplate('#newServiceTypeButton'))
-	// header
-	buildSelectHTMLTable('#serviceTypesContainer',serviceTypes,["serviceName","serviceDescription","isActive"],'serviceTypesTable')
-}
+// control the "save button" behaviour
+$(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')});
+$(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')});
 
 function newServiceTypeForm(){
-
+	// TODO
 }
 
 function newClientNote(){
-
+	// TODO
 }
-
-
-// $('#searchContainer').html(getTemplate('#newClientButton'))
 
 let rowNum = 1
 let MAX_ID_DIGITS = 4
@@ -124,579 +40,20 @@ let clientData = null // current client search results
 let clientNotes = []
 let client = {} // current client
 let serviceType = null
-var isEmergency = false
+let isEmergency = false
 let currentNavTab = "clients"
 
-// cognito
+// cognito config
 let CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
-
 let  poolData = {
 		UserPoolId : 'us-west-2_AufYE4o3x', // Your user pool id here
 		ClientId : '7j3jhm5a3pkc67m52bf7tv10au' // Your client id here
 };
 let userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
-
-
 let session = {}
 let cognitoUser = {}
 let authorization = {}
 
-showHideLogin('show')
-
-
-
-// allEpochToDates(serviceTypes, "serviceTypes") TODO remove EPOCH DATES
-
-
-// function cognitoSignUp(){
-// 	var attributeList = [];
-//
-// 	var dataEmail = {
-// 			Name : 'email',
-// 			Value : 'jleal67@gmail.com'
-// 	};
-//
-// 	var dataPhoneNumber = {
-// 			Name : 'phone_number',
-// 			Value : '+12096011038'
-// 	};
-// 	var attributeEmail = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataEmail);
-// 	var attributePhoneNumber = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataPhoneNumber);
-//
-// 	attributeList.push(attributeEmail);
-// 	attributeList.push(attributePhoneNumber);
-//
-// 	userPool.signUp('jleal67@gmail.com', 'Password123!', attributeList, null, function(err, result){
-// 			if (err) {
-// 					alert(err);
-// 					return;
-// 			}
-// 			cognitoUser = result.user;
-// 			console.log('user name is ' + cognitoUser.getUsername());
-// 	});
-// }
-
-function showHideLogin(todo){
-	if (todo === 'show'){
-		$('.loginOverlay').show().css('display', 'flex')
-	} else {
-		$('.loginOverlay').hide()
-		$('#loginEmail').val('')
-		$('#loginPassword').val('')
-	}
-}
-
-// let userData = {
-// 	 Username: 'jleal67',
-// 	 Pool: userPool
-// };
-//
-// cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
-
-function showHidePassword(){
-	console.log('in functoin')
-	if ($('#loginPassword').attr('type') == 'password') {
-    $('#loginPassword').attr('type', 'text');
-	} else {
-    $('#loginPassword').attr('type', 'password');
-	}
-}
-
-function loginUser() {
-
-console.log("IN LOGIN USER")
-
-	let username = $('#loginEmail').val()
-	let password = $('#loginPassword').val()
-  let authData = {
-     Username: username,
-     Password: password
-  };
-
-console.log(authData)
-
-  let authDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authData);
-  let userData = {
-     Username: username,
-     Pool: userPool
-  };
-  cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
-  cognitoUser.authenticateUser(authDetails, {
-    onSuccess: (result) => {
-      session.user = cognitoUser;
-
-console.log("logged in")
-
-			authorization.accessToken = result.getAccessToken().getJwtToken()
-			authorization.idToken = result.idToken.jwtToken
-			$('#nav4').html('<i class="fa fa-user" aria-hidden="true"></i> ' + session.user.username)
-			$('#nav5').html('Logout')
-			showHideLogin('hide')
-			gotoNav('nav1')
-			userGetAttributes()
-			serviceTypes = GETServices()
-    },
-    onFailure: (err) => {
-			if (err === 'Error: Incorrect username or password.') {
-				beep()
-			} else if (err === 'UserNotFoundException: User does not exist.') {
-				beep()
-				beep()
-				// NotAuthorizedException: Incorrect username or password.
-			}
-        console.log('||'+err+'||');
-    },
-		newPasswordRequired: function(userAttributes, requiredAttributes) {
-				// User was signed up by an admin and must provide new
-				// password and required attributes, if any, to complete
-				// authentication.
-console.log(requiredAttributes)
-
-
-console.log("needs new password - change the form")
-let newPassword = "Password123#"
-
-				// the api doesn't accept this field back
-				delete userAttributes.email_verified;
-				delete userAttributes.phone_number_verified;
-
-
-				// Get these details and call
-				cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, this);
-		}
-  });
-}
-
-function userGetAttributes(){
-
-	// var params = {
-	//   AccessToken: authorization.accessToken /* required */
-	// };
-	// cognitoidentityserviceprovider.getUser(params, function(err, data) {
-	//   if (err) console.log(err, err.stack); // an error occurred
-	//   else     console.log(data);           // successful response
-	// });
-
-// 	cognitoUser.getUserAttributes(function(err, result) {
-// 		if (err) {
-// 				alert(err);
-// 				return;
-// 		}
-// 		for (i = 0; i < result.length; i++) {
-// 				console.log('attribute ' + result[i].getName() + ' has value ' + result[i].getValue());
-// 		}
-// });
-}
-
-function logoutUser(){
-	authorization = {}
-	if (authorization.idToken == undefined) {
-		cognitoUser.signOut();
-		showHideLogin('show')
-	}
-}
-
-function userChangePassword(){
-	cognitoUser.changePassword('oldPassword', 'newPassword', function(err, result) {
-    if (err) {
-      alert(err);
-      return;
-    }
-    console.log('call result: ' + result);
-  });
-}
-
-
-function newPasswordRequired(){
-
-console.log("in new password required")
-
-}
-
-
-function cognitoLogin(){
-
-console.log("IN AUTHENTICATION")
-
-	let authenticationData = {
-		 Username : 'jleal67@gmail.com', // your username here
-		 Password : 'Password123!', // your password here
- 	};
-
-	let userData = {
-		 Username : 'jleal67@gmail.com', // your username here
-		 Password : 'Password123!', // your password here
- 	};
-
-  let authenticationDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authenticationData);
-
-  let cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
-  cognitoUser.authenticateUser(authenticationDetails, {
-		onSuccess: function (result) {
-			console.log('access token + ' + result.getAccessToken().getJwtToken());
-		},
-		onFailure: function(err) {
-			alert(err);
-		},
-		mfaRequired: function(codeDeliveryDetails) {
-			var verificationCode = prompt('Please input verification code' ,'');
-			cognitoUser.sendMFACode(verificationCode, this);
-		}
- });
-}
-
-function cognitoListUsers(){
-
-
-
-	// Set the region where your identity pool exists (us-east-1, eu-west-1)
-	AWSCognito.config.region = 'us-west-2';
-
-	// Configure the credentials provider to use your identity pool
-	AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-	    IdentityPoolId: 'us-west-2:d6cc97a3-a582-4295-a901-4d312b92c47a',
-	});
-
-	// Make the call to obtain credentials
-	AWSCognito.config.credentials.get(function(){
-
-	    // Credentials will be available when this function is called.
-	    var accessKeyId = AWSCognito.config.credentials.accessKeyId;
-	    var secretAccessKey = AWSCognito.config.credentials.secretAccessKey;
-	    var sessionToken = AWSCognito.config.credentials.sessionToken;
-
-	});
-
-
-
-
-
-
-
-
-
-console.log('in list users')
-console.log(session.user)
-console.log(userPool.userPoolId)
-
-
-///ClientId : '7j3jhm5a3pkc67m52bf7tv10au',
-
-// AWSCognito.config.update({ })
-
-let logPool = "cognito-idp.us-west-2.amazonaws.com/"+ userPool.userPoolId
-
-
-
-	AWSCognito.config.region = 'us-west-2'
-
-	let loginsCognitoKey = 'cognito-idp.us-west-2.amazonaws.com/us-west-2_AufYE4o3x'
-	let loginsIdpData = {};
-	loginsIdpData[loginsCognitoKey] = authorization.accessToken
-	AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-	    IdentityPoolId: 'us-west-2:d6cc97a3-a582-4295-a901-4d312b92c47a',
-	    Logins: loginsIdpData
-	});
-
-
-console.log(AWSCognito.config.credentials)
-
-
-console.log('made it past config')
-
-	//
-	// AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-	//     IdentityPoolId: userPool.userPoolId,
-	// 		Logins : {
-	// 			logPool : authorization.accessToken
-	// 		}
-	// });
-
-	// Need to provide placeholder keys unless unauthorised user access is enabled for user pool
-	params = {
-		UserPoolId: userPool.userPoolId, /* required */
-		AttributesToGet: [],
-		Filter: '',
-		Limit: 0,
-		PaginationToken: ''
-	};
-
-	var cognitoidentityserviceprovider = new AWSCognito.CognitoIdentityServiceProvider();
-	cognitoidentityserviceprovider.listUsers(params, function(err, data) {
-	  if (err) console.log(err, err.stack); // an error occurred
-	  else     console.log(data);           // successful response
-	});
-}
-
-
-// function buildClientEditAddition(){
-// 	var editAdditionForm = [
-// 		[
-// 			[
-// 			['label',["Financials"],[['style','margin-top:25px;margin-right:10px;']]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['label',['Food Stamps:'],[['class','firstRowP']]],
-// 			['textinput',[''],[['value',client['financials']['foodStamps']],['id','foodStamps'],['style','width:100px']]]
-// 			],
-// 			[
-// 			['label',['Income:'],[]],
-// 			['textinput',[''],[['value',client['financials']['income']],['id','income'],['style','width:100px']]]
-// 			],
-// 			[
-// 			['label',['Rent:'],[]],
-// 			['textinput',[''],[['value',client['financials']['rent']],['id','rent'],['style','width:100px']]]
-// 			],
-// 			[
-// 			['label',['Rent:'],[]],
-// 			['textinput',[''],[['value',client['financials']['govtAssistance']],['id','govtAssistance'],['style','width:100px']]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['save',['submitEdit()'],[]],
-// 			['cancel',['displayEditClient(true)'],[]],
-// 			]
-// 		]
-// 	]
-// 	var ans = buildForm(editAdditionForm,true)
-// 	return ans;
-// }
-
-function populateForm(data, form){
-	$.each(data, function(key,value){
-		if (typeof(data[key])=='object') {
-			let obj = data[key]
-			$.each(obj, function(key2,value2){
-				let el = '.inputBox[id="'+key+'.'+key2+'"].'+form
-
-console.log(key+' : '+key2)
-console.log($(el))
-
-
-				if($(el).is("select")) {
-					el = el + ' option[value="'+ value2 +'"]'
-					$(el).prop('selected', true);
-				} else {
-					$(el).val(value2)
-				}
-			});
-		} else {
-			let el = '[id="'+key+'"].'+form
-
-console.log(key)
-console.log($(el))
-
-			if($(el).is("select")) {
-				el = el + ' option[value="'+ value +'"]'
-				$(el).prop('selected', true);
-			} else {
-				$(el).val(value)
-			}
-				// $('input#'+key+'.'+form).val(value) // if input
-				// $('select[id="'+key+'"] option[value="'+ value +'"].'+form).prop('selected', true); // if select
-		}
-	});
-
-	if (form === 'serviceTypeForm') {
-		toggleAgeGrade()
-		toggleFulfillDates()
-	} else if (form === 'clientForm'){
-		$('#clientAge').val(client.age) // readonly unsaved value
-		toggleClientAddress()
-	}
-	return
-}
-
-
-// function buildAddClientForm(id){
-// 	var addForm = [
-// 		[
-// 			[
-// 			['subheading',[id.toString()],[]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['heading',['Client Name'],[]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['textinput',[''],[['class','right'],['id','firstSeenDate'],['style','width:135px']]],
-// 			['label',['Date First Seen'],[['class','right']]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['label',['Given Name'],[['class','firstRowP']]],
-// 			['textinput',[''],[['id','givenName'],['style','width:150px']]]
-// 			],
-// 			[
-// 			['label',['Family Name'],[]],
-// 			['textinput',[''],[['id','familyName'],['style','width:150px']]]
-// 			],
-// 			[
-// 			['label',['DOB'],[]],
-// 			['textinput',[''],[['id','dob'],['style','width:100px']]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['label',['Homeless'],[['class','firstRowP']]],
-// 			['dropdown',['true','false'],[['id','homeless'],['style','width:75px']]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['label',['Street'],[['class','firstRowP']]],
-// 			['textinput',[''],[['id','street'],['style','width:300px']]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['label',['City'],[['class','firstRowP']]],
-// 			['textinput',[''],[['id','city'],['style','width:250px']]]
-// 			],
-// 			[
-// 			['label',['State'],[]],
-// 			['textinput',[''],[['id','state'],['style','width:75px']]]
-// 			],
-// 			[
-// 			['label',['Zipcode'],[]],
-// 			['textinput',[''],[['id','zipcode'],['style','width:100px']]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['label',['Phone'],[['class','firstRowP']]],
-// 			['textinput',[''],[['id','telephone'],['style','width:150px']]]
-// 			],
-// 			[
-// 			['label',['Email'],[]],
-// 			['textinput',[''],[['id','email'],['style','width:150px']]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['label',['Family ID'],[['class','firstRowP']]],
-// 			['textinput',[''],[['id','familyIdCheckedDate'],['style','width:150px']]]
-// 			],
-// 			[
-// 			['label',['Gender'],[]],
-// 			['dropdown',['Male','Female'],[['id','gender'],['style','width:150px']]]
-// 			],
-// 			[
-// 			['label',['Ethnic Group'],[]],
-// 			['dropdown',['Afro-American','Anglo-European','Asian/Pacific Islander','Filipino','Latino','Native American','Other'],[['id','ethnicGroup'],['style','width:150px']]]
-// 			]
-// 		],
-// 		[
-// 			[
-// 			['save',['submitAdd()'],[]],
-// 			['cancel',['addClient()'],[]],
-// 			]
-// 		]
-// 	]
-// 	var ans = buildForm(addForm,true)
-// 	return ans;
-// }
-
-function clear(){/**clears all fields**/
-	// $('input').attr('readonly', false);
-	// $(".date").hide();
-	// $(".search").val('')
-	// $('.main-div').html('')
-	// $('.main-div').attr('style','')
-	// $('.side-div').attr('style','')
-	// $('.side-div').html('')
-	// $('#noteText').val('')
-}
-
-function displayNotes(pageName){/**Displays notes table for a given page**/
-	//setMainSideDiv()
-	var tableStr = '<table class="notes"></table>'
-	$('#notesContainer').html(tableStr)
-	var headerRow = '<tr style="height:50px;padding:10px;"><td><h4 class="siteHeading">'+pageName+'</h4>'
-	headerRow+='<h5 class="siteHeading">'+moment().format(displayDate)+'</h5></td></tr>'
-	$('.notes').append(headerRow)
-}
-
-function addNoteButtonRow(){
-	var buttonRow = '<div class="row"><a data-toggle="modal" data-target="#myModal" class="btn-nav addNoteButton">'
-	buttonRow+='+Note</a></div></table>'
-	$('#notesContainer').append(buttonRow)
-
-}
-
-function POST(uUrl,dataU){
-	if (authorization.idToken == 'undefined') {
-		beep()
-		consol.log("need to log in")
-		return
-	}
-	var urlNew = uUrl;
-	var uData = dataU;
-	var ans = null;
-	$.ajax({
-	    type: "POST",
-	    url: urlNew,
-			headers: {"Authorization": authorization.idToken},
-	    async: false,
-	    dataType: "json",
-	    data: uData,
-	    contentType:'application/json',
-	    success: function(message){
-	    	console.log(message)
-				if (typeof message.message !== 'undefined') {
-					beep()
-					// ***** TODO error message
-				} else {
-					if (uUrl.includes('/servicetypes')) {
-						serviceTypes = GETServices()
-						showServiceTypes()
-						updateServiceHeader()
-						populateForm(serviceType, 'serviceTypes')
-						saveButton('serviceType', 'SAVED!!')
-					} else if (uUrl.includes('/clients')) {
-						let row = clientsUpdateData()
-						buildSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
-						outlineTableRow('clientTable', row)
-						clientsHeader('#'+client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
-						saveButton('client', 'SAVED!!')
-					}
-				}
-		},
-		error: function(json){
-	    	console.log(json)
-				if (uUrl.includes('/servicetypes')) {
-					saveButton('serviceType', 'ERROR!!')
-				} else if (uUrl.includes('/clients')) {
-					saveButton('client', 'ERROR!!')
-				}
-		}
-	});
-	return ans
-}
-
-function clientsUpdateData(){
-	let row = null
-	let data = formToJSON('.clientForm')
-	$.each(data, function(key,value){
-		client[key] = value
-	});
-	for (var i = 0; i < clientData.length; i++) {
-		if (client.clientId == clientData[i].clientId){
-			row = i+1
-			$.each(client, function(key,value){
-				clientData[i][key] = value
-			});
-		}
-	}
-	return row
-}
 
 function isLoggedIn(){
 	if (authorization.idToken == undefined) {
@@ -707,173 +64,20 @@ function isLoggedIn(){
 	}
 }
 
-
-function GET(uUrl){
-console.log("in get")
-
-	var urlNew = uUrl;
-	var ans = null;
-
-// console.log('idToken + ' + authorization.idToken)
-
-
-	$.ajax({
-	    type: "GET",
-	    url: urlNew,
-			headers: {"Authorization": authorization.idToken},
-	    async: false,
-	    dataType: "json",
-			contentType:'application/json',
-	    success: function(json){
-				if (json!==undefined) {
-					console.log(json.count)
-					console.log(urlNew)
-				}
-	    	ans = json
-		},
-		error: function(message, status, error){
-			console.log(message + ", " + status + ", " + error)
-			alert(error);
-			if (message.readyState == 0) {
-				console.log("Error of some kind!")
-			}
-		}
-	});
-	return ans
-}
-
-function submitAdd(){
-	POSTNewClient()
-	refreshHome()
-}
-
-function resetServiceTypeForm(){
-	console.log('in reset')
-	populateForm(serviceType, 'serviceTypeForm')
-}
-
-
-function submitEdit(){
-	POSTEditClient()
-	refreshHome()
-}
-
-function POSTNewClient(){
-	var data = formToJSON()
-	var URL = api+"/clients/"
-	POST(URL,data)
-}
-
-function POSTEditClient(){
-	var data = editToJSON()
-	var URL = api+"/clients/"
-	POST(URL,data)
-}
-
-function GETServices(){
-	return GET(api+"/servicetypes").serviceTypes
-}
-
-function GETClient(id){
-	return GET(api+"/clients/"+id).clients[0]
-}
-
-// function buildForm(l1,allBlue){
-// 	var ans = ""
-// 	for (var i=0;i<l1.length;i++){
-// 		ans+='<div class="formRow">'
-// 		for (var j=0;j<l1[i].length;j++){
-// 			ans+='<div class="formEntry">'
-// 			for (var k=0;k<l1[i][j].length;k++){
-// 				var entry = l1[i][j][k]
-// 				var type = entry[0]
-// 				var vals = entry[1]
-// 				var attr = entry[2]
-// 				var tag = ''
-// 				var saveCancel = false
-// 				if (type=="heading"){
-// 					tag ='<h3'
-// 				}
-// 				if (type=="subheading"){
-// 					tag ='<h4'
-// 				}
-// 				if (type=="textinput"){
-// 					tag ='<input'
-// 				}
-// 				if (type=="dropdown"){
-// 					tag = '<select'
-// 				}
-// 				if (type=="label"){
-// 					tag='<p'
-// 				}
-// 				if (type=="save"){
-// 					ans+='<a class="btn-nav saveButton" onclick="'+vals[0]+'">Save</a>'
-// 					saveCancel=true
-// 				}
-// 				if (type=="cancel"){
-// 					ans+='<a class="btn-nav cancelButton" onclick="'+vals[0]+'">Cancel</a>'
-// 					saveCancel=true
-// 				}
-// 				if (!saveCancel){
-// 					ans += tag
-// 					changed = false
-// 					for (var l=0; l<attr.length;l++){
-// 						if (attr[l][0]=="class" && allBlue){
-// 							ans += " "+attr[l][0]+'="'+attr[l][1]+' blueInlineBold"'
-// 							changed= true
-// 						}
-// 						else{
-// 							ans += " "+attr[l][0]+'="'+attr[l][1]+'"'
-// 						}
-// 					}
-// 					if (!changed){
-// 						ans+= ' class="blueInline"'
-// 					}
-// 					ans += ">"
-// 					for (var m=0;m<vals.length;m++){
-// 						if (tag=="<select"){
-// 							ans+='<option value="'+vals[m]+'">'+vals[m]+'</option>'
-// 						}
-// 						else{
-// 							ans+=vals[m]
-// 						}
-// 					}
-//
-// 					if (tag!='<input'){
-// 						ans+=tag.substring(0,1)+"/"+tag.substring(1)+">"
-// 					}
-// 				}
-// 			}
-// 		ans+="</div>"
-//
-// console.log(ans)
-//
-// 		}
-// 		ans+="</div>"
-// 	}
-// 	console.log(ans)
-// 	return ans
-// }
-
 function admin(){
-	clear()
 	rowNum = 1
 
-
-
-
-	//********TO DO HEADER info *********
+	//******** TODO HEADER info *********
 
 	/// LIST ALL SERVICE Types
 
 	/// make tab for service type form
 
-
 	$('#serviceTypeFormContainer').html(buildAdminForm())
 	/**Line above displays the Services Types Form**/
 }
 
-function clientsHeader(title){
+function uiSetClientsHeader(title){
 	$("#clientsTitle").html(title)
 }
 
@@ -899,62 +103,47 @@ function updateClientAge(){
 
 function displayUserEdit(){
 
-	$('#userFormContainer').html(getTemplate('#userForm'))
+	$('#userFormContainer').html(uiGetTemplate('#userForm'))
 
 }
 
 function displayEditClient(isEdit){
 
 	rowNum = 1
-	displayNotes("Client Notes")
+	uiDisplayNotes("Client Notes")
 
-	$('#clientFormContainer').html(getTemplate('#clientForm'))
+	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
 
-	populateForm(client, 'clientForm')
+	uiPopulateForm(client, 'clientForm')
 
 	dependantsHeader = '<div style="margin-top:25px" id="dependents" class="formRow"><div class="formEntry"><p class="blueBold blueInline">Dependants</p></div></div>'
 	//$('#content4').html(dependantsHeader)
 	addClientNotes(client['clientId'])
 	if (client.dependents!=null){
-		buildSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","isActive"],'dependentsTable')
+		uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","isActive"],'dependentsTable')
 	}
 
 	if (isEdit){
-		var plusButton = '<a href="#" onclick="addRow()" style="font-size:18px;width:150px;margin-bottom:8px;margin-top:10px;display: inline-block;" class="btn btn-block btn-primary btn-success">+</a>'
+		let plusButton = '<a href="#" onclick="addRow()" style="font-size:18px;width:150px;margin-bottom:8px;margin-top:10px;display: inline-block;" class="btn btn-block btn-primary btn-success">+</a>'
 		$('#dependents').append('<div class="formEntry">'+plusButton+'</div>')
 	}
 
 	if (isEdit){
-		toggleClientViewEdit('edit')
-		//$('.main-div').append(buildClientEditAddition())
-		// $('input').attr('readonly', false);
-		// $('select').attr('disabled', false);
-		// $('.blueInline').attr('readonly', false)
-		// $('.blueInline').attr('disabled', false)
-	}
-	if (!isEdit){
-		toggleClientViewEdit('view')
-
-
-		// var historyEdit = '<div style="text-align:center;padding: 20px;" class="formRow"><a '+'onclick="history('+client['clientId']+','+"'.main-div'"+")"+'" href="#" style="display:inline-block" class="btn-nav">History</a>'
-		// historyEdit+='<a onclick="displayEditClient(true)" style="display:inline-block" class="btn-nav">Edit</a></div></div>'
-		// $('.main-div').append(historyEdit)
-		//$('input').attr('readonly', true);
-		// $('.blueInline').attr('readonly', true)
-		// $('.blueInline').attr('disabled', true)
-		// $('select').attr('disabled', true);
+		uiToggleClientViewEdit('edit')
+	} else {
+		uiToggleClientViewEdit('view')
 	}
 }
 
 function newServiceTypeForm(){
-	$('#serviceTypeFormContainer').html(getTemplate('#serviceTypeForm'))
+	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
 	$('#serviceTypeId').val(cuid())
-	gotoTab("aTab2")
+	navGotoTab("aTab2")
 }
 
 function newClientForm(){
 	client = ""
-	$('#clientFormContainer').html(getTemplate('#clientForm'))
+	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
 	let today = moment().format(dbDate)
 
 console.log(today)
@@ -974,15 +163,15 @@ console.log($('#familyIdCheckedDate.clientForm'))
 
 // ***** TODO add default values dates, state, city etc.
 
-	gotoTab("tab3")
+	navGotoTab("tab3")
 }
 
 
 
 
 function showServiceTypeForm(){
-	$('#serviceTypeFormContainer').html(getTemplate('#serviceTypeForm'))
-	populateForm(serviceType, 'serviceTypeForm')
+	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
+	uiPopulateForm(serviceType, 'serviceTypeForm')
 }
 
 
@@ -995,27 +184,16 @@ function createDrop(dropId){
 }
 
 function GETServicesNotes(id){
-	return GET(api+"/services/"+id).services
+	return GET(aws+"/services/"+id).services
 }
 
-function GETClientNotes(id){
-	var URL = api+"/clients/notes/"+id;
-	arr = GET(URL).notes
-
-
-	allEpochToDates(arr, "clientsNotes")
-
-console.log(arr)
-
-	return arr
-}
 
 function displayNote(text,text2){
 	$('.notes').append('<tr><td class="data">'+text+'</td>'+'<td class="data">'+text2+'</td></tr>')
 }
 
 function POSTNote(text){
-	var ans = {}
+	let ans = {}
 	ans['noteOnClientId'] = client['clientId']
 	ans['noteText'] = text.toString()
 	ans['createdDateTime']=Math.round((new Date()).getTime() / 1000).toString()
@@ -1023,16 +201,16 @@ function POSTNote(text){
 	ans['noteByUserName']="Kush Jain"
 	ans['clientNoteId'] = uuidv1().toString()
 	console.log(JSON.stringify(ans))
-	POST(api+"/clients/notes/",JSON.stringify(ans))
+	dbPostData(aws+"/clients/notes/",JSON.stringify(ans))
 }
 function addClientNotes(id){
-	arr = GETClientNotes(id)
+	arr = dbGetClientNotes(id)
 	addOldNotes(arr)
 }
 
 function addOldNotes(arr){
-	for (var i = 0; i < arr.length; i++){
-    	var obj = arr[i];
+	for (let i = 0; i < arr.length; i++){
+    	let obj = arr[i];
     	displayNote(obj.noteText, obj.createdDateTime)
     }
 }
@@ -1047,7 +225,7 @@ function history(){
   columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastSeenDate", "familyIdCheckedDate"]
 	let clientArray = []
 	clientArray.push(client)
-	buildSelectHTMLTable('#content5',clientArray,columns,'historyTable')
+	uiGenSelectHTMLTable('#content5',clientArray,columns,'historyTable')
 }
 
 function outlineTableRow(table, row){
@@ -1059,12 +237,12 @@ function clientSetCurrent(index){
 	let row = index + 1
 	outlineTableRow('clientTable', row)
 	client = clientData[index]
-	calculateFields("clients") // calculate fields counts and ages
+	utilCalcFamilyCounts("clients") // calculate fields counts and ages
 
 console.log(client.age)
 
 
-	clientsHeader('#' + client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
+	uiSetClientsHeader('#' + client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
 
 	isEmergency = false // **** TODO what is this for?
 
@@ -1079,189 +257,23 @@ function serviceTypesSetCurrent(index){
 	adminHeader(serviceType.serviceName)
 
 	showServiceTypeForm()
-	gotoTab("aTab2")
+	navGotoTab("aTab2")
 }
 
-
 function addRow(){
-	var dependantRow = "<tr><td><input class='givenName' style='width:100px'></td><td><input class='familyName' style='width:100px'></td><td><select class='relationship' style='width:100px'><option value='Spouse'>Spouse</option><option value='Child'>Child</option></select></td><td><select class='gender' style='width:100px'><option value='Male'>Male</option><option value='Female'>Female</option></select></td><td><input class='dob' style='width:100px'></td><td><select class='isActive' style='width:100px'><option value='true'>true</option><option value='false'>false</option></td>"
+	let dependantRow = "<tr><td><input class='givenName' style='width:100px'></td><td><input class='familyName' style='width:100px'></td><td><select class='relationship' style='width:100px'><option value='Spouse'>Spouse</option><option value='Child'>Child</option></select></td><td><select class='gender' style='width:100px'><option value='Male'>Male</option><option value='Female'>Female</option></select></td><td><input class='dob' style='width:100px'></td><td><select class='isActive' style='width:100px'><option value='true'>true</option><option value='false'>false</option></td>"
 	$('#myTable').append(dependantRow)
 }
 
-// function getDate(add15){
-// 			var today = new Date();
-// 			if (add15==true){
-// 				today.setDate(today.getDate() + 15);
-// 			}
-// 			var dd = today.getDate();
-// 			var mm = today.getMonth()+1; //January is 0!
-//
-// 			var yyyy = today.getFullYear();
-// 			if(dd<10){
-// 			    dd='0'+dd;
-// 			}
-// 			if(mm<10){
-// 			    mm='0'+mm;
-// 			}
-// 			var today = mm+'/'+dd+'/'+yyyy;
-// 			return today;
-// }
-
-// function dateToEpoch(datestring){
-//
-// 	console.log(datestring)
-//
-// 	if (datestring.includes('/')){
-// 		var parts = datestring.split("/")
-// 	}
-// 	else {
-// 		var parts =  datestring.split("-")
-// 	}
-// 	return Date.UTC(parts[2], parts[0]-1, parts[1])/1000;
-// }
-
-function removeFiller(o){
-	// if (Array.isArray(o)){
-	// 	for (var i = 0; i < o.length; i++) {
-	// 		o[i]
-	// 		$.each(o[i], function(key,value){
-	// 		// 				if (key2.indexOf("Date") > -1||key2=="dob") obj[key2] = epochToDate(value2)
-	// 		// 			})
-	// 	}
-	//
-	// } else {
-	//
-	// }
-}
-
-function allDatesToEpoch(o, x){
-	if (x=="clients") {
-		o.createdDateTime = dateToEpoch(o.createdDateTime)
-		o.updatedDateTime = dateToEpoch(o.updatedDateTime)
-		o.firstSeenDate = dateToEpoch(o.firstSeenDate)
-		o.lastSeenDate = dateToEpoch(o.lastSeenDate)
-		o.dob = dateToEpoch(o.dob)
-		let dep = o.dependents
-		for (var i = 0; i < dep.length; i++) {
-			o.dependents[i].createdDateTime = dateToEpoch(o.dependents[i].createdDateTime)
-			o.dependents[i].dob = dateToEpoch(o.dependents[i].dob)
-		}
-	} else if (x=="clientsNotes") {
-		for (let i = 0; i < o.length; i++) {
-			o[i].createdDateTime = dateToEpoch(o[i].createdDateTime)
-		}
-	} else if (x=="serviceTypes") {
-		if (Array.isArray(o)) {
-			for (let i = 0; i < o.length; i++) {
-				if (o[i].createdDateTime !== '*EMPTY*') o[i].createdDateTime = dateToEpoch(o[i].createdDateTime)
-				if (o[i].updatedDateTime !== '*EMPTY*') o[i].updatedDateTime = dateToEpoch(o[i].updatedDateTime)
-				if (o[i].fulfillment.fromDateTime !== '*EMPTY*') o[i].fulfillment.fromDateTime = dateToEpoch(o[i].fulfillment.fromDateTime)
-				if (o[i].fulfillment.toDateTime !== '*EMPTY*') o[i].fulfillment.toDateTime = dateToEpoch(o[i].fulfillment.toDateTime)
-			}
-		} else {
-			if (o.createdDateTime !== '*EMPTY*') o.createdDateTime = dateToEpoch(o.createdDateTime)
-			if (o.updatedDateTime !== '*EMPTY*') o.updatedDateTime = dateToEpoch(o.updatedDateTime)
-			if (o.fulfillment.fromDateTime !== '*EMPTY*') o.fulfillment.fromDateTime = dateToEpoch(o.fulfillment.fromDateTime)
-			if (o.fulfillment.toDateTime !== '*EMPTY*') o.fulfillment.toDateTime = dateToEpoch(o.fulfillment.toDateTime)
-		}
-	}
-	return o
-}
-
-function allEpochToDates(o, x){
-// 	if (x=="clients") {
-// 		o.createdDateTime = epochToDate(o.createdDateTime)
-// 		o.updatedDateTime = epochToDate(o.updatedDateTime)
-// 		o.firstSeenDate = epochToDate(o.firstSeenDate)
-// 		o.lastSeenDate = epochToDate(o.lastSeenDate)
-// 		o.dob = epochToDate(o.dob)
-// 		let dep = o.dependents
-// 		for (var i = 0; i < dep.length; i++) {
-// 			o.dependents[i].createdDateTime = epochToDate(o.dependents[i].createdDateTime)
-// 			o.dependents[i].dob = epochToDate(o.dependents[i].dob)
-// 		}
-// 	} else if (x=="clientsNotes") {
-// 		for (let i = 0; i < o.length; i++) {
-// 			o[i].createdDateTime = epochToDate(o[i].createdDateTime)
-// 		}
-// 	} else if (x=="serviceTypes") {
-//
-// //console.log(JSON.stringify(o))
-//
-// 		if (Array.isArray(o)) {
-//
-// console.log('its an array')
-//
-// 			for (let i = 0; i < o.length; i++) {
-// 				o[i].createdDateTime = epochToDate(o[i].createdDateTime)
-// 				o[i].updatedDateTime = epochToDate(o[i].updatedDateTime)
-// 				o[i].fulfillment.fromDateTime = epochToDate(o[i].fulfillment.fromDateTime)
-// 				o[i].fulfillment.toDateTime = epochToDate(o[i].fulfillment.toDateTime)
-// 			}
-// 		} else {
-//
-// console.log('its an object')
-//
-// 			o.createdDateTime = epochToDate(o.createdDateTime)
-// 			o.updatedDateTime = epochToDate(o.updatedDateTime)
-// 			o.fulfillment.fromDateTime = epochToDate(o.fulfillment.fromDateTime)
-// 			o.fulfillment.toDateTime = epochToDate(o.fulfillment.toDateTime)
-// 		}
-// 	}
-
-}
-
-// function epochToDate(epoch){
-// 	var date = new Date(Number(epoch)*1000);
-// 	var d = date.getUTCDate().toString(),           // getUTCDate() returns 1 - 31
-//             m = (date.getUTCMonth() + 1).toString(),    // getUTCMonth() returns 0 - 11
-//             y = date.getUTCFullYear().toString(),       // getUTCFullYear() returns a 4-digit year
-//             formatted = '';
-//     if (d.length === 1) {                           // pad to two digits if needed
-//         d = '0' + d;
-//     }
-//     if (m.length === 1) {                           // pad to two digits if needed
-//         m = '0' + m;
-//     }
-//     formatted = m + '/' + d + '/' + y;              // concatenate for output
-//     return formatted;
-// }
-
-// function epochToDateObject(epoch){
-// 	return new Date(Number(epoch)*1000)
-// }
-
 function saveServiceTypeForm(){
 	let data = formToJSON('.serviceTypeForm')
-	let URL = api+"/servicetypes"
-	saveButton('serviceType', 'Saving...')
-	POST(URL,JSON.stringify(data))
-}
-
-function saveClientForm(){
-	let now = moment().format(dbDateTime)
-	$("#updatedDateTime.clientForm").val(now)
-	let data = ""
-	if (client == "") {
-		$("#clientId.clientForm").val(getNewClientID())
-		data = formToJSON('.clientForm')
-		data.dependents = []
-		data.lastServed = []
-	} else {
-		data = formToJSON('.clientForm')
-	}
-
-console.log(data)
-console.log(JSON.stringify(data))
-
-	saveButton('client', 'Saving...')
-
-	let URL = api+"/clients/"
-	POST(URL,JSON.stringify(data))
+	let URL = aws+"/servicetypes"
+	uiSaveButton('serviceType', 'Saving...')
+	dbPostData(URL,JSON.stringify(data))
 }
 
 function getNewClientID(){
-	json = GET(api+"/clients/lastid")
+	json = GET(aws+"/clients/lastid")
 	lastid = json['lastId']
 
 //***** TODO confirm this works and put safeguards inplace
@@ -1270,7 +282,7 @@ function getNewClientID(){
 	newID = Number(lastid)+1
 	newID = newID.toString()
 	request['lastId']=newID
-	POST(api+"/clients/lastid",JSON.stringify(request))
+	dbPostData(aws+"/clients/lastid",JSON.stringify(request))
 	return newID
 }
 
@@ -1279,7 +291,7 @@ function formToJSON(form){
 	let vals = {}
 	console.log($(form))
 	let formElements = $(form)
-	for (var i = 0; i < formElements.length; i++) {
+	for (let i = 0; i < formElements.length; i++) {
 		let key = formElements[i].id
 		let formVal = formElements[i].value
 		let valType = formElements[i].type
@@ -1316,95 +328,6 @@ console.log(vals)
 
 	return vals
 }
-
-function gatherVals(valsToCollect){
-	item = {}
-	for (var i=0;i<valsToCollect.length;i++){
-		if (valsToCollect[i]=="dob"||valsToCollect[i]=="firstSeenDate"||valsToCollect[i]=="familyIdCheckedDate") {
-			item[valsToCollect[i]] = dateToEpoch($("#"+valsToCollect[i]).val()).toString()
-		}
-		else{
-			item[valsToCollect[i]] =  $("#"+valsToCollect[i]).val()
-		}
-	}
-	return item
-}
-
-// function editToJSON() {
-// 	var collect = ['givenName','familyName','isActive','gender','dob','firstSeenDate'
-// 	,'familyIdCheckedDate','street','city','state','zipcode','telephone','email','homeless','ethnicGroup']
-// 	item =  gatherVals(collect)
-// 	item['clientId'] = client['clientId']
-//
-// 	var today = new Date();
-// 	item['createdDateTime']= client['createdDateTime']
-// 	item['updatedDateTime'] = Math.round((new Date()).getTime() / 1000).toString();
-// 	item['lastSeenDate'] = client['lastSeenDate'];
-// 	item['age'] = "0"
-// 	item['family'] = {}
-// 	item['family']['totalSize']="0"
-// 	item['family']['totalAdults']="0"
-// 	item['family']['totalChildren']="0"
-// 	item['family']['totalOtherDependents']="0"
-// 	item['financials'] = {}
-// 	item['financials']['income']=$("#income").val()
-// 	item['financials']['govtAssistance']=$("#govtAssistance").val()
-// 	item['financials']['rent']=$("#rent").val()
-// 	item['financials']['foodStamps']=$("#foodStamps").val()
-// 	dependents = []
-// 	givenNames = []
-// 	familyNames = []
-// 	relationships = []
-// 	dobs = []
-// 	genders = []
-// 	isActives = []
-// 	$('.givenName').each(function() {
-//
-//        givenNames.push( $(this).val() );
-// 	})
-// 	$('.familyName').each(function() {
-//        familyNames.push( $(this).val() );
-// 	})
-// 	$('.relationship').each(function() {
-//        relationships.push( $(this).val() );
-// 	})
-// 	$('.dob').each(function() {
-// 		console.log($(this).val())
-//        dobs.push( $(this).val() );
-// 	})
-// 	$('.gender').each(function() {
-//        genders.push( $(this).val() );
-// 	})
-// 	$('.isActive').each(function() {
-//        isActives.push( $(this).val() );
-// 	})
-//
-// 	for (var i=0;i<givenNames.length;i++){
-// 		var obj =  {}
-// 		obj['createdDateTime'] = Math.round((new Date()).getTime() / 1000).toString();
-// 		obj['givenName']  = givenNames[i]
-// 		obj['familyName']  = familyNames[i]
-// 		obj['relationship']  = relationships[i]
-// 		obj['dob']  = dateToEpoch(dobs[i]).toString()
-// 		obj['gender']  = genders[i]
-// 		obj['isActive']  = isActives[i]
-// 		if (relationships[i]=="Child"){
-// 			obj['child'] = "false"
-// 			obj['adult'] = "true"
-// 		}
-// 		else{
-// 			obj['adult'] = "true"
-// 			obj['child'] = "false"
-// 		}
-// 		obj['age'] = 0
-// 		dependents.push(obj)
-// 	}
-// 	console.log(dependents)
-// 	item['dependents'] =dependents
-// 	item['lastServed'] = []
-// 	console.log(JSON.stringify(item))
-// 	return JSON.stringify(item)
-// }
 
 function displayServicesView(){
 	// builds the Services tab
@@ -1452,7 +375,7 @@ function displayServicesView(){
 	$('#serviceButtonContainer').html(dateHeader);
 
 
-	// displayNotes("Today's Visit", moment().format(displayDate))
+	// uiDisplayNotes("Today's Visit", moment().format(displayDate))
 	//addClientNotes(client.clientId)
 
 lastVisit = 14;
@@ -1524,7 +447,7 @@ console.log(primaryButtons);
 	// if (today>idChecked){
 		//$('.main-div').append(header+subHeader+foodBtn+idBtn+clothesBtn+footer);
 		$('#serviceButtonContainer').append("<div></div>"+idBtn+clothesBtn+"<div></div>"+footer);
-		gotoTab("tab2")
+		navGotoTab("tab2")
 	// }
 	// else {
 	// 	$('.main-div').append(header+foodBtn+idBtn+clothesBtn+footer);
@@ -1534,7 +457,7 @@ console.log(primaryButtons);
 
 	children = []
 	if (client.dependents!=null){
-		for (var j=0; j<client.dependents.length; j++){
+		for (let j=0; j<client.dependents.length; j++){
 			if (client.dependents[j]['relationship']=="Child"){
 				children.push(client.dependents[j])
 			}
@@ -1593,7 +516,7 @@ function getlastVisitDays() {
 function getActiveServiceTypesArray(){
 	// build Active Service Types array of Service Types which cover today's date
 	let activeServiceTypes = []
-	for (var i=0; i<serviceTypes.length; i++){
+	for (let i=0; i<serviceTypes.length; i++){
 		if (serviceTypes[i].isActive == "Active"){
 			// FROM
 			let fromDateString = []
@@ -1632,7 +555,7 @@ function getTargetsArray(activeServiceTypes) {
 	// create array of targets
 	let targets = [];
 	// build list of client target items for each Active Service Type
-	for (var i = 0; i < activeServiceTypes.length; i++) {
+	for (let i = 0; i < activeServiceTypes.length; i++) {
 
 // console.log("Active Service " + i + ": " + activeServiceTypes[i].serviceName);
 
@@ -1803,9 +726,7 @@ function saveServiceDate(serviceDateTime, serviceTypeId, serviceCategory, isUSDA
 	lastServedArray.unshift(record);
 	client.lastServed = lastServedArray;
 
-	// SAVE TO DB TODO
-
-console.log(client.lastServed);
+	// SAVE TO db TODO
 
 }
 
@@ -1813,67 +734,211 @@ function clientSearchResults(){
 	a =  $('#searchField').val()
 	$('#searchField').val('')
 	if (a === '') {
-		beep()
+		utilBeep()
 		return
 	}
-	if (currentNavTab !== "clients") gotoNav("nav1")
+	if (currentNavTab !== "clients") navGotoSec("nav1")
 	clientData = null
 	if (a.includes("/")){
 		a = moment(a, displayDate).format(dbDate)
-		clientData = GET(api+"/clients/dob/"+a).clients
+		clientData = GET(aws+"/clients/dob/"+a).clients
 	} else if (!isNaN(a)&&a.length<MAX_ID_DIGITS){
-		clientData = GET(api+"/clients/"+a).clients
+		clientData = GET(aws+"/clients/"+a).clients
 	} else if (a.includes(" ")){
 		a = wordCase(a)
 		let split = a.split(" ")
 
 //*** TODO deal with more than two words ***
 
-		let d1 = GET(api+"/clients/givenname/"+split[0]).clients
-		let d2 = GET(api+"/clients/familyname/"+split[0]).clients
-		let d3 = GET(api+"/clients/givenname/"+split[1]).clients
-		let d4 = GET(api+"/clients/familyname/"+split[1]).clients
-		clientData = removeDupClients(d1.concat(d2).concat(d3).concat(d4))
+		let d1 = GET(aws+"/clients/givenname/"+split[0]).clients
+		let d2 = GET(aws+"/clients/familyname/"+split[0]).clients
+		let d3 = GET(aws+"/clients/givenname/"+split[1]).clients
+		let d4 = GET(aws+"/clients/familyname/"+split[1]).clients
+		clientData = utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
 	} else if (clientData==null||clientData.length==0){
 		a = wordCase(a)
-		let d2 = GET(api+"/clients/givenname/"+a).clients
-		let d1 = GET(api+"/clients/familyname/"+a).clients
+		let d2 = GET(aws+"/clients/givenname/"+a).clients
+		let d1 = GET(aws+"/clients/familyname/"+a).clients
 		if (d1.length>0&&d2.length<1){
-			clientData = removeDupClients(d1.concat(d2))
+			clientData = utilRemoveDupClients(d1.concat(d2))
 		}	else if (d2.length>0){
-			clientData = removeDupClients(d2.concat(d1))
+			clientData = utilRemoveDupClients(d2.concat(d1))
 		}
 	}
 	if (clientData==null||clientData.length==0){
-		beep()
-		clientsHeader("0 Clients Found")
+		utilBeep()
+		uiSetClientsHeader("0 Clients Found")
 	} else {
-		buildSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
+		uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
 		if (clientData.length === 1){
 			clientSetCurrent(0) // go straight to client
 		} else {
-			clientsHeader(clientData.length + ' Clients Found')
-			gotoTab("tab1")
+			uiSetClientsHeader(clientData.length + ' Clients Found')
+			navGotoTab("tab1")
 		}
 	}
 }
 
-function gotoTab(tab){
+// **********************************************************************************************************
+// ********************************************** NAV FUNCTIONS *********************************************
+// **********************************************************************************************************
+function navSwitch(link){
+	switch (link) {
+		case "clients":
+			navGotoSec("nav1")
+			navGotoTab("tab1")
+			displayServicesView()
+			break
+		case "newClient":
+			navGotoSec("nav2")
+			addClient()
+			break
+		case "admin":
+			navGotoSec("nav3")
+			navGotoTab("aTab1")
+			uiShowServiceTypes()
+			 // admin() show service form
+			break
+		case "user":
+			navGotoSec("nav4")
+			navGotoTab("uTab1")
+			// userProfile()
+			break
+		case "logInOut":
+			navGotoSec("nav5")
+	}
+}
+
+function navGotoSec(nav){
+	for (let i = 0; i < 5; i++) $("#nav"+i).removeClass("navActive")
+	$("#"+nav).addClass("navActive")
+	$("#"+currentNavTab).hide()
+	switch (nav) {
+		case "nav1": // SERVICES
+			currentNavTab = "clientsDiv"
+			break
+		case "nav2": // PROGRAMS
+			currentNavTab = "programsDiv"
+			break
+		case "nav3": // ADMIN
+			currentNavTab = "adminDiv"
+			break
+		case "nav4": // USER
+			uiFillUserData()
+			displayUserEdit()
+			currentNavTab = "userDiv"
+			break
+		case "nav5": // LOGINOUT
+			// currentNavTab = "logInOut"
+			if ($('#nav5').html() === 'Login'){
+				uiShowHideLogin('show')
+			} else {
+				cogLogoutUser()
+				$('#nav5').html('Login')
+				$('#nav4').html('')
+			}
+		}
+	$("#"+currentNavTab).show()
+}
+
+function navGotoTab(tab){
 	let useAttr = document.getElementById(tab);
 	useAttr.setAttribute('checked', true);
 	useAttr['checked'] = true;
 }
 
-function genSelectHTML(values,col){
+// **********************************************************************************************************
+// *********************************************** UI FUNCTIONS *********************************************
+// **********************************************************************************************************
+function uiShowHideLogin(todo){
+	if (todo === 'show'){
+		$('.loginOverlay').show().css('display', 'flex')
+	} else {
+		$('.loginOverlay').hide()
+		$('#loginEmail').val('')
+		$('#loginPassword').val('')
+	}
+}
+
+function uiShowHidePassword(){
+	console.log('in functoin')
+	if ($('#loginPassword').attr('type') == 'password') {
+    $('#loginPassword').attr('type', 'text');
+	} else {
+    $('#loginPassword').attr('type', 'password');
+	}
+}
+
+function uiSaveButton(form, action){
+	if (action === 'Save') {
+		if ($('#'+form+'SaveButton').val() !== 'Save'){
+			$('#'+form+'SaveButton').val('Save')
+			$('#'+form+'SaveButton').removeClass('saving')
+			$('#'+form+'SaveButton').removeClass('saved')
+			$('#'+form+'SaveButton').removeClass('failed')
+		}
+		return
+	} else {
+		$('#'+form+'SaveButton').val(action)
+
+console.log(action)
+		action = action.toLowerCase()
+		action = action.replace(/[#_!.*]/g, '')
+
+console.log(action)
+
+		$('#'+form+'SaveButton').addClass(action)
+	}
+}
+
+function uiPopulateForm(data, form){
+	$.each(data, function(key,value){
+		if (typeof(data[key])=='object') {
+			let obj = data[key]
+			$.each(obj, function(key2,value2){
+				let el = '.inputBox[id="'+key+'.'+key2+'"].'+form
+				if($(el).is("select")) {
+					el = el + ' option[value="'+ value2 +'"]'
+					$(el).prop('selected', true);
+				} else {
+					$(el).val(value2)
+				}
+			});
+		} else {
+			let el = '[id="'+key+'"].'+form
+			if($(el).is("select")) {
+				el = el + ' option[value="'+ value +'"]'
+				$(el).prop('selected', true);
+			} else {
+				$(el).val(value)
+			}
+		}
+	});
+
+	if (form === 'serviceTypeForm') {
+		uiToggleAgeGrade()
+		uiToggleFulfillDates()
+	} else if (form === 'clientForm'){
+		$('#clientAge').val(client.age) // readonly unsaved value
+		uiToggleClientAddress()
+	}
+	return
+}
+
+function uiShowServiceTypes(){
+	uiGenSelectHTMLTable('#serviceTypesContainer',serviceTypes,["serviceName","serviceDescription","isActive"],'serviceTypesTable')
+}
+
+function uiGenSelectHTML(values,col){
 	ans = "<select style='width:100px'>"
-	for (var i =0; i<values.length;i++){
+	for (let i =0; i<values.length;i++){
 		ans += "<option id='"+col+"' class='inputBox dependentsForm' value='"+values[i]+"'>"+values[i]+"</option>"
 	}
 	ans+="</select>"
 	return ans
 }
 
-function buildSelectHTMLTable(selector,data,col,tableID){
+function uiGenSelectHTMLTable(selector,data,col,tableID){
   // CREATE DYNAMIC TABLE.
   let table = document.createElement("table");
   table.setAttribute("id", tableID)
@@ -1899,11 +964,11 @@ function buildSelectHTMLTable(selector,data,col,tableID){
 					let a = data[i][col[j]].toString()
 					tabCell.innerHTML = "<input id="+col[j]+" style='width:100px' class='inputBox dependentsForm' value='"+a+"'>"
 				} else if (col[j]=="isActive"){
-					tabCell.innerHTML = genSelectHTML([data[i][col[j]],'Active','Emergency','Inactive'],"isActive")
+					tabCell.innerHTML = uiGenSelectHTML([data[i][col[j]],'Active','Emergency','Inactive'],"isActive")
 				} else if (col[j]=="relationship"){
-					tabCell.innerHTML =genSelectHTML([data[i][col[j]],'Spouse','Child','Other Dependent'],"relationship")
+					tabCell.innerHTML =uiGenSelectHTML([data[i][col[j]],'Spouse','Child','Other Dependent'],"relationship")
 				} else if (col[j]=="gender"){
-					tabCell.innerHTML =genSelectHTML([data[i][col[j]],'Female','Male'],"gender")
+					tabCell.innerHTML =uiGenSelectHTML([data[i][col[j]],'Female','Male'],"gender")
 				} else{
 					tabCell.innerHTML="<input id='"+col[j]+"' style='width:100px' class='inputBox dependentsForm' value='"+data[i][col[j]]+"'>";
 				}
@@ -1923,7 +988,7 @@ function buildSelectHTMLTable(selector,data,col,tableID){
   $(selector).html(table);
 }
 
-function toggleClientViewEdit(side){
+function uiToggleClientViewEdit(side){
 	console.log(side)
 	if (side == 'view') {
 		$('#clientLeftSlider').addClass('sliderActive')
@@ -1944,7 +1009,7 @@ function toggleClientViewEdit(side){
 	}
 }
 
-function toggleDependentsViewEdit(side){
+function uiToggleDependentsViewEdit(side){
 	console.log(side)
 	if (side == 'view') {
 		$('#dependentdLeftSlider').addClass('sliderActive')
@@ -1961,8 +1026,7 @@ function toggleDependentsViewEdit(side){
 	}
 }
 
-
-function toggleAgeGrade(){
+function uiToggleAgeGrade(){
 	if ($('[id="target.child"]').val() == 'YES') {
 		$('.childDiv').show('slow')
 	} else {
@@ -1970,7 +1034,7 @@ function toggleAgeGrade(){
 	}
 }
 
-function toggleFulfillDates(){
+function uiToggleFulfillDates(){
 	if ($('[id="fulfillment.type"]').val() == 'Voucher') {
 		$('.fulfillDiv').show('slow')
 	} else {
@@ -1978,7 +1042,7 @@ function toggleFulfillDates(){
 	}
 }
 
-function toggleClientAddress(){
+function uiToggleClientAddress(){
 	if ($('#homeless.clientForm').val() == 'NO') {
 		$('.addressDiv').show('slow')
 	} else {
@@ -1986,23 +1050,462 @@ function toggleClientAddress(){
 	}
 }
 
-function beep(){
+function uiGetTemplate(t){
+	let imp = document.querySelector('link[rel="import"]');
+	let temp = imp.import.querySelector(t);
+	let clone = document.importNode(temp.content, true);
+	//document.querySelector('.main-div').appendChild(clone);
+	return clone
+}
+
+function uiFillUserData(){
+	console.log(session)
+
+	$('#userTitle').html(session.user.username);
+}
+
+function uiFillDate(){
+	$('.contentTitle').html(moment().format("dddd, MMM DD YYYY"));
+}
+
+function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
+	//setMainSideDiv()
+	var tableStr = '<table class="notes"></table>'
+	$('#notesContainer').html(tableStr)
+	var headerRow = '<tr style="height:50px;padding:10px;"><td><h4 class="siteHeading">'+pageName+'</h4>'
+	headerRow+='<h5 class="siteHeading">'+moment().format(displayDate)+'</h5></td></tr>'
+	$('.notes').append(headerRow)
+}
+
+function uiAddNoteButtonRow(){
+	var buttonRow = '<div class="row"><a data-toggle="modal" data-target="#myModal" class="btn-nav addNoteButton">'
+	buttonRow+='+Note</a></div></table>'
+	$('#notesContainer').append(buttonRow)
+}
+
+// **********************************************************************************************************
+// ************************************************ DB FUNCTIONS ********************************************
+// **********************************************************************************************************
+
+function dbGetClient(id){
+	return GET(aws+"/clients/"+id).clients[0]
+}
+
+function dbGetClientNotes(id){
+	let URL = aws+"/clients/notes/"+id;
+	arr = GET(URL).notes
+console.log(arr)
+	return arr
+}
+
+function GET(uUrl){
+	let urlNew = uUrl;
+	let ans = null;
+
+// console.log('idToken + ' + authorization.idToken)
+
+	$.ajax({
+	    type: "GET",
+	    url: urlNew,
+			headers: {"Authorization": authorization.idToken},
+	    async: false,
+	    dataType: "json",
+			contentType:'application/json',
+	    success: function(json){
+				if (json!==undefined) {
+					console.log(json.count)
+					console.log(urlNew)
+				}
+	    	ans = json
+		},
+		error: function(message, status, error){
+			console.log(message + ", " + status + ", " + error)
+			alert(error);
+			if (message.readyState == 0) {
+				console.log("Error of some kind!")
+			}
+		}
+	});
+	return ans
+}
+
+
+
+function resetServiceTypeForm(){
+	console.log('in reset')
+	uiPopulateForm(serviceType, 'serviceTypeForm')
+}
+
+function dbSaveClientForm(){
+	let now = moment().format(dbDateTime)
+	$("#updatedDateTime.clientForm").val(now)
+	let data = ""
+	if (client == "") {
+		$("#clientId.clientForm").val(getNewClientID())
+		data = formToJSON('.clientForm')
+		data.dependents = []
+		data.lastServed = []
+	} else {
+		data = formToJSON('.clientForm')
+	}
+
+console.log(data)
+console.log(JSON.stringify(data))
+
+	uiSaveButton('client', 'Saving...')
+
+	let URL = aws+"/clients/"
+	dbPostData(URL,JSON.stringify(data))
+}
+
+function dbGetServicesTypes(){
+	return GET(aws+"/servicetypes").serviceTypes
+}
+
+function dbPostData(uUrl,dataU){
+	if (authorization.idToken == 'undefined') {
+		utilBeep()
+		consol.log("need to log in")
+		return
+	}
+	var urlNew = uUrl;
+	var uData = dataU;
+	var ans = null;
+	$.ajax({
+	    type: "POST",
+	    url: urlNew,
+			headers: {"Authorization": authorization.idToken},
+	    async: false,
+	    dataType: "json",
+	    data: uData,
+	    contentType:'application/json',
+	    success: function(message){
+	    	console.log(message)
+				if (typeof message.message !== 'undefined') {
+					utilBeep()
+					// ***** TODO error message
+				} else {
+					if (uUrl.includes('/servicetypes')) {
+						serviceTypes = dbGetServicesTypes()
+						uiShowServiceTypes()
+						updateServiceHeader()
+						uiPopulateForm(serviceType, 'serviceTypes')
+						uiSaveButton('serviceType', 'SAVED!!')
+					} else if (uUrl.includes('/clients')) {
+						let row = utilUpdateClientsData()
+						uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
+						outlineTableRow('clientTable', row)
+						uiSetClientsHeader('#'+client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
+						uiSaveButton('client', 'SAVED!!')
+					}
+				}
+		},
+		error: function(json){
+	    	console.log(json)
+				if (uUrl.includes('/servicetypes')) {
+					uiSaveButton('serviceType', 'ERROR!!')
+				} else if (uUrl.includes('/clients')) {
+					uiSaveButton('client', 'ERROR!!')
+				}
+		}
+	});
+	return ans
+}
+
+
+// **********************************************************************************************************
+// *********************************************** COG FUNCTIONS ********************************************
+// **********************************************************************************************************
+function cogLogoutUser(){
+	authorization = {}
+	if (authorization.idToken == undefined) {
+		cognitoUser.signOut();
+		uiShowHideLogin('show')
+	}
+}
+
+function cogUserChangePassword(){
+	cognitoUser.changePassword('oldPassword', 'newPassword', function(err, result) {
+    if (err) {
+      alert(err);
+      return;
+    }
+    console.log('call result: ' + result);
+  });
+}
+
+function cogNewPasswordRequired(){
+
+console.log("in new password required")
+
+}
+
+function cogLoginUser() {
+	let username = $('#loginEmail').val()
+	let password = $('#loginPassword').val()
+  let authData = {
+     Username: username,
+     Password: password
+  };
+  let authDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authData);
+  let userData = {
+     Username: username,
+     Pool: userPool
+  };
+  cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+  cognitoUser.authenticateUser(authDetails, {
+    onSuccess: (result) => {
+      session.user = cognitoUser;
+			authorization.accessToken = result.getAccessToken().getJwtToken()
+			authorization.idToken = result.idToken.jwtToken
+			$('#nav4').html('<i class="fa fa-user" aria-hidden="true"></i> ' + session.user.username)
+			$('#nav5').html('Logout')
+			uiShowHideLogin('hide')
+			navGotoSec('nav1')
+			cogGetUserAttributes()
+			serviceTypes = dbGetServicesTypes()
+    },
+    onFailure: (err) => {
+			if (err === 'Error: Incorrect username or password.') {
+				utilBeep()
+			} else if (err === 'UserNotFoundException: User does not exist.') {
+				utilBeep()
+				utilBeep()
+				// NotAuthorizedException: Incorrect username or password.
+			}
+        console.log('||'+err+'||');
+    },
+		newPasswordRequired: function(userAttributes, requiredAttributes) {
+				// User was signed up by an admin and must provide new
+				// password and required attributes, if any, to complete
+				// authentication.
+console.log(requiredAttributes)
+
+
+console.log("needs new password - change the form")
+let newPassword = "Password123#"
+
+				// the api doesn't accept this field back
+				delete userAttributes.email_verified;
+				delete userAttributes.phone_number_verified;
+
+
+				// Get these details and call
+				cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, this);
+		}
+  });
+}
+
+function cogGetUserAttributes(){
+
+	// var params = {
+	//   AccessToken: authorization.accessToken /* required */
+	// };
+	// cognitoidentityserviceprovider.getUser(params, function(err, data) {
+	//   if (err) console.log(err, err.stack); // an error occurred
+	//   else     console.log(data);           // successful response
+	// });
+
+// 	cognitoUser.getUserAttributes(function(err, result) {
+// 		if (err) {
+// 				alert(err);
+// 				return;
+// 		}
+// 		for (i = 0; i < result.length; i++) {
+// 				console.log('attribute ' + result[i].getName() + ' has value ' + result[i].getValue());
+// 		}
+// });
+}
+
+// function cognitoSignUp(){
+// 	var attributeList = [];
+//
+// 	var dataEmail = {
+// 			Name : 'email',
+// 			Value : 'jleal67@gmail.com'
+// 	};
+//
+// 	var dataPhoneNumber = {
+// 			Name : 'phone_number',
+// 			Value : '+12096011038'
+// 	};
+// 	var attributeEmail = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataEmail);
+// 	var attributePhoneNumber = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataPhoneNumber);
+//
+// 	attributeList.push(attributeEmail);
+// 	attributeList.push(attributePhoneNumber);
+//
+// 	userPool.signUp('jleal67@gmail.com', 'Password123!', attributeList, null, function(err, result){
+// 			if (err) {
+// 					alert(err);
+// 					return;
+// 			}
+// 			cognitoUser = result.user;
+// 			console.log('user name is ' + cognitoUser.getUsername());
+// 	});
+// }
+
+// let userData = {
+// 	 Username: 'jleal67',
+// 	 Pool: userPool
+// };
+//
+// cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+
+function cognitoLogin(){
+
+console.log("IN AUTHENTICATION")
+
+	let authenticationData = {
+		 Username : 'jleal67@gmail.com', // your username here
+		 Password : 'Password123!', // your password here
+ 	};
+
+	let userData = {
+		 Username : 'jleal67@gmail.com', // your username here
+		 Password : 'Password123!', // your password here
+ 	};
+
+  let authenticationDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authenticationData);
+
+  let cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+  cognitoUser.authenticateUser(authenticationDetails, {
+		onSuccess: function (result) {
+			console.log('access token + ' + result.getAccessToken().getJwtToken());
+		},
+		onFailure: function(err) {
+			alert(err);
+		},
+		mfaRequired: function(codeDeliveryDetails) {
+			let verificationCode = prompt('Please input verification code' ,'');
+			cognitoUser.sendMFACode(verificationCode, this);
+		}
+ });
+}
+
+function cognitoListUsers(){
+	// Set the region where your identity pool exists (us-east-1, eu-west-1)
+	AWSCognito.config.region = 'us-west-2';
+
+	// Configure the credentials provider to use your identity pool
+	AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
+	    IdentityPoolId: 'us-west-2:d6cc97a3-a582-4295-a901-4d312b92c47a',
+	});
+
+	// Make the call to obtain credentials
+	AWSCognito.config.credentials.get(function(){
+
+	    // Credentials will be available when this function is called.
+	    let accessKeyId = AWSCognito.config.credentials.accessKeyId;
+	    let secretAccessKey = AWSCognito.config.credentials.secretAccessKey;
+	    let sessionToken = AWSCognito.config.credentials.sessionToken;
+
+	});
+
+console.log('in list users')
+console.log(session.user)
+console.log(userPool.userPoolId)
+
+///ClientId : '7j3jhm5a3pkc67m52bf7tv10au',
+
+// AWSCognito.config.update({ })
+
+let logPool = "cognito-idp.us-west-2.amazonaws.com/"+ userPool.userPoolId
+
+	AWSCognito.config.region = 'us-west-2'
+
+	let loginsCognitoKey = 'cognito-idp.us-west-2.amazonaws.com/us-west-2_AufYE4o3x'
+	let loginsIdpData = {};
+	loginsIdpData[loginsCognitoKey] = authorization.accessToken
+	AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
+	    IdentityPoolId: 'us-west-2:d6cc97a3-a582-4295-a901-4d312b92c47a',
+	    Logins: loginsIdpData
+	});
+
+console.log(AWSCognito.config.credentials)
+
+console.log('made it past config')
+
+	//
+	// AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
+	//     IdentityPoolId: userPool.userPoolId,
+	// 		Logins : {
+	// 			logPool : authorization.accessToken
+	// 		}
+	// });
+
+	// Need to provide placeholder keys unless unauthorised user access is enabled for user pool
+	params = {
+		UserPoolId: userPool.userPoolId, /* required */
+		AttributesToGet: [],
+		Filter: '',
+		Limit: 0,
+		PaginationToken: ''
+	};
+
+	let cognitoidentityserviceprovider = new AWSCognito.CognitoIdentityServiceProvider();
+	cognitoidentityserviceprovider.listUsers(params, function(err, data) {
+	  if (err) console.log(err, err.stack); // an error occurred
+	  else     console.log(data);           // successful response
+	});
+}
+
+// **********************************************************************************************************
+// *********************************************** UTIL FUNCTIONS *******************************************
+// **********************************************************************************************************
+function utilCalcFamilyCounts(x){
+	// age
+	updateClientAge()
+	// dependents age & family counts
+	let fam = {tA:1, tC:0, tO:0}
+	for (let i = 0; i < client.dependents.length; i++) {
+		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
+		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Spouse") ++fam.tA
+		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.tO
+		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Child") ++fam.tC
+		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.tO
+	}
+	client.family = {}
+	client.family.totalAdults = fam.tA
+	client.family.totalChildren = fam.tC
+	client.family.totalOtherDependents = fam.tO
+	client.family.totalSize = fam.tA + fam.tC + fam.tO
+}
+
+function utilBeep(){
 	let sound = document.getElementById("beep")
 	sound.volume= .1
 	sound.loop = false
 	sound.play()
 };
 
-function removeDupClients(a) {
-	let ids=[], temp=[], b = []
-	for (var i = 0; i < a.length; i++) ids.push(a[i].clientId)
-	for (var i = 0; i < ids.length; i++) {
+function utilRemoveDupClients(clients) {
+	let ids=[], temp=[], undupClients = []
+	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)
+	for (let i = 0; i < ids.length; i++) {
 		if (temp.indexOf(ids[i])<0) {
-			b.push(a[i])
+			undupClients.push(clients[i])
 			temp.push(ids[i])
 		}
 	}
-	return b
+	return undupClients
+}
+
+function utilUpdateClientsData(){
+	let row = null
+	let data = formToJSON('.clientForm')
+	$.each(data, function(key,value){
+		client[key] = value
+	});
+	for (var i = 0; i < clientData.length; i++) {
+		if (client.clientId == clientData[i].clientId){
+			row = i+1
+			$.each(client, function(key,value){
+				clientData[i][key] = value
+			});
+		}
+	}
+	return row
 }
 
 function translate(x){
@@ -2025,51 +1528,4 @@ function translate(x){
 	}
 	let y = data[x]
 	if (y==undefined){return x} else {return y}
-}
-
-function getTemplate(t){
-	let imp = document.querySelector('link[rel="import"]');
-	let temp = imp.import.querySelector(t);
-	let clone = document.importNode(temp.content, true);
-	//document.querySelector('.main-div').appendChild(clone);
-	return clone
-}
-
-function dateDiff(a,b,c) {
-	let date1 = new Date(a)
-	let date2 = new Date(b)
-	let x = 0
-	let timeDiff = Math.abs(date2.getTime() - date1.getTime())
-	if (c == "days") x = Math.ceil(timeDiff / (1000 * 3600 * 24))
-	if (c == "years") x = Math.floor(timeDiff/31557600000)
-	return x
-}
-
-function calculateFields(x){
-	// age
-	updateClientAge()
-	// dependents age & family counts
-	let fam = {tA:1, tC:0, tO:0}
-	for (var i = 0; i < client.dependents.length; i++) {
-		client.dependents[i].age = today.diff(client.dependents[i].dob, "years")
-		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Spouse") ++fam.tA
-		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.tO
-		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Child") ++fam.tC
-		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.tO
-	}
-	client.family = {}
-	client.family.totalAdults = fam.tA
-	client.family.totalChildren = fam.tC
-	client.family.totalOtherDependents = fam.tO
-	client.family.totalSize = fam.tA + fam.tC + fam.tO
-}
-
-function fillUserData(){
-	console.log(session)
-
-	$('#userTitle').html(session.user.username);
-}
-
-function fillDate(){
-	$('.contentTitle').html(moment().format("dddd, MMM DD YYYY"));
 }

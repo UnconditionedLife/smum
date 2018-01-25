@@ -2,14 +2,14 @@
    <div class="clientFormDiv">
       <div class="lableDiv">First Seen</div>
       <div class="">
+         <!-- hidden fields -->
          <input id="clientId" type="hidden" class="clientForm">
          <input id="updatedDateTime" type="hidden" class="clientForm">
          <input id="createdDateTime" type="hidden" class="clientForm">
-         <input id="lastSeenDate" type="hidden" class="inputBox clientForm">
-
+         <input id="lastSeenDate" type="hidden" class="clientForm">
+         <input id="lastServed" type="hidden" class="clientForm">
+         <!-- hidden fields -->
          <input id="firstSeenDate" type="date" class="inputBox clientForm">
-
-
       </div>
       <div class="lableDiv">ID Checked</div>
       <div class=""><input id="familyIdCheckedDate" type="date" class="inputBox clientForm"></div>
@@ -91,7 +91,7 @@
       <div class="viewOnly"><input id="family.totalSize" type="number" class="inputBox clientForm" readonly></div>
 
       <div class="span6 editOnly" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-         <input id="clientSaveButton" class="solidButton" onclick="saveClientForm()" type="button" value="Save">
+         <input id="clientSaveButton" class="solidButton" onclick="dbSaveClientForm()" type="button" value="Save">
          <input class="openButton" onclick="resetClientForm()" type="button" value="Cancel">
       </div>
    </div>
