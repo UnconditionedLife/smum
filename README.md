@@ -15,13 +15,13 @@ The application is used at the intake desk to service client needs. It helps man
 
 SMUM-Checkin manages client registration and facilitates the  provision of available service by the volunteers. Since each service has a period of availability, minimum frequency, and target recipients, the software handles all of the calculations &mdash; offering the volunteer a simplified number of choices to offer the client. The interface reduces the complexity by displaying easy to understand service buttons. A push of a button logs the service details in the system and in future will print out a client receipt (see Future Development below).
 
-### Community Developed
+## Community Developed
 This is an ongoing development project created and supported by volunteers. We are seeking to involve software developers from San Jose and the surrounding communities. We are offering young developers an outlet for volunteering to their local community by doing what they most enjoy doing.
 
 #### High School Tech Volunteer Program
 We are reaching out to regional high schools to build long-term relationships. We want partners help promote this Tech Volunteer Program to students and the broader community. We believe this is a great opportunity to introduce tech students to the idea of helping build tools for communities in need.
 
-### Future Development
+## Future Development
 Our goal is to have near continuous development of improvements and new features. A few of the planned features can be seen below.
 
 #### Integrated Printer
