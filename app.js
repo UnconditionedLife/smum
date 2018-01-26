@@ -1,4 +1,4 @@
-// SMUM CHECKIN PROJECT
+// SMUM CHECKIN APP
 // This project is thanks to contributions of people like Kush Jain.
 // FUNCTION naming covention Prefix:
 // -->   ui....  interact with User Interface [HTML]
@@ -8,28 +8,10 @@
 // -->   cog...  interact with AWS Cognito service
 // Function naming syntax [prefix][action][subject]
 
-// GLOBAL VARS
+// **********************************************************************************************************
+// *********************************************** GLOBAL VARS **********************************************
+// **********************************************************************************************************
 let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
-
-uiFillDate()
-uiShowHideLogin('show')
-navGotoTab("tab1")
-
-document.onkeydown = function(e) {
-	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); clientSearchResults()}
-}
-// control the "save button" behaviour
-$(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')});
-$(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')});
-
-function newServiceTypeForm(){
-	// TODO
-}
-
-function newClientNote(){
-	// TODO
-}
-
 let rowNum = 1
 let MAX_ID_DIGITS = 4
 let displayDate = 'MM/DD/YYY'
@@ -42,7 +24,6 @@ let client = {} // current client
 let serviceType = null
 let isEmergency = false
 let currentNavTab = "clients"
-
 // cognito config
 let CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
 let  poolData = {
@@ -54,730 +35,18 @@ let session = {}
 let cognitoUser = {}
 let authorization = {}
 
+// **********************************************************************************************************
+// **********************************************************************************************************
+uiFillDate()
+uiShowHideLogin('show')
+navGotoTab("tab1")
 
-function isLoggedIn(){
-	if (authorization.idToken == undefined) {
-
-		return false
-	} else {
-		return true
-	}
+document.onkeydown = function(e) {
+	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); dbSearchClients()}
 }
-
-function admin(){
-	rowNum = 1
-
-	//******** TODO HEADER info *********
-
-	/// LIST ALL SERVICE Types
-
-	/// make tab for service type form
-
-	$('#serviceTypeFormContainer').html(buildAdminForm())
-	/**Line above displays the Services Types Form**/
-}
-
-function uiSetClientsHeader(title){
-	$("#clientsTitle").html(title)
-}
-
-function adminHeader(title){
-	$("#adminTitle").html(title)
-}
-
-function updateServiceHeader(){
-
-	// **** TODO this is not working right
-
-	$("#adminTitle").html($('#serviceName').val())
-}
-
-function updateClientAge(){
-	let dob = $("#dob.clientForm").val()
-	let age = moment().diff(dob, 'years')
-	if (Number(age)){
-		$("#clientAge").val(age)
-		client.age = age
-	}
-}
-
-function displayUserEdit(){
-
-	$('#userFormContainer').html(uiGetTemplate('#userForm'))
-
-}
-
-function displayEditClient(isEdit){
-
-	rowNum = 1
-	uiDisplayNotes("Client Notes")
-
-	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
-
-	uiPopulateForm(client, 'clientForm')
-
-	dependantsHeader = '<div style="margin-top:25px" id="dependents" class="formRow"><div class="formEntry"><p class="blueBold blueInline">Dependants</p></div></div>'
-	//$('#content4').html(dependantsHeader)
-	addClientNotes(client['clientId'])
-	if (client.dependents!=null){
-		uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","isActive"],'dependentsTable')
-	}
-
-	if (isEdit){
-		let plusButton = '<a href="#" onclick="addRow()" style="font-size:18px;width:150px;margin-bottom:8px;margin-top:10px;display: inline-block;" class="btn btn-block btn-primary btn-success">+</a>'
-		$('#dependents').append('<div class="formEntry">'+plusButton+'</div>')
-	}
-
-	if (isEdit){
-		uiToggleClientViewEdit('edit')
-	} else {
-		uiToggleClientViewEdit('view')
-	}
-}
-
-function newServiceTypeForm(){
-	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
-	$('#serviceTypeId').val(cuid())
-	navGotoTab("aTab2")
-}
-
-function newClientForm(){
-	client = ""
-	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
-	let today = moment().format(dbDate)
-
-console.log(today)
-
-	$('#createdDateTime.clientForm').val(today)
-	$('#updatedDateTime.clientForm').val(today)
-	$('#familyIdCheckedDate.clientForm').val(today)
-	$('#firstSeenDate.clientForm').val(today)
-
-	$('#homeless.clientForm').val('false')
-	$('#city.clientForm').val('San Jose')
-	$('#state.clientForm').val('CA')
-
-console.log($('#familyIdCheckedDate.clientForm'))
-
-
-
-// ***** TODO add default values dates, state, city etc.
-
-	navGotoTab("tab3")
-}
-
-
-
-
-function showServiceTypeForm(){
-	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
-	uiPopulateForm(serviceType, 'serviceTypeForm')
-}
-
-
-function createDrop(dropId){
-	drop = new Drop
-  target: document.querySelector('.drop-target')
-  content: 'Welcome to the future!'
-  position: 'bottom left'
-  openOn: 'click'
-}
-
-function GETServicesNotes(id){
-	return GET(aws+"/services/"+id).services
-}
-
-
-function displayNote(text,text2){
-	$('.notes').append('<tr><td class="data">'+text+'</td>'+'<td class="data">'+text2+'</td></tr>')
-}
-
-function POSTNote(text){
-	let ans = {}
-	ans['noteOnClientId'] = client['clientId']
-	ans['noteText'] = text.toString()
-	ans['createdDateTime']=Math.round((new Date()).getTime() / 1000).toString()
-	ans['noteByUserId'] = '12f8176c38186cad1705a6f3af8b8c0ad0b23200'
-	ans['noteByUserName']="Kush Jain"
-	ans['clientNoteId'] = uuidv1().toString()
-	console.log(JSON.stringify(ans))
-	dbPostData(aws+"/clients/notes/",JSON.stringify(ans))
-}
-function addClientNotes(id){
-	arr = dbGetClientNotes(id)
-	addOldNotes(arr)
-}
-
-function addOldNotes(arr){
-	for (let i = 0; i < arr.length; i++){
-    	let obj = arr[i];
-    	displayNote(obj.noteText, obj.createdDateTime)
-    }
-}
-
-function newNote(text,text2){
-	displayNote(text,text2)
-	POSTNote(text)
-}
-
-function history(){
-  //data = GETServicesNotes(client.clientId)
-  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastSeenDate", "familyIdCheckedDate"]
-	let clientArray = []
-	clientArray.push(client)
-	uiGenSelectHTMLTable('#content5',clientArray,columns,'historyTable')
-}
-
-function outlineTableRow(table, row){
-	$('#' + table + ' tr:eq('+ row + ')').css('outline', '2px solid').siblings().css('outline', 'none')
-}
-
-
-function clientSetCurrent(index){
-	let row = index + 1
-	outlineTableRow('clientTable', row)
-	client = clientData[index]
-	utilCalcFamilyCounts("clients") // calculate fields counts and ages
-
-console.log(client.age)
-
-
-	uiSetClientsHeader('#' + client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
-
-	isEmergency = false // **** TODO what is this for?
-
-	displayServicesView()
-	displayEditClient(false)
-	history()
-}
-
-function serviceTypesSetCurrent(index){
-	serviceType = serviceTypes[index]
-	outlineTableRow('serviceTypesTable', index+1)
-	adminHeader(serviceType.serviceName)
-
-	showServiceTypeForm()
-	navGotoTab("aTab2")
-}
-
-function addRow(){
-	let dependantRow = "<tr><td><input class='givenName' style='width:100px'></td><td><input class='familyName' style='width:100px'></td><td><select class='relationship' style='width:100px'><option value='Spouse'>Spouse</option><option value='Child'>Child</option></select></td><td><select class='gender' style='width:100px'><option value='Male'>Male</option><option value='Female'>Female</option></select></td><td><input class='dob' style='width:100px'></td><td><select class='isActive' style='width:100px'><option value='true'>true</option><option value='false'>false</option></td>"
-	$('#myTable').append(dependantRow)
-}
-
-function saveServiceTypeForm(){
-	let data = formToJSON('.serviceTypeForm')
-	let URL = aws+"/servicetypes"
-	uiSaveButton('serviceType', 'Saving...')
-	dbPostData(URL,JSON.stringify(data))
-}
-
-function getNewClientID(){
-	json = GET(aws+"/clients/lastid")
-	lastid = json['lastId']
-
-//***** TODO confirm this works and put safeguards inplace
-
-	request = {}
-	newID = Number(lastid)+1
-	newID = newID.toString()
-	request['lastId']=newID
-	dbPostData(aws+"/clients/lastid",JSON.stringify(request))
-	return newID
-}
-
-function formToJSON(form){
-	let now = moment().format(dbDateTime)
-	let vals = {}
-	console.log($(form))
-	let formElements = $(form)
-	for (let i = 0; i < formElements.length; i++) {
-		let key = formElements[i].id
-		let formVal = formElements[i].value
-		let valType = formElements[i].type
-		if (formVal.length < 1) {
-			if (valType == 'hidden') {
-				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = now
-				if (key === 'lastSeenDate') formVal = '*EMPTY*'
-			} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local') {
-
-console.log(key)
-
-				formVal = '*EMPTY*'
-			} else if (valType == 'number') {
-
-console.log(key + ' : ' + formVal + ' : '+ valType)
-
-				formVal = '-123'
-			}
-		}
-		if (key.includes(".")) {
-			let split = key.split(".")
-			let obj = split[0]
-			if (typeof vals[obj] == 'undefined') {
-				vals[obj] = {}
-			}
-			vals[obj][split[1]] = formVal
-		} else {
-			vals[key] = formVal
-		}
-	}
-	vals.updatedDateTime = moment()
-
-console.log(vals)
-
-	return vals
-}
-
-function displayServicesView(){
-	// builds the Services tab
-	// return if client object is empty
-	if ($.isEmptyObject(client)) return
-	let lastIdCheck = getLastIdCheckDays()
-	let lastVisit = getlastVisitDays()
-	let activeServiceTypes = getActiveServiceTypesArray()
-
-// **************   how to save some effort  *****************
-
-// store the lastServed on each serviceType at the client level
-// this way I can keep track of the USDA etc.
-
-// think of making ID/Proof of Address a serviceType ??????
-
-// **************   how to save some effort  *****************
-
-	let targets = getTargetsArray(activeServiceTypes);
-	let btnPrimary = getActiveServicesBtnArray("primary", activeServiceTypes, targets);
-	let btnSecondary = getActiveServicesBtnArray("secondary", activeServiceTypes, targets);
-
-		// check each element in the client
-
-		// target.homeless ********************
-
-		// target.family *********************
-
-		// target.gender *********************
-
-		// target.child *********************
-		// target.childMinAge
-		// target.childMaxAge
-		// target.childMinGrade
-		// target.childMaxGrade
-
-	// Interval ???
-
-
-// 	rowNum = 1 // -- TODO what's this for?
-//	let today = moment()
-
-	// Start adding html to template
-	let dateHeader = '<div class="serviceDateTime">' + moment().format(longDate) + '</div>';
-	$('#serviceButtonContainer').html(dateHeader);
-
-
-	// uiDisplayNotes("Today's Visit", moment().format(displayDate))
-	//addClientNotes(client.clientId)
-
-lastVisit = 14;
-
-	let visitHeader = "FIRST SERVICE VISIT";
-	if (lastVisit < 9999) visitHeader = 'LAST SERVED ' + lastVisit + ' DAYS AGO';
-	$('#serviceButtonContainer').append('<div class="serviceLastVisit">' + visitHeader + '</div><div></div>');
-
-  // for (let i = 0; i < client.lastServed.length; i++) {
-  // 	let last
-  // }
-  if (client.lastServed.length > 0) {
-
-	}
-
-
-
-	if (lastVisit < 14) {
-		$('#serviceButtonContainer').append('<div class="btnEmergency" onclick="addService('+"'USDA Food','Items: 1','food'"+')">EMERGENCY FOOD ONLY</div>');
-	} else {
-
-console.log("IN PRIMARY BUTTONS")
-
-		let primaryButtons = "<div></div>" //'<div class="primaryButtonContainer"><div class="buttonCenteredContainer">';
-		for (let i=0; i<btnPrimary.length; i++){
-			let x = btnPrimary[i];
-			let btnClass = "btnPrimary";
-			if (activeServiceTypes[x].serviceCategory == "Administration") btnClass = "btnAdmin";
-			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].isUSDA + "\'";
-			let image = "<img src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
-			primaryButtons += '<div class=\"' + btnClass + '\" id=\"'+activeServiceTypes[x].serviceTypeId+'\" onclick=\"addService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
-			// } else if (activeServiceTypes[x].serviceCategory == "Food") {
-			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="addService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"<br><img src='images/PrimaryButtonFood.png'></a></div>"
-			// } else if (activeServiceTypes[x].serviceCategory == "Clothes") {
-			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="addService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
-			// }
-
-
-
-console.log(primaryButtons);
-
-		}
-		// primaryButtons += "</div></div>"
-		$('#serviceButtonContainer').append(primaryButtons)
-	}
-
-
-  //
-	// let foodBtn = ""
-  //
-	// } else {
-	// 		foodBtn =  '<div class="btnPrimary" onclick="addService('+"'USDA Food','Items: 1','food'"+')"><img src="images/food.png"  style="width:185px; height:182px"></div>'
-	// }
-
-	// Display ID Check button if it's been more than 180 days since last check
-	let idBtn =  '<div class="serviceLastVisit span2"></div>'
-	if (lastIdCheck > 180) {
-		idBtn = '<div class="serviceLastVisit span2"><img src="images/checkId.png" style="width:157px; height:156px"></div>'
-	}
-
-	let clothesBtn = '<div class="serviceLastVisit"></div>'
-	if (lastVisit >= 15) {
-		clothesBtn = '<div class="serviceLastVisit"><img onclick="addService('+"'Clothes','Items: 5','clothes'"+')" src="images/clothes.png" style="width:185px; height:182px"></div>'
-	}
-	let footer = '<div class="buttonRow span6" id="row2"></div><div id="row2"></div></div>'
-
-//<a data-toggle="modal" data-target="#myModal" class="btn-nav">Add Note</a>
-
-	// if (today>idChecked){
-		//$('.main-div').append(header+subHeader+foodBtn+idBtn+clothesBtn+footer);
-		$('#serviceButtonContainer').append("<div></div>"+idBtn+clothesBtn+"<div></div>"+footer);
-		navGotoTab("tab2")
-	// }
-	// else {
-	// 	$('.main-div').append(header+foodBtn+idBtn+clothesBtn+footer);
-	//
-	// }
-
-
-	children = []
-	if (client.dependents!=null){
-		for (let j=0; j<client.dependents.length; j++){
-			if (client.dependents[j]['relationship']=="Child"){
-				children.push(client.dependents[j])
-			}
-		}
-	}
-	if (lastVisit >= 14) {
-		for (let i=0; i<btnSecondary.length; i++){
-			let x = btnSecondary[i];
-
-console.log(x);
-
-//		var standard = serviceTypes[i]['available']['dateFromMonth']<=moment().format('M')&& moment().format('M')<=serviceTypes[i]['available']['dateToMonth']
-
-			let service = '<div class="btnSecondary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="addService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
-
-// && serviceTypes[i]['target']['gender']==client['gender']
-
-
-// 		$('.buttonRow').append(service)
-
-	   	$('#serviceButtonContainer').append(service)
-
-
-		// if (children.length==0||!serviceTypes[i]['target']['child']){
-		// 	if (standard){
-		// 		$('.buttonRow').append(service)
-		// 	}
-		// }
-		// else{
-		// 	for (var k=0; k<children.length; k++){
-		// 		if (standard && serviceTypes[i]['target']['childMinAge']<children[k]['age'] && children[k]['age']<serviceTypes[i]['target']['childMaxAge']){
-		// 		('.buttonRow').append(service)
-    //
-		// 		}
-		// 	}
-		// }
-		}
-	}
-}
-
-function getLastIdCheckDays() {
-	// get Id Checked Date from client object & calculate number of days
-	let familyIdCheckedDate = moment(client.familyIdCheckedDate, dbDate)
-	let lastIdCheck = moment().diff(familyIdCheckedDate, 'days')
-	return lastIdCheck
-}
-
-function getlastVisitDays() {
-	// get Last Seen Date from client object & calculate number of days
-	let lastSeenDate = moment(client.lastSeenDate, dbDate)
-	let lastVisit = moment().diff(lastSeenDate, 'days')
-	// If lastVist is not numeric then set to 10,000 days
-	if (!$.isNumeric(lastVisit)) lastVisit = 10000;
-}
-
-function getActiveServiceTypesArray(){
-	// build Active Service Types array of Service Types which cover today's date
-	let activeServiceTypes = []
-	for (let i=0; i<serviceTypes.length; i++){
-		if (serviceTypes[i].isActive == "Active"){
-			// FROM
-			let fromDateString = []
-			fromDateString.push(moment().year())
-			fromDateString.push(Number(serviceTypes[i].available.dateFromMonth))
-			fromDateString.push(Number(serviceTypes[i].available.dateFromDay))
-			let fromDate = moment(fromDateString)
-			// TO
-			let toDateString = []
-			toDateString.push(moment().year())
-			toDateString.push(Number(serviceTypes[i].available.dateToMonth))
-			toDateString.push(Number(serviceTypes[i].available.dateToDay))
-			let toDate = moment(toDateString)
-			// Adjust year dependent on months of TO and FROM
-			if (moment(fromDate).isAfter(toDate)) toDate = moment(toDate).add(1, 'y');
-			// Adjust year if FROM is after TODAY
-			if (moment(fromDate).isAfter()) {
-				fromDate = moment(fromDate).subtract(1, 'y');
-				toDate = moment(toDate).subtract(1, 'y');
-			}
-			// IN date range = ACTIVE
-			if (moment().isBetween(fromDate, toDate, null, '[]')) {
-				activeServiceTypes.push(serviceTypes[i])
-			}
-		}
-	}
-//console.log("Active Types: " + JSON.stringify(activeServiceTypes));
-	return activeServiceTypes;
-}
-
-function getTargetsArray(activeServiceTypes) {
-
-// console.log("# Active Service Types: " + activeServiceTypes.length);
-
-
-	// create array of targets
-	let targets = [];
-	// build list of client target items for each Active Service Type
-	for (let i = 0; i < activeServiceTypes.length; i++) {
-
-// console.log("Active Service " + i + ": " + activeServiceTypes[i].serviceName);
-
-		// make list of specific target.... for each type.
-		targets[i] = {}
-		// target homeless
-		if (activeServiceTypes[i].target.homeless !== "Unselected") targets[i].homeless = activeServiceTypes[i].target.homeless;
-		// target families with children, singles, couples
-		if (activeServiceTypes[i].target.family == "Single Individual") {
-			targets[i].family_totalSize = 1;
-		} else if (activeServiceTypes[i].target.family == "Couple") {
-			targets[i].family_totalSize = 2;
-			targets[i].family_totalChildren = 0;
-		} else if (activeServiceTypes[i].target.family == "With Children") {
-			targets[i].family_totalChildren = "Greater Than 0";
-		}
-
-		// target gender male/female
-		if (activeServiceTypes[i].target.gender !== "Unselected") targets[i].gender = activeServiceTypes[i].target.gender;
-
-		// target children
-		if (activeServiceTypes[i].target.child == "YES") {
-			targets[i].family_totalChildren = "Greater Than 0";
-			// if ((activeServiceTypes[i].target.childMinAge > 0) || (activeServiceTypes[i].target.childMaxAge > 0)) {
-			// 	targets[i].childMinAge = activeServiceTypes[i].target.childMinAge;
-			// }
-			// if (activeServiceTypes[i].target.childMaxAge > 0) {
-			// 	targets[i].childMaxAge = activeServiceTypes[i].target.childMaxAge;
-			// }
-			// if (activeServiceTypes[i].target.childMinGrade > 0) {
-			// 	targets[i].childMinGrade = activeServiceTypes[i].target.childMinGrade;
-			// }
-			// if (activeServiceTypes[i].target.childMaxGrade > 0) {
-			// 	targets[i].childMaxGrade = activeServiceTypes[i].target.childMaxGrade;
-			// }
-		} else if (activeServiceTypes[i].target.child == "NO") {
-			targets[i].family.totalChildren = 0;
-		}
-	}
-//	console.log("Target Attributes: " + JSON.stringify(targets));
-	return targets;
-}
-
-function getActiveServicesBtnArray(array, activeServiceTypes, targets) {
-	btnPrimary = [];
-	btnSecondary = [];
-	for (let i = 0; i < activeServiceTypes.length; i++) {
-		// loop throught to find items to compare
-		// presume that item will be displayed unless not valid
-		let display = true;
-
-console.log("VALIDATE " + i + ": " + activeServiceTypes[i].serviceName);
-
-console.log(activeServiceTypes);
-
-		// not a valid service based on interval between services
-		if (validateServiceInterval(activeServiceTypes[i]) == 'false') continue;
-
-console.log("Service: " + activeServiceTypes[i].serviceName);
-
-		for (let prop in targets[i]) {
-
-
-
-
-			// check service interval for service
-			if (activeServiceTypes[i].serviceInterval > 0) {
-
-console.log("HAS SERVICE INTERVAL");
-
-			}
-
-console.log("Prop: " + prop + " = " + targets[i][prop] + " Client: " + client[prop]);
-
-			let tarProp = targets[i][prop]
-			if (tarProp == true) tarProp = "true"
-			if (tarProp == false) tarProp = "false"
-			let cliProp = client[prop]
-			if (cliProp == true) tarProp = "true"
-			if (cliProp == false) tarProp = "false"
-
-			if (tarProp == cliProp) {
-				console.log("MATCH");
-
-			} else {
-				console.log("NO MATCH");
-				display = false;
-			}
-		}
-		if (display) {
-			if (activeServiceTypes[i].serviceButtons == "Primary") {
-				if (activeServiceTypes[i].serviceCategory == "Food") {
-					btnPrimary.unshift(i)
-				} else {
-					btnPrimary.push(i)
-				}
-			} else {
-				btnSecondary.push(i)
-			}
-			console.log("Primary List: " + btnPrimary)
-			console.log("Secondary List: " + btnSecondary)
-		}
-	}
-	if (array == "primary") return btnPrimary
-	if (array == "secondary") return btnSecondary
-}
-
-function validateServiceInterval(activeServiceType){
-	// empty lastServed array
-	if (client.lastServed.length == 0) {
-		if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
-			return 'false';
-		} else {return 'true'}
-	}
-	let neverServed = true;
-
-	for (let i =0; i < client.lastServed.length; i++) {
-		let lastServedDate = moment(client.lastServed[i].serviceDateTime).startOf('day');
-		if (client.lastServed[i].serviceTypeId == activeServiceType.serviceTypeId) {
-			neverServed = false;
-			if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return 'false';
-
-console.log("CHECK USDA");
-
-			// if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
-			// 		if (moment().startOf('day').diff(lastServedDate, 'days') < 28) return 'false';
-			// }
-		}
-	}
-	if (neverServed) {
-
-console.log("IN NEVER SERVED");
-console.log(activeServiceType.serviceName);
-
-		if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
-console.log(activeServiceType.serviceName);
-
-			return 'false';
-		}
-	}
-	return 'true';
-}
-
-function wordCase(str){
-	str = str.replace(/[^\s]+/g, function(word) {
-	  return word.replace(/^./, function(first) {
-	    return first.toUpperCase();
-	  });
-	});
-	return str
-}
-
-function addService(serviceTypeId, serviceCategory, isUSDA){
-
-console.log("IN ADD SERVICE");
-
-	saveServiceDate(moment("2018-01-11 09:00").format(dbDateTime), serviceTypeId, serviceCategory, isUSDA);
-
-
-
-	displayNote(serviceTypeId)
-	$("#"+serviceTypeId).hide()
-}
-
-function saveServiceDate(serviceDateTime, serviceTypeId, serviceCategory, isUSDA){
-	lastServedArray = client.lastServed;
-	let record = {'serviceDateTime': serviceDateTime, 'serviceTypeId': serviceTypeId, 'serviceCategory': serviceCategory , 'isUSDA': isUSDA};
-	lastServedArray.unshift(record);
-	client.lastServed = lastServedArray;
-
-	// SAVE TO db TODO
-
-}
-
-function clientSearchResults(){
-	a =  $('#searchField').val()
-	$('#searchField').val('')
-	if (a === '') {
-		utilBeep()
-		return
-	}
-	if (currentNavTab !== "clients") navGotoSec("nav1")
-	clientData = null
-	if (a.includes("/")){
-		a = moment(a, displayDate).format(dbDate)
-		clientData = GET(aws+"/clients/dob/"+a).clients
-	} else if (!isNaN(a)&&a.length<MAX_ID_DIGITS){
-		clientData = GET(aws+"/clients/"+a).clients
-	} else if (a.includes(" ")){
-		a = wordCase(a)
-		let split = a.split(" ")
-
-//*** TODO deal with more than two words ***
-
-		let d1 = GET(aws+"/clients/givenname/"+split[0]).clients
-		let d2 = GET(aws+"/clients/familyname/"+split[0]).clients
-		let d3 = GET(aws+"/clients/givenname/"+split[1]).clients
-		let d4 = GET(aws+"/clients/familyname/"+split[1]).clients
-		clientData = utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
-	} else if (clientData==null||clientData.length==0){
-		a = wordCase(a)
-		let d2 = GET(aws+"/clients/givenname/"+a).clients
-		let d1 = GET(aws+"/clients/familyname/"+a).clients
-		if (d1.length>0&&d2.length<1){
-			clientData = utilRemoveDupClients(d1.concat(d2))
-		}	else if (d2.length>0){
-			clientData = utilRemoveDupClients(d2.concat(d1))
-		}
-	}
-	if (clientData==null||clientData.length==0){
-		utilBeep()
-		uiSetClientsHeader("0 Clients Found")
-	} else {
-		uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
-		if (clientData.length === 1){
-			clientSetCurrent(0) // go straight to client
-		} else {
-			uiSetClientsHeader(clientData.length + ' Clients Found')
-			navGotoTab("tab1")
-		}
-	}
-}
+// control the "save button" behaviour
+$(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')});
+$(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')});
 
 // **********************************************************************************************************
 // ********************************************** NAV FUNCTIONS *********************************************
@@ -787,7 +56,7 @@ function navSwitch(link){
 		case "clients":
 			navGotoSec("nav1")
 			navGotoTab("tab1")
-			displayServicesView()
+			uiShowServicesButtons()
 			break
 		case "newClient":
 			navGotoSec("nav2")
@@ -797,7 +66,6 @@ function navSwitch(link){
 			navGotoSec("nav3")
 			navGotoTab("aTab1")
 			uiShowServiceTypes()
-			 // admin() show service form
 			break
 		case "user":
 			navGotoSec("nav4")
@@ -825,7 +93,7 @@ function navGotoSec(nav){
 			break
 		case "nav4": // USER
 			uiFillUserData()
-			displayUserEdit()
+			uiShowUserEdit()
 			currentNavTab = "userDiv"
 			break
 		case "nav5": // LOGINOUT
@@ -850,23 +118,13 @@ function navGotoTab(tab){
 // **********************************************************************************************************
 // *********************************************** UI FUNCTIONS *********************************************
 // **********************************************************************************************************
-function uiShowHideLogin(todo){
-	if (todo === 'show'){
-		$('.loginOverlay').show().css('display', 'flex')
-	} else {
-		$('.loginOverlay').hide()
-		$('#loginEmail').val('')
-		$('#loginPassword').val('')
-	}
+function uiAddTableRow(){
+	let dependantRow = "<tr><td><input class='givenName' style='width:100px'></td><td><input class='familyName' style='width:100px'></td><td><select class='relationship' style='width:100px'><option value='Spouse'>Spouse</option><option value='Child'>Child</option></select></td><td><select class='gender' style='width:100px'><option value='Male'>Male</option><option value='Female'>Female</option></select></td><td><input class='dob' style='width:100px'></td><td><select class='isActive' style='width:100px'><option value='true'>true</option><option value='false'>false</option></td>"
+	$('#myTable').append(dependantRow)
 }
 
-function uiShowHidePassword(){
-	console.log('in functoin')
-	if ($('#loginPassword').attr('type') == 'password') {
-    $('#loginPassword').attr('type', 'text');
-	} else {
-    $('#loginPassword').attr('type', 'password');
-	}
+function uiOutlineTableRow(table, row){
+	$('#' + table + ' tr:eq('+ row + ')').css('outline', '2px solid').siblings().css('outline', 'none')
 }
 
 function uiSaveButton(form, action){
@@ -889,6 +147,216 @@ console.log(action)
 
 		$('#'+form+'SaveButton').addClass(action)
 	}
+}
+
+function uiShowHideLogin(todo){
+	if (todo === 'show'){
+		$('.loginOverlay').show().css('display', 'flex')
+	} else {
+		$('.loginOverlay').hide()
+		$('#loginEmail').val('')
+		$('#loginPassword').val('')
+	}
+}
+
+function uiShowHidePassword(){
+	console.log('in functoin')
+	if ($('#loginPassword').attr('type') == 'password') {
+    $('#loginPassword').attr('type', 'text');
+	} else {
+    $('#loginPassword').attr('type', 'password');
+	}
+}
+
+function uiShowUserEdit(){
+	$('#userFormContainer').html(uiGetTemplate('#userForm'))
+}
+
+function uiShowClientEdit(isEdit){
+	rowNum = 1
+	uiDisplayNotes("Client Notes")
+	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
+	uiPopulateForm(client, 'clientForm')
+	dependantsHeader = '<div style="margin-top:25px" id="dependents" class="formRow"><div class="formEntry"><p class="blueBold blueInline">Dependants</p></div></div>'
+	//$('#content4').html(dependantsHeader)
+	addClientNotes(client['clientId'])
+	if (client.dependents!=null){
+		uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","isActive"],'dependentsTable')
+	}
+	if (isEdit){
+		let plusButton = '<a href="#" onclick="uiAddTableRow()" style="font-size:18px;width:150px;margin-bottom:8px;margin-top:10px;display: inline-block;" class="btn btn-block btn-primary btn-success">+</a>'
+		$('#dependents').append('<div class="formEntry">'+plusButton+'</div>')
+	}
+	if (isEdit){
+		uiToggleClientViewEdit('edit')
+	} else {
+		uiToggleClientViewEdit('view')
+	}
+}
+
+function uiShowNewServiceTypeForm(){
+	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
+	$('#serviceTypeId').val(cuid())
+	navGotoTab("aTab2")
+}
+
+function uiShowNote(text,text2){
+	$('.notes').append('<tr><td class="data">'+text+'</td>'+'<td class="data">'+text2+'</td></tr>')
+}
+
+function uiShowNewClientForm(){
+	client = ""
+	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
+	let today = moment().format(dbDate)
+	$('#createdDateTime.clientForm').val(today)
+	$('#updatedDateTime.clientForm').val(today)
+	$('#familyIdCheckedDate.clientForm').val(today)
+	$('#firstSeenDate.clientForm').val(today)
+	$('#homeless.clientForm').val('false')
+	$('#city.clientForm').val('San Jose')
+	$('#state.clientForm').val('CA')
+	navGotoTab("tab3")
+}
+
+function uiShowServicesButtons(){
+	// builds the Services tab
+	// return if client object is empty
+	if ($.isEmptyObject(client)) return
+	let lastIdCheck = utilCalcLastIdCheckDays()
+
+// TODO IF last id check is now service then may not need idCheck field
+
+	let lastVisit = utilCalcLastVisitDays()
+	let activeServiceTypes = utilCalcActiveServiceTypes()
+
+// **************   how to save some effort  *****************
+// store the lastServed on each serviceType at the client level
+// this way I can keep track of the USDA etc.
+// think of making ID/Proof of Address a serviceType ??????
+// **************   how to save some effort  *****************
+
+	let targets = utilCalcTargetServices(activeServiceTypes);
+	let btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targets);
+	let btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targets);
+
+		// check each element in the client
+		// target.homeless ********************
+		// target.family *********************
+		// target.gender *********************
+		// target.child *********************
+		// target.childMinAge
+		// target.childMaxAge
+		// target.childMinGrade
+		// target.childMaxGrade
+	// Interval ???
+// 	rowNum = 1 // -- TODO what's this for?
+//	let today = moment()
+	// Start adding html to template
+	let dateHeader = '<div class="serviceDateTime">' + moment().format(longDate) + '</div>';
+	$('#serviceButtonContainer').html(dateHeader);
+	// uiDisplayNotes("Today's Visit", moment().format(displayDate))
+	//addClientNotes(client.clientId)
+// TODO unhardcode
+lastVisit = 14;
+
+	let visitHeader = "FIRST SERVICE VISIT";
+	if (lastVisit < 9999) visitHeader = 'LAST SERVED ' + lastVisit + ' DAYS AGO';
+	$('#serviceButtonContainer').append('<div class="serviceLastVisit">' + visitHeader + '</div><div></div>');
+
+  // for (let i = 0; i < client.lastServed.length; i++) {
+  // 	let last
+  // }
+  if (client.lastServed.length > 0) {
+
+	}
+	if (lastVisit < 14) {
+		$('#serviceButtonContainer').append('<div class="btnEmergency" onclick="addService('+"'USDA Food','Items: 1','food'"+')">EMERGENCY FOOD ONLY</div>');
+	} else {
+console.log("IN PRIMARY BUTTONS")
+		let primaryButtons = "<div></div>" //'<div class="primaryButtonContainer"><div class="buttonCenteredContainer">';
+		for (let i=0; i<btnPrimary.length; i++){
+			let x = btnPrimary[i];
+			let btnClass = "btnPrimary";
+			if (activeServiceTypes[x].serviceCategory == "Administration") btnClass = "btnAdmin";
+			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].isUSDA + "\'";
+			let image = "<img src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
+			primaryButtons += '<div class=\"' + btnClass + '\" id=\"'+activeServiceTypes[x].serviceTypeId+'\" onclick=\"addService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
+			// } else if (activeServiceTypes[x].serviceCategory == "Food") {
+			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="addService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"<br><img src='images/PrimaryButtonFood.png'></a></div>"
+			// } else if (activeServiceTypes[x].serviceCategory == "Clothes") {
+			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="addService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
+			// }
+console.log(primaryButtons);
+		}
+		// primaryButtons += "</div></div>"
+		$('#serviceButtonContainer').append(primaryButtons)
+	}
+
+  //
+	// let foodBtn = ""
+  //
+	// } else {
+	// 		foodBtn =  '<div class="btnPrimary" onclick="addService('+"'USDA Food','Items: 1','food'"+')"><img src="images/food.png"  style="width:185px; height:182px"></div>'
+	// }
+	// Display ID Check button if it's been more than 180 days since last check
+	let idBtn =  '<div class="serviceLastVisit span2"></div>'
+	if (lastIdCheck > 180) {
+		idBtn = '<div class="serviceLastVisit span2"><img src="images/checkId.png" style="width:157px; height:156px"></div>'
+	}
+	let clothesBtn = '<div class="serviceLastVisit"></div>'
+	if (lastVisit >= 15) {
+		clothesBtn = '<div class="serviceLastVisit"><img onclick="addService('+"'Clothes','Items: 5','clothes'"+')" src="images/clothes.png" style="width:185px; height:182px"></div>'
+	}
+	let footer = '<div class="buttonRow span6" id="row2"></div><div id="row2"></div></div>'
+
+//<a data-toggle="modal" data-target="#myModal" class="btn-nav">Add Note</a>
+
+	// if (today>idChecked){
+		//$('.main-div').append(header+subHeader+foodBtn+idBtn+clothesBtn+footer);
+		$('#serviceButtonContainer').append("<div></div>"+idBtn+clothesBtn+"<div></div>"+footer);
+		navGotoTab("tab2")
+	// }
+	// else {
+	// 	$('.main-div').append(header+foodBtn+idBtn+clothesBtn+footer);
+	//
+	// }
+	children = []
+	if (client.dependents!=null){
+		for (let j=0; j<client.dependents.length; j++){
+			if (client.dependents[j]['relationship']=="Child"){
+				children.push(client.dependents[j])
+			}
+		}
+	}
+	if (lastVisit >= 14) {
+		for (let i=0; i<btnSecondary.length; i++){
+			let x = btnSecondary[i];
+console.log(x);
+//		var standard = serviceTypes[i]['available']['dateFromMonth']<=moment().format('M')&& moment().format('M')<=serviceTypes[i]['available']['dateToMonth']
+			let service = '<div class="btnSecondary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="addService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
+// && serviceTypes[i]['target']['gender']==client['gender']
+// 		$('.buttonRow').append(service)
+	   	$('#serviceButtonContainer').append(service)
+		// if (children.length==0||!serviceTypes[i]['target']['child']){
+		// 	if (standard){
+		// 		$('.buttonRow').append(service)
+		// 	}
+		// }
+		// else{
+		// 	for (var k=0; k<children.length; k++){
+		// 		if (standard && serviceTypes[i]['target']['childMinAge']<children[k]['age'] && children[k]['age']<serviceTypes[i]['target']['childMaxAge']){
+		// 		('.buttonRow').append(service)
+    //
+		// 		}
+		// 	}
+		// }
+		}
+	}
+}
+
+function uiShowServiceTypeForm(){
+	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
+	uiPopulateForm(serviceType, 'serviceTypeForm')
 }
 
 function uiPopulateForm(data, form){
@@ -925,6 +393,18 @@ function uiPopulateForm(data, form){
 	return
 }
 
+function uiSetClientsHeader(title){
+	$("#clientsTitle").html(title)
+}
+
+function uiSetServiceTypeHeader(){
+	$("#adminTitle").html($('#serviceName').val())
+}
+
+function uiSetAdminHeader(title){
+	$("#adminTitle").html(title)
+}
+
 function uiShowServiceTypes(){
 	uiGenSelectHTMLTable('#serviceTypesContainer',serviceTypes,["serviceName","serviceDescription","isActive"],'serviceTypesTable')
 }
@@ -946,16 +426,16 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
   let tr = table.insertRow(-1);                   // TABLE ROW.
   for (let i = 0; i < col.length; i++) {
     let th = document.createElement("th");      // TABLE HEADER.
-    th.innerHTML = translate(col[i]);
+    th.innerHTML = utilKeyToLabel(col[i]);
     tr.appendChild(th);
   }
   // ADD JSON DATA TO THE TABLE AS ROWS.
   for (let i = 0; i < data.length; i++) {
     tr = table.insertRow(-1);
     if (tableID == 'clientTable'){
-			tr.setAttribute("onclick", 'clientSetCurrent(' + i + ')')
+			tr.setAttribute("onclick", 'utilSetCurrentClient(' + i + ')')
 		} else if (tableID == 'serviceTypesTable'){
-			tr.setAttribute("onclick", 'serviceTypesSetCurrent(' + i + ')')
+			tr.setAttribute("onclick", 'utilSetCurrentServiceType(' + i + ')')
 		}
     for (let j = 0; j < col.length; j++) {
     	let tabCell = tr.insertCell(-1);
@@ -1068,6 +548,11 @@ function uiFillDate(){
 	$('.contentTitle').html(moment().format("dddd, MMM DD YYYY"));
 }
 
+function uiResetServiceTypeForm(){
+	console.log('in reset')
+	uiPopulateForm(serviceType, 'serviceTypeForm')
+}
+
 function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
 	//setMainSideDiv()
 	var tableStr = '<table class="notes"></table>'
@@ -1088,22 +573,19 @@ function uiAddNoteButtonRow(){
 // **********************************************************************************************************
 
 function dbGetClient(id){
-	return GET(aws+"/clients/"+id).clients[0]
+	return dbGetData(aws+"/clients/"+id).clients[0]
 }
 
 function dbGetClientNotes(id){
 	let URL = aws+"/clients/notes/"+id;
-	arr = GET(URL).notes
+	arr = dbGetData(URL).notes
 console.log(arr)
 	return arr
 }
-
-function GET(uUrl){
+function dbGetData(uUrl){
 	let urlNew = uUrl;
 	let ans = null;
-
 // console.log('idToken + ' + authorization.idToken)
-
 	$.ajax({
 	    type: "GET",
 	    url: urlNew,
@@ -1128,38 +610,24 @@ function GET(uUrl){
 	});
 	return ans
 }
-
-
-
-function resetServiceTypeForm(){
-	console.log('in reset')
-	uiPopulateForm(serviceType, 'serviceTypeForm')
+function dbGetNewClientID(){
+	json = dbGetData(aws+"/clients/lastid")
+	lastid = json['lastId']
+//***** TODO confirm this works and put safeguards in place
+	request = {}
+	newID = Number(lastid)+1
+	newID = newID.toString()
+	request['lastId']=newID
+	dbPostData(aws+"/clients/lastid",JSON.stringify(request))
+	return newID
 }
 
-function dbSaveClientForm(){
-	let now = moment().format(dbDateTime)
-	$("#updatedDateTime.clientForm").val(now)
-	let data = ""
-	if (client == "") {
-		$("#clientId.clientForm").val(getNewClientID())
-		data = formToJSON('.clientForm')
-		data.dependents = []
-		data.lastServed = []
-	} else {
-		data = formToJSON('.clientForm')
-	}
-
-console.log(data)
-console.log(JSON.stringify(data))
-
-	uiSaveButton('client', 'Saving...')
-
-	let URL = aws+"/clients/"
-	dbPostData(URL,JSON.stringify(data))
+function dbGetServicesNotes(id){
+	return dbGetData(aws+"/services/"+id).services
 }
 
 function dbGetServicesTypes(){
-	return GET(aws+"/servicetypes").serviceTypes
+	return dbGetData(aws+"/servicetypes").serviceTypes
 }
 
 function dbPostData(uUrl,dataU){
@@ -1188,13 +656,13 @@ function dbPostData(uUrl,dataU){
 					if (uUrl.includes('/servicetypes')) {
 						serviceTypes = dbGetServicesTypes()
 						uiShowServiceTypes()
-						updateServiceHeader()
+						uiSetServiceTypeHeader()
 						uiPopulateForm(serviceType, 'serviceTypes')
 						uiSaveButton('serviceType', 'SAVED!!')
 					} else if (uUrl.includes('/clients')) {
 						let row = utilUpdateClientsData()
 						uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
-						outlineTableRow('clientTable', row)
+						uiOutlineTableRow('clientTable', row)
 						uiSetClientsHeader('#'+client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
 						uiSaveButton('client', 'SAVED!!')
 					}
@@ -1212,6 +680,100 @@ function dbPostData(uUrl,dataU){
 	return ans
 }
 
+function dbPostLastServiced(serviceDateTime, serviceTypeId, serviceCategory, isUSDA){
+	lastServedArray = client.lastServed;
+	let record = {'serviceDateTime': serviceDateTime, 'serviceTypeId': serviceTypeId, 'serviceCategory': serviceCategory , 'isUSDA': isUSDA};
+	lastServedArray.unshift(record);
+	client.lastServed = lastServedArray;
+	// SAVE TO db TODO
+}
+
+function dbPostNote(text){
+	// TODO replace hardcoded values with real user variables
+	// Are we using UUID here?
+	let ans = {}
+	ans['noteOnClientId'] = client['clientId']
+	ans['noteText'] = text.toString()
+	ans['createdDateTime']=Math.round((new Date()).getTime() / 1000).toString()
+	ans['noteByUserId'] = '12f8176c38186cad1705a6f3af8b8c0ad0b23200'
+	ans['noteByUserName']="Kush Jain"
+	ans['clientNoteId'] = uuidv1().toString()
+console.log(JSON.stringify(ans))
+	dbPostData(aws+"/clients/notes/",JSON.stringify(ans))
+}
+
+function dbSaveClientForm(){
+	let now = moment().format(dbDateTime)
+	$("#updatedDateTime.clientForm").val(now)
+	let data = ""
+	if (client == "") {
+		$("#clientId.clientForm").val(dbGetNewClientID())
+		data = utilFormToJSON('.clientForm')
+		//data.dependents = []
+		data.lastServed = []
+	} else {
+		data = utilFormToJSON('.clientForm')
+	}
+console.log(data)
+console.log(JSON.stringify(data))
+	uiSaveButton('client', 'Saving...')
+	let URL = aws+"/clients/"
+	dbPostData(URL,JSON.stringify(data))
+}
+
+function dbSaveServiceTypeForm(){
+	let data = utilFormToJSON('.serviceTypeForm')
+	let URL = aws+"/servicetypes"
+	uiSaveButton('serviceType', 'Saving...')
+	dbPostData(URL,JSON.stringify(data))
+}
+
+function dbSearchClients(){
+	a =  $('#searchField').val()
+	$('#searchField').val('')
+	if (a === '') {
+		utilBeep()
+		return
+	}
+	if (currentNavTab !== "clients") navGotoSec("nav1")
+	clientData = null
+	if (a.includes("/")){
+		a = moment(a, displayDate).format(dbDate)
+		clientData = dbGetData(aws+"/clients/dob/"+a).clients
+	} else if (!isNaN(a)&&a.length<MAX_ID_DIGITS){
+		clientData = dbGetData(aws+"/clients/"+a).clients
+	} else if (a.includes(" ")){
+		a = utilChangeWordCase(a)
+		let split = a.split(" ")
+//*** TODO deal with more than two words ***
+		let d1 = dbGetData(aws+"/clients/givenname/"+split[0]).clients
+		let d2 = dbGetData(aws+"/clients/familyname/"+split[0]).clients
+		let d3 = dbGetData(aws+"/clients/givenname/"+split[1]).clients
+		let d4 = dbGetData(aws+"/clients/familyname/"+split[1]).clients
+		clientData = utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
+	} else if (clientData==null||clientData.length==0){
+		a = utilChangeWordCase(a)
+		let d2 = dbGetData(aws+"/clients/givenname/"+a).clients
+		let d1 = dbGetData(aws+"/clients/familyname/"+a).clients
+		if (d1.length>0&&d2.length<1){
+			clientData = utilRemoveDupClients(d1.concat(d2))
+		}	else if (d2.length>0){
+			clientData = utilRemoveDupClients(d2.concat(d1))
+		}
+	}
+	if (clientData==null||clientData.length==0){
+		utilBeep()
+		uiSetClientsHeader("0 Clients Found")
+	} else {
+		uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
+		if (clientData.length === 1){
+			utilSetCurrentClient(0) // go straight to client
+		} else {
+			uiSetClientsHeader(clientData.length + ' Clients Found')
+			navGotoTab("tab1")
+		}
+	}
+}
 
 // **********************************************************************************************************
 // *********************************************** COG FUNCTIONS ********************************************
@@ -1352,7 +914,7 @@ function cogGetUserAttributes(){
 //
 // cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
 
-function cognitoLogin(){
+function cogLoginAdmin(){
 
 console.log("IN AUTHENTICATION")
 
@@ -1383,7 +945,7 @@ console.log("IN AUTHENTICATION")
  });
 }
 
-function cognitoListUsers(){
+function cogListUsers(){
 	// Set the region where your identity pool exists (us-east-1, eu-west-1)
 	AWSCognito.config.region = 'us-west-2';
 
@@ -1453,9 +1015,99 @@ console.log('made it past config')
 // **********************************************************************************************************
 // *********************************************** UTIL FUNCTIONS *******************************************
 // **********************************************************************************************************
-function utilCalcFamilyCounts(x){
+function utilBeep(){
+	let sound = document.getElementById("beep")
+	sound.volume= .1
+	sound.loop = false
+	sound.play()
+};
+
+function utilCalcActiveServicesButtons(array, activeServiceTypes, targets) {
+	btnPrimary = [];
+	btnSecondary = [];
+	for (let i = 0; i < activeServiceTypes.length; i++) {
+		// loop throught to find items to compare
+		// presume that item will be displayed unless not valid
+		let display = true;
+console.log("VALIDATE " + i + ": " + activeServiceTypes[i].serviceName);
+console.log(activeServiceTypes);
+		// not a valid service based on interval between services
+		if (utilValidateServiceInterval(activeServiceTypes[i]) == 'false') continue;
+console.log("Service: " + activeServiceTypes[i].serviceName);
+		for (let prop in targets[i]) {
+			// check service interval for service
+			if (activeServiceTypes[i].serviceInterval > 0) {
+console.log("HAS SERVICE INTERVAL");
+			}
+console.log("Prop: " + prop + " = " + targets[i][prop] + " Client: " + client[prop]);
+			let tarProp = targets[i][prop]
+			if (tarProp == true) tarProp = "true"
+			if (tarProp == false) tarProp = "false"
+			let cliProp = client[prop]
+			if (cliProp == true) tarProp = "true"
+			if (cliProp == false) tarProp = "false"
+			if (tarProp == cliProp) {
+				console.log("MATCH");
+			} else {
+				console.log("NO MATCH");
+				display = false;
+			}
+		}
+		if (display) {
+			if (activeServiceTypes[i].serviceButtons == "Primary") {
+				if (activeServiceTypes[i].serviceCategory == "Food") {
+					btnPrimary.unshift(i)
+				} else {
+					btnPrimary.push(i)
+				}
+			} else {
+				btnSecondary.push(i)
+			}
+console.log("Primary List: " + btnPrimary)
+console.log("Secondary List: " + btnSecondary)
+		}
+	}
+	if (array == "primary") return btnPrimary
+	if (array == "secondary") return btnSecondary
+}
+
+function utilCalcActiveServiceTypes(){
+	// build Active Service Types array of Service Types which cover today's date
+	let activeServiceTypes = []
+	for (let i=0; i<serviceTypes.length; i++){
+		if (serviceTypes[i].isActive == "Active"){
+			// FROM
+			let fromDateString = []
+			fromDateString.push(moment().year())
+			fromDateString.push(Number(serviceTypes[i].available.dateFromMonth))
+			fromDateString.push(Number(serviceTypes[i].available.dateFromDay))
+			let fromDate = moment(fromDateString)
+			// TO
+			let toDateString = []
+			toDateString.push(moment().year())
+			toDateString.push(Number(serviceTypes[i].available.dateToMonth))
+			toDateString.push(Number(serviceTypes[i].available.dateToDay))
+			let toDate = moment(toDateString)
+			// Adjust year dependent on months of TO and FROM
+			if (moment(fromDate).isAfter(toDate)) toDate = moment(toDate).add(1, 'y');
+			// Adjust year if FROM is after TODAY
+			if (moment(fromDate).isAfter()) {
+				fromDate = moment(fromDate).subtract(1, 'y');
+				toDate = moment(toDate).subtract(1, 'y');
+			}
+			// IN date range = ACTIVE
+			if (moment().isBetween(fromDate, toDate, null, '[]')) {
+				activeServiceTypes.push(serviceTypes[i])
+			}
+		}
+	}
+//console.log("Active Types: " + JSON.stringify(activeServiceTypes));
+	return activeServiceTypes;
+}
+
+function utilCalcCounts(x){
 	// age
-	updateClientAge()
+	utilSetClientAge()
 	// dependents age & family counts
 	let fam = {tA:1, tC:0, tO:0}
 	for (let i = 0; i < client.dependents.length; i++) {
@@ -1472,43 +1124,113 @@ function utilCalcFamilyCounts(x){
 	client.family.totalSize = fam.tA + fam.tC + fam.tO
 }
 
-function utilBeep(){
-	let sound = document.getElementById("beep")
-	sound.volume= .1
-	sound.loop = false
-	sound.play()
-};
-
-function utilRemoveDupClients(clients) {
-	let ids=[], temp=[], undupClients = []
-	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)
-	for (let i = 0; i < ids.length; i++) {
-		if (temp.indexOf(ids[i])<0) {
-			undupClients.push(clients[i])
-			temp.push(ids[i])
-		}
-	}
-	return undupClients
+function utilCalcLastIdCheckDays() {
+	// get Id Checked Date from client object & calculate number of days
+	let familyIdCheckedDate = moment(client.familyIdCheckedDate, dbDate)
+	let lastIdCheck = moment().diff(familyIdCheckedDate, 'days')
+	return lastIdCheck
 }
 
-function utilUpdateClientsData(){
-	let row = null
-	let data = formToJSON('.clientForm')
-	$.each(data, function(key,value){
-		client[key] = value
+function utilCalcLastVisitDays() {
+	// get Last Seen Date from client object & calculate number of days
+	let lastSeenDate = moment(client.lastSeenDate, dbDate)
+	let lastVisit = moment().diff(lastSeenDate, 'days')
+	// If lastVist is not numeric then set to 10,000 days
+	if (!$.isNumeric(lastVisit)) lastVisit = 10000;
+}
+
+function utilCalcTargetServices(activeServiceTypes) {
+// console.log("# Active Service Types: " + activeServiceTypes.length);
+	// create array of targets
+	let targets = [];
+	// build list of client target items for each Active Service Type
+	for (let i = 0; i < activeServiceTypes.length; i++) {
+// console.log("Active Service " + i + ": " + activeServiceTypes[i].serviceName);
+		// make list of specific target.... for each type.
+		targets[i] = {}
+		// target homeless
+		if (activeServiceTypes[i].target.homeless !== "Unselected") targets[i].homeless = activeServiceTypes[i].target.homeless;
+		// target families with children, singles, couples
+		if (activeServiceTypes[i].target.family == "Single Individual") {
+			targets[i].family_totalSize = 1;
+		} else if (activeServiceTypes[i].target.family == "Couple") {
+			targets[i].family_totalSize = 2;
+			targets[i].family_totalChildren = 0;
+		} else if (activeServiceTypes[i].target.family == "With Children") {
+			targets[i].family_totalChildren = "Greater Than 0";
+		}
+		// target gender male/female
+		if (activeServiceTypes[i].target.gender !== "Unselected") targets[i].gender = activeServiceTypes[i].target.gender;
+		// target children
+		if (activeServiceTypes[i].target.child == "YES") {
+			targets[i].family_totalChildren = "Greater Than 0";
+			// if ((activeServiceTypes[i].target.childMinAge > 0) || (activeServiceTypes[i].target.childMaxAge > 0)) {
+			// 	targets[i].childMinAge = activeServiceTypes[i].target.childMinAge;
+			// }
+			// if (activeServiceTypes[i].target.childMaxAge > 0) {
+			// 	targets[i].childMaxAge = activeServiceTypes[i].target.childMaxAge;
+			// }
+			// if (activeServiceTypes[i].target.childMinGrade > 0) {
+			// 	targets[i].childMinGrade = activeServiceTypes[i].target.childMinGrade;
+			// }
+			// if (activeServiceTypes[i].target.childMaxGrade > 0) {
+			// 	targets[i].childMaxGrade = activeServiceTypes[i].target.childMaxGrade;
+			// }
+		} else if (activeServiceTypes[i].target.child == "NO") {
+			targets[i].family.totalChildren = 0;
+		}
+	}
+//	console.log("Target Attributes: " + JSON.stringify(targets));
+	return targets;
+}
+
+function utilChangeWordCase(str){
+	str = str.replace(/[^\s]+/g, function(word) {
+	  return word.replace(/^./, function(first) {
+	    return first.toUpperCase();
+	  });
 	});
-	for (var i = 0; i < clientData.length; i++) {
-		if (client.clientId == clientData[i].clientId){
-			row = i+1
-			$.each(client, function(key,value){
-				clientData[i][key] = value
-			});
-		}
-	}
-	return row
+	return str
 }
 
-function translate(x){
+function utilFormToJSON(form){
+	let now = moment().format(dbDateTime)
+	let vals = {}
+	console.log($(form))
+	let formElements = $(form)
+	for (let i = 0; i < formElements.length; i++) {
+		let key = formElements[i].id
+		let formVal = formElements[i].value
+		let valType = formElements[i].type
+		if (formVal.length < 1) {
+			if (valType == 'hidden') {
+				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = now
+				if (key === 'lastSeenDate') formVal = '*EMPTY*'
+			} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local') {
+console.log(key)
+				formVal = '*EMPTY*'
+			} else if (valType == 'number') {
+console.log(key + ' : ' + formVal + ' : '+ valType)
+				formVal = '-123'
+			}
+		}
+		if (key.includes(".")) {
+			let split = key.split(".")
+			let obj = split[0]
+			if (typeof vals[obj] == 'undefined') {
+				vals[obj] = {}
+			}
+			vals[obj][split[1]] = formVal
+		} else {
+			vals[key] = formVal
+		}
+	}
+	vals.updatedDateTime = moment()
+console.log(vals)
+	return vals
+}
+
+function utilKeyToLabel(x){
 	let data = {
 								  clientId: "ID #",
 								 givenName: "Given Name",
@@ -1528,4 +1250,142 @@ function translate(x){
 	}
 	let y = data[x]
 	if (y==undefined){return x} else {return y}
+}
+
+function utilRemoveDupClients(clients) {
+	let ids=[], temp=[], undupClients = []
+	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)
+	for (let i = 0; i < ids.length; i++) {
+		if (temp.indexOf(ids[i])<0) {
+			undupClients.push(clients[i])
+			temp.push(ids[i])
+		}
+	}
+	return undupClients
+}
+
+function utilSetClientAge(){
+	let dob = $("#dob.clientForm").val()
+	let age = moment().diff(dob, 'years')
+	if (Number(age)){
+		$("#clientAge").val(age)
+		client.age = age
+	}
+}
+
+function utilSetCurrentClient(index){
+	let row = index + 1
+	uiOutlineTableRow('clientTable', row)
+	client = clientData[index]
+	utilCalcCounts("clients") // calculate fields counts and ages
+console.log("Client Age: " + client.age)
+	uiSetClientsHeader('#' + client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
+	isEmergency = false // **** TODO what is this for?
+	uiShowServicesButtons()
+	uiShowClientEdit(false)
+	history()
+}
+
+function utilSetCurrentServiceType(index){
+	serviceType = serviceTypes[index]
+	uiOutlineTableRow('serviceTypesTable', index+1)
+	uiSetAdminHeader(serviceType.serviceName)
+	uiShowServiceTypeForm()
+	navGotoTab("aTab2")
+}
+
+function utilUpdateClientsData(){
+	let row = null
+	let data = utilFormToJSON('.clientForm')
+	$.each(data, function(key,value){
+		client[key] = value
+	});
+	for (var i = 0; i < clientData.length; i++) {
+		if (client.clientId == clientData[i].clientId){
+			row = i+1
+			$.each(client, function(key,value){
+				clientData[i][key] = value
+			});
+		}
+	}
+	return row
+}
+
+function utilValidateServiceInterval(activeServiceType){
+	// empty lastServed array
+	if (client.lastServed.length == 0) {
+		if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
+			return 'false';
+		} else {return 'true'}
+	}
+	let neverServed = true;
+	for (let i =0; i < client.lastServed.length; i++) {
+		let lastServedDate = moment(client.lastServed[i].serviceDateTime).startOf('day');
+		if (client.lastServed[i].serviceTypeId == activeServiceType.serviceTypeId) {
+			neverServed = false;
+			if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return 'false';
+console.log("CHECK USDA");
+			// if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
+			// 		if (moment().startOf('day').diff(lastServedDate, 'days') < 28) return 'false';
+			// }
+		}
+	}
+	if (neverServed) {
+console.log("IN NEVER SERVED");
+console.log(activeServiceType.serviceName);
+		if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
+console.log(activeServiceType.serviceName);
+			return 'false';
+		}
+	}
+	return 'true';
+}
+
+// **********************************************************************************************************
+// UNUSED OR NEED WORK FUNCTIONS
+// **********************************************************************************************************
+
+function isLoggedIn(){
+	if (authorization.idToken == undefined) {
+		return false
+	} else {
+		return true
+	}
+}
+
+function newClientNote(){
+	// TODO
+}
+
+function addClientNotes(id){
+	arr = dbGetClientNotes(id)
+	addOldNotes(arr)
+}
+
+function addOldNotes(arr){
+	for (let i = 0; i < arr.length; i++){
+    	let obj = arr[i];
+    	uiShowNote(obj.noteText, obj.createdDateTime)
+    }
+}
+
+function newNote(text,text2){
+	uiShowNote(text,text2)
+	dbPostNote(text)
+}
+
+function history(){
+  //data = dbGetServicesNotes(client.clientId)
+  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastSeenDate", "familyIdCheckedDate"]
+	let clientArray = []
+	clientArray.push(client)
+	uiGenSelectHTMLTable('#content5',clientArray,columns,'historyTable')
+}
+
+function addService(serviceTypeId, serviceCategory, isUSDA){
+console.log("IN ADD SERVICE");
+	dbPostLastServiced(moment("2018-01-11 09:00").format(dbDateTime), serviceTypeId, serviceCategory, isUSDA);
+	uiShowNote(serviceTypeId)
+	$("#"+serviceTypeId).hide()
+	// TODO Seperate the IU from the DB functions
 }

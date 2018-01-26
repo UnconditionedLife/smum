@@ -51,7 +51,7 @@
             <li id="nav5" class="navItem logInOut" onclick="navSwitch('logInOut')">Login</li>
          </ul>
 	   </div>
-	</nav>
+	</nav>uiShowNewServiceTypeForm
 
 	<div class="main-div">
       <div id="clientsDiv">
@@ -87,7 +87,7 @@
             </section>
             <section id="content3">
                <div class="topFormButtonsDiv">
-                  <input class="solidButton" onclick="newClientForm()" type="button" value="New Client">
+                  <input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client">
                   <input id="clientLeftSlider" class="leftSlider sliderActive" onclick="uiToggleClientViewEdit('view')" type="button" value="View">
                   <input id="clientRightSlider" class="rightSlider" onclick="uiToggleClientViewEdit('edit')" type="button" value="Edit">
                </div>
@@ -131,13 +131,13 @@
 
             <section id="aContent1">
                <div class="topFormButtonsDiv">
-                  <input class="solidButton" onclick="newServiceTypeForm()" type="button" value="New Service Type">
+                  <input class="solidButton" onclick="uiShowNewServiceTypeForm()" type="button" value="New Service Type">
                </div>
                <container id="serviceTypesContainer"></container>
             </section>
             <section id="aContent2">
                <div class="topFormButtonsDiv">
-                  <input class="solidButton" onclick="newServiceTypeForm()" type="button" value="New Service Type">
+                  <input class="solidButton" onclick="uiShowNewServiceTypeForm()" type="button" value="New Service Type">
                </div>
                <container id="serviceTypeFormContainer"></container>
             </section>
@@ -146,7 +146,7 @@
             </section>
             <section id="aContent4">
                <div class="topFormButtonsDiv">
-                  <input class="solidButton" onclick="cognitoListUsers()" type="button" value="List Users">
+                  <input class="solidButton" onclick="cogListUsers()" type="button" value="List Users">
                </div>
             </section>
             <section id="aContent5"></section>
@@ -236,8 +236,7 @@
 
    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 
-   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/tether-drop/1.4.2/js/drop.min.js"></script> -->
+   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script> -->
    <!-- integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
    crossorigin="anonymous" -->
 
