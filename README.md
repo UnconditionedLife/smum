@@ -1,7 +1,7 @@
 # SMUM-Checkin
-Checkin web app (SPA) for Santa Maria Urban Ministries in San Jose California.
+A cloud hosted checkin application (SPA) for Santa Maria Urban Ministries in San Jose, California.
 
-The app is used at the front desk for intake of clients. The services provided to low-income families & homeless individuals include:
+The application is used at the intake desk to service client needs. It helps manage the services provided to low-income families & homeless individuals in the downtown community. These are some of the services managed by SMUM-Checkin:
 
 <ol>
   <li>Food Pantry
@@ -11,16 +11,16 @@ The app is used at the front desk for intake of clients. The services provided t
   <li>Thanksgiving Turkeys
 </ol>
 
-SMUM-Checkin manages client registration and facilitates the  provision of available service by the volunteers. Since each service has a period of availability, minimum frequency, and target recipients, the software handles all of the calculating &mdash; offering the volunteer a simplified number of choices to offer the client.
+SMUM-Checkin manages client registration and facilitates the  provision of available service by the volunteers. Since each service has a period of availability, minimum frequency, and target recipients, the software handles all of the calculations &mdash; offering the volunteer a simplified number of choices to offer the client. The interface reduces the complexity by displaying easy to understand service buttons. A push of a button logs the service details in the system and in future will print out a client receipt (see Future Development below).
 
 ### Community Developed
-This project is seeking to involve software developers from the surrounding community of San Jose and beyond. We want to offer young developers an outlet for volunteering to their local community by doing what they enjoy doing.
+This is an ongoing development project created and supported by volunteers. We are seeking to involve software developers from San Jose and the surrounding communities. We are offering young developers an outlet for volunteering to their local community by doing what they most enjoy doing.
 
 #### High School Tech Volunteer Program
-We are reaching out to regional high schools to build long-term relationships and to help promote this Tech Volunteer Program to their students. We believe this is a great opportunity to introduce students to the idea of helping build tools for communities in need.
+We are reaching out to regional high schools to build long-term relationships. We want partners help promote this Tech Volunteer Program to students and the broader community. We believe this is a great opportunity to introduce tech students to the idea of helping build tools for communities in need.
 
 ### Future Development
-This is an ongoing development project supported by volunteers. The goal is to have near continuous development of improvements and new features. Some of the planned features can be seen below.
+Our goal is to have near continuous development of improvements and new features. A few of the planned features can be seen below.
 
 #### Integrated Printer
 A future version of SMUM-Checkin is intended to integrate with a receipt printer. This will reduce errors, improve security, and speed up the time it takes to help each client.
