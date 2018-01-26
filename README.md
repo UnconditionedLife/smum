@@ -1,6 +1,8 @@
 # SMUM-Checkin
 A cloud hosted checkin application (SPA) for Santa Maria Urban Ministries in San Jose, California.
 
+<img src="https://res.cloudinary.com/hrscywv4p/image/upload/c_limit,fl_lossy,h_1440,w_720,f_auto,q_auto/v1/134667/f510cc08e01543eebf2edc25fd14b3da_qvjufo.png">
+
 The application is used at the intake desk to service client needs. It helps manage the services provided to low-income families & homeless individuals in the downtown community. These are some of the services managed by SMUM-Checkin:
 
 <ol>
