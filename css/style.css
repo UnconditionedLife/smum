@@ -287,6 +287,10 @@ main{
 	width: 100%;
 }
 
+#newDependentButton {
+	display: none;
+}
+
 .serviceTypeformDiv {
   width: 100%;
   display: grid;
@@ -352,6 +356,22 @@ main{
   margin-right: 6px;
   height: 28px;
   background-color: white;
+}
+
+.inputForTable {
+	border-radius: 4px 4px 4px 4px;
+}
+
+.bannerDiv {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+}
+
+.bannerText {
+	font-size: 45px;
+	color: var(--grey-green);
+	line-height: 400px;
 }
 
 input.inputBox:read-only {

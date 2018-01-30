@@ -14,10 +14,11 @@
 let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 let rowNum = 1
 let MAX_ID_DIGITS = 4
-let displayDate = 'MM/DD/YYY'
+let uiDate = 'MM/DD/YYYY'
+let uiDateTime = 'MM/DD/YYYY HH:mm'
 let longDate = "MMMM Do YYYY LT"
-let dbDate = 'YYYY-MM-DD'
-let dbDateTime = 'YYYY-MM-DDTHH:mm'
+let date = 'YYYY-MM-DD'
+let dateTime = 'YYYY-MM-DD HH:mm'
 let clientData = null // current client search results
 let clientNotes = []
 let client = {} // current client
@@ -118,13 +119,38 @@ function navGotoTab(tab){
 // **********************************************************************************************************
 // *********************************************** UI FUNCTIONS *********************************************
 // **********************************************************************************************************
-function uiAddTableRow(){
-	let dependantRow = "<tr><td><input class='givenName' style='width:100px'></td><td><input class='familyName' style='width:100px'></td><td><select class='relationship' style='width:100px'><option value='Spouse'>Spouse</option><option value='Child'>Child</option></select></td><td><select class='gender' style='width:100px'><option value='Male'>Male</option><option value='Female'>Female</option></select></td><td><input class='dob' style='width:100px'></td><td><select class='isActive' style='width:100px'><option value='true'>true</option><option value='false'>false</option></td>"
-	$('#myTable').append(dependantRow)
+function uiAddNewDependentsRow(){
+	let nextRow = '00';
+	if (client.dependents!=null){
+		nextRow = client.dependents.length;
+		// if (nextRow < 10) nextRow = "0" + nextRow
+	}
+	let dependentRow = "<tr>"
+	dependentRow+="<td><input id='givenName["+nextRow+"]' class='inputBox inputForTable dependentsForm'></td>"
+	dependentRow+="<td><input id='familyName["+nextRow+"]' class='inputBox inputForTable dependentsForm'></td>"
+	dependentRow+="<td><select id='relationship["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Child'>Child</option><option value='Spouse'>Spouse</option><option value='Other Dependent'>Other Dependent</option></select></td>"
+	dependentRow+="<td><select id='gender["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Male'>Male</option><option value='Female'>Female</option></select></td>"
+	dependentRow+="<td><input id='dob["+nextRow+"]' class='inputBox inputForTable dependentsForm' type='date'></td>"
+	dependentRow+="<td class='dependentsViewOnly'><input id='age["+nextRow+"]' class='inputBox inputForTable dependentsForm' style='width:50px'></td><td>"
+	dependentRow+="<select id='isActive["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></td>"
+	dependentRow+="</tr>"
+	$('#dependentsTable').append(dependentRow)
+	uiToggleDependentsViewEdit('edit');
 }
 
 function uiOutlineTableRow(table, row){
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', '2px solid').siblings().css('outline', 'none')
+}
+
+function uiUpdateCurrentClient(index) {
+	uiOutlineTableRow('clientTable', index + 1)
+	uiSetClientsHeader('#' + client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
+	uiShowServicesButtons()
+	uiShowClientEdit(false)
+}
+
+function uiResetDependentsTable() {
+	// TODO write reset code
 }
 
 function uiSaveButton(form, action){
@@ -173,25 +199,26 @@ function uiShowUserEdit(){
 }
 
 function uiShowClientEdit(isEdit){
-	rowNum = 1
 	uiDisplayNotes("Client Notes")
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
 	uiPopulateForm(client, 'clientForm')
-	dependantsHeader = '<div style="margin-top:25px" id="dependents" class="formRow"><div class="formEntry"><p class="blueBold blueInline">Dependants</p></div></div>'
-	//$('#content4').html(dependantsHeader)
-	addClientNotes(client['clientId'])
-	if (client.dependents!=null){
-		uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","isActive"],'dependentsTable')
-	}
-	if (isEdit){
-		let plusButton = '<a href="#" onclick="uiAddTableRow()" style="font-size:18px;width:150px;margin-bottom:8px;margin-top:10px;display: inline-block;" class="btn btn-block btn-primary btn-success">+</a>'
-		$('#dependents').append('<div class="formEntry">'+plusButton+'</div>')
-	}
 	if (isEdit){
 		uiToggleClientViewEdit('edit')
 	} else {
 		uiToggleClientViewEdit('view')
 	}
+	uiShowDependents(isEdit)
+	addClientNotes(client['clientId'])
+}
+
+function uiShowDependents(isEdit){
+	if (client.dependents!=null){
+		uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","age","isActive"],'dependentsTable')
+	}
+	// if (isEdit){
+	// 	let plusButton = '<a href="#" onclick="uiAddTableRow()" style="font-size:18px;width:150px;margin-bottom:8px;margin-top:10px;display: inline-block;" class="btn btn-block btn-primary btn-success">+</a>'
+	// 	$('#dependents').append('<div class="formEntry">'+plusButton+'</div>')
+	// }
 }
 
 function uiShowNewServiceTypeForm(){
@@ -207,11 +234,9 @@ function uiShowNote(text,text2){
 function uiShowNewClientForm(){
 	client = ""
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
-	let today = moment().format(dbDate)
-	$('#createdDateTime.clientForm').val(today)
-	$('#updatedDateTime.clientForm').val(today)
-	$('#familyIdCheckedDate.clientForm').val(today)
-	$('#firstSeenDate.clientForm').val(today)
+	$('#createdDateTime.clientForm').val(now())
+	$('#updatedDateTime.clientForm').val(now())
+	$('#firstSeenDate.clientForm').val(today())
 	$('#homeless.clientForm').val('false')
 	$('#city.clientForm').val('San Jose')
 	$('#state.clientForm').val('CA')
@@ -254,7 +279,7 @@ function uiShowServicesButtons(){
 	// Start adding html to template
 	let dateHeader = '<div class="serviceDateTime">' + moment().format(longDate) + '</div>';
 	$('#serviceButtonContainer').html(dateHeader);
-	// uiDisplayNotes("Today's Visit", moment().format(displayDate))
+	// uiDisplayNotes("Today's Visit", moment().format(uiDate))
 	//addClientNotes(client.clientId)
 // TODO unhardcode
 lastVisit = 14;
@@ -409,25 +434,29 @@ function uiShowServiceTypes(){
 	uiGenSelectHTMLTable('#serviceTypesContainer',serviceTypes,["serviceName","serviceDescription","isActive"],'serviceTypesTable')
 }
 
-function uiGenSelectHTML(values,col){
-	ans = "<select style='width:100px'>"
-	for (let i =0; i<values.length;i++){
-		ans += "<option id='"+col+"' class='inputBox dependentsForm' value='"+values[i]+"'>"+values[i]+"</option>"
+function uiGenSelectHTML(val,options,col,id){
+	html = "<select id='"+col+"["+id+"]' class='inputBox dependentsForm'>"
+	for (let i =0; i<options.length;i++){
+		let select = "";
+		if (val == options[i]) {
+			 select = "selected='selected'";
+		}
+		html += "<option value='"+options[i]+"' "+select+">"+options[i]+"</option>"
 	}
-	ans+="</select>"
-	return ans
+	html+="</select>"
+	return html
 }
 
 function uiGenSelectHTMLTable(selector,data,col,tableID){
-  // CREATE DYNAMIC TABLE.
-  let table = document.createElement("table");
+  // CREATES DYNAMIC TABLE.
+  let table = document.createElement("table")
   table.setAttribute("id", tableID)
-  // CREATE HTML TABLE HEADER ROW USING THE EXTRACTED HEADERS ABOVE.
-  let tr = table.insertRow(-1);                   // TABLE ROW.
+  let tr = table.insertRow(-1)
   for (let i = 0; i < col.length; i++) {
-    let th = document.createElement("th");      // TABLE HEADER.
-    th.innerHTML = utilKeyToLabel(col[i]);
-    tr.appendChild(th);
+    let th = document.createElement("th")
+    th.innerHTML = utilKeyToLabel(col[i])
+		if (col[i] == "age") th.className = "dependentsViewOnly"
+    tr.appendChild(th)
   }
   // ADD JSON DATA TO THE TABLE AS ROWS.
   for (let i = 0; i < data.length; i++) {
@@ -438,19 +467,23 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
 			tr.setAttribute("onclick", 'utilSetCurrentServiceType(' + i + ')')
 		}
     for (let j = 0; j < col.length; j++) {
+			let depNum = i
+			//if (depNum < 10) depNum = "0" + depNum
     	let tabCell = tr.insertCell(-1);
       if (tableID == 'dependentsTable'){
-    		if (col[j]=="dob" ){
-					let a = data[i][col[j]].toString()
-					tabCell.innerHTML = "<input id="+col[j]+" style='width:100px' class='inputBox dependentsForm' value='"+a+"'>"
+    		if (col[j]=="age" ){
+					tabCell.className = "dependentsViewOnly";
+					tabCell.innerHTML = "<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm dependentsViewOnly' style='width:50px' value='"+data[i][col[j]]+"'>"
+				} else if (col[j]=="dob"){
+					tabCell.innerHTML = "<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm' type='date' value='"+data[i][col[j]]+"'>";
 				} else if (col[j]=="isActive"){
-					tabCell.innerHTML = uiGenSelectHTML([data[i][col[j]],'Active','Emergency','Inactive'],"isActive")
+					tabCell.innerHTML = uiGenSelectHTML(data[i][col[j]],['Active','Inactive'],"isActive",depNum)
 				} else if (col[j]=="relationship"){
-					tabCell.innerHTML =uiGenSelectHTML([data[i][col[j]],'Spouse','Child','Other Dependent'],"relationship")
+					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['Child','Spouse','Other Dependent'],"relationship",depNum)
 				} else if (col[j]=="gender"){
-					tabCell.innerHTML =uiGenSelectHTML([data[i][col[j]],'Female','Male'],"gender")
+					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['Female','Male'],"gender",depNum)
 				} else{
-					tabCell.innerHTML="<input id='"+col[j]+"' style='width:100px' class='inputBox dependentsForm' value='"+data[i][col[j]]+"'>";
+					tabCell.innerHTML="<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm' value='"+data[i][col[j]]+"'>";
 				}
     	} else if (col[j]=="dob"||col[j]=="firstSeenDate"||col[j]=="lastSeenDate"||col[j]=="familyIdCheckedDate"){
         tabCell.innerHTML = moment(data[i][col[j]]).format('MM/DD/YYYY')
@@ -466,6 +499,7 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
     }
   }
   $(selector).html(table);
+	if (tableID == 'dependentsTable') uiToggleDependentsViewEdit('view');
 }
 
 function uiToggleClientViewEdit(side){
@@ -497,12 +531,17 @@ function uiToggleDependentsViewEdit(side){
 		$('input.dependentsForm').prop('readonly', true)
 		$('select.dependentsForm').prop('disabled', true)
 		$('select.dependentsForm').addClass('selectBox')
+		$('.dependentsEditOnly').hide('slow')
+		$('.dependentsViewOnly').show('slow')
 	} else {
 		$('#dependentdLeftSlider').removeClass('sliderActive')
 		$('#dependentdRightSlider').addClass('sliderActive')
 		$('input.dependentsForm').prop('readonly', false)
 		$('select.dependentsForm').prop('disabled', false)
 		$('select.dependentsForm').removeClass('selectBox')
+		$('.dependentsViewOnly').hide('slow')
+		$('.dependentsEditOnly').show('slow')
+
 	}
 }
 
@@ -558,7 +597,7 @@ function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
 	var tableStr = '<table class="notes"></table>'
 	$('#notesContainer').html(tableStr)
 	var headerRow = '<tr style="height:50px;padding:10px;"><td><h4 class="siteHeading">'+pageName+'</h4>'
-	headerRow+='<h5 class="siteHeading">'+moment().format(displayDate)+'</h5></td></tr>'
+	headerRow+='<h5 class="siteHeading">'+moment().format(uiDate)+'</h5></td></tr>'
 	$('.notes').append(headerRow)
 }
 
@@ -572,9 +611,9 @@ function uiAddNoteButtonRow(){
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
 
-function dbGetClient(id){
-	return dbGetData(aws+"/clients/"+id).clients[0]
-}
+// function dbGetClient(id){
+// 	return dbGetData(aws+"/clients/"+id).clients[0]
+//}
 
 function dbGetClientNotes(id){
 	let URL = aws+"/clients/notes/"+id;
@@ -636,6 +675,9 @@ function dbPostData(uUrl,dataU){
 		consol.log("need to log in")
 		return
 	}
+
+console.log(JSON.stringify(dataU))
+
 	var urlNew = uUrl;
 	var uData = dataU;
 	var ans = null;
@@ -690,7 +732,7 @@ function dbPostLastServiced(serviceDateTime, serviceTypeId, serviceCategory, isU
 
 function dbPostNote(text){
 	// TODO replace hardcoded values with real user variables
-	// Are we using UUID here?
+	// Are we using uuid here?
 	let ans = {}
 	ans['noteOnClientId'] = client['clientId']
 	ans['noteText'] = text.toString()
@@ -703,20 +745,50 @@ console.log(JSON.stringify(ans))
 }
 
 function dbSaveClientForm(){
-	let now = moment().format(dbDateTime)
-	$("#updatedDateTime.clientForm").val(now)
+	$("#updatedDateTime.clientForm").val(utilNow())
 	let data = ""
 	if (client == "") {
 		$("#clientId.clientForm").val(dbGetNewClientID())
 		data = utilFormToJSON('.clientForm')
-		//data.dependents = []
+
+console.log(data)
+
+		data.dependents = []
 		data.lastServed = []
 	} else {
 		data = utilFormToJSON('.clientForm')
+		data.dependents = client.dependents
 	}
 console.log(data)
 console.log(JSON.stringify(data))
 	uiSaveButton('client', 'Saving...')
+	let URL = aws+"/clients/"
+	dbPostData(URL,JSON.stringify(data))
+}
+
+function dbSaveDependentsTable(){
+	let dependents = [] // client.dependents
+	data = utilFormToJSON('.dependentsForm')
+	let numKey = Object.keys(data).length
+	for (var i = 0; i < numKey; i++) {
+		let key = Object.keys(data)[i]
+		let keyName = key.slice(0, key.indexOf("["))
+		let keyNum = key.slice(key.indexOf("[")+1,-1)
+		if (dependents[keyNum] == undefined) dependents[keyNum] = {updatedDateTime: utilNow()}
+		if (client.dependents[keyNum] != undefined) {
+			if (client.dependents[keyNum].createdDateTime != undefined) {
+				dependents[keyNum].createdDateTime = client.dependents[keyNum].createdDateTime
+			}
+		} else {
+			dependents[keyNum].createdDateTime = utilNow()
+		}
+		dependents[keyNum][keyName] = data[Object.keys(data)[i]]
+	}
+	client.dependents = dependents
+// TODO - fix lastServed
+	client.lastServed = []
+	data = client
+	utilChangeDatesDbFormat(data)
 	let URL = aws+"/clients/"
 	dbPostData(URL,JSON.stringify(data))
 }
@@ -738,7 +810,7 @@ function dbSearchClients(){
 	if (currentNavTab !== "clients") navGotoSec("nav1")
 	clientData = null
 	if (a.includes("/")){
-		a = moment(a, displayDate).format(dbDate)
+		a = moment(a, uiDate).format(date)
 		clientData = dbGetData(aws+"/clients/dob/"+a).clients
 	} else if (!isNaN(a)&&a.length<MAX_ID_DIGITS){
 		clientData = dbGetData(aws+"/clients/"+a).clients
@@ -767,7 +839,7 @@ function dbSearchClients(){
 	} else {
 		uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
 		if (clientData.length === 1){
-			utilSetCurrentClient(0) // go straight to client
+			utilSetCurrentClient(0) // go straight to SERVICES
 		} else {
 			uiSetClientsHeader(clientData.length + ' Clients Found')
 			navGotoTab("tab1")
@@ -1109,32 +1181,32 @@ function utilCalcCounts(x){
 	// age
 	utilSetClientAge()
 	// dependents age & family counts
-	let fam = {tA:1, tC:0, tO:0}
+	let fam = {totalAdults:1, totalChildren:0, totalOtherDependents:0}
 	for (let i = 0; i < client.dependents.length; i++) {
 		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
-		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Spouse") ++fam.tA
-		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.tO
-		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Child") ++fam.tC
-		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.tO
+		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Spouse") ++fam.totalAdults
+		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.totalOtherDependents
+		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Child") ++fam.totalChildren
+		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.totalOtherDependents
 	}
 	client.family = {}
-	client.family.totalAdults = fam.tA
-	client.family.totalChildren = fam.tC
-	client.family.totalOtherDependents = fam.tO
-	client.family.totalSize = fam.tA + fam.tC + fam.tO
+	client.family.totalAdults = fam.totalAdults
+	client.family.totalChildren = fam.totalChildren
+	client.family.totalOtherDependents = fam.totalOtherDependents
+	client.family.totalSize = fam.totalAdults + fam.totalChildren + fam.totalOtherDependents
 }
 
 function utilCalcLastIdCheckDays() {
 	// get Id Checked Date from client object & calculate number of days
-	let familyIdCheckedDate = moment(client.familyIdCheckedDate, dbDate)
-	let lastIdCheck = moment().diff(familyIdCheckedDate, 'days')
+	// let familyIdCheckedDate = moment(client.familyIdCheckedDate, dbDate)
+	let lastIdCheck = moment().diff(client.familyIdCheckedDate, 'days')
 	return lastIdCheck
 }
 
 function utilCalcLastVisitDays() {
 	// get Last Seen Date from client object & calculate number of days
-	let lastSeenDate = moment(client.lastSeenDate, dbDate)
-	let lastVisit = moment().diff(lastSeenDate, 'days')
+	// let lastSeenDate = moment(client.lastSeenDate, dbDate)
+	let lastVisit = moment().diff(client.lastSeenDate, 'days')
 	// If lastVist is not numeric then set to 10,000 days
 	if (!$.isNumeric(lastVisit)) lastVisit = 10000;
 }
@@ -1184,6 +1256,38 @@ function utilCalcTargetServices(activeServiceTypes) {
 	return targets;
 }
 
+function utilChangeDatesDbFormat(data) {
+	for (var i = 0; i < Object.keys(data).length; i++) {
+		if (Object.keys(data)[i].indexOf('Date') > -1) { // ^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
+			if (Object.keys(data)[i].indexOf('Time') < 0) {
+			// 	Object.values(data)[i] = moment(Object.values(data)[i]).format(dbDateTime)
+			// } else {
+				Object.values(data)[i] = moment(Object.values(data)[i]).format(date)
+			}
+		}
+	}
+}
+
+function utilChangeDatesUiFormat(data) {
+	console.log("CHANGE DATES")
+	for (var i = 0; i < Object.keys(data).length; i++) {
+		console.log("IN DATE")
+
+console.log(Object.keys(data)[i])
+console.log(Object.values(data)[i])
+
+		if (Object.keys(data)[i].indexOf('Date') > -1) { // ^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
+			if (Object.keys(data)[i].indexOf('Time') < 0) {
+			// 	Object.values(data)[i] = moment(Object.values(data)[i]).format(uiDateTime)
+			// } else {
+				Object.values(data)[i] = moment(Object.values(data)[i]).format(date)
+			}
+			console.log(Object.values(data)[i])
+			console.log("***IS DATE")
+		}
+	}
+}
+
 function utilChangeWordCase(str){
 	str = str.replace(/[^\s]+/g, function(word) {
 	  return word.replace(/^./, function(first) {
@@ -1194,7 +1298,6 @@ function utilChangeWordCase(str){
 }
 
 function utilFormToJSON(form){
-	let now = moment().format(dbDateTime)
 	let vals = {}
 	console.log($(form))
 	let formElements = $(form)
@@ -1204,7 +1307,7 @@ function utilFormToJSON(form){
 		let valType = formElements[i].type
 		if (formVal.length < 1) {
 			if (valType == 'hidden') {
-				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = now
+				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = now()
 				if (key === 'lastSeenDate') formVal = '*EMPTY*'
 			} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local') {
 console.log(key)
@@ -1225,14 +1328,14 @@ console.log(key + ' : ' + formVal + ' : '+ valType)
 			vals[key] = formVal
 		}
 	}
-	vals.updatedDateTime = moment()
-console.log(vals)
+	vals.updatedDateTime = now()
 	return vals
 }
 
 function utilKeyToLabel(x){
 	let data = {
-								  clientId: "ID #",
+											 age: "Age",
+									clientId: "ID #",
 								 givenName: "Given Name",
 								familyName: "Family Name",
 								       dob: "DOB",
@@ -1250,6 +1353,10 @@ function utilKeyToLabel(x){
 	}
 	let y = data[x]
 	if (y==undefined){return x} else {return y}
+}
+
+function utilNow() {
+	return moment().format(dateTime)
 }
 
 function utilRemoveDupClients(clients) {
@@ -1274,16 +1381,13 @@ function utilSetClientAge(){
 }
 
 function utilSetCurrentClient(index){
-	let row = index + 1
-	uiOutlineTableRow('clientTable', row)
 	client = clientData[index]
+	utilChangeDatesUiFormat(client)
+	utilChangeDatesUiFormat(client.dependents)
 	utilCalcCounts("clients") // calculate fields counts and ages
-console.log("Client Age: " + client.age)
-	uiSetClientsHeader('#' + client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
 	isEmergency = false // **** TODO what is this for?
-	uiShowServicesButtons()
-	uiShowClientEdit(false)
 	history()
+	uiUpdateCurrentClient(index)
 }
 
 function utilSetCurrentServiceType(index){
@@ -1292,6 +1396,10 @@ function utilSetCurrentServiceType(index){
 	uiSetAdminHeader(serviceType.serviceName)
 	uiShowServiceTypeForm()
 	navGotoTab("aTab2")
+}
+
+function utilToday() {
+	return moment().format(date)
 }
 
 function utilUpdateClientsData(){
@@ -1384,7 +1492,7 @@ function history(){
 
 function addService(serviceTypeId, serviceCategory, isUSDA){
 console.log("IN ADD SERVICE");
-	dbPostLastServiced(moment("2018-01-11 09:00").format(dbDateTime), serviceTypeId, serviceCategory, isUSDA);
+	dbPostLastServiced(moment("2018-01-11 09:00").format(dateTime), serviceTypeId, serviceCategory, isUSDA);
 	uiShowNote(serviceTypeId)
 	$("#"+serviceTypeId).hide()
 	// TODO Seperate the IU from the DB functions

@@ -78,31 +78,36 @@
             <input id="tab6" class="tabInput" type="radio" name="tabs">
             <label id="tabLable6" for="tab6" style="color: red;" >Notes</label>
 
-            <section id="content1">
+            <section id="content1"> <!-- Found -->
                <div class="topFormButtonsDiv"><input class="solidButton" onclick="newClientForm()" type="button" value="New Client"></div>
-               <container id="searchContainer"></container>
+               <container id="searchContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
             </section>
-            <section id="content2">
-               <container id="serviceButtonContainer"></container>
+            <section id="content2"> <!-- Services -->
+               <container id="serviceButtonContainer"><div class="bannerDiv"><span class="bannerText span6">USE SEARCH TO FIND A CLIENT</span></div></container>
             </section>
-            <section id="content3">
+            <section id="content3"> <!-- Client -->
                <div class="topFormButtonsDiv">
-                  <input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client">
+                  <input id="newClientButton" class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client">
                   <input id="clientLeftSlider" class="leftSlider sliderActive" onclick="uiToggleClientViewEdit('view')" type="button" value="View">
                   <input id="clientRightSlider" class="rightSlider" onclick="uiToggleClientViewEdit('edit')" type="button" value="Edit">
                </div>
-               <container id="clientFormContainer"></container>
+               <container id="clientFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
             </section>
-            <section id="content4">
+            <section id="content4"> <!-- Dependents -->
                <div class="topFormButtonsDiv">
-                  <input class="solidButton" onclick="newDependentRow()" type="button" value="New Dependent">
+                  <input id="newDependentButton" class="solidButton dependentsEditOnly" onclick="uiAddNewDependentsRow()" type="button" value="New Dependent">
                   <input id="dependentdLeftSlider" class="leftSlider sliderActive" onclick="uiToggleDependentsViewEdit('view')" type="button" value="View">
                   <input id="dependentdRightSlider" class="rightSlider" onclick="uiToggleDependentsViewEdit('edit')" type="button" value="Edit">
                </div>
-               <container id="dependentsFormContainer"></container>
+               <container id="dependentsFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
+               <div class="dependentsEditOnly" style="display: flex; justify-content: center; height: 60px; align-items: center;">
+                  <input id="dependentsSaveButton" class="solidButton" style='display:none' onclick="dbSaveDependentsTable()" type="button" value="Save">
+                  <input class="openButton" style='display:none' onclick="uiResetDependentsTable()" type="button" value="Cancel">
+               </div>
             </section>
-            <section id="content5"></section>
-            <section id="content6">
+            <section id="content5"> <!-- History -->
+            </section>
+            <section id="content6"> <!-- Notes -->
                <div class="topFormButtonsDiv"><input class="solidButton" onclick="newClientNote()" type="button" value="New Note"></div>
                <container id="notesContainer"></container>
             </section>
