@@ -1256,38 +1256,6 @@ function utilCalcTargetServices(activeServiceTypes) {
 	return targets;
 }
 
-function utilChangeDatesDbFormat(data) {
-	for (var i = 0; i < Object.keys(data).length; i++) {
-		if (Object.keys(data)[i].indexOf('Date') > -1) { // ^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
-			if (Object.keys(data)[i].indexOf('Time') < 0) {
-			// 	Object.values(data)[i] = moment(Object.values(data)[i]).format(dbDateTime)
-			// } else {
-				Object.values(data)[i] = moment(Object.values(data)[i]).format(date)
-			}
-		}
-	}
-}
-
-function utilChangeDatesUiFormat(data) {
-	console.log("CHANGE DATES")
-	for (var i = 0; i < Object.keys(data).length; i++) {
-		console.log("IN DATE")
-
-console.log(Object.keys(data)[i])
-console.log(Object.values(data)[i])
-
-		if (Object.keys(data)[i].indexOf('Date') > -1) { // ^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
-			if (Object.keys(data)[i].indexOf('Time') < 0) {
-			// 	Object.values(data)[i] = moment(Object.values(data)[i]).format(uiDateTime)
-			// } else {
-				Object.values(data)[i] = moment(Object.values(data)[i]).format(date)
-			}
-			console.log(Object.values(data)[i])
-			console.log("***IS DATE")
-		}
-	}
-}
-
 function utilChangeWordCase(str){
 	str = str.replace(/[^\s]+/g, function(word) {
 	  return word.replace(/^./, function(first) {
@@ -1382,8 +1350,6 @@ function utilSetClientAge(){
 
 function utilSetCurrentClient(index){
 	client = clientData[index]
-	utilChangeDatesUiFormat(client)
-	utilChangeDatesUiFormat(client.dependents)
 	utilCalcCounts("clients") // calculate fields counts and ages
 	isEmergency = false // **** TODO what is this for?
 	history()
