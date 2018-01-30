@@ -745,6 +745,7 @@ console.log(JSON.stringify(ans))
 }
 
 function dbSaveClientForm(){
+console.log(JSON.stringify(client.dependents))
 	$("#updatedDateTime.clientForm").val(utilNow())
 	let data = ""
 	if (client == "") {
@@ -754,7 +755,19 @@ function dbSaveClientForm(){
 		data.lastServed = []
 	} else {
 		data = utilFormToJSON('.clientForm')
+
+console.log(JSON.stringify(data.dependents))
+console.log(JSON.stringify(client.dependents))
+
 		data.dependents = client.dependents
+		for (var i = 0; i < data.dependents.length; i++) {
+			delete data.dependents[i].age
+		}
+
+
+		if (data.lastServed == undefined||data.lastServed == "") {
+			data.lastServed = []
+		}
 	}
 console.log(data)
 console.log(JSON.stringify(data))
@@ -1174,23 +1187,37 @@ function utilCalcActiveServiceTypes(){
 	return activeServiceTypes;
 }
 
-function utilCalcCounts(x){
+function utilCalcFamilyCounts(x){
 	// age
 	utilSetClientAge()
 	// dependents age & family counts
-	let fam = {totalAdults:1, totalChildren:0, totalOtherDependents:0}
+	let fam = {totalAdults:1, totalChildren:0, totalOtherDependents:0, totalSize:1}
 	for (let i = 0; i < client.dependents.length; i++) {
 		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
-		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Spouse") ++fam.totalAdults
-		if (client.dependents[i].adult == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.totalOtherDependents
-		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Child") ++fam.totalChildren
-		if (client.dependents[i].child == "true" && client.dependents[i].relationship == "Other Dependent") ++fam.totalOtherDependents
+		if (client.dependents[i].relationship == "Spouse") {
+			++fam.totalAdults
+			++fam.totalSize
+		}
+		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age >= 18) {
+			++fam.totalOtherDependents
+			++fam.totalAdults
+			++fam.totalSize
+		}
+		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age <= 18) {
+			++fam.totalOtherDependents
+			++fam.totalChildren
+			++fam.totalSize
+		}
+		if (client.dependents[i].relationship == "Child") {
+			++fam.totalChildren
+			++fam.totalSize
+		}
 	}
 	client.family = {}
 	client.family.totalAdults = fam.totalAdults
 	client.family.totalChildren = fam.totalChildren
 	client.family.totalOtherDependents = fam.totalOtherDependents
-	client.family.totalSize = fam.totalAdults + fam.totalChildren + fam.totalOtherDependents
+	client.family.totalSize = fam.totalSize
 }
 
 function utilCalcLastIdCheckDays() {
@@ -1347,7 +1374,7 @@ function utilSetClientAge(){
 
 function utilSetCurrentClient(index){
 	client = clientData[index]
-	utilCalcCounts("clients") // calculate fields counts and ages
+	utilCalcFamilyCounts("clients") // calculate fields counts and ages
 	isEmergency = false // **** TODO what is this for?
 	history()
 	uiUpdateCurrentClient(index)
