@@ -234,8 +234,8 @@ function uiShowNote(text,text2){
 function uiShowNewClientForm(){
 	client = ""
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
-	$('#createdDateTime.clientForm').val(now())
-	$('#updatedDateTime.clientForm').val(now())
+	$('#createdDateTime.clientForm').val(utilNow())
+	$('#updatedDateTime.clientForm').val(utilNow())
 	$('#firstSeenDate.clientForm').val(today())
 	$('#homeless.clientForm').val('false')
 	$('#city.clientForm').val('San Jose')
@@ -249,7 +249,7 @@ function uiShowServicesButtons(){
 	if ($.isEmptyObject(client)) return
 	let lastIdCheck = utilCalcLastIdCheckDays()
 
-// TODO IF last id check is now service then may not need idCheck field
+// TODO IF lastidcheck is current service then may not need idCheck field
 
 	let lastVisit = utilCalcLastVisitDays()
 	let activeServiceTypes = utilCalcActiveServiceTypes()
@@ -750,9 +750,6 @@ function dbSaveClientForm(){
 	if (client == "") {
 		$("#clientId.clientForm").val(dbGetNewClientID())
 		data = utilFormToJSON('.clientForm')
-
-console.log(data)
-
 		data.dependents = []
 		data.lastServed = []
 	} else {
@@ -1275,7 +1272,7 @@ function utilFormToJSON(form){
 		let valType = formElements[i].type
 		if (formVal.length < 1) {
 			if (valType == 'hidden') {
-				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = now()
+				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = utilNow()
 				if (key === 'lastSeenDate') formVal = '*EMPTY*'
 			} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local') {
 console.log(key)
@@ -1296,7 +1293,7 @@ console.log(key + ' : ' + formVal + ' : '+ valType)
 			vals[key] = formVal
 		}
 	}
-	vals.updatedDateTime = now()
+	vals.updatedDateTime = utilNow();
 	return vals
 }
 
