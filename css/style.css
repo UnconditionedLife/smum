@@ -371,7 +371,12 @@ main{
 .bannerText {
 	font-size: 45px;
 	color: var(--grey-green);
-	line-height: 400px;
+	line-height: 182px;
+}
+
+.historyTopText {
+	font-size: 14px;
+	font-weight: bold;
 }
 
 input.inputBox:read-only {
@@ -486,22 +491,33 @@ input.inputBox:read-only {
 	margin-top:-5px;
 }
 
-.serviceDateTime {
+#serviceDateTime {
 	display: inline-flex;
+	grid-row: 1;
 	grid-column: 2 / span 2;
 	justify-content: flex-start;
 	font-size: 16px;
 	font-weight: bold;
 }
 
-.serviceLastVisit {
+#serviceLastVisit {
 	display: inline-flex;
+	grid-row: 1;
 	grid-column: span 2;
 	justify-content: flex-end;
 	font-size: 18px;
 	font-weight: bold;
 	color: var(--red);
 }
+
+#servicePrimaryButtons {
+	display: inline-flex;
+	grid-row: 2;
+	grid-column: 2 / span 4;
+	justify-content: center;
+}
+
+
 
 
 
@@ -623,6 +639,8 @@ h4{
     padding: 8px;
 		background-color: white;
 }
+
+
 
 table {/*standard table css*/
     font-family: arial, sans-serif;
@@ -777,6 +795,7 @@ checkbox[readonly]{
 }
 
 .btnPrimary {
+	margin: 0 10px 0 10px;
 	background-color: transparent;
 	border-color: var(--brown);
 	border-width: 6px;
@@ -788,10 +807,12 @@ checkbox[readonly]{
 	font-weight: bold;
 	border-radius: 8px;
 	cursor: pointer;
-	box-shadow: 6px 6px 3px lightgrey;;
+	box-shadow: 6px 6px 3px lightgrey;
+	width: 180px;
 }
 
 .btnAdmin {
+	margin: 0 10px 0 10px;
 	background-color: transparent;
 	border-color: var(--red);
 	border-width: 6px;
@@ -803,7 +824,8 @@ checkbox[readonly]{
 	font-weight: bold;
 	border-radius: 38px;
 	cursor: pointer;
-	box-shadow: 6px 6px 3px lightgrey;;
+	box-shadow: 6px 6px 3px lightgrey;
+	width: 180px;
 }
 
 

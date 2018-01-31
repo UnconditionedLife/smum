@@ -138,6 +138,22 @@ function uiAddNewDependentsRow(){
 	uiToggleDependentsViewEdit('edit');
 }
 
+function uiBuildHistoryBottom(){
+	// lastServed.
+  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastSeenDate", "familyIdCheckedDate"]
+	let clientArray = []
+	clientArray.push(client)
+	uiGenSelectHTMLTable('#historyTop',clientArray,columns,'historyTable')
+}
+
+function uiBuildHistoryTop(){
+  //data = dbGetServicesNotes(client.clientId)
+  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastSeenDate", "familyIdCheckedDate"]
+	let clientArray = []
+	clientArray.push(client)
+	uiGenSelectHTMLTable('#historyTop',clientArray,columns,'historyTable')
+}
+
 function uiOutlineTableRow(table, row){
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', '2px solid').siblings().css('outline', 'none')
 }
@@ -192,6 +208,52 @@ function uiShowHidePassword(){
 	} else {
     $('#loginPassword').attr('type', 'password');
 	}
+}
+
+function uiShowHistory(){
+	uiBuildHistoryTop()
+	uiBuildHistoryBottom()
+}
+
+function uiShowLastServed() {
+	let visitHeader = "FIRST SERVICE VISIT";
+	if (client.lastServed[0] != undefined) {
+		let lastVisit = moment(client.lastServed[0].serviceDateTime).fromNow()
+		visitHeader = 'LAST SERVED ' + lastVisit.toUpperCase()
+	}
+
+console.log(visitHeader)
+
+	$('#serviceLastVisit').html(visitHeader)
+}
+
+function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
+	if (lastVisit < 14) {
+		$('#servicePrimaryButtons').html('<div class="btnEmergency" onclick="utilAddService('+"'USDA Food','Items: 1','food'"+')">EMERGENCY FOOD ONLY</div>');
+	} else {
+console.log("IN PRIMARY BUTTONS")
+		let primaryButtons = "" //'<div class="primaryButtonContainer"><div class="buttonCenteredContainer">';
+		for (let i=0; i<btnPrimary.length; i++){
+			let x = btnPrimary[i];
+			let btnClass = "btnPrimary";
+			if (activeServiceTypes[x].serviceCategory == "Administration") btnClass = "btnAdmin";
+			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].isUSDA + "\'";
+			let image = "<img src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
+			primaryButtons += '<div class=\"' + btnClass + '\" id=\"'+activeServiceTypes[x].serviceTypeId+'\" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
+			// } else if (activeServiceTypes[x].serviceCategory == "Food") {
+			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="utilAddService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"<br><img src='images/PrimaryButtonFood.png'></a></div>"
+			// } else if (activeServiceTypes[x].serviceCategory == "Clothes") {
+			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="utilAddService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
+			// }
+console.log(primaryButtons);
+		}
+		// primaryButtons += "</div></div>"
+		$('#servicePrimaryButtons').html(primaryButtons)
+	}
+}
+
+function uiShowServeDateTime() {
+	$('#serviceDateTime').html(moment().format(longDate))
 }
 
 function uiShowUserEdit(){
@@ -274,54 +336,22 @@ function uiShowServicesButtons(){
 		// target.childMinGrade
 		// target.childMaxGrade
 	// Interval ???
-// 	rowNum = 1 // -- TODO what's this for?
-//	let today = moment()
-	// Start adding html to template
-	let dateHeader = '<div class="serviceDateTime">' + moment().format(longDate) + '</div>';
-	$('#serviceButtonContainer').html(dateHeader);
-	// uiDisplayNotes("Today's Visit", moment().format(uiDate))
-	//addClientNotes(client.clientId)
-// TODO unhardcode
-lastVisit = 14;
 
-	let visitHeader = "FIRST SERVICE VISIT";
-	if (lastVisit < 9999) visitHeader = 'LAST SERVED ' + lastVisit + ' DAYS AGO';
-	$('#serviceButtonContainer').append('<div class="serviceLastVisit">' + visitHeader + '</div><div></div>');
+	uiShowServeDateTime()
+	uiShowLastServed()
 
-  // for (let i = 0; i < client.lastServed.length; i++) {
-  // 	let last
-  // }
   if (client.lastServed.length > 0) {
 
 	}
-	if (lastVisit < 14) {
-		$('#serviceButtonContainer').append('<div class="btnEmergency" onclick="addService('+"'USDA Food','Items: 1','food'"+')">EMERGENCY FOOD ONLY</div>');
-	} else {
-console.log("IN PRIMARY BUTTONS")
-		let primaryButtons = "<div></div>" //'<div class="primaryButtonContainer"><div class="buttonCenteredContainer">';
-		for (let i=0; i<btnPrimary.length; i++){
-			let x = btnPrimary[i];
-			let btnClass = "btnPrimary";
-			if (activeServiceTypes[x].serviceCategory == "Administration") btnClass = "btnAdmin";
-			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].isUSDA + "\'";
-			let image = "<img src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
-			primaryButtons += '<div class=\"' + btnClass + '\" id=\"'+activeServiceTypes[x].serviceTypeId+'\" onclick=\"addService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
-			// } else if (activeServiceTypes[x].serviceCategory == "Food") {
-			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="addService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"<br><img src='images/PrimaryButtonFood.png'></a></div>"
-			// } else if (activeServiceTypes[x].serviceCategory == "Clothes") {
-			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="addService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
-			// }
-console.log(primaryButtons);
-		}
-		// primaryButtons += "</div></div>"
-		$('#serviceButtonContainer').append(primaryButtons)
-	}
+	uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes)
+
+
 
   //
 	// let foodBtn = ""
   //
 	// } else {
-	// 		foodBtn =  '<div class="btnPrimary" onclick="addService('+"'USDA Food','Items: 1','food'"+')"><img src="images/food.png"  style="width:185px; height:182px"></div>'
+	// 		foodBtn =  '<div class="btnPrimary" onclick="utilAddService('+"'USDA Food','Items: 1','food'"+')"><img src="images/food.png"  style="width:185px; height:182px"></div>'
 	// }
 	// Display ID Check button if it's been more than 180 days since last check
 	let idBtn =  '<div class="serviceLastVisit span2"></div>'
@@ -330,7 +360,7 @@ console.log(primaryButtons);
 	}
 	let clothesBtn = '<div class="serviceLastVisit"></div>'
 	if (lastVisit >= 15) {
-		clothesBtn = '<div class="serviceLastVisit"><img onclick="addService('+"'Clothes','Items: 5','clothes'"+')" src="images/clothes.png" style="width:185px; height:182px"></div>'
+		clothesBtn = '<div class="serviceLastVisit"><img onclick="utilAddService('+"'Clothes','Items: 5','clothes'"+')" src="images/clothes.png" style="width:185px; height:182px"></div>'
 	}
 	let footer = '<div class="buttonRow span6" id="row2"></div><div id="row2"></div></div>'
 
@@ -358,7 +388,7 @@ console.log(primaryButtons);
 			let x = btnSecondary[i];
 console.log(x);
 //		var standard = serviceTypes[i]['available']['dateFromMonth']<=moment().format('M')&& moment().format('M')<=serviceTypes[i]['available']['dateToMonth']
-			let service = '<div class="btnSecondary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="addService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
+			let service = '<div class="btnSecondary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="utilAddService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
 // && serviceTypes[i]['target']['gender']==client['gender']
 // 		$('.buttonRow').append(service)
 	   	$('#serviceButtonContainer').append(service)
@@ -485,10 +515,15 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
 				} else{
 					tabCell.innerHTML="<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm' value='"+data[i][col[j]]+"'>";
 				}
-    	} else if (col[j]=="dob"||col[j]=="firstSeenDate"||col[j]=="lastSeenDate"||col[j]=="familyIdCheckedDate"){
-        tabCell.innerHTML = moment(data[i][col[j]]).format('MM/DD/YYYY')
+    	} else if (col[j]=="dob"||col[j]=="firstSeenDate"){
+				tabCell.className = "historyTopText"
+        tabCell.innerHTML = moment(data[i][col[j]]).format('MMM DD, YYYY')
+			} else if (col[j]=="lastSeenDate"||col[j]=="familyIdCheckedDate"){
+				tabCell.className = "historyTopText"
+				tabCell.innerHTML = moment(data[i][col[j]]).fromNow()
 			} else if (col[j]=="createdDateTime"||col[j]=="updatedDateTime"){
-        tabCell.innerHTML = moment(data[i][col[j]]).format('MM/DD/YYYY, h:mm a')
+				tabCell.className = "historyTopText"
+        tabCell.innerHTML = moment(data[i][col[j]]).format('MMM DD, YYYY | h:mm a')
     	} else if (col[j]=="adultsServed"||col[j]=="childrenServed"||col[j]=="individualsServed"){
     		tabCell.innerHTML=data[i]['total'][col[j]].toString();
     	} else if (col[j]=="itemCount"){
@@ -1376,7 +1411,7 @@ function utilSetCurrentClient(index){
 	client = clientData[index]
 	utilCalcFamilyCounts("clients") // calculate fields counts and ages
 	isEmergency = false // **** TODO what is this for?
-	history()
+	uiShowHistory()
 	uiUpdateCurrentClient(index)
 }
 
@@ -1472,17 +1507,10 @@ function newNote(text,text2){
 	dbPostNote(text)
 }
 
-function history(){
-  //data = dbGetServicesNotes(client.clientId)
-  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastSeenDate", "familyIdCheckedDate"]
-	let clientArray = []
-	clientArray.push(client)
-	uiGenSelectHTMLTable('#content5',clientArray,columns,'historyTable')
-}
-
-function addService(serviceTypeId, serviceCategory, isUSDA){
+function utilAddService(serviceTypeId, serviceCategory, isUSDA){
 console.log("IN ADD SERVICE");
 	dbPostLastServiced(moment("2018-01-11 09:00").format(dateTime), serviceTypeId, serviceCategory, isUSDA);
+	uiShowLastServed()
 	uiShowNote(serviceTypeId)
 	$("#"+serviceTypeId).hide()
 	// TODO Seperate the IU from the DB functions
