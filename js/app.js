@@ -202,30 +202,12 @@ console.log(action)
 }
 
 function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, totalSize){
-
-console.log("ADULTS: "+ totalAdults)
-
 	if (document.getElementById("family.totalAdults") != null){
 		document.getElementById("family.totalAdults").value = totalAdults
 		document.getElementById("family.totalChildren").value = totalChildren
 		document.getElementById("family.totalOtherDependents").value = totalOtherDependents
 		document.getElementById("family.totalSize").value = totalSize
 	}
-		//if (client.family != undefined && elems[i] != null ){
-
-//console.log("STORED AGE: " + client.family[fam[i]])
-
-			//elems[i].value = [fam[i]]
-		//}
-	//}
-  //
-	// family[0].elem = document.getElementById("family.totalAdults")
-	// family[1].elem = document.getElementById("family.totalChildren")
-	// family[2].elem = document.getElementById("family.totalOtherDependents")
-	// family[3].elem = document.getElementById("family.totalSize")
-	// client.family.totalAdults
-  //
-	// if (family.totalAdults)
 }
 
 function uiShowHideLogin(todo){
@@ -267,7 +249,6 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 	if (lastVisit < 14) {
 		$('#servicePrimaryButtons').html('<div class="btnEmergency" onclick="utilAddService('+"'USDA Food','Items: 1','food'"+')">EMERGENCY FOOD ONLY</div>');
 	} else {
-console.log("IN PRIMARY BUTTONS")
 		let primaryButtons = "" //'<div class="primaryButtonContainer"><div class="buttonCenteredContainer">';
 		for (let i=0; i<btnPrimary.length; i++){
 			let x = btnPrimary[i];
@@ -276,14 +257,7 @@ console.log("IN PRIMARY BUTTONS")
 			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].isUSDA + "\'";
 			let image = "<img src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
 			primaryButtons += '<div class=\"' + btnClass + '\" id=\"'+activeServiceTypes[x].serviceTypeId+'\" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
-			// } else if (activeServiceTypes[x].serviceCategory == "Food") {
-			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="utilAddService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"<br><img src='images/PrimaryButtonFood.png'></a></div>"
-			// } else if (activeServiceTypes[x].serviceCategory == "Clothes") {
-			// 	primaryButtons += '<div class="btnPrimary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="utilAddService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
-			// }
-console.log(primaryButtons);
 		}
-		// primaryButtons += "</div></div>"
 		$('#servicePrimaryButtons').html(primaryButtons)
 	}
 }
@@ -651,8 +625,8 @@ function dbGetData(uUrl){
 			contentType:'application/json',
 	    success: function(json){
 				if (json!==undefined) {
-					console.log(json.count)
-					console.log(urlNew)
+					// console.log(json.count)
+					// console.log(urlNew)
 				}
 	    	ans = json
 		},
@@ -693,7 +667,7 @@ function dbPostData(uUrl,dataU){
 		return
 	}
 
-console.log(JSON.stringify(dataU))
+// console.log(JSON.stringify(dataU))
 
 	var urlNew = uUrl;
 	var uData = dataU;
@@ -793,7 +767,8 @@ console.log(data)
 console.log(JSON.stringify(data))
 	uiSaveButton('client', 'Saving...')
 	let URL = aws+"/clients/"
-	dbPostData(URL,JSON.stringify(data))
+	result = dbPostData(URL,JSON.stringify(data))
+	if (result == null) uiToggleClientViewEdit("view")
 }
 
 function dbSaveDependentsTable(){
@@ -819,8 +794,11 @@ function dbSaveDependentsTable(){
 	client.lastServed = []
 	data = client
 	let URL = aws+"/clients/"
-	dbPostData(URL,JSON.stringify(data))
-	utilCalcFamilyCounts()
+	result = dbPostData(URL,JSON.stringify(data))
+	if (result == null) {
+		utilCalcFamilyCounts()
+		uiToggleDependentsViewEdit("view")
+	}
 }
 
 function dbSaveServiceTypeForm(){
@@ -1145,34 +1123,26 @@ function utilBeep(){
 	sound.play()
 };
 
-	function utilCalcActiveServicesButtons(array, activeServiceTypes, targets) {
+function utilCalcActiveServicesButtons(array, activeServiceTypes, targets) {
 	btnPrimary = [];
 	btnSecondary = [];
 	for (let i = 0; i < activeServiceTypes.length; i++) {
 		// loop throught to find items to compare
 		// presume that item will be displayed unless not valid
 		let display = true;
-console.log("VALIDATE " + i + ": " + activeServiceTypes[i].serviceName);
-console.log(activeServiceTypes);
 		// not a valid service based on interval between services
 		if (utilValidateServiceInterval(activeServiceTypes[i]) == 'false') continue;
-console.log("Service: " + activeServiceTypes[i].serviceName);
 		for (let prop in targets[i]) {
 			// check service interval for service
 			if (activeServiceTypes[i].serviceInterval > 0) {
-console.log("HAS SERVICE INTERVAL");
 			}
-console.log("Prop: " + prop + " = " + targets[i][prop] + " Client: " + client[prop]);
 			let tarProp = targets[i][prop]
 			if (tarProp == true) tarProp = "true"
 			if (tarProp == false) tarProp = "false"
 			let cliProp = client[prop]
 			if (cliProp == true) tarProp = "true"
 			if (cliProp == false) tarProp = "false"
-			if (tarProp == cliProp) {
-				console.log("MATCH");
-			} else {
-				console.log("NO MATCH");
+			if (tarProp != cliProp) {
 				display = false;
 			}
 		}
@@ -1186,8 +1156,6 @@ console.log("Prop: " + prop + " = " + targets[i][prop] + " Client: " + client[pr
 			} else {
 				btnSecondary.push(i)
 			}
-console.log("Primary List: " + btnPrimary)
-console.log("Secondary List: " + btnSecondary)
 		}
 	}
 	if (array == "primary") return btnPrimary
@@ -1395,7 +1363,7 @@ function utilKeyToLabel(x){
 				   createdDateTime: "Profile Created",
 					 updatedDateTime: "Profile Update",
 				     firstSeenDate: "First Seen",
-				    	lastSeenDate: "Last Seen",
+				    	lastSeenDate: "Last Served",
        familyIdCheckedDate: "Last ID Check"
 	}
 	let y = data[x]
