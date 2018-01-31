@@ -228,7 +228,7 @@ function uiShowHistory(){
 let uiShowLastServed = function() {
 	if (client.clientId != undefined){
 		let visitHeader = "FIRST SERVICE VISIT";
-		if (client.lastServed[0].servedDateTime != undefined) {
+		if (client.lastServed[0] != undefined) {
 			let lastVisit = moment(client.lastServed[0].servedDateTime).fromNow()
 			visitHeader = 'LAST SERVED ' + lastVisit.toUpperCase()
 		}
@@ -791,7 +791,6 @@ function dbSaveDependentsTable(){
 // TODO - fix lastServed
 	client.lastServed = []
 	data = client
-	utilChangeDatesDbFormat(data)
 	let URL = aws+"/clients/"
 	dbPostData(URL,JSON.stringify(data))
 }
@@ -1207,21 +1206,21 @@ function utilCalcFamilyCounts(x){
 	let fam = {totalAdults:1, totalChildren:0, totalOtherDependents:0, totalSize:1}
 	for (let i = 0; i < client.dependents.length; i++) {
 		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
-		if (client.dependents[i].relationship == "Spouse") {
+		if (client.dependents[i].relationship == "Spouse" && client.dependents[i].isActive == "Active") {
 			++fam.totalAdults
 			++fam.totalSize
 		}
-		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age >= 18) {
+		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age >= 18 && client.dependents[i].isActive == "Active") {
 			++fam.totalOtherDependents
 			++fam.totalAdults
 			++fam.totalSize
 		}
-		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age <= 18) {
+		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age <= 18 && client.dependents[i].isActive == "Active") {
 			++fam.totalOtherDependents
 			++fam.totalChildren
 			++fam.totalSize
 		}
-		if (client.dependents[i].relationship == "Child") {
+		if (client.dependents[i].relationship == "Child" && client.dependents[i].isActive == "Active") {
 			++fam.totalChildren
 			++fam.totalSize
 		}
