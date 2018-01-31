@@ -16,7 +16,7 @@ let rowNum = 1
 let MAX_ID_DIGITS = 4
 let uiDate = 'MM/DD/YYYY'
 let uiDateTime = 'MM/DD/YYYY HH:mm'
-let longDate = "MMMM Do YYYY LT"
+let longDate = "MMMM Do YYYY, LT"
 let date = 'YYYY-MM-DD'
 let dateTime = 'YYYY-MM-DD HH:mm'
 let clientData = null // current client search results
@@ -48,6 +48,16 @@ document.onkeydown = function(e) {
 // control the "save button" behaviour
 $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')});
 $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')});
+$(document).ready(function(){
+	uiShowServicesDateTime();
+  setInterval(uiShowServicesDateTime, 30000);
+});
+$(document).ready(function(){
+	uiShowLastServed();
+  setInterval(uiShowLastServed, 30000);
+});
+
+
 
 // **********************************************************************************************************
 // ********************************************** NAV FUNCTIONS *********************************************
@@ -148,7 +158,7 @@ function uiBuildHistoryBottom(){
 
 function uiBuildHistoryTop(){
   //data = dbGetServicesNotes(client.clientId)
-  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastSeenDate", "familyIdCheckedDate"]
+  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastServed[0].servedDateTime", "familyIdCheckedDate"]
 	let clientArray = []
 	clientArray.push(client)
 	uiGenSelectHTMLTable('#historyTop',clientArray,columns,'historyTable')
@@ -215,16 +225,15 @@ function uiShowHistory(){
 	uiBuildHistoryBottom()
 }
 
-function uiShowLastServed() {
-	let visitHeader = "FIRST SERVICE VISIT";
-	if (client.lastServed[0] != undefined) {
-		let lastVisit = moment(client.lastServed[0].serviceDateTime).fromNow()
-		visitHeader = 'LAST SERVED ' + lastVisit.toUpperCase()
+let uiShowLastServed = function() {
+	if (client.clientId != undefined){
+		let visitHeader = "FIRST SERVICE VISIT";
+		if (client.lastServed[0].servedDateTime != undefined) {
+			let lastVisit = moment(client.lastServed[0].servedDateTime).fromNow()
+			visitHeader = 'LAST SERVED ' + lastVisit.toUpperCase()
+		}
+		$('#serviceLastVisit').html(visitHeader)
 	}
-
-console.log(visitHeader)
-
-	$('#serviceLastVisit').html(visitHeader)
 }
 
 function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
@@ -252,8 +261,10 @@ console.log(primaryButtons);
 	}
 }
 
-function uiShowServeDateTime() {
-	$('#serviceDateTime').html(moment().format(longDate))
+let uiShowServicesDateTime = function() {
+	if (client.clientId != undefined){
+		$('#serviceDateTime').html(moment().format(longDate))
+	}
 }
 
 function uiShowUserEdit(){
@@ -305,6 +316,18 @@ function uiShowNewClientForm(){
 	navGotoTab("tab3")
 }
 
+function uiShowSecondaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes){
+	if (lastVisit >= 14) {
+		for (let i=0; i<btnSecondary.length; i++){
+			let x = btnSecondary[i];
+console.log(x);
+//		var standard = serviceTypes[i]['available']['dateFromMonth']<=moment().format('M')&& moment().format('M')<=serviceTypes[i]['available']['dateToMonth']
+			let service = '<div class="btnSecondary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="utilAddService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
+			$('#serviceButtonContainer').append(service)
+		}
+	}
+}
+
 function uiShowServicesButtons(){
 	// builds the Services tab
 	// return if client object is empty
@@ -326,18 +349,9 @@ function uiShowServicesButtons(){
 	let btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targets);
 	let btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targets);
 
-		// check each element in the client
-		// target.homeless ********************
-		// target.family *********************
-		// target.gender *********************
-		// target.child *********************
-		// target.childMinAge
-		// target.childMaxAge
-		// target.childMinGrade
-		// target.childMaxGrade
-	// Interval ???
 
-	uiShowServeDateTime()
+
+	uiShowServicesDateTime()
 	uiShowLastServed()
 
   if (client.lastServed.length > 0) {
@@ -345,68 +359,9 @@ function uiShowServicesButtons(){
 	}
 	uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes)
 
+	uiShowSecondaryServiceButtons(btnSecondary, lastVisit, activeServiceTypes)
 
 
-  //
-	// let foodBtn = ""
-  //
-	// } else {
-	// 		foodBtn =  '<div class="btnPrimary" onclick="utilAddService('+"'USDA Food','Items: 1','food'"+')"><img src="images/food.png"  style="width:185px; height:182px"></div>'
-	// }
-	// Display ID Check button if it's been more than 180 days since last check
-	let idBtn =  '<div class="serviceLastVisit span2"></div>'
-	if (lastIdCheck > 180) {
-		idBtn = '<div class="serviceLastVisit span2"><img src="images/checkId.png" style="width:157px; height:156px"></div>'
-	}
-	let clothesBtn = '<div class="serviceLastVisit"></div>'
-	if (lastVisit >= 15) {
-		clothesBtn = '<div class="serviceLastVisit"><img onclick="utilAddService('+"'Clothes','Items: 5','clothes'"+')" src="images/clothes.png" style="width:185px; height:182px"></div>'
-	}
-	let footer = '<div class="buttonRow span6" id="row2"></div><div id="row2"></div></div>'
-
-//<a data-toggle="modal" data-target="#myModal" class="btn-nav">Add Note</a>
-
-	// if (today>idChecked){
-		//$('.main-div').append(header+subHeader+foodBtn+idBtn+clothesBtn+footer);
-		$('#serviceButtonContainer').append("<div></div>"+idBtn+clothesBtn+"<div></div>"+footer);
-		navGotoTab("tab2")
-	// }
-	// else {
-	// 	$('.main-div').append(header+foodBtn+idBtn+clothesBtn+footer);
-	//
-	// }
-	children = []
-	if (client.dependents!=null){
-		for (let j=0; j<client.dependents.length; j++){
-			if (client.dependents[j]['relationship']=="Child"){
-				children.push(client.dependents[j])
-			}
-		}
-	}
-	if (lastVisit >= 14) {
-		for (let i=0; i<btnSecondary.length; i++){
-			let x = btnSecondary[i];
-console.log(x);
-//		var standard = serviceTypes[i]['available']['dateFromMonth']<=moment().format('M')&& moment().format('M')<=serviceTypes[i]['available']['dateToMonth']
-			let service = '<div class="btnSecondary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="utilAddService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
-// && serviceTypes[i]['target']['gender']==client['gender']
-// 		$('.buttonRow').append(service)
-	   	$('#serviceButtonContainer').append(service)
-		// if (children.length==0||!serviceTypes[i]['target']['child']){
-		// 	if (standard){
-		// 		$('.buttonRow').append(service)
-		// 	}
-		// }
-		// else{
-		// 	for (var k=0; k<children.length; k++){
-		// 		if (standard && serviceTypes[i]['target']['childMinAge']<children[k]['age'] && children[k]['age']<serviceTypes[i]['target']['childMaxAge']){
-		// 		('.buttonRow').append(service)
-    //
-		// 		}
-		// 	}
-		// }
-		}
-	}
 }
 
 function uiShowServiceTypeForm(){
@@ -757,9 +712,12 @@ console.log(JSON.stringify(dataU))
 	return ans
 }
 
-function dbPostLastServiced(serviceDateTime, serviceTypeId, serviceCategory, isUSDA){
+function dbSaveLastServiced(servedDateTime, serviceTypeId, serviceTotalServed, serviceItemsServed){
 	lastServedArray = client.lastServed;
-	let record = {'serviceDateTime': serviceDateTime, 'serviceTypeId': serviceTypeId, 'serviceCategory': serviceCategory , 'isUSDA': isUSDA};
+	let record = {'servedDateTime': servedDateTime,
+	                'serviceTypeId': serviceTypeId,
+						 'serviceTotalServed': serviceTotalServed,
+						 'serviceItemsServed': serviceItemsServed};
 	lastServedArray.unshift(record);
 	client.lastServed = lastServedArray;
 	// SAVE TO db TODO
@@ -1132,6 +1090,26 @@ console.log('made it past config')
 // **********************************************************************************************************
 // *********************************************** UTIL FUNCTIONS *******************************************
 // **********************************************************************************************************
+function utilAddService(serviceTypeId, serviceCategory){
+console.log("IN ADD SERVICE");
+	 let serviceType = serviceTypes.filter(function( obj ) {
+		 return obj.serviceTypeId == serviceTypeId
+	 })
+	 let isUSDA = serviceType.isUSDA
+	 let serviceItemsServed = serviceType.numberItems
+	 let serviceTotalServed = client.family.totalSize
+
+	 // TODO Need items per [family][person] in Service Types
+
+console.log(serviceType)
+
+	dbSaveLastServiced(moment().format(dateTime), serviceTypeId, serviceTotalServed, serviceItemsServed);
+	uiShowLastServed()
+	uiShowNote(serviceTypeId)
+	$("#"+serviceTypeId).hide()
+	// TODO Seperate the IU from the DB functions
+}
+
 function utilBeep(){
 	let sound = document.getElementById("beep")
 	sound.volume= .1
@@ -1139,7 +1117,7 @@ function utilBeep(){
 	sound.play()
 };
 
-function utilCalcActiveServicesButtons(array, activeServiceTypes, targets) {
+	function utilCalcActiveServicesButtons(array, activeServiceTypes, targets) {
 	btnPrimary = [];
 	btnSecondary = [];
 	for (let i = 0; i < activeServiceTypes.length; i++) {
@@ -1277,6 +1255,17 @@ function utilCalcTargetServices(activeServiceTypes) {
 	// build list of client target items for each Active Service Type
 	for (let i = 0; i < activeServiceTypes.length; i++) {
 // console.log("Active Service " + i + ": " + activeServiceTypes[i].serviceName);
+// check each element in the client
+// target.homeless ********************
+// target.family *********************
+// target.gender *********************
+// target.child *********************
+// target.childMinAge
+// target.childMaxAge
+// target.childMinGrade
+// target.childMaxGrade
+// Interval ???
+
 		// make list of specific target.... for each type.
 		targets[i] = {}
 		// target homeless
@@ -1453,7 +1442,7 @@ function utilValidateServiceInterval(activeServiceType){
 	}
 	let neverServed = true;
 	for (let i =0; i < client.lastServed.length; i++) {
-		let lastServedDate = moment(client.lastServed[i].serviceDateTime).startOf('day');
+		let lastServedDate = moment(client.lastServed[i].servedDateTime).startOf('day');
 		if (client.lastServed[i].serviceTypeId == activeServiceType.serviceTypeId) {
 			neverServed = false;
 			if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return 'false';
@@ -1505,13 +1494,4 @@ function addOldNotes(arr){
 function newNote(text,text2){
 	uiShowNote(text,text2)
 	dbPostNote(text)
-}
-
-function utilAddService(serviceTypeId, serviceCategory, isUSDA){
-console.log("IN ADD SERVICE");
-	dbPostLastServiced(moment("2018-01-11 09:00").format(dateTime), serviceTypeId, serviceCategory, isUSDA);
-	uiShowLastServed()
-	uiShowNote(serviceTypeId)
-	$("#"+serviceTypeId).hide()
-	// TODO Seperate the IU from the DB functions
 }

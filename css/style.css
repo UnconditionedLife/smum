@@ -805,7 +805,7 @@ checkbox[readonly]{
 	color: var(--brown);
 	font-size: 18px;
 	font-weight: bold;
-	border-radius: 8px;
+	border-radius: 18px;
 	cursor: pointer;
 	box-shadow: 6px 6px 3px lightgrey;
 	width: 180px;
