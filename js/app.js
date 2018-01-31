@@ -870,6 +870,7 @@ function dbSearchClients(){
 		uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
 		if (clientData.length === 1){
 			utilSetCurrentClient(0) // go straight to SERVICES
+			navGotoTab("tab2")
 		} else {
 			uiSetClientsHeader(clientData.length + ' Clients Found')
 			navGotoTab("tab1")
@@ -1443,6 +1444,7 @@ function utilSetCurrentClient(index){
 	utilCalcFamilyCounts() // calculate fields counts and ages
 	isEmergency = false // **** TODO what is this for?
 	uiShowHistory()
+
 	uiUpdateCurrentClient(index)
 }
 
