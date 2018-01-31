@@ -140,7 +140,7 @@ function uiAddNewDependentsRow(){
 	dependentRow+="<td><input id='familyName["+nextRow+"]' class='inputBox inputForTable dependentsForm'></td>"
 	dependentRow+="<td><select id='relationship["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Child'>Child</option><option value='Spouse'>Spouse</option><option value='Other Dependent'>Other Dependent</option></select></td>"
 	dependentRow+="<td><select id='gender["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Male'>Male</option><option value='Female'>Female</option></select></td>"
-	dependentRow+="<td><input id='dob["+nextRow+"]' class='inputBox inputForTable dependentsForm' type='date'></td>"
+	dependentRow+="<td><input id='dob["+nextRow+"]' class='inputBox inputForTable dependentsForm' onchange='utilCalcDependentAge("+ parseInt(nextRow)+")' type='date'></td>"
 	dependentRow+="<td class='dependentsViewOnly'><input id='age["+nextRow+"]' class='inputBox inputForTable dependentsForm' style='width:50px'></td><td>"
 	dependentRow+="<select id='isActive["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></td>"
 	dependentRow+="</tr>"
@@ -199,6 +199,33 @@ console.log(action)
 
 		$('#'+form+'SaveButton').addClass(action)
 	}
+}
+
+function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, totalSize){
+
+console.log("ADULTS: "+ totalAdults)
+
+	if (document.getElementById("family.totalAdults") != null){
+		document.getElementById("family.totalAdults").value = totalAdults
+		document.getElementById("family.totalChildren").value = totalChildren
+		document.getElementById("family.totalOtherDependents").value = totalOtherDependents
+		document.getElementById("family.totalSize").value = totalSize
+	}
+		//if (client.family != undefined && elems[i] != null ){
+
+//console.log("STORED AGE: " + client.family[fam[i]])
+
+			//elems[i].value = [fam[i]]
+		//}
+	//}
+  //
+	// family[0].elem = document.getElementById("family.totalAdults")
+	// family[1].elem = document.getElementById("family.totalChildren")
+	// family[2].elem = document.getElementById("family.totalOtherDependents")
+	// family[3].elem = document.getElementById("family.totalSize")
+	// client.family.totalAdults
+  //
+	// if (family.totalAdults)
 }
 
 function uiShowHideLogin(todo){
@@ -460,7 +487,7 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
 					tabCell.className = "dependentsViewOnly";
 					tabCell.innerHTML = "<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm dependentsViewOnly' style='width:50px' value='"+data[i][col[j]]+"'>"
 				} else if (col[j]=="dob"){
-					tabCell.innerHTML = "<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm' type='date' value='"+data[i][col[j]]+"'>";
+					tabCell.innerHTML = "<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm' type='date' onchange='utilCalcDependentAge("+ parseInt(depNum)+")' value='"+data[i][col[j]]+"'>";
 				} else if (col[j]=="isActive"){
 					tabCell.innerHTML = uiGenSelectHTML(data[i][col[j]],['Active','Inactive'],"isActive",depNum)
 				} else if (col[j]=="relationship"){
@@ -793,6 +820,7 @@ function dbSaveDependentsTable(){
 	data = client
 	let URL = aws+"/clients/"
 	dbPostData(URL,JSON.stringify(data))
+	utilCalcFamilyCounts()
 }
 
 function dbSaveServiceTypeForm(){
@@ -1199,9 +1227,12 @@ function utilCalcActiveServiceTypes(){
 	return activeServiceTypes;
 }
 
-function utilCalcFamilyCounts(x){
-	// age
-	utilSetClientAge()
+function utilCalcFamilyCounts(){
+	// age TODO Move this to correct Function
+	for (var i = 0; i < client.dependents.length; i++) {
+		utilCalcDependentAge(i)
+	}
+	if (client.family == undefined) client.family = {}
 	// dependents age & family counts
 	let fam = {totalAdults:1, totalChildren:0, totalOtherDependents:0, totalSize:1}
 	for (let i = 0; i < client.dependents.length; i++) {
@@ -1215,7 +1246,7 @@ function utilCalcFamilyCounts(x){
 			++fam.totalAdults
 			++fam.totalSize
 		}
-		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age <= 18 && client.dependents[i].isActive == "Active") {
+		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age < 18 && client.dependents[i].isActive == "Active") {
 			++fam.totalOtherDependents
 			++fam.totalChildren
 			++fam.totalSize
@@ -1225,11 +1256,11 @@ function utilCalcFamilyCounts(x){
 			++fam.totalSize
 		}
 	}
-	client.family = {}
 	client.family.totalAdults = fam.totalAdults
 	client.family.totalChildren = fam.totalChildren
 	client.family.totalOtherDependents = fam.totalOtherDependents
 	client.family.totalSize = fam.totalSize
+	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSize)
 }
 
 function utilCalcLastIdCheckDays() {
@@ -1386,7 +1417,7 @@ function utilRemoveDupClients(clients) {
 	return undupClients
 }
 
-function utilSetClientAge(){
+function utilCalcClientAge(){
 	let dob = $("#dob.clientForm").val()
 	let age = moment().diff(dob, 'years')
 	if (Number(age)){
@@ -1395,9 +1426,21 @@ function utilSetClientAge(){
 	}
 }
 
+function utilCalcDependentAge(index){
+	let dob = document.getElementById("dob["+index+"]")
+	let age = document.getElementById("age["+index+"]")
+	if (dob != null && age != null){
+		let newAge = moment().diff(dob.value, "years")
+		age.value = newAge
+		if (client.dependents[index] != undefined) {
+			client.dependents.age = newAge
+		}
+	}
+}
+
 function utilSetCurrentClient(index){
 	client = clientData[index]
-	utilCalcFamilyCounts("clients") // calculate fields counts and ages
+	utilCalcFamilyCounts() // calculate fields counts and ages
 	isEmergency = false // **** TODO what is this for?
 	uiShowHistory()
 	uiUpdateCurrentClient(index)
