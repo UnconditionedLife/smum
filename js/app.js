@@ -16,14 +16,14 @@ let rowNum = 1
 let MAX_ID_DIGITS = 4
 let uiDate = 'MM/DD/YYYY'
 let uiDateTime = 'MM/DD/YYYY HH:mm'
-let longDate = "MMMM Do YYYY, LT"
+let longDate = "MMMM Do, YYYY  |  LT"
 let date = 'YYYY-MM-DD'
 let dateTime = 'YYYY-MM-DD HH:mm'
 let clientData = null // current client search results
 let clientNotes = []
 let client = {} // current client
 let serviceType = null
-let isEmergency = false
+let emergencyFood = false
 let currentNavTab = "clients"
 // cognito config
 let CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
@@ -50,11 +50,11 @@ $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Sa
 $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')});
 $(document).ready(function(){
 	uiShowServicesDateTime();
-  setInterval(uiShowServicesDateTime, 30000);
+  setInterval(uiShowServicesDateTime, 10000);
 });
 $(document).ready(function(){
 	uiShowLastServed();
-  setInterval(uiShowLastServed, 30000);
+  setInterval(uiShowLastServed, 10000);
 });
 
 
@@ -235,9 +235,19 @@ function uiShowHistory(){
 }
 
 let uiShowLastServed = function() {
+console.log("IN SHOW lastServed")
+
 	if (client.clientId != undefined){
 		let visitHeader = "FIRST SERVICE VISIT";
+
+console.log(client.lastServed[0])
+
+console.log(client)
+
 		if (client.lastServed[0] != undefined) {
+
+console.log("Has lastServed")
+
 			let lastVisit = moment(client.lastServed[0].servedDateTime).fromNow()
 			visitHeader = 'LAST SERVED ' + lastVisit.toUpperCase()
 		}
@@ -246,7 +256,8 @@ let uiShowLastServed = function() {
 }
 
 function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
-	if (lastVisit < 14) {
+	if (lastVisit < 14 && lastVisit > 1) {
+		emergencyFood = true
 		$('#servicePrimaryButtons').html('<div class="btnEmergency" onclick="utilAddService('+"'USDA Food','Items: 1','food'"+')">EMERGENCY FOOD ONLY</div>');
 	} else {
 		let primaryButtons = "" //'<div class="primaryButtonContainer"><div class="buttonCenteredContainer">';
@@ -318,6 +329,7 @@ function uiShowNewClientForm(){
 }
 
 function uiShowSecondaryServiceButtons(activeServiceTypes){
+	if (emergencyFood) return
 	$('#serviceSecondaryButtons').html("")
 	for (let i=0; i<btnSecondary.length; i++){
 		let x = btnSecondary[i];
@@ -330,8 +342,8 @@ function uiShowServicesButtons(){
 	// builds the Services tab
 	// return if client object is empty
 	if ($.isEmptyObject(client)) return
-	let lastIdCheck = utilCalcLastIdCheckDays()
 
+//	let lastIdCheck = utilCalcLastIdCheckDays()
 // TODO IF lastidcheck is current service then may not need idCheck field
 
 	let lastVisit = utilCalcLastVisitDays()
@@ -709,25 +721,16 @@ function dbSaveLastServiced(servedDateTime, serviceTypeId, serviceTotalServed, s
 	utilBloop()
 	serviceItemsServed = "2" // TODO HARDCODED
 	let existing = client.lastServed
-
-console.log(existing)
-
 	let lastServedArray = Array.prototype.slice.call(existing); // this deals with an issue within JS
-
 	let record = {'servedDateTime': servedDateTime,
 	                'serviceTypeId': serviceTypeId,
 						 'serviceTotalServed': serviceTotalServed,
 						 'serviceItemsServed': serviceItemsServed};
 	lastServedArray.unshift(record)
 	client.lastServed = lastServedArray
-
-console.log(client.lastServed)
-
+	$("#lastServed.clientForm").val(lastServedArray)
 	// SAVE TO db TODO
 	data = client
-
-console.log(JSON.stringify(data))
-
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
 }
@@ -1145,8 +1148,8 @@ function utilCalcActiveServicesButtons(array, activeServiceTypes, targets) {
 		// loop throught to find items to compare
 		// presume that item will be displayed unless not valid
 		let display = true;
-		// not a valid service based on interval between services
-		if (utilValidateServiceInterval(activeServiceTypes[i]) == 'false') continue;
+		// check for not a valid service based on interval between services
+		if (!utilValidateServiceInterval(activeServiceTypes[i], activeServiceTypes)) continue;
 		for (let prop in targets[i]) {
 			// check service interval for service
 			if (activeServiceTypes[i].serviceInterval > 0) {
@@ -1247,19 +1250,21 @@ function utilCalcFamilyCounts(){
 	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSize)
 }
 
-function utilCalcLastIdCheckDays() {
-	// get Id Checked Date from client object & calculate number of days
-	// let familyIdCheckedDate = moment(client.familyIdCheckedDate, dbDate)
-	let lastIdCheck = moment().diff(client.familyIdCheckedDate, 'days')
-	return lastIdCheck
-}
+// function utilCalcLastIdCheckDays() {
+// 	// get Id Checked Date from client object & calculate number of days
+// 	// let familyIdCheckedDate = moment(client.familyIdCheckedDate, dbDate)
+// 	let lastIdCheck = moment().diff(client.familyIdCheckedDate, 'days')
+// 	return lastIdCheck
+// }
 
 function utilCalcLastVisitDays() {
 	// get Last Seen Date from client object & calculate number of days
-	// let lastSeenDate = moment(client.lastSeenDate, dbDate)
-	let lastVisit = moment().diff(client.lastSeenDate, 'days')
+	// TODO this may require we look for Primary & Food
+	if (client.lastServed[0] == undefined) return 10000
+	let lastVisit = moment().diff(client.lastServed[0].servedDateTime, 'days')
 	// If lastVist is not numeric then set to 10,000 days
-	if (!$.isNumeric(lastVisit)) lastVisit = 10000;
+	if (!$.isNumeric(lastVisit)) lastVisit = 10000
+	return lastVisit
 }
 
 function utilCalcTargetServices(activeServiceTypes) {
@@ -1425,7 +1430,7 @@ function utilCalcDependentAge(index){
 function utilSetCurrentClient(index){
 	client = clientData[index]
 	utilCalcFamilyCounts() // calculate fields counts and ages
-	isEmergency = false // **** TODO what is this for?
+	emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
 
 	uiUpdateCurrentClient(index)
@@ -1460,34 +1465,81 @@ function utilUpdateClientsData(){
 	return row
 }
 
-function utilValidateServiceInterval(activeServiceType){
-	// empty lastServed array
+function utilValidateServiceInterval(activeServiceType, activeServiceTypes){
+	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
 	if (client.lastServed.length == 0) {
-		if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
-			return 'false';
-		} else {return 'true'}
+		if ((activeServiceType.serviceCategory == "Food" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "NonUSDA")||(activeServiceType.serviceCategory == "Food" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "Emergency")) {
+			return false;
+		} else {return true}
 	}
-	let neverServed = true;
-	for (let i =0; i < client.lastServed.length; i++) {
-		let lastServedDate = moment(client.lastServed[i].servedDateTime).startOf('day');
-		if (client.lastServed[i].serviceTypeId == activeServiceType.serviceTypeId) {
-			neverServed = false;
-			if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return 'false';
-console.log("CHECK USDA");
-			// if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
-			// 		if (moment().startOf('day').diff(lastServedDate, 'days') < 28) return 'false';
-			// }
+	let inLastServed = ""
+	if (activeServiceType.serviceCategory == "Food" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "NonUSDA") {
+		inLastServed = client.lastServed.filter(function( obj ) {
+			return obj.isUSDA == "USDA"
+		})
+		if (inLastServed.length > 0){ // USDA's found in lastServed Check is USDA has valid interval
+			let lastServedDate = moment(inLastServed[0].servedDateTime).startOf('day');
+			// find USDA in activeServiceTypes
+			let usdaService = activeServiceTypes.filter(function( obj ) {
+				return obj.isUSDA == "USDA"
+			})
+			if (usdaService.length > 0) {
+				if (moment().startOf('day').diff(lastServedDate, 'days') < usdaService[0].serviceInterval) {
+					return true // USDA is NOT valid so show NonUSDA
+				}
+			}
+		} else {
+			return false  // no USDA's found in lastServed then NonUSDA should NOT be shown
 		}
+	} else {
+		inLastServed = client.lastServed.filter(function( obj ) {
+			return obj.serviceTypeId == activeServiceType.serviceTypeId
+		})
+		console.log(inLastServed)
+			if (inLastServed.length > 0){
+				let lastServedDate = moment(inLastServed[0].servedDateTime).startOf('day');
+				if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return false;
+				// TODO Sort out USDA / Non-USDA / Emergency ... Maybe filter on serviceCategory & Primary
+				let inLastServedFood = ""
+				if ((inLastServed[0].isUSDA == "NonUSDA")) {
+
+		console.log("IS NonUSDA")
+
+					inLastServedFood = client.lastServed.filter(function( obj ) {
+						return obj.isUSDA == "USDA"
+					})
+				}
+				if (inLastServedFood.length > 0){
+
+		console.log("FOUND USDA: " + inLastServedFood)
+
+				}
+			}
 	}
-	if (neverServed) {
-console.log("IN NEVER SERVED");
-console.log(activeServiceType.serviceName);
-		if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
-console.log(activeServiceType.serviceName);
-			return 'false';
-		}
-	}
-	return 'true';
+
+
+
+// 	for (let i =0; i < client.lastServed.length; i++) {
+// 		let lastServedDate = moment(client.lastServed[i].servedDateTime).startOf('day');
+// 		if (client.lastServed[i].serviceTypeId == activeServiceType.serviceTypeId) {
+// 			neverServed = false;
+// 			if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return 'false';
+// console.log("CHECK USDA");
+// 			// if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
+// 			// 		if (moment().startOf('day').diff(lastServedDate, 'days') < 28) return 'false';
+// 			// }
+// 		}
+// 	}
+
+// 	if (neverServed) {
+// console.log("IN NEVER SERVED");
+// console.log(activeServiceType.serviceName);
+// 		if ((activeServiceType.serviceCategory == "Food") && (activeServiceType.serviceButtons == "Primary") && (activeServiceType.isUSDA == "NonUSDA")) {
+// console.log(activeServiceType.serviceName);
+// 			return false
+// 		}
+// 	}
+	return true
 }
 
 // **********************************************************************************************************
