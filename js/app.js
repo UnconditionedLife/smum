@@ -317,15 +317,12 @@ function uiShowNewClientForm(){
 	navGotoTab("tab3")
 }
 
-function uiShowSecondaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes){
-	if (lastVisit >= 14) {
-		for (let i=0; i<btnSecondary.length; i++){
-			let x = btnSecondary[i];
-console.log(x);
-//		var standard = serviceTypes[i]['available']['dateFromMonth']<=moment().format('M')&& moment().format('M')<=serviceTypes[i]['available']['dateToMonth']
-			let service = '<div class="btnSecondary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="utilAddService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
-			$('#serviceButtonContainer').append(service)
-		}
+function uiShowSecondaryServiceButtons(activeServiceTypes){
+	$('#serviceSecondaryButtons').html("")
+	for (let i=0; i<btnSecondary.length; i++){
+		let x = btnSecondary[i];
+		let service = '<div class="btnSecondary"><a id="'+activeServiceTypes[x].serviceTypeId+'" onclick="utilAddService('+"'"+activeServiceTypes[x].serviceTypeId+"'"+', '+"'"+'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
+		$('#serviceSecondaryButtons').append(service)
 	}
 }
 
@@ -360,7 +357,7 @@ function uiShowServicesButtons(){
 	}
 	uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes)
 
-	uiShowSecondaryServiceButtons(btnSecondary, lastVisit, activeServiceTypes)
+	uiShowSecondaryServiceButtons(activeServiceTypes)
 
 
 }
@@ -601,11 +598,6 @@ function uiAddNoteButtonRow(){
 // **********************************************************************************************************
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
-
-// function dbGetClient(id){
-// 	return dbGetData(aws+"/clients/"+id).clients[0]
-//}
-
 function dbGetClientNotes(id){
 	let URL = aws+"/clients/notes/"+id;
 	arr = dbGetData(URL).notes
@@ -714,14 +706,30 @@ function dbPostData(uUrl,dataU){
 }
 
 function dbSaveLastServiced(servedDateTime, serviceTypeId, serviceTotalServed, serviceItemsServed){
-	lastServedArray = client.lastServed;
+	utilBloop()
+	serviceItemsServed = "2" // TODO HARDCODED
+	let existing = client.lastServed
+
+console.log(existing)
+
+	let lastServedArray = Array.prototype.slice.call(existing); // this deals with an issue within JS
+
 	let record = {'servedDateTime': servedDateTime,
 	                'serviceTypeId': serviceTypeId,
 						 'serviceTotalServed': serviceTotalServed,
 						 'serviceItemsServed': serviceItemsServed};
-	lastServedArray.unshift(record);
-	client.lastServed = lastServedArray;
+	lastServedArray.unshift(record)
+	client.lastServed = lastServedArray
+
+console.log(client.lastServed)
+
 	// SAVE TO db TODO
+	data = client
+
+console.log(JSON.stringify(data))
+
+	let URL = aws+"/clients/"
+	result = dbPostData(URL,JSON.stringify(data))
 }
 
 function dbPostNote(text){
@@ -791,7 +799,7 @@ function dbSaveDependentsTable(){
 	}
 	client.dependents = dependents
 // TODO - fix lastServed
-	client.lastServed = []
+//	client.lastServed = []
 	data = client
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
@@ -1118,6 +1126,13 @@ console.log(serviceType)
 
 function utilBeep(){
 	let sound = document.getElementById("beep")
+	sound.volume= .1
+	sound.loop = false
+	sound.play()
+};
+
+function utilBloop(){
+	let sound = document.getElementById("bloop")
 	sound.volume= .1
 	sound.loop = false
 	sound.play()

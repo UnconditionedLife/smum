@@ -280,12 +280,12 @@ main{
 	min-width: max-content;
 }
 
-#primaryButtonContainer {
+/* #primaryButtonContainer {
 	display: grid;
 	grid-column: 2 / span 4;
 	align-content: flex-start;
 	width: 100%;
-}
+} */
 
 #newDependentButton {
 	display: none;
@@ -517,7 +517,13 @@ input.inputBox:read-only {
 	justify-content: center;
 }
 
-
+#serviceSecondaryButtons {
+	display: flex;
+	grid-row: 4 / span 2;
+	grid-column: 2 / span 4;
+	justify-content: center;
+	flex-wrap: wrap;
+}
 
 
 
@@ -830,6 +836,7 @@ checkbox[readonly]{
 
 
 .btnSecondary {
+	margin: 0 5px 0 5px;
 	background-color: transparent;
 	border-color: var(--blue);
 	border-width: 4px;
@@ -837,11 +844,13 @@ checkbox[readonly]{
 	text-align: center;
 	line-height: 42px;
 	color: var(--blue);
-	font-size: 18px;
+	font-size: 16px;
 	font-weight: bold;
 	border-radius: 5px;
 	cursor: pointer;
-	box-shadow: 4px 4px 2px lightgrey;;
+	box-shadow: 4px 4px 2px lightgrey;
+	height: 50px;
+	min-width: 180px;
 }
 .btn-nav {
 	background-color: transparent;
