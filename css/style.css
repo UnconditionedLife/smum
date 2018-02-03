@@ -489,6 +489,14 @@ input.inputBox:read-only {
 	margin-top:-5px;
 }
 
+.imageGrayOut {
+	-webkit-filter: grayscale(100%);
+     -moz-filter: grayscale(100%);
+       -o-filter: grayscale(100%);
+      -ms-filter: grayscale(100%);
+          filter: grayscale(100%);
+}
+
 #serviceDateTime {
 	display: inline-flex;
 	grid-row: 1;
@@ -813,18 +821,23 @@ checkbox[readonly]{
 	width: 180px;
 }
 
+.buttonGrayOut {
+	border-color: var(--grey-green);
+	color: var(--grey-green);
+}
+
 .btnAdmin {
 	margin: 0 10px 0 10px;
 	background-color: transparent;
 	border-color: var(--red);
-	border-width: 6px;
+	border-width: 12px;
 	border-style: solid;
 	text-align: center;
 	line-height: 40px;
 	color: var(--red);
 	font-size: 18px;
 	font-weight: bold;
-	border-radius: 38px;
+	border-radius: 18px;
 	cursor: pointer;
 	box-shadow: 6px 6px 3px lightgrey;
 	width: 180px;
