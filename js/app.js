@@ -57,8 +57,6 @@ $(document).ready(function(){
   setInterval(uiShowLastServed, 60000);
 });
 
-
-
 // **********************************************************************************************************
 // ********************************************** NAV FUNCTIONS *********************************************
 // **********************************************************************************************************
@@ -244,6 +242,9 @@ let uiShowLastServed = function() {
 		let visitHeader = "FIRST SERVICE VISIT";
 		if (client.lastServed[0] != undefined) {
 			let lastServed = utilCalcLastServedDays()
+
+console.log(lastServed)
+
 			let lowestDaysServed = lastServed.daysUSDA
 			if (lastServed.daysNonUSDA < lowestDaysServed) lowestDaysServed = lastServed.daysNonUSDA
 			let servedDate = moment().subtract(lowestDaysServed, "days");
@@ -1172,56 +1173,15 @@ function utilCalcActiveServicesButtons(array, activeServiceTypes, targetServices
 	btnPrimary = [];
 	btnSecondary = [];
 	for (let i = 0; i < activeServiceTypes.length; i++) {
-		// loop throught to find items to compare
-		// presume that item will be displayed unless not valid
 		let display = true;
 		// check for not a valid service based on interval between services
 		if (!utilValidateServiceInterval(activeServiceTypes[i], activeServiceTypes, lastServed)) continue;
 		// loop through each property in each activeServiceType
 		for (let prop in targetServices[i]) {
-			// check service interval for service
-			// if (activeServiceTypes[i].serviceInterval > 0) {
-			// }
-			// cleanup true false
-			//let tarProp = targetServices[i][prop]
-			// if (tarProp == true) tarProp = "true"
-			// if (tarProp == false) tarProp = "false"
-			// let cliProp = client[prop]
-      //
-      //
-			// if (cliProp == true) tarProp = "true"
-			// if (cliProp == false) tarProp = "false"
-			// if (tarProp != cliProp) {
-			// 	console.log(false)
-			// 	display = false;
-			// }
 			if (targetServices[i][prop] != client[prop]) {
 				display = false
 			}
 		}
-
-console.log(activeServiceTypes[i].serviceName)
-console.log("display " + display)
-
-		// cross validate USDA NonUSDA & Emergency
-		if (activeServiceTypes[i].serviceButtons == "Primary" && activeServiceTypes[i].serviceCategory == "Food") {
-			let validUSDA = utilValidateUSDAFood(i, activeServiceTypes, lastServed)
-			let validNonUSDA = utilValidateNonUSDAFood(i, activeServiceTypes, lastServed)
-
-console.log("USDA: " + validUSDA)
-console.log("NonUSDA: " + validNonUSDA)
-
-			if (activeServiceTypes[i].isUSDA == "Emergency") {
-				if (validUSDA || validNonUSDA) {
-					display = false
-				}
-			} else if (activeServiceTypes[i].isUSDA == "NonUSDA") {
-				if (validUSDA) {
-					display = false
-				}
-			}
-		}
-
 		if (display) {
 			if (activeServiceTypes[i].serviceButtons == "Primary") {
 				if (activeServiceTypes[i].serviceCategory == "Food") {
@@ -1319,12 +1279,11 @@ function utilCalcFamilyCounts(){
 
 function utilCalcLastServedDays() {
 	// get Last Served Date from client object & calculate number of days
-	let initialize = [{isUSDA:"USDA", days:"10000"}, {isUSDA:"NonUSDA", days:"10000"}]
-	if (client.lastServed[0] == undefined) return initialize
+	let lastServed = {daysUSDA:"10000", daysNonUSDA:"10000"}
+	if (client.lastServed[0] == undefined) return lastServed
 	let lastServedFood = client.lastServed.filter(function( obj ) {
 		return obj.serviceCategory == "Food"
 	})
-	let lastServed = {daysUSDA:"", daysNonUSDA:""}
 	for (var i = 0; i < lastServedFood.length; i++) {
 		if (lastServedFood[i].isUSDA != "Emergency") {
 			let lastServedDay = moment(lastServedFood[i].serviceDateTime).startOf('day')
@@ -1547,35 +1506,6 @@ function utilValidateArguments(func, arguments, count){
 	return true
 }
 
-function utilValidateNonUSDAFood(index, activeServiceTypes, lastServed) {
-	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-
-console.log(lastServed)
-
-	let intervalUSDA = "10000"
-	let intervalNonUSDA = "10000"
-	for (var i = 0; i < lastServed.length; i++) {
-		if (lastServed[i].isUSDA = "USDA") {
-			intervalUSDA = lastServed[i].days
-		} else if (lastServed[i].isUSDA = "NonUSDA") {
-			intervalNonUSDA = lastServed[i].days
-		}
-	}
-	// find USDA in activeServiceTypes
-	let nonUSDAService = activeServiceTypes.filter(function( obj ) {
-		return obj.isUSDA == "NonUSDA"
-	})
-
-console.log(intervalNonUSDA)
-
-	if (nonUSDAService.length > 0) {
-		if (intervalNonUSDA < nonUSDAService[0].serviceInterval) {
-			return true // USDA is NOT valid so show NonUSDA
-		}
-	}
-	return false
-}
-
 function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
@@ -1584,36 +1514,32 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 			return false;
 		} else {return true}
 	}
-	// return true
-	// let inLastServed = ""
-	// if (activeServiceType.serviceCategory == "Food" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "NonUSDA") {
-	// 	if (!utilValidateUSDAFood(activeServiceType, activeServiceTypes)) return false
-  //
-	// } else if (activeServiceType.serviceCategory == "Food" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "Emergency") {
-	// 	// TODO address Emergency serviceType
-	// 	let validUSDA = (utilValidateUSDAFood(activeServiceType, activeServiceTypes))
-	// 	let validNonUSDA = (utilValidateNonUSDAFood(activeServiceType, activeServiceTypes))
-  //
-	// } else if (activeServiceType.serviceButtons == "Administration") {
-	// 	// TODO address ID/POA Check serviceType
-  //
-	// } else {
 
-//console.log(JSON.stringify(activeServiceType))
+	let lowestDateServed = lastServed.daysUSDA
+console.log(lowestDateServed)
 
-let lowestDateServed = lastServed.daysUSDA
-if (lastServed.daysNonUSDA < lowestDateServed) lowestDateServed = lastServed.daysNonUSDA
+	if (lastServed.daysNonUSDA < lowestDateServed) lowestDateServed = lastServed.daysNonUSDA
 
-console.log(">>> "+activeServiceType.serviceName +"<<<")
+console.log(lowestDateServed)
+
+	console.log(">>> "+activeServiceType.serviceName +"<<<")
 	if (activeServiceType.serviceButtons == "Primary") {
-console.log("PRIMARY")
+	console.log("PRIMARY")
 		if (activeServiceType.serviceCategory == "Food") {
-console.log("FOOD")
+	console.log("FOOD")
 			if (activeServiceType.isUSDA == "USDA") {
-console.log("USDA")
-				if (lastServed.daysUSDA < activeServiceType.serviceInterval) {
-					console.log("FALSE")
-					return false
+	console.log("USDA")
+				let nonUSDAServiceInterval = 10000
+				for (var i = 0; i < activeServiceType.length; i++) {
+					if (activeServiceType[i].serviceCategory == "Food" && activeServiceType[i].serviceButtons == "Primary" && activeServiceType[i].isUSDA == "NonUSDA") {
+							nonUSDAServiceInterval = activeServiceType[i].serviceInterval
+					}
+				}
+				if (lastServed.daysNonUSDA < nonUSDAServiceInterval) {
+					if (lastServed.daysUSDA < activeServiceType.serviceInterval) {
+						console.log("FALSE")
+						return false
+					}
 				}
 			} else if (activeServiceType.isUSDA == "NonUSDA") {
 				if (lastServed.daysNonUSDA < activeServiceType.serviceInterval) {
@@ -1621,26 +1547,43 @@ console.log("USDA")
 					return false
 				}
 			} else if (activeServiceType.isUSDA == "Emergency") {
-console.log(lastServed.daysUSDA < activeServiceType.serviceInterval)
-console.log(lastServed.daysNonUSDA < activeServiceType.serviceInterval)
-console.log((lastServed.daysUSDA < activeServiceType.serviceInterval && lastServed.daysNonUSDA < activeServiceType.serviceInterval))
 
-				if ((lastServed.daysUSDA < activeServiceType.serviceInterval && lastServed.daysNonUSDA < activeServiceType.serviceInterval)) {
+console.log("checking...")
+
+				let noFood = true
+				for (var i = 0; i < activeServiceTypes.length; i++) {
+					if (activeServiceTypes[i].serviceCategory == "Food" && activeServiceTypes[i].serviceButtons == "Primary") {
+					 	if (activeServiceTypes[i].isUSDA == "NonUSDA") {
+console.log(lastServed.daysNonUSDA + " >= " + activeServiceTypes[i].serviceInterval)
+							if (lastServed.daysNonUSDA >= activeServiceTypes[i].serviceInterval) {
+								 noFood = false
+								 console.log("FALSE")
+							}
+						} else if (activeServiceTypes[i].isUSDA == "USDA") {
+console.log(lastServed.daysUSDA + " >= " + activeServiceTypes[i].serviceInterval)
+							if (lastServed.daysUSDA >= activeServiceTypes[i].serviceInterval) {
+								noFood = false
+								console.log("FALSE")
+							}
+						}
+					}
+				}
+				if (!noFood) {
 					console.log("FALSE")
 					return false
 				}
 			}
 		} else if (activeServiceType.serviceCategory == "Clothes") {
-console.log("CLOTHING")
+	console.log("CLOTHING")
 
-console.log(lowestDateServed + " < " + activeServiceType.serviceInterval)
+	console.log(lowestDateServed + " < " + activeServiceType.serviceInterval)
 
 			if (lowestDateServed < activeServiceType.serviceInterval) {
 				console.log("FALSE")
 				return false;
 			}
 		} else if (activeServiceType.serviceCategory == "Administration") {
-console.log("ADMINISTRATION")
+	console.log("ADMINISTRATION")
 			inLastServed = client.lastServed.filter(function( obj ) {
 				return obj.serviceCategory == "Administration"
 			})
@@ -1653,12 +1596,12 @@ console.log("ADMINISTRATION")
 			}
 		}
 	} else {
-console.log("SECONDARY")
+	console.log("SECONDARY")
 
 
 
 
-console.log(lowestDateServed + " < " + activeServiceType.serviceInterval)
+	console.log(lowestDateServed + " < " + activeServiceType.serviceInterval)
 
 		if (lowestDateServed < activeServiceType.serviceInterval) {
 			console.log("FALSE")
@@ -1666,26 +1609,6 @@ console.log(lowestDateServed + " < " + activeServiceType.serviceInterval)
 		}
 	}
 	return true
-}
-
-function utilValidateUSDAFood(index, activeServiceTypes, lastServed) {
-	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-	let intervalUSDA = "10000"
-	for (var i = 0; i < lastServed.length; i++) {
-		if (lastServed[i].isUSDA = "USDA") {
-			intervalUSDA = lastServed[i].days
-		}
-	}
-	// find USDA in activeServiceTypes
-	let usdaService = activeServiceTypes.filter(function( obj ) {
-		return obj.isUSDA == "USDA"
-	})
-	if (usdaService.length > 0) {
-		if (intervalUSDA < usdaService[0].serviceInterval) {
-			return false // USDA is NOT
-		}
-	}
-	return false
 }
 
 // **********************************************************************************************************
