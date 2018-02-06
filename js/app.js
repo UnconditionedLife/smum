@@ -14,17 +14,20 @@
 let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 let rowNum = 1
 let MAX_ID_DIGITS = 4
-let uiDate = 'MM/DD/YYYY'
-let uiDateTime = 'MM/DD/YYYY HH:mm'
-let longDate = "MMMM Do, YYYY  |  LT"
-let date = 'YYYY-MM-DD'
-let dateTime = 'YYYY-MM-DDTHH:mm'
+const uiDate = 'MM/DD/YYYY'
+const uiDateTime = 'MM/DD/YYYY HH:mm'
+const longDate = "MMMM Do, YYYY  |  LT"
+const date = 'YYYY-MM-DD'
+const dateTime = 'YYYY-MM-DDTHH:mm'
+const seniorAge = 60 // TODO set in Admin/Settings
 let clientData = null // current client search results
 let clientNotes = []
 let client = {} // current client
 let serviceType = null
 let emergencyFood = false
 let currentNavTab = "clients"
+
+
 // cognito config
 let CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
 let  poolData = {
@@ -48,7 +51,6 @@ document.onkeydown = function(e) {
 // control the "save button" behaviour
 $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')})
 $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')})
-// $("#serviceCategory").load(uiToggleIsUSDA())
 $(document).ready(function(){
 	uiShowServicesDateTime()
   setInterval(uiShowServicesDateTime, 10000)
@@ -215,12 +217,13 @@ function uiSaveButton(form, action){
 	}
 }
 
-function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, totalSize){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
+function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, totalSeniors, totalSize){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 5)) return
 	if (document.getElementById("family.totalAdults") != null){
 		document.getElementById("family.totalAdults").value = totalAdults
 		document.getElementById("family.totalChildren").value = totalChildren
 		document.getElementById("family.totalOtherDependents").value = totalOtherDependents
+		document.getElementById("family.totalSeniors").value = totalSeniors
 		document.getElementById("family.totalSize").value = totalSize
 	}
 }
@@ -773,10 +776,10 @@ function dbPostData(uUrl,dataU){
 	return ans
 }
 
-function dbSaveLastServed(serviceTypeId, serviceCategory, isUSDA){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
+function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	let serviceDateTime = moment().format(dateTime)
-	let newRecord = {serviceTypeId, serviceDateTime, serviceCategory, isUSDA}
+	let newRecord = {serviceTypeId, serviceDateTime, serviceCategory, itemsServed, isUSDA}
 	let newLastServed = []
 	let notPushed = true
 	if (client.lastServed.length > 0) {
@@ -806,40 +809,124 @@ console.log(data)
 	if (result == null) {
 		utilBloop() // TODO move bloop to successful POST ()
 		console.log(result)
+	} else {
+		console.log("Failed to Save")
 	}
 }
 
 function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-	// TODO ADD serviceTotalServed & serviceItemsServed to the ServicesRendered Table
+	let itemsServed = ""
+	let serviceType = {}
 	if (serviceButtons == "Primary"){
-		let serviceType = serviceTypes.filter(function( obj ) {
+		let serviceTypeArr = serviceTypes.filter(function( obj ) {
 			return obj.serviceTypeId == serviceTypeId
 		})
-		dbSaveLastServed(serviceTypeId, serviceCategory, serviceType[0].isUSDA)
+		serviceType = serviceTypeArr[0]
+		itemsServed = serviceType.numberItems
+		if (serviceType.itemsPer == "Person") itemsServed = itemsServed * client.family.totalSize
+		dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, serviceType.isUSDA)
 		// TODO move to FUNCTION
-		$("#receiptBody").append("<p><strong>"+serviceType[0].serviceName+"</strong><br><strong>Category:</strong> "+serviceCategory+"<br><strong>Is USDA:</strong> "+serviceType[0].isUSDA+"</p>")
+		$("#receiptBody").append("<p><strong>"+serviceType.serviceName+"</strong><br><strong>Category:</strong> "+serviceCategory+"<br><strong>Is USDA:</strong> "+serviceType.isUSDA+"</p>")
 	}
-	dbSaveServiceRendered(serviceTypeId)
+	dbPostService(serviceType, itemsServed)
 
 }
 
-function dbSaveServiceRendered(serviceTypeId){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+function dbPostService(serviceType, itemsServed){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	// TODO Create table by clientID and add new services to top of array
+	// TODO add senior cutoff age to the Settings (now configure)
+	// TODO add Zipcode to the Settings (now configure) - make client for zipcode a pull-down with values
+	let emergencyFood = "NO"
+	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
+
+	let serviceRecord = {
+							serviceId: cuid(),
+			 servicedDateTime: moment().format(dateTime),
+			 	 clientServedId: client.clientId,
+		 servicedByUserName: session.user.username,
+			    serviceTypeId: serviceType.serviceTypeId,
+					  serviceName: serviceType.serviceName,
+				serviceCategory: serviceType.serviceCategory,
+				 serviceButtons: serviceType.serviceButtons,
+				         isUSDA: serviceType.isUSDA,
+				    itemsServed: itemsServed,
+				       homeless: client.homeless,
+				  emergencyFood: emergencyFood,
+					total: {
+						   adultsServed: client.family.totalAdults,
+						 childrenServed: client.family.totalChildren,
+					  	seniorsServed: client.family.totalSeniors,
+					individualsServed: client.family.totalSize
+					},
+					fulfillment: {
+						        pending: false,
+									 dateTime: moment().format(dateTime),
+							voucherNumber: "XXXXX",
+						     byUserName: session.user.username,
+						      itemCount: itemsServed
+					}
+	}
+
+	console.log(session.user)
+
+	// {
+	// 	"serviceId": {"S": "$inputRoot.serviceId"},
+	// 		"servicedDateTime": {"S": "$inputRoot.servicedDateTime"},
+	// 		"clientServedId": {"S": "$inputRoot.clientServedId"},
+	// 		"servicedByUserId": {"S": "$inputRoot.servicedByUserId"},
+	// 		"servicedByUserName" : {"S": "$inputRoot.servicedByUserName"},
+	// 		"serviceTypeId" : {"S": "$inputRoot.serviceTypeId"},
+	// 		"serviceName" : {"S": "$inputRoot.serviceName"},
+	// 		"serviceCategory" : {"S": "$inputRoot.serviceCategory"},
+	// 		"serviceButtons" : {"S": "$inputRoot.serviceButtons"},
+	// 		"isUSA" : {"S": "$inputRoot.isUSA"},
+	// 		"itemsServed" : {"N": "$inputRoot.itemsServed"},
+	// 		"homeless" : {"S": "$inputRoot.homeless"},
+	// 		"emergencyFood" : {"S": "$inputRoot.emergencyFood"},
+	// 		"total" : {
+	// 				"M": {
+	// 						"adultsServed": {"N": "$inputRoot.total.adultsServed"},
+	// 						"childrenServed": {"N": "$inputRoot.total.childrenServed"},
+	// 						"individualsServed": {"N": "$inputRoot.total.individualsServed"},
+	// 						"seniorsServed": {"N": "$inputRoot.total.seniorsServed"}
+	// 				}
+	// 		},
+	// 		"fulfillment" : {
+	// 				"M": {
+	// 						"pending": {"BOOL": "$inputRoot.fulfillment.pending"},
+	// 						"dateTime": {"S": "$inputRoot.fulfillment.dateTime"},
+	// 						"voucherNumber": {"N": "$inputRoot.fulfillment.voucherNumber"},
+	// 						"byUserId": {"S": "$inputRoot.fulfillment.byUserId"},
+	// 						"byUserName": {"S": "$inputRoot.fulfillment.byUserName"},
+	// 						"itemCount": {"N": "$inputRoot.fulfillment.itemCount"}
+	// 				}
+	// 		}
+
+	let data = serviceRecord
+	data = JSON.stringify(data)
+
+console.log(data)
+
+	let URL = aws+"/clients/services"
+	result = dbPostData(URL,data)
+	if (result == null) {
+		utilBloop() // TODO move bloop to successful POST ()
+		console.log("SUCCESS: " + result)
+	}
 }
 
 function dbPostNote(text){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	// TODO replace hardcoded values with real user variables
-	// Are we using uuid here?
 	let ans = {}
 	ans['noteOnClientId'] = client['clientId']
 	ans['noteText'] = text.toString()
 	ans['createdDateTime']=Math.round((new Date()).getTime() / 1000).toString()
 	ans['noteByUserId'] = '12f8176c38186cad1705a6f3af8b8c0ad0b23200'
 	ans['noteByUserName']="Kush Jain"
-	ans['clientNoteId'] = uuidv1().toString()
+	ans['clientNoteId'] = cuid()
 console.log(JSON.stringify(ans))
 	dbPostData(aws+"/clients/notes/",JSON.stringify(ans))
 }
@@ -875,7 +962,11 @@ console.log(JSON.stringify(data))
 	uiSaveButton('client', 'Saving...')
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
-	if (result == null) uiToggleClientViewEdit("view")
+	if (result == null) {
+		utilCalcClientAge()
+		utilCalcFamilyCounts()
+		uiToggleClientViewEdit("view")
+	}
 }
 
 function dbSaveDependentsTable(){
@@ -904,6 +995,7 @@ function dbSaveDependentsTable(){
 	result = dbPostData(URL,JSON.stringify(data))
 	if (result == null) {
 		utilCalcFamilyCounts()
+		utilCalcClientAge()
 		uiToggleDependentsViewEdit("view")
 	}
 }
@@ -924,23 +1016,10 @@ function dbSearchClients(){
 	}
 	if (currentNavTab !== "clients") navGotoSec("nav1")
 	clientData = null
-
 	const regex = /[-/.]/g
-
- console.log(regex)
-
  	const slashCount = (a.match(regex) || []).length
-
- console.log(slashCount)
-
 	if (slashCount == 2){
-
-console.log(a)
-
 		a = utilCleanUpDate(a)
-
-console.log(a)
-
 		a = moment(a, uiDate).format(date)
 		clientData = dbGetData(aws+"/clients/dob/"+a).clients
 	} else if (!isNaN(a)&&a.length<MAX_ID_DIGITS){
@@ -1320,22 +1399,28 @@ function utilCalcActiveServiceTypes(){
 
 function utilCalcFamilyCounts(){
 	// age TODO Move this to correct Function
+
+console.log("UPDATING COUNTS")
+
 	for (var i = 0; i < client.dependents.length; i++) {
 		utilCalcDependentAge(i)
 	}
 	if (client.family == undefined) client.family = {}
 	// dependents age & family counts
-	let fam = {totalAdults:1, totalChildren:0, totalOtherDependents:0, totalSize:1}
+	let fam = {totalAdults:1, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:1}
+	if (client.age >= seniorAge) ++fam.totalSeniors
 	for (let i = 0; i < client.dependents.length; i++) {
 		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
 		if (client.dependents[i].relationship == "Spouse" && client.dependents[i].isActive == "Active") {
 			++fam.totalAdults
 			++fam.totalSize
+			if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
 		}
 		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age >= 18 && client.dependents[i].isActive == "Active") {
 			++fam.totalOtherDependents
 			++fam.totalAdults
 			++fam.totalSize
+			if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
 		}
 		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age < 18 && client.dependents[i].isActive == "Active") {
 			++fam.totalOtherDependents
@@ -1350,8 +1435,9 @@ function utilCalcFamilyCounts(){
 	client.family.totalAdults = fam.totalAdults
 	client.family.totalChildren = fam.totalChildren
 	client.family.totalOtherDependents = fam.totalOtherDependents
+	client.family.totalSeniors = fam.totalSeniors
 	client.family.totalSize = fam.totalSize
-	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSize)
+	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
 }
 
 // function utilCalcLastIdCheckDays() {
@@ -1468,6 +1554,10 @@ function utilCleanUpDate(a) {
 
 function utilErrorHandler(errMessage, status, error, type) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
+	return
+
+// TODO manage AWS & CODE Errors
+
 	if (type == "aws") {
 		// if (message.indexOf("XMLHttpRequest")
 		cogLogoutUser()
@@ -1567,6 +1657,9 @@ function utilRemoveDupClients(clients) {
 
 function utilCalcClientAge(){
 	let dob = $("#dob.clientForm").val()
+	if (dob == undefined) {
+		dob = client.dob
+	}
 	let age = moment().diff(dob, 'years')
 	if (Number(age)){
 		$("#clientAge").val(age)
@@ -1590,10 +1683,10 @@ function utilCalcDependentAge(index){
 function utilSetCurrentClient(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	client = clientData[index]
+	utilCalcClientAge()
 	utilCalcFamilyCounts() // calculate fields counts and ages
 	emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
-
 	uiUpdateCurrentClient(index)
 }
 
