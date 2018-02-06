@@ -46,11 +46,12 @@ document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); dbSearchClients()}
 }
 // control the "save button" behaviour
-$(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')});
-$(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')});
+$(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')})
+$(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')})
+// $("#serviceCategory").load(uiToggleIsUSDA())
 $(document).ready(function(){
-	uiShowServicesDateTime();
-  setInterval(uiShowServicesDateTime, 10000);
+	uiShowServicesDateTime()
+  setInterval(uiShowServicesDateTime, 10000)
 });
 $(document).ready(function(){
 	uiShowLastServed();
@@ -186,6 +187,10 @@ function uiUpdateCurrentClient(index) {
 	uiSetClientsHeader('#' + client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
 	uiShowServicesButtons()
 	uiShowClientEdit(false)
+}
+
+function uiUpdateAdminHeader() {
+	$("#adminTitle").html($("#serviceName").val())
 }
 
 function uiResetDependentsTable() {
@@ -394,6 +399,7 @@ function uiShowServicesButtons(){
 function uiShowServiceTypeForm(){
 	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
 	uiPopulateForm(serviceType, 'serviceTypeForm')
+	uiToggleIsUSDA()
 }
 
 function uiPopulateForm(data, form){
@@ -597,6 +603,19 @@ function uiToggleClientAddress(){
 	} else {
 		$('.addressDiv').hide('slow')
 	}
+}
+
+function uiToggleIsUSDA() {
+
+console.log("ToggleUSDA")
+
+	if ($("#serviceCategory").val() == "Food"){
+		$('.USDADiv').show('slow')
+	} else {
+		$("#isUSDA").val("NA")
+		$('.USDADiv').hide('slow')
+	}
+
 }
 
 function uiGetTemplate(t){
@@ -1487,7 +1506,7 @@ console.log(key)
 				formVal = '*EMPTY*'
 			} else if (valType == 'number') {
 console.log(key + ' : ' + formVal + ' : '+ valType)
-				formVal = '-123'
+				formVal = '0'
 			}
 		}
 		if (key.includes(".")) {

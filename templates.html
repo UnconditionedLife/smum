@@ -103,10 +103,10 @@
          <input id="serviceTypeId" type="hidden" class="serviceTypeForm">
          <input id="updatedDateTime" type="hidden" class="serviceTypeForm">
          <input id="createdDateTime" type="hidden" class="serviceTypeForm">
-         <input id="serviceName" type="text" class="inputBox serviceTypeForm" onchange="updateServiceHeader()" placeholder="Service name">
+         <input id="serviceName" type="text" class="inputBox serviceTypeForm" onchange="uiUpdateAdminHeader()" placeholder="Service name">
       </div>
       <div class="lableDiv">Category</div>
-      <select id="serviceCategory" class="inputBox serviceTypeForm">
+      <select id="serviceCategory" class="inputBox serviceTypeForm" onChange="uiToggleIsUSDA()">
          <option value="Food">Food</option>
          <option value="Clothes">Clothes</option>
          <option value="Hygiene">Hygiene</option>
@@ -132,17 +132,24 @@
       </select>
       <div class="lableDiv"># of Items</div>
       <div><input id="numberItems" type="number" class="inputBox serviceTypeForm"></div>
-      <div class="lableDiv">USDA</div>
+      <div class="lableDiv">Items Per</div>
       <div>
-         <!-- TODO Hide isUSDA unless Category is FOOD PROBLEM WITH EMPTY FIELD-->
+         <select id="itemsPer" class="inputBox serviceTypeForm">
+            <option value="Family">Family</option>
+            <option value="Person">Person</option>
+         </select>
+      </div>
+      <div class="lableDiv">Interval</div>
+      <div><input id="serviceInterval" type="number" class="inputBox serviceTypeForm" placeholder="Days between service"></div>
+      <div class="lableDiv USDADiv">USDA</div>
+      <div class="USDADiv">
          <select id="isUSDA" class="inputBox serviceTypeForm">
+            <option value="NA">NA</option>
             <option value="USDA">USDA</option>
             <option value="NonUSDA">NonUSDA</option>
             <option value="Emergency">Emergency</option>
          </select>
       </div>
-      <div class="lableDiv">Interval</div>
-      <div><input id="serviceInterval" type="number" class="inputBox serviceTypeForm" placeholder="Days between service"></div>
 
       <div class="headingDiv span6">Service Available</div>
 
@@ -164,7 +171,7 @@
          </select>
       </div>
       <div><input id="available.dateFromDay" type="number" class="inputBox serviceTypeForm"></div>
-      <div class="span3"></div>
+      <!-- <div class="span3"></div> -->
       <div class="lableDiv">To</div>
       <div>
          <select id="available.dateToMonth" class="inputBox serviceTypeForm">
@@ -183,7 +190,7 @@
          </select>
       </div>
       <div><input id="available.dateToDay" type="number" class="inputBox serviceTypeForm"></div>
-      <div class="span3"></div>
+      <!-- <div class="span3"></div> -->
 
       <div class="headingDiv span6">Target Recipient</div>
 
@@ -215,7 +222,7 @@
 
       <div class="lableDiv">Child</div>
       <div>
-         <select id="target.child" class="inputBox serviceTypeForm" onchange="toggleAgeGrade()">
+         <select id="target.child" class="inputBox serviceTypeForm" onchange="uiToggleAgeGrade()">
             <option value="Unselected">Unselected</option>
             <option value="YES">YES</option>
             <option value="NO">NO</option>
