@@ -23,7 +23,7 @@
     <nav class="navbar">
       <div class="logo">
          <img src="images/smumLogo.png" width="31" height="42" onClick="" alt="SMUM"></a>
-         <span>&nbsp;&nbsp;SMUM</span>
+         <span>&nbsp;&nbsp;Santa Maria Urban Ministry</span>
       </div>
       <div class="searchDiv">
  	      <input id="searchField" class="search" type="text" value="" placeholder="Search clients">
@@ -46,7 +46,7 @@
 	   <div class="navButtons">
          <ul class="navbar-nav">
             <li id="nav1" class="navItem navActive" onClick="navSwitch('clients')">Services</li>
-            <li id="nav2" class="navItem" onClick="navSwitch('programs')">Programs</li>
+            <!-- <li id="nav2" class="navItem" onClick="navSwitch('programs')">Programs</li> -->
             <li id="nav3" class="navItem" onclick="navSwitch('admin')">Admin</li>
             <li id="nav4" class="navItem" onclick="navSwitch('user')"></li>
             <li id="nav5" class="navItem logInOut" onclick="navSwitch('logInOut')">Login</li>
@@ -119,7 +119,18 @@
                <div class="topFormButtonsDiv"><input class="solidButton" onclick="newClientNote()" type="button" value="New Note"></div>
                <container id="notesContainer"></container>
             </section>
-            <div id="receipt"><span class="verticalText">N O T E S</span><div class="fillerBox"></div></div>
+            <div id="receiptTab">
+               <span class="verticalText">R E C E I P T</span>
+               <div class="fillerBox"></div>
+               <div id="receiptContainer">
+                  <div id="receiptHeader">
+
+                  </div>
+                  <div id="receiptBody">
+
+                  </div>
+               </div>
+            </div>
          </div>
       </div>
       <div id="adminDiv">
@@ -225,9 +236,9 @@
 	        </div>
 	    </div>
 	</div>
-   <div class="loginOverlay">
+   <div id="loginOverlay" class="popupOverlay">
       <div class="userFormDiv">
-         <div class="loginHeader span4">LOGIN TO SMUM</div>
+         <div class="loginHeader span4">Login to Santa Maria Urban Ministry</div>
          <div class="span4"></div>
          <div></div>
          <div class="lableDiv">Username</div>
@@ -242,6 +253,21 @@
          <div></div>
          <div class="span4" style="display: flex; justify-content: center; height: 60px; align-items: center;">
             <input class="solidButton" onclick="cogLoginUser()" type="button" value="Login">
+         </div>
+      </div>
+   </div>
+   <div id="errorOverlay" class="popupOverlay">
+      <div class="userFormDiv">
+         <div class="loginHeader span4">APP ERROR</div>
+         <div class="span4"></div>
+         <div></div>
+         <div id="errorTitle" class="lableDiv">Username</div>
+         <div></div>
+         <div></div>
+         <div id="errorMessage"  class="lableDiv">Password</div>
+         <div></div>
+         <div class="span4" style="display: flex; justify-content: center; height: 60px; align-items: center;">
+            <input class="solidButton" onclick="uiShowHideError('hide')" type="button" value="Continue">
          </div>
       </div>
    </div>

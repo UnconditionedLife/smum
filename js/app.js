@@ -54,13 +54,14 @@ $(document).ready(function(){
 });
 $(document).ready(function(){
 	uiShowLastServed();
-  setInterval(uiShowLastServed, 60000);
+  setInterval(uiShowLastServed, 120000);
 });
 
 // **********************************************************************************************************
 // ********************************************** NAV FUNCTIONS *********************************************
 // **********************************************************************************************************
 function navSwitch(link){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	switch (link) {
 		case "clients":
 			navGotoSec("nav1")
@@ -87,6 +88,7 @@ function navSwitch(link){
 }
 
 function navGotoSec(nav){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	for (let i = 0; i < 5; i++) $("#nav"+i).removeClass("navActive")
 	$("#"+nav).addClass("navActive")
 	$("#"+currentNavTab).hide()
@@ -106,7 +108,6 @@ function navGotoSec(nav){
 			currentNavTab = "userDiv"
 			break
 		case "nav5": // LOGINOUT
-			// currentNavTab = "logInOut"
 			if ($('#nav5').html() === 'Login'){
 				uiShowHideLogin('show')
 			} else {
@@ -119,6 +120,7 @@ function navGotoSec(nav){
 }
 
 function navGotoTab(tab){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let useAttr = document.getElementById(tab);
 	useAttr.setAttribute('checked', true);
 	useAttr['checked'] = true;
@@ -163,10 +165,12 @@ function uiBuildHistoryTop(){
 }
 
 function uiOutlineTableRow(table, row){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', '2px solid').siblings().css('outline', 'none')
 }
 
 function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	if (action == "gray") {
 		$("#btn-"+serviceTypeId).css({'color': 'var(--grey-green', 'border-color': 'var(--grey-green'}) //addClass("buttonGrayOut")
 		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).addClass("imageGrayOut")
@@ -177,6 +181,7 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 }
 
 function uiUpdateCurrentClient(index) {
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiOutlineTableRow('clientTable', index + 1)
 	uiSetClientsHeader('#' + client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
 	uiShowServicesButtons()
@@ -188,6 +193,7 @@ function uiResetDependentsTable() {
 }
 
 function uiSaveButton(form, action){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	if (action === 'Save') {
 		if ($('#'+form+'SaveButton').val() !== 'Save'){
 			$('#'+form+'SaveButton').val('Save')
@@ -205,6 +211,7 @@ function uiSaveButton(form, action){
 }
 
 function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, totalSize){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	if (document.getElementById("family.totalAdults") != null){
 		document.getElementById("family.totalAdults").value = totalAdults
 		document.getElementById("family.totalChildren").value = totalChildren
@@ -213,11 +220,23 @@ function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, to
 	}
 }
 
-function uiShowHideLogin(todo){
+function uiShowHideError(todo, title, message){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	if (todo === 'show'){
-		$('.loginOverlay').show().css('display', 'flex')
+		$('#errorOverlay').show().css('display', 'flex')
 	} else {
-		$('.loginOverlay').hide()
+		$('#errorOverlay').hide()
+		$('#errorTitle').val('')
+		$('#errorMessage').val('')
+	}
+}
+
+function uiShowHideLogin(todo){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	if (todo === 'show'){
+		$('#loginOverlay').show().css('display', 'flex')
+	} else {
+		$('#loginOverlay').hide()
 		$('#loginEmail').val('')
 		$('#loginPassword').val('')
 	}
@@ -242,20 +261,22 @@ let uiShowLastServed = function() {
 		let visitHeader = "FIRST SERVICE VISIT";
 		if (client.lastServed[0] != undefined) {
 			let lastServed = utilCalcLastServedDays()
-
-console.log(lastServed)
-
-			let lowestDaysServed = lastServed.daysUSDA
-			if (lastServed.daysNonUSDA < lowestDaysServed) lowestDaysServed = lastServed.daysNonUSDA
-			let servedDate = moment().subtract(lowestDaysServed, "days");
-			let displayLastServed = moment(servedDate).fromNow() //lastServedFood[0].serviceDateTime
-			visitHeader = 'LAST SERVED ' + displayLastServed.toUpperCase()
+			if (lastServed.lowestDays != 10000) {
+				if (lastServed.lowestDays == 0) {
+					visitHeader = 'LAST SERVED TODAY'
+				} else {
+					let servedDate = moment().subtract(lastServed.lowestDays, "days");
+					let displayLastServed = moment(servedDate).fromNow() //lastServedFood[0].serviceDateTime
+					visitHeader = 'LAST SERVED ' + displayLastServed.toUpperCase()
+				}
+			}
 		}
 		$('#serviceLastVisit').html(visitHeader)
 	}
 }
 
 function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
+	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	// if (lastVisit < 14 && lastVisit > 1) {
 	// 	emergencyFood = true
 	// 	// TODO remove old static emergency button
@@ -280,6 +301,8 @@ console.log(btnPrimary)
 let uiShowServicesDateTime = function() {
 	if (client.clientId != undefined){
 		$('#serviceDateTime').html(moment().format(longDate))
+		// TODO separate
+		$('#receiptHeader').html(moment().format(longDate)+"<br>"+client.givenName+" "+client.familyName)
 	}
 }
 
@@ -288,6 +311,7 @@ function uiShowUserEdit(){
 }
 
 function uiShowClientEdit(isEdit){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiDisplayNotes("Client Notes")
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
 	uiPopulateForm(client, 'clientForm')
@@ -301,6 +325,7 @@ function uiShowClientEdit(isEdit){
 }
 
 function uiShowDependents(isEdit){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	if (client.dependents!=null){
 		uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","age","isActive"],'dependentsTable')
 	}
@@ -316,7 +341,8 @@ function uiShowNewServiceTypeForm(){
 	navGotoTab("aTab2")
 }
 
-function uiShowNote(text,text2){
+function uiShowNote(text, text2){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$('.notes').append('<tr><td class="data">'+text+'</td>'+'<td class="data">'+text2+'</td></tr>')
 }
 
@@ -333,6 +359,7 @@ function uiShowNewClientForm(){
 }
 
 function uiShowSecondaryServiceButtons(activeServiceTypes){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	if (emergencyFood) return
 	$('#serviceSecondaryButtons').html("")
 	for (let i=0; i<btnSecondary.length; i++){
@@ -345,7 +372,6 @@ function uiShowSecondaryServiceButtons(activeServiceTypes){
 }
 
 function uiShowServicesButtons(){
-	// builds the Services tab
 	// return if client object is empty
 	if ($.isEmptyObject(client)) return
 
@@ -353,8 +379,8 @@ function uiShowServicesButtons(){
 // TODO IF lastidcheck is current service then may not need idCheck field
 
 	let lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
-	let activeServiceTypes = utilCalcActiveServiceTypes() // checks active date ranges from admin serviceTypes
-	let targetServices = utilCalcTargetServices(activeServiceTypes); // changes setting to specific variables in client
+	let activeServiceTypes = utilCalcActiveServiceTypes() // checks active date ranges of each serviceTypes
+	let targetServices = utilCalcTargetServices(activeServiceTypes); // changes setting to specific variables matching client
 	let btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
 	let btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
 	uiShowServicesDateTime()
@@ -371,6 +397,7 @@ function uiShowServiceTypeForm(){
 }
 
 function uiPopulateForm(data, form){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$.each(data, function(key,value){
 		if (typeof(data[key])=='object') {
 			let obj = data[key]
@@ -405,6 +432,7 @@ function uiPopulateForm(data, form){
 }
 
 function uiSetClientsHeader(title){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	$("#clientsTitle").html(title)
 }
 
@@ -413,6 +441,7 @@ function uiSetServiceTypeHeader(){
 }
 
 function uiSetAdminHeader(title){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	$("#adminTitle").html(title)
 }
 
@@ -421,6 +450,7 @@ function uiShowServiceTypes(){
 }
 
 function uiGenSelectHTML(val,options,col,id){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	html = "<select id='"+col+"["+id+"]' class='inputBox dependentsForm'>"
 	for (let i =0; i<options.length;i++){
 		let select = "";
@@ -434,6 +464,7 @@ function uiGenSelectHTML(val,options,col,id){
 }
 
 function uiGenSelectHTMLTable(selector,data,col,tableID){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
   // CREATES DYNAMIC TABLE.
   let table = document.createElement("table")
   table.setAttribute("id", tableID)
@@ -471,12 +502,18 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
 				} else{
 					tabCell.innerHTML="<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm' value='"+data[i][col[j]]+"'>";
 				}
-    	} else if (col[j]=="dob"||col[j]=="firstSeenDate"){
+    	} else if (col[j]=="dob"||col[j]=="firstSeenDate"||col[j]=="familyIdCheckedDate"){
 				tabCell.className = "historyTopText"
         tabCell.innerHTML = moment(data[i][col[j]]).format('MMM DD, YYYY')
-			} else if (col[j]=="lastSeenDate"||col[j]=="familyIdCheckedDate"){
+			} else if (col[j]=="lastSeenDate"){
 				tabCell.className = "historyTopText"
-				tabCell.innerHTML = moment(data[i][col[j]]).fromNow()
+				let lastServed = utilCalcLastServedDays()
+				let displayLastServed = "Never Served"
+				if (lastServed.lowestDays != 10000) {
+					let servedDate = moment().subtract(lastServed.lowestDays, "days");
+					let displayLastServed = moment(servedDate).format('MMM DD, YYYY')
+				}
+				tabCell.innerHTML = displayLastServed
 			} else if (col[j]=="createdDateTime"||col[j]=="updatedDateTime"){
 				tabCell.className = "historyTopText"
         tabCell.innerHTML = moment(data[i][col[j]]).format('MMM DD, YYYY | h:mm a')
@@ -494,6 +531,7 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
 }
 
 function uiToggleClientViewEdit(side){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	console.log(side)
 	if (side == 'view') {
 		$('#clientLeftSlider').addClass('sliderActive')
@@ -515,6 +553,7 @@ function uiToggleClientViewEdit(side){
 }
 
 function uiToggleDependentsViewEdit(side){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	console.log(side)
 	if (side == 'view') {
 		$('#dependentdLeftSlider').addClass('sliderActive')
@@ -561,6 +600,7 @@ function uiToggleClientAddress(){
 }
 
 function uiGetTemplate(t){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let imp = document.querySelector('link[rel="import"]');
 	let temp = imp.import.querySelector(t);
 	let clone = document.importNode(temp.content, true);
@@ -584,6 +624,7 @@ function uiResetServiceTypeForm(){
 }
 
 function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	//setMainSideDiv()
 	var tableStr = '<table class="notes"></table>'
 	$('#notesContainer').html(tableStr)
@@ -602,12 +643,14 @@ function uiAddNoteButtonRow(){
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
 function dbGetClientNotes(id){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let URL = aws+"/clients/notes/"+id;
 	arr = dbGetData(URL).notes
 console.log(arr)
 	return arr
 }
 function dbGetData(uUrl){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let urlNew = uUrl;
 	let ans = null;
 // console.log('idToken + ' + authorization.idToken)
@@ -626,6 +669,7 @@ function dbGetData(uUrl){
 	    	ans = json
 		},
 		error: function(message, status, error){
+			utilErrorHandler(message, status, error, "aws")
 			console.log(message + ", " + status + ", " + error)
 			alert(error);
 			if (message.readyState == 0) {
@@ -648,6 +692,7 @@ function dbGetNewClientID(){
 }
 
 function dbGetServicesNotes(id){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	return dbGetData(aws+"/services/"+id).services
 }
 
@@ -656,6 +701,7 @@ function dbGetServicesTypes(){
 }
 
 function dbPostData(uUrl,dataU){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	if (authorization.idToken == 'undefined') {
 		utilBeep()
 		consol.log("need to log in")
@@ -752,6 +798,8 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 			return obj.serviceTypeId == serviceTypeId
 		})
 		dbSaveLastServed(serviceTypeId, serviceCategory, serviceType[0].isUSDA)
+		// TODO move to FUNCTION
+		$("#receiptBody").append("<p><strong>"+serviceType[0].serviceName+"</strong><br><strong>Category:</strong> "+serviceCategory+"<br><strong>Is USDA:</strong> "+serviceType[0].isUSDA+"</p>")
 	}
 	dbSaveServiceRendered(serviceTypeId)
 
@@ -763,6 +811,7 @@ function dbSaveServiceRendered(serviceTypeId){
 }
 
 function dbPostNote(text){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	// TODO replace hardcoded values with real user variables
 	// Are we using uuid here?
 	let ans = {}
@@ -856,7 +905,23 @@ function dbSearchClients(){
 	}
 	if (currentNavTab !== "clients") navGotoSec("nav1")
 	clientData = null
-	if (a.includes("/")){
+
+	const regex = /[-/.]/g
+
+ console.log(regex)
+
+ 	const slashCount = (a.match(regex) || []).length
+
+ console.log(slashCount)
+
+	if (slashCount == 2){
+
+console.log(a)
+
+		a = utilCleanUpDate(a)
+
+console.log(a)
+
 		a = moment(a, uiDate).format(date)
 		clientData = dbGetData(aws+"/clients/dob/"+a).clients
 	} else if (!isNaN(a)&&a.length<MAX_ID_DIGITS){
@@ -1148,8 +1213,8 @@ console.log("IN ADD SERVICE");
 
 	dbSaveService(serviceTypeId, serviceCategory, serviceButtons);
 	uiShowLastServed()
-	uiShowNote(serviceTypeId)
-	uiToggleButtonColor("gray", serviceTypeId, serviceType.serviceButtons)
+	uiShowNote(serviceTypeId, "")
+	uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
 	// TODO Create ability to UNDO the adding of a service.
 	// TODO Create tally of added services on the screen [the print button will be added there]
 }
@@ -1279,7 +1344,7 @@ function utilCalcFamilyCounts(){
 
 function utilCalcLastServedDays() {
 	// get Last Served Date from client object & calculate number of days
-	let lastServed = {daysUSDA:"10000", daysNonUSDA:"10000"}
+	let lastServed = {daysUSDA:"10000", daysNonUSDA:"10000", lowestDays:"10000"}
 	if (client.lastServed[0] == undefined) return lastServed
 	let lastServedFood = client.lastServed.filter(function( obj ) {
 		return obj.serviceCategory == "Food"
@@ -1294,11 +1359,8 @@ function utilCalcLastServedDays() {
 			}
 		}
 	}
-
-console.log(lastServed)
-
-	// If lastVist is not numeric then set to 10,000 days
-	// if (!$.isNumeric(lastServed)) lastServed = 10000
+	lastServed.lowestDays = lastServed.daysUSDA
+	if (lastServed.daysNonUSDA < lastServed.daysUSDA) lastServed.lowestDays = lastServed.daysNonUSDA
 	return lastServed
 }
 
@@ -1348,6 +1410,7 @@ function utilCalcTargetServices(activeServiceTypes) {
 }
 
 function utilChangeWordCase(str){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	str = str.replace(/[^\s]+/g, function(word) {
 	  return word.replace(/^./, function(first) {
 	    return first.toUpperCase();
@@ -1356,7 +1419,58 @@ function utilChangeWordCase(str){
 	return str
 }
 
+function utilCleanUpDate(a) {
+	a = a.replace("-", "/")
+	a = a.replace(".", "/")
+	let dateArr = []
+	let temp = a
+	// let year = ""
+	for (var i = 0; i < 2; i++) {
+		let slash = temp.indexOf("/")
+		dateArr[i] = temp.slice(0, slash)
+		if (dateArr[i].length == 1) dateArr[i] = "0" + dateArr[i]
+		temp =  temp.slice(slash + 1)
+	}
+	yearLength = temp.length
+	if (yearLength == 1) {
+		dateArr[2] = "200" + temp
+	} else if (yearLength == 2) {
+		if (temp <= moment().format("YY")) {
+			dateArr[2] = "20" + temp
+		} else {
+			dateArr[2] = "19" + temp
+		}
+	} else {
+		dateArr[2] = temp
+	}
+	const date = dateArr[0] +"/"+ dateArr[1] +"/"+ dateArr[2]
+	return date
+}
+
+function utilErrorHandler(errMessage, status, error, type) {
+	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
+	if (type == "aws") {
+		// if (message.indexOf("XMLHttpRequest")
+		cogLogoutUser()
+		const title = "Login Expired"
+		const message =  "Login again to continue."
+		utilBeep()
+		uiShowHideError("show", title, message)
+		cogLoginUser
+	} else if (type == "code" ) {
+		if (error == "argument count") {
+			const title = errMessage
+			const message =  status
+			utilBeep()
+			uiShowHideError("show", title, message)
+		}
+	}
+
+	 	uiShowHideError("show")
+}
+
 function utilFormToJSON(form){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let vals = {}
 	console.log($(form))
 	let formElements = $(form)
@@ -1392,6 +1506,7 @@ console.log(key + ' : ' + formVal + ' : '+ valType)
 }
 
 function utilKeyToLabel(x){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let data = {
 											 age: "Age",
 									clientId: "ID #",
@@ -1405,7 +1520,7 @@ function utilKeyToLabel(x){
 							 serviceName: "Name",
 				serviceDescription: "Description",
 				   createdDateTime: "Profile Created",
-					 updatedDateTime: "Profile Update",
+					 updatedDateTime: "Profile Updated",
 				     firstSeenDate: "First Seen",
 				    	lastSeenDate: "Last Served",
        familyIdCheckedDate: "Last ID Check"
@@ -1419,6 +1534,7 @@ function utilNow() {
 }
 
 function utilRemoveDupClients(clients) {
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let ids=[], temp=[], undupClients = []
 	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)
 	for (let i = 0; i < ids.length; i++) {
@@ -1440,6 +1556,7 @@ function utilCalcClientAge(){
 }
 
 function utilCalcDependentAge(index){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let dob = document.getElementById("dob["+index+"]")
 	let age = document.getElementById("age["+index+"]")
 	if (dob != null && age != null){
@@ -1452,6 +1569,7 @@ function utilCalcDependentAge(index){
 }
 
 function utilSetCurrentClient(index){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	client = clientData[index]
 	utilCalcFamilyCounts() // calculate fields counts and ages
 	emergencyFood = false // **** TODO what is this for?
@@ -1461,6 +1579,7 @@ function utilSetCurrentClient(index){
 }
 
 function utilSetCurrentServiceType(index){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	serviceType = serviceTypes[index]
 	uiOutlineTableRow('serviceTypesTable', index+1)
 	uiSetAdminHeader(serviceType.serviceName)
@@ -1491,8 +1610,11 @@ function utilUpdateClientsData(){
 
 function utilValidateArguments(func, arguments, count){
 	if (arguments.length != count){
-		utilBeep()
 		console.log(func + " ARGUMENT COUNT ERROR")
+		const message = "Error in " + func + " Function"
+		const status = "Argument count error."
+		const error = "argument count"
+		utilErrorHandler(message, status, error,"code")
 		return false
 	}
 	for (var i = 0; i < arguments.length; i++) {
@@ -1506,79 +1628,60 @@ function utilValidateArguments(func, arguments, count){
 	return true
 }
 
+function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+	let foodServiceInterval = ""
+	for (var i = 0; i < activeServiceTypes.length; i++) {
+		if (activeServiceTypes[i].serviceCategory == "Food" && activeServiceTypes[i].serviceButtons == "Primary" && activeServiceTypes[i].isUSDA == isUSDA) {
+			foodServiceInterval = activeServiceTypes[i].serviceInterval
+		}
+	}
+	return foodServiceInterval
+}
+
 function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
-	if (client.lastServed.length == 0) {
+	if (client.lastServed.length == 0 || lastServed.lowestDays == 10000) {
 		if ((activeServiceType.serviceCategory == "Food" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "NonUSDA")||(activeServiceType.serviceCategory == "Food" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "Emergency")) {
 			return false;
 		} else {return true}
 	}
 
-	let lowestDateServed = lastServed.daysUSDA
-console.log(lowestDateServed)
+console.log(lastServed)
 
-	if (lastServed.daysNonUSDA < lowestDateServed) lowestDateServed = lastServed.daysNonUSDA
-
-console.log(lowestDateServed)
-
-	console.log(">>> "+activeServiceType.serviceName +"<<<")
 	if (activeServiceType.serviceButtons == "Primary") {
-	console.log("PRIMARY")
 		if (activeServiceType.serviceCategory == "Food") {
-	console.log("FOOD")
 			if (activeServiceType.isUSDA == "USDA") {
-	console.log("USDA")
-				let nonUSDAServiceInterval = 10000
-				for (var i = 0; i < activeServiceType.length; i++) {
-					if (activeServiceType[i].serviceCategory == "Food" && activeServiceType[i].serviceButtons == "Primary" && activeServiceType[i].isUSDA == "NonUSDA") {
-							nonUSDAServiceInterval = activeServiceType[i].serviceInterval
-					}
-				}
-				if (lastServed.daysNonUSDA < nonUSDAServiceInterval) {
-					if (lastServed.daysUSDA < activeServiceType.serviceInterval) {
-						console.log("FALSE")
-						return false
-					}
+				if (lastServed.daysUSDA < activeServiceType.serviceInterval) {
+					console.log("FALSE")
+					return false
 				}
 			} else if (activeServiceType.isUSDA == "NonUSDA") {
-				if (lastServed.daysNonUSDA < activeServiceType.serviceInterval) {
-					console.log("FALSE")
+				let USDAServiceInterval = utilCalculateFoodInterval("USDA", activeServiceTypes)
+				if (lastServed.daysUSDA >= USDAServiceInterval) {
+					return false
+				} else if (lastServed.daysNonUSDA < activeServiceType.serviceInterval) {
 					return false
 				}
 			} else if (activeServiceType.isUSDA == "Emergency") {
-
-console.log("checking...")
-
-				let noFood = true
-				for (var i = 0; i < activeServiceTypes.length; i++) {
-					if (activeServiceTypes[i].serviceCategory == "Food" && activeServiceTypes[i].serviceButtons == "Primary") {
-					 	if (activeServiceTypes[i].isUSDA == "NonUSDA") {
-console.log(lastServed.daysNonUSDA + " >= " + activeServiceTypes[i].serviceInterval)
-							if (lastServed.daysNonUSDA >= activeServiceTypes[i].serviceInterval) {
-								 noFood = false
-								 console.log("FALSE")
-							}
-						} else if (activeServiceTypes[i].isUSDA == "USDA") {
-console.log(lastServed.daysUSDA + " >= " + activeServiceTypes[i].serviceInterval)
-							if (lastServed.daysUSDA >= activeServiceTypes[i].serviceInterval) {
-								noFood = false
-								console.log("FALSE")
-							}
-						}
-					}
-				}
-				if (!noFood) {
+				let USDAServiceInterval = utilCalculateFoodInterval("USDA", activeServiceTypes)
+				if (lastServed.daysUSDA >= USDAServiceInterval) {
 					console.log("FALSE")
 					return false
 				}
-			}
+				let nonUSDAServiceInterval = utilCalculateFoodInterval("NonUSDA", activeServiceTypes)
+				if (lastServed.daysNonUSDA >= nonUSDAServiceInterval) {
+					 console.log("FALSE")
+					 return false
+				}
+ 			}
 		} else if (activeServiceType.serviceCategory == "Clothes") {
 	console.log("CLOTHING")
 
-	console.log(lowestDateServed + " < " + activeServiceType.serviceInterval)
+	console.log(lastServed.lowestDays + " < " + activeServiceType.serviceInterval)
 
-			if (lowestDateServed < activeServiceType.serviceInterval) {
+			if (lastServed.lowestDays < activeServiceType.serviceInterval) {
 				console.log("FALSE")
 				return false;
 			}
@@ -1596,15 +1699,10 @@ console.log(lastServed.daysUSDA + " >= " + activeServiceTypes[i].serviceInterval
 			}
 		}
 	} else {
-	console.log("SECONDARY")
 
+	console.log(lastServed.lowestDays + " < " + activeServiceType.serviceInterval)
 
-
-
-	console.log(lowestDateServed + " < " + activeServiceType.serviceInterval)
-
-		if (lowestDateServed < activeServiceType.serviceInterval) {
-			console.log("FALSE")
+		if (lastServed.lowestDays < activeServiceType.serviceInterval) {
 			return false;
 		}
 	}
@@ -1628,11 +1726,13 @@ function newClientNote(){
 }
 
 function addClientNotes(id){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	arr = dbGetClientNotes(id)
 	addOldNotes(arr)
 }
 
 function addOldNotes(arr){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	for (let i = 0; i < arr.length; i++){
     	let obj = arr[i];
     	uiShowNote(obj.noteText, obj.createdDateTime)
@@ -1640,6 +1740,7 @@ function addOldNotes(arr){
 }
 
 function newNote(text,text2){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	uiShowNote(text,text2)
 	dbPostNote(text)
 }
