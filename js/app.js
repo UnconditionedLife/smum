@@ -15,7 +15,7 @@ let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 let rowNum = 1
 let MAX_ID_DIGITS = 4
 const uiDate = 'MM/DD/YYYY'
-const uiDateTime = 'MM/DD/YYYY HH:mm'
+const uiDateTime = 'MM/DD/YYYY HH:mma'
 const longDate = "MMMM Do, YYYY  |  LT"
 const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
@@ -152,18 +152,26 @@ function uiAddNewDependentsRow(){
 }
 
 function uiBuildHistoryBottom(){
-	// lastServed.
-  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastSeenDate", "familyIdCheckedDate"]
-	let clientArray = []
-	clientArray.push(client)
-	uiGenSelectHTMLTable('#historyTop',clientArray,columns,'historyTable')
+	const headerLabels = ["Served", "Service", "isUSDA", "Homeless", "# Items", "# Adults", "# Children", "# Individuals", "# Seniors", "Serviced By"]
+	$("#historyBottom").html("")
+	for (var i = 0; i < headerLabels.length; i++) {
+		$("#historyBottom").append("<div class='historyHeader'>" + headerLabels[i] + "</div>")
+	}
+	$("#historyBottom").append("<div class='historyLoadButton solidButton' onClick='dbLoadServiceHistory()'>Load History</div>")
 }
 
 function uiBuildHistoryTop(){
   //data = dbGetServicesNotes(client.clientId)
-  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastServed[0].serviceDateTime", "familyIdCheckedDate"]
+	let lastServedDateTime = ""
+  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastServedDateTime", "familyIdCheckedDate"]
 	let clientArray = []
 	clientArray.push(client)
+
+console.log(JSON.stringify(clientArray))
+
+console.log(JSON.stringify(clientArray[0].lastServed))
+
+	clientArray[0].lastServedDateTime = clientArray[0].lastServed[0].serviceDateTime
 	uiGenSelectHTMLTable('#historyTop',clientArray,columns,'historyTable')
 }
 
@@ -251,7 +259,6 @@ function uiShowHideLogin(todo){
 }
 
 function uiShowHidePassword(){
-	console.log('in functoin')
 	if ($('#loginPassword').attr('type') == 'password') {
     $('#loginPassword').attr('type', 'text');
 	} else {
@@ -262,6 +269,28 @@ function uiShowHidePassword(){
 function uiShowHistory(){
 	uiBuildHistoryTop()
 	uiBuildHistoryBottom()
+}
+
+function uiShowHistoryData(clientHistory){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	uiBuildHistoryBottom()
+	$(".historyLoadButton").hide()
+	const rowFields = ["servicedDateTime", "serviceName", "isUSDA", "homeless", "itemsServed", "totalAdultsServed", "totalChildrenServed", "totalIndividualsServed", "totalSeniorsServed", "servicedByUserName"]
+	for (var i = 0; i < clientHistory.length; i++) {
+		let rowClass = "", newRow = ""
+		if (!Number.isInteger(i / 2)) {
+			rowClass = " class='historyDarkRow'"
+		}
+		for (var f = 0; f < rowFields.length; f++) {
+			if (rowFields[f] == "servicedDateTime") {
+				let serviceDateTime =  moment(clientHistory[i][rowFields[f]]).format(uiDateTime)
+				newRow += "<div" + rowClass + ">" + serviceDateTime + "</div>"
+			} else {
+				newRow += "<div" + rowClass + ">" + clientHistory[i][rowFields[f]] + "</div>"
+			}
+		}
+		$("#historyBottom").append(newRow)
+	}
 }
 
 let uiShowLastServed = function() {
@@ -511,7 +540,7 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
 				} else{
 					tabCell.innerHTML="<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm' value='"+data[i][col[j]]+"'>";
 				}
-    	} else if (col[j]=="dob"||col[j]=="firstSeenDate"||col[j]=="familyIdCheckedDate"){
+    	} else if (col[j]=="dob"||col[j]=="firstSeenDate"||col[j]=="familyIdCheckedDate"||col[j]=="lastServedDateTime"){
 				tabCell.className = "historyTopText"
         tabCell.innerHTML = moment(data[i][col[j]]).format('MMM DD, YYYY')
 			} else if (col[j]=="lastSeenDate"){
@@ -722,6 +751,14 @@ function dbGetServicesTypes(){
 	return dbGetData(aws+"/servicetypes").serviceTypes
 }
 
+function dbLoadServiceHistory(){
+	let clientHistory = dbGetData(aws+"/clients/services/"+client.clientId).services
+
+console.log(clientHistory)
+
+	uiShowHistoryData(clientHistory)
+}
+
 function dbPostData(uUrl,dataU){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	if (authorization.idToken == 'undefined') {
@@ -854,12 +891,10 @@ function dbPostService(serviceType, itemsServed){
 				    itemsServed: itemsServed,
 				       homeless: client.homeless,
 				  emergencyFood: emergencyFood,
-					total: {
-						   adultsServed: client.family.totalAdults,
-						 childrenServed: client.family.totalChildren,
-					  	seniorsServed: client.family.totalSeniors,
-					individualsServed: client.family.totalSize
-					},
+		  totalAdultsServed: client.family.totalAdults,
+		totalChildrenServed: client.family.totalChildren,
+		 totalSeniorsServed: client.family.totalSeniors,
+ totalIndividualsServed: client.family.totalSize,
 					fulfillment: {
 						        pending: false,
 									 dateTime: moment().format(dateTime),
@@ -1086,12 +1121,12 @@ console.log("in new password required")
 }
 
 function cogLoginUser() {
-	let username = $('#loginEmail').val()
-	let password = $('#loginPassword').val()
-  let authData = {
-     Username: username,
-     Password: password
-  };
+	let username = $('#loginEmail').val(),
+			password = $('#loginPassword').val(),
+			authData = {
+     		Username: username,
+     		Password: password
+  		};
   let authDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authData);
   let userData = {
      Username: username,
@@ -1111,14 +1146,19 @@ function cogLoginUser() {
 			serviceTypes = dbGetServicesTypes()
     },
     onFailure: (err) => {
-			if (err === 'Error: Incorrect username or password.') {
-				utilBeep()
-			} else if (err === 'UserNotFoundException: User does not exist.') {
-				utilBeep()
-				utilBeep()
-				// NotAuthorizedException: Incorrect username or password.
-			}
-        console.log('||'+err+'||');
+			console.log("COGNITO ERROR")
+			console.log('|'+err+'|');
+			utilBeep()
+			if (err == 'Error: Incorrect username or password.') {
+				$("#loginError").html("Incorrect username or password")
+			} else if (err == 'UserNotFoundException: User does not exist.') {
+				$("#loginError").html("Username does not exist.")
+			} else if (err == 'NotAuthorizedException: Incorrect username or password.') {
+				$("#loginError").html("Incorrect username or password.")
+			} else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
+				$("#loginError").html("New Password is required.")
+			} else if (err == 'InvalidParameterException: Missing required parameter USERNAME')
+			$("#loginError").html("Username is required.")
     },
 		newPasswordRequired: function(userAttributes, requiredAttributes) {
 				// User was signed up by an admin and must provide new
@@ -1128,7 +1168,7 @@ console.log(requiredAttributes)
 
 
 console.log("needs new password - change the form")
-let newPassword = "Password123#"
+let newPassword = "Password321#"
 
 				// the api doesn't accept this field back
 				delete userAttributes.email_verified;
@@ -1573,9 +1613,13 @@ function utilErrorHandler(errMessage, status, error, type) {
 			utilBeep()
 			uiShowHideError("show", title, message)
 		}
-	}
+	} else if (type == "cognito") {
 
-	 	uiShowHideError("show")
+
+
+	}
+		//utilBeep()
+	 	//uiShowHideError("show")
 }
 
 function utilFormToJSON(form){
@@ -1632,7 +1676,8 @@ function utilKeyToLabel(x){
 					 updatedDateTime: "Profile Updated",
 				     firstSeenDate: "First Seen",
 				    	lastSeenDate: "Last Served",
-       familyIdCheckedDate: "Last ID Check"
+       familyIdCheckedDate: "Last ID Check",
+			 	lastServedDateTime: "Last Served"
 	}
 	let y = data[x]
 	if (y==undefined){return x} else {return y}

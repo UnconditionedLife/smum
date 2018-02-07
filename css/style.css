@@ -72,7 +72,7 @@ main{
   position: inherit;
 	display: grid;
 	grid-template-columns: 1fr 2fr 4fr 1fr;
-	grid-template-rows: repeat(6, 28px);
+	grid-template-rows: repeat(7, 28px);
 	grid-gap: 6px;
   width: 400px;
   height: 240px;
@@ -541,6 +541,41 @@ input.inputBox:read-only {
 	flex-wrap: wrap;
 }
 
+#historyBottom {
+	margin-top: 20px;
+	width: 100%;
+	display: grid;
+	grid-template-columns: repeat(10, 1fr);
+	grid-template-rows: repeat(2, 32px);
+	grid-gap: 2px;
+	padding: 2px;
+	text-align: center;
+	align-items: center;
+}
+
+.historyHeader {
+	background-color: var(--light-green);
+	line-height: 28px;
+	text-align: center;
+	font-weight: bold;
+	color: var(--blue);
+}
+
+.historyDarkRow {
+	background-color: var(--grey-green);
+	height: 100%;
+	vertical-align: middle;
+	display: block;
+	text-align: center;
+	padding-top: 3px;
+}
+
+.historyLoadButton {
+	grid-row: 3;
+	grid-column: 5 / span 2;
+
+}
+
 .ui-button{/*Sets height for all navbar buttons*/
 	height: 2.4rem;
 }
@@ -986,6 +1021,14 @@ select {
     /* To center horizontally */
     margin: 0 auto;
     pointer-events: all;
+}
+
+.modalError {
+	grid-column: 2 / span 2;
+	grid-row: 7;
+	color: var(--red);
+	font-size: 16px;
+	text-align: center;
 }
 
 .loginBox{/*styling for the login inputs*/
