@@ -78,10 +78,10 @@
             <label id="tabLable5" for="tab5">History</label>
 
             <input id="tab6" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable6" for="tab6" style="color: red;" >Notes</label>
+            <label id="tabLable6" for="tab6">Notes</label>
 
             <section id="content1"> <!-- Found -->
-               <div class="topFormButtonsDiv"><input class="solidButton" onclick="newClientForm()" type="button" value="New Client"></div>
+               <div class="topFormButtonsDiv"><input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client"></div>
                <container id="searchContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
             </section>
             <section id="content2"> <!-- Services -->
@@ -117,7 +117,16 @@
                <div id="historyBottom"></div>
             </section>
             <section id="content6"> <!-- Notes -->
-               <div class="topFormButtonsDiv"><input class="solidButton" onclick="newClientNote()" type="button" value="New Note"></div>
+               <div id="newNoteButton" class="topFormButtonsDiv"><input class="solidButton" onclick="uiToggleNoteForm('show','')" type="button" value="New Note"></div>
+               <div id="noteEditForm">
+                  <div id="noteEditHeader">NEW NOTE</div>
+                  <form>
+                     <div><textarea id="noteTextArea" class="noteForm" required></textarea></div>
+                     <div style="padding: 12px"><input id="noteIsImportant" class="noteForm" type="checkbox" value="true"> <span class="checkboxtext">&nbsp; IMPORTANT!</span></div>
+                     <div style="padding-top: 8px;"><p><input class="solidButton" onclick="dbPostNote()" type="button" value="Save"></p></div>
+                     <div style="padding-top: 8px;"><input class="openButton" onclick="uiShowHideNoteForm('hide')" type="button" value="Cancel"></div>
+                  </form>
+               </div>
                <container id="notesContainer"></container>
             </section>
             <div id="receiptTab">

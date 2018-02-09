@@ -15,7 +15,8 @@ let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 let rowNum = 1
 let MAX_ID_DIGITS = 4
 const uiDate = 'MM/DD/YYYY'
-const uiDateTime = 'MM/DD/YYYY HH:mma'
+const uiDateTime = 'MM/DD/YYYY H:mma'
+const uiDateTimeShort = 'MM/DD/YY H:mma'
 const longDate = "MMMM Do, YYYY  |  LT"
 const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
@@ -26,6 +27,7 @@ let client = {} // current client
 let serviceType = null
 let emergencyFood = false
 let currentNavTab = "clients"
+let hasImportantNote = ""
 
 
 // cognito config
@@ -44,6 +46,7 @@ let authorization = {}
 uiFillDate()
 uiShowHideLogin('show')
 navGotoTab("tab1")
+$("#noteEditForm").hide()
 
 document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); dbSearchClients()}
@@ -54,10 +57,6 @@ $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('service
 $(document).ready(function(){
 	uiShowServicesDateTime()
   setInterval(uiShowServicesDateTime, 10000)
-});
-$(document).ready(function(){
-	uiShowLastServed();
-  setInterval(uiShowLastServed, 120000);
 });
 
 // **********************************************************************************************************
@@ -124,6 +123,8 @@ function navGotoSec(nav){
 
 function navGotoTab(tab){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+console.log("GOTO TAB: " + tab)
+
 	let useAttr = document.getElementById(tab);
 	useAttr.setAttribute('checked', true);
 	useAttr['checked'] = true;
@@ -178,6 +179,51 @@ console.log(JSON.stringify(clientArray[0].lastServed))
 function uiOutlineTableRow(table, row){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', '2px solid').siblings().css('outline', 'none')
+}
+
+function uiResetNotesTab(){
+
+console.log("RESET TO GREY")
+	hasImportantNote = ""
+	$("#tabLable6").css("color", "#bbb")
+	$("#noteTextArea").val("")
+	$("#noteIsImportant").prop("checked", false)
+}
+
+function uiShowExistingNotes(arr){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	arr.sort(function(x, y){
+    return moment(y.createdDateTime).isAfter(x.createdDateTime) // y.createdDateTime - x.createdDateTime;
+	})
+	let important = ""
+	for (let i = 0; i < arr.length; i++){
+    let obj = arr[i];
+		if (obj.isImportant == "true" || obj.isImportant == true) {
+			important = "IMPORTANT"
+			hasImportantNote = "true"
+		}
+		// TODO need to provide link at TR level if the current user == the user who created the note
+    uiShowNote(moment(obj.createdDateTime).format(uiDateTimeShort), obj.noteText, obj.noteByUserName, important, obj.clientNoteId)
+  }
+	if (hasImportantNote == "true") {
+		$("#tabLable6").css("color", "var(--red)")
+	}
+}
+
+function uiToggleNoteForm(todo, id){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+	// TODO show / hide notes area  OR existing note
+	if (id.length > 1) {
+
+	}
+
+	if (todo == "show"){
+		$("#newNoteButton").hide()
+		$("#noteEditForm").show()
+	} else {
+		$("#newNoteButton").show()
+		$("#noteEditForm").hide()
+	}
 }
 
 function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
@@ -283,7 +329,7 @@ function uiShowHistoryData(clientHistory){
 		}
 		for (var f = 0; f < rowFields.length; f++) {
 			if (rowFields[f] == "servicedDateTime") {
-				let serviceDateTime =  moment(clientHistory[i][rowFields[f]]).format(uiDateTime)
+				let serviceDateTime =  moment(clientHistory[i][rowFields[f]]).format(uiDateTimeShort)
 				newRow += "<div" + rowClass + ">" + serviceDateTime + "</div>"
 			} else {
 				newRow += "<div" + rowClass + ">" + clientHistory[i][rowFields[f]] + "</div>"
@@ -358,7 +404,7 @@ function uiShowClientEdit(isEdit){
 		uiToggleClientViewEdit('view')
 	}
 	uiShowDependents(isEdit)
-	addClientNotes(client['clientId'])
+	dbLoadNotes(client.clientId)
 }
 
 function uiShowDependents(isEdit){
@@ -378,17 +424,36 @@ function uiShowNewServiceTypeForm(){
 	navGotoTab("aTab2")
 }
 
-function uiShowNote(text, text2){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	$('.notes').append('<tr><td class="data">'+text+'</td>'+'<td class="data">'+text2+'</td></tr>')
+function uiShowNote(dateTime, text, user, important, noteId){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 5)) return
+
+	var textArea = document.getElementById("noteTextArea");
+
+	textArea.addEventListener("input", function (event) {
+	  if (textArea.validity.typeMismatch) {
+	    textArea.setCustomValidity("I expect an e-mail, darling!");
+	  } else {
+	    textArea.setCustomValidity("");
+	  }
+	});
+
+
+	let clickableRow = ""
+	if (important == "IMPORTANT") {
+		clickableRow = ' class=\"notesRow\" onClick=\"uiToggleNoteForm(\'show\',\'' + noteId + '\')\"'
+	}
+	$('.notes').append('<tr' + clickableRow + '><td class="notesData">'+dateTime+'</td><td class="notesData">'+text+'</td><td class="notesData">'+user+'</td><td class="notesDataImportant">'+important+'</td></tr>')
 }
 
 function uiShowNewClientForm(){
 	client = ""
+	$("#clientsTitle").html("New Client")
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
+	uiToggleClientViewEdit("edit")
 	$('#createdDateTime.clientForm').val(utilNow())
 	$('#updatedDateTime.clientForm').val(utilNow())
-	$('#firstSeenDate.clientForm').val(today())
+	$('#firstSeenDate.clientForm').val(utilToday())
+	$('#familyIdCheckedDate.clientForm').val(utilToday())
 	$('#homeless.clientForm').val('false')
 	$('#city.clientForm').val('San Jose')
 	$('#state.clientForm').val('CA')
@@ -650,10 +715,10 @@ console.log("ToggleUSDA")
 
 }
 
-function uiGetTemplate(t){
+function uiGetTemplate(template){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let imp = document.querySelector('link[rel="import"]');
-	let temp = imp.import.querySelector(t);
+	let temp = imp.import.querySelector(template);
 	let clone = document.importNode(temp.content, true);
 	//document.querySelector('.main-div').appendChild(clone);
 	return clone
@@ -677,10 +742,11 @@ function uiResetServiceTypeForm(){
 function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	//setMainSideDiv()
-	var tableStr = '<table class="notes"></table>'
+	const tableStr = '<table class="notes"></table>'
 	$('#notesContainer').html(tableStr)
-	var headerRow = '<tr style="height:50px;padding:10px;"><td><h4 class="siteHeading">'+pageName+'</h4>'
-	headerRow+='<h5 class="siteHeading">'+moment().format(uiDate)+'</h5></td></tr>'
+	// var headerRow = '<tr style="height:50px;padding:10px;"><td><h4 class="siteHeading">'+pageName+'</h4>'
+	// headerRow+='<h5 class="siteHeading">'+moment().format(uiDate)+'</h5></td></tr>'
+	const headerRow = '<tr><td class="notesHeader">Created</td><td class="notesHeader">Note</td><td class="notesHeader">Created By</td><td class="notesHeader">Important</td></tr>'
 	$('.notes').append(headerRow)
 }
 
@@ -702,6 +768,7 @@ console.log(arr)
 }
 function dbGetData(uUrl){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	cogCheckSession()
 	let urlNew = uUrl;
 	let ans = null;
 // console.log('idToken + ' + authorization.idToken)
@@ -751,16 +818,22 @@ function dbGetServicesTypes(){
 	return dbGetData(aws+"/servicetypes").serviceTypes
 }
 
+function dbLoadNotes(){
+	arr = dbGetClientNotes(client.clientId)
+
+console.log(JSON.stringify(arr))
+
+	uiShowExistingNotes(arr)
+}
+
 function dbLoadServiceHistory(){
 	let clientHistory = dbGetData(aws+"/clients/services/"+client.clientId).services
-
-console.log(clientHistory)
-
 	uiShowHistoryData(clientHistory)
 }
 
 function dbPostData(uUrl,dataU){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+	cogCheckSession()
 	if (authorization.idToken == 'undefined') {
 		utilBeep()
 		consol.log("need to log in")
@@ -811,6 +884,11 @@ function dbPostData(uUrl,dataU){
 		}
 	});
 	return ans
+}
+
+function dbResetClientForm(){
+	// TODO Make sure Cancel button (resetClientForm) clears form & does some kind of reset.
+	// maybe need to keep previous client id when starting new client form
 }
 
 function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
@@ -952,18 +1030,24 @@ console.log(data)
 	}
 }
 
-function dbPostNote(text){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+function dbPostNote(){
 	// TODO replace hardcoded values with real user variables
+	utilValidateForm(".noteForm")
 	let ans = {}
-	ans['noteOnClientId'] = client['clientId']
-	ans['noteText'] = text.toString()
-	ans['createdDateTime']=Math.round((new Date()).getTime() / 1000).toString()
-	ans['noteByUserId'] = '12f8176c38186cad1705a6f3af8b8c0ad0b23200'
-	ans['noteByUserName']="Kush Jain"
-	ans['clientNoteId'] = cuid()
+	ans.noteOnClientId = client.clientId
+	ans.noteText = $("#noteTextArea").val().toString()
+	ans.createdDateTime = moment().format(dateTime)
+	ans.noteByUserName = session.user.username
+	let isImportant = false
+	if ($("#noteIsImportant").is(":checked")) {
+		isImportant = true
+	}
+	ans.isImportant = isImportant
+	ans.clientNoteId = cuid()
 console.log(JSON.stringify(ans))
 	dbPostData(aws+"/clients/notes/",JSON.stringify(ans))
+	uiToggleNoteForm("hide", "")
+	dbLoadNotes()
 }
 
 function dbSaveClientForm(){
@@ -981,6 +1065,8 @@ console.log(JSON.stringify(client.dependents))
 console.log(JSON.stringify(data.dependents))
 console.log(JSON.stringify(client.dependents))
 
+		if (client.dependents == undefined) client.dependents = []
+		if (client.lastServed == undefined) client.lastServed = []
 		data.dependents = client.dependents
 		data.lastServed = client.lastServed
 		for (var i = 0; i < data.dependents.length; i++) {
@@ -1078,9 +1164,13 @@ function dbSearchClients(){
 			clientData = utilRemoveDupClients(d2.concat(d1))
 		}
 	}
+
+console.log("RESET TO GREY")
+	uiResetNotesTab()
 	if (clientData==null||clientData.length==0){
 		utilBeep()
 		uiSetClientsHeader("0 Clients Found")
+		// TODO clear current client
 	} else {
 		uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
 		if (clientData.length === 1){
@@ -1102,6 +1192,16 @@ function cogLogoutUser(){
 		cognitoUser.signOut();
 		uiShowHideLogin('show')
 	}
+}
+
+function cogCheckSession() {
+	cognitoUser.getSession(function(err, session) {
+		if (err) {
+				alert(err);
+				return;
+		}
+	console.log('session validity: ' + session.isValid());
+	})
 }
 
 function cogUserChangePassword(){
@@ -1441,6 +1541,9 @@ function utilCalcFamilyCounts(){
 	// age TODO Move this to correct Function
 
 console.log("UPDATING COUNTS")
+	if (client.dependents == undefined) client.dependents = []
+
+console.log(client.dependents)
 
 	for (var i = 0; i < client.dependents.length; i++) {
 		utilCalcDependentAge(i)
@@ -1634,7 +1737,7 @@ function utilFormToJSON(form){
 		if (formVal.length < 1) {
 			if (valType == 'hidden') {
 				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = utilNow()
-				if (key === 'lastSeenDate') formVal = '*EMPTY*'
+				// if (key === 'lastSeenDate') formVal = '*EMPTY*'
 			} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local') {
 console.log(key)
 				formVal = '*EMPTY*'
@@ -1754,11 +1857,11 @@ function utilUpdateClientsData(){
 	$.each(data, function(key,value){
 		client[key] = value
 	});
-	for (var i = 0; i < clientData.length; i++) {
-		if (client.clientId == clientData[i].clientId){
+	for (var i = 0; i < data.length; i++) {
+		if (client.clientId == data[i].clientId){
 			row = i+1
 			$.each(client, function(key,value){
-				clientData[i][key] = value
+				data[i][key] = value
 			});
 		}
 	}
@@ -1783,6 +1886,10 @@ function utilValidateArguments(func, arguments, count){
 		}
 	}
 	return true
+}
+
+function utilValidateForm(form){
+	data = utilFormToJSON(form)
 }
 
 function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {
@@ -1878,23 +1985,11 @@ function isLoggedIn(){
 	}
 }
 
-function newClientNote(){
-	// TODO
-}
 
-function addClientNotes(id){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	arr = dbGetClientNotes(id)
-	addOldNotes(arr)
-}
 
-function addOldNotes(arr){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	for (let i = 0; i < arr.length; i++){
-    	let obj = arr[i];
-    	uiShowNote(obj.noteText, obj.createdDateTime)
-    }
-}
+
+
+
 
 function newNote(text,text2){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return

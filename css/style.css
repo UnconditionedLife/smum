@@ -545,29 +545,33 @@ input.inputBox:read-only {
 	margin-top: 20px;
 	width: 100%;
 	display: grid;
-	grid-template-columns: repeat(10, 1fr);
+	grid-template-columns: 1.5fr 1.5fr repeat(8, 1fr);
 	grid-template-rows: repeat(2, 32px);
 	grid-gap: 2px;
 	padding: 2px;
 	text-align: center;
 	align-items: center;
+	line-height: 32px;
 }
 
 .historyHeader {
 	background-color: var(--light-green);
-	line-height: 28px;
+	line-height: 38px;
 	text-align: center;
 	font-weight: bold;
 	color: var(--blue);
 }
 
+
+
 .historyDarkRow {
 	background-color: var(--grey-green);
 	height: 100%;
 	vertical-align: middle;
-	display: block;
 	text-align: center;
+	line-height: 20px;
 	padding-top: 3px;
+	line-height: 32px;
 }
 
 .historyLoadButton {
@@ -576,17 +580,69 @@ input.inputBox:read-only {
 
 }
 
+.noteTextAreaDiv {
+	border-color: var(--light-green);
+	border-radius: 5px;
+	border-style: solid;
+	border-width: 2px;
+}
+
+#noteEditForm {
+  margin: 4px 50px 10px 4px;
+	width: 100%;
+	display: grid;
+	grid-template-columns: auto 160px 160px 160px;
+	grid-template-rows: 28px 44px;
+	grid-gap: 8px;
+	padding: 10px;
+	border-width: 1px;
+	border-radius: 10px;
+	border-color: lightgrey;
+	border-style: solid;
+	align-content: center;
+	vertical-align: middle;
+
+}
+
+#noteEditHeader {
+	display: flex;
+	grid-row: 1;
+	grid-column: 1 / span 4;
+	font-size: 16px;
+	line-height: 28px;
+	font-weight: bold;
+}
+
+#noteTextArea {
+	rows: 5;
+	width: 100%;
+	height: 44px;
+	font-size: 14px;
+	border-color: var(--light-green);
+	border-radius: 5px;
+	border-style: solid;
+	border-width: 2px;
+	padding: 4px;
+
+
+	/* border-style: none;
+	border-color: Transparent;
+	overflow: auto; */
+}
+
 .ui-button{/*Sets height for all navbar buttons*/
 	height: 2.4rem;
 }
+
 .data{/*creates two partitions*/
 	min-height: 40px;
 	text-align: center;
-	display: inline-block;
-	width: 49%;
+	/* display: inline-block;
+	width: 49%; */
 	color: var(--blue);
 	font-weight: 700;
 }
+
 .mr-auto{/*more navbar css*/
     margin-left: auto!important;
 	margin-right: 6vw!important;
@@ -620,7 +676,7 @@ input.inputBox:read-only {
   grid-column: 2 / 3;
   grid-row: 2 / 3;
   background-color: white;
-  border-radius: .5em .5em 0 0;
+  border-radius: .7em;
   padding: 15px;
 
 	/*margin: auto;
@@ -632,6 +688,14 @@ input.inputBox:read-only {
 		display: inline-flex;
 		flex-direction: column;*/
 }
+
+#content1, #content2, #content3, #content4, #content5, #content6 {
+	height: calc(100vh - 215px);
+	max-height:  calc(100vh - 215px);
+	/* display: inline-block; */
+	overflow-y:  scroll;
+}
+
 a:hover{/*no underlining on links*/
 	text-decoration: none;
 }
@@ -653,13 +717,45 @@ h4{
 }
 
 .notes {
-  border-radius: .5em .5em 0 0;
-
+  border-radius: 10px;
+	text-align: center;
+	font-weight: normal;
+	cursor: default;
 }
 
-.notes tr:nth-child(even) {background: rgba(74,143,67,0.3); }
-.notes tr:nth-child(odd) {background: rgba(99,186,89,0.3);}
+.notesHeader {
+	background-color: var(--light-green);
+	line-height: 26px;
+
+	font-weight: bold;
+	color: var(--blue);
+}
+
+.notes tr:nth-child(even) {background: white; }
+.notes tr:nth-child(odd) {background: var(--grey-green);}
 /*alternates the colors of notes table*/
+
+.notesRow {
+	text-align: center;
+}
+
+.notesRow:hover {
+  background: #A7D8A1;
+  cursor: pointer;
+}
+
+.notesData{/*creates two partitions*/
+	line-height: 18px;
+	text-align: center;
+	color: black;
+}
+
+.notesDataImportant {/*creates two partitions*/
+	line-height: 18px;
+	text-align: center;
+	color: var(--red);
+}
+
 #row1 a {
     display: table-cell;
     text-align: center;
@@ -1159,6 +1255,24 @@ input[type="radio"] {
   display: none;
 }
 
+#noteIsImportant {
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(1.5); /* IE */
+  -moz-transform: scale(1.5); /* FF */
+  -webkit-transform: scale(1.5); /* Safari and Chrome */
+  -o-transform: scale(1.5); /* Opera */
+  padding: 10px;
+}
+
+/* Might want to wrap a span around your checkbox text */
+.checkboxtext
+{
+  /* Checkbox text */
+  font-size: 100%;
+  display: inline;
+	color: var(--red);
+}
+
 label {
   display: inline-block;
   margin: 0 0 -1px;
@@ -1328,6 +1442,10 @@ input:checked + label {
 			-webkit-transform: scale(1.2);
 			-ms-transform: scale(1.2); /* IE 9 */
 	}
+}
+
+#content3 {
+	height: 90vh;
 }
 
 .saving {
