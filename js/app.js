@@ -29,7 +29,6 @@ let emergencyFood = false
 let currentNavTab = "clients"
 let hasImportantNote = ""
 
-
 // cognito config
 let CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
 let  poolData = {
@@ -123,8 +122,6 @@ function navGotoSec(nav){
 
 function navGotoTab(tab){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-console.log("GOTO TAB: " + tab)
-
 	let useAttr = document.getElementById(tab);
 	useAttr.setAttribute('checked', true);
 	useAttr['checked'] = true;
@@ -172,18 +169,22 @@ console.log(JSON.stringify(clientArray))
 
 console.log(JSON.stringify(clientArray[0].lastServed))
 
-	clientArray[0].lastServedDateTime = clientArray[0].lastServed[0].serviceDateTime
-	uiGenSelectHTMLTable('#historyTop',clientArray,columns,'historyTable')
+	if ((clientArray[0].lastServed[0] != undefined)) {
+		if ((clientArray[0].lastServed[0].serviceDateTime == undefined)) {
+			clientArray[0].lastServedDateTime = ""
+		} else {
+			clientArray[0].lastServedDateTime = clientArray[0].lastServed[0].serviceDateTime
+			uiGenSelectHTMLTable('#historyTop',clientArray,columns,'historyTable')
+		}
+	}
 }
 
 function uiOutlineTableRow(table, row){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	$('#' + table + ' tr:eq('+ row + ')').css('outline', '2px solid').siblings().css('outline', 'none')
+	$('#' + table + ' tr:eq('+ row + ')').css('outline', 'var(--blue) 1px dashed').siblings().css('outline', 'none')
 }
 
 function uiResetNotesTab(){
-
-console.log("RESET TO GREY")
 	hasImportantNote = ""
 	$("#tabLable6").css("color", "#bbb")
 	$("#noteTextArea").val("")
@@ -240,9 +241,10 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 function uiUpdateCurrentClient(index) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiOutlineTableRow('clientTable', index + 1)
-	uiSetClientsHeader('#' + client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
+	uiSetClientsHeader('⇚' + client.clientId + '⇛ ' + client.givenName + ' ' + client.familyName)
 	uiShowServicesButtons()
 	uiShowClientEdit(false)
+	navGotoTab("tab2")
 }
 
 function uiUpdateAdminHeader() {
@@ -365,9 +367,6 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 	// 	// TODO remove old static emergency button
 	// 	$('#servicePrimaryButtons').html('<div class="btnEmergency" onclick="utilAddService('+"'USDA Food','Items: 1','food'"+')">EMERGENCY FOOD ONLY</div>');
 	// } else {
-
-console.log(btnPrimary)
-
 		let primaryButtons = "" //'<div class="primaryButtonContainer"><div class="buttonCenteredContainer">';
 		for (let i=0; i<btnPrimary.length; i++){
 			let x = btnPrimary[i]; // index of active serviceTypes
@@ -502,6 +501,9 @@ function uiShowServiceTypeForm(){
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$.each(data, function(key,value){
+
+console.log(key + " : " + value)
+
 		if (typeof(data[key])=='object') {
 			let obj = data[key]
 			$.each(obj, function(key2,value2){
@@ -511,6 +513,8 @@ function uiPopulateForm(data, form){
 					$(el).prop('selected', true);
 				} else {
 					$(el).val(value2)
+
+					console.log("ASSIGN : " + value2)
 				}
 			});
 		} else {
@@ -520,10 +524,13 @@ function uiPopulateForm(data, form){
 				$(el).prop('selected', true);
 			} else {
 				$(el).val(value)
+
+				console.log("WAS : " + $(el).val())
+				console.log("ASSIGN : " + value)
+
 			}
 		}
 	});
-
 	if (form === 'serviceTypeForm') {
 		uiToggleAgeGrade()
 		uiToggleFulfillDates()
@@ -635,7 +642,6 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
 
 function uiToggleClientViewEdit(side){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	console.log(side)
 	if (side == 'view') {
 		$('#clientLeftSlider').addClass('sliderActive')
 		$('#clientRightSlider').removeClass('sliderActive')
@@ -657,7 +663,6 @@ function uiToggleClientViewEdit(side){
 
 function uiToggleDependentsViewEdit(side){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	console.log(side)
 	if (side == 'view') {
 		$('#dependentdLeftSlider').addClass('sliderActive')
 		$('#dependentdRightSlider').removeClass('sliderActive')
@@ -674,7 +679,6 @@ function uiToggleDependentsViewEdit(side){
 		$('select.dependentsForm').removeClass('selectBox')
 		$('.dependentsViewOnly').hide('slow')
 		$('.dependentsEditOnly').show('slow')
-
 	}
 }
 
@@ -763,7 +767,7 @@ function dbGetClientNotes(id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let URL = aws+"/clients/notes/"+id;
 	arr = dbGetData(URL).notes
-console.log(arr)
+console.log("CLIENT NOTES: " + arr)
 	return arr
 }
 function dbGetData(uUrl){
@@ -820,9 +824,6 @@ function dbGetServicesTypes(){
 
 function dbLoadNotes(){
 	arr = dbGetClientNotes(client.clientId)
-
-console.log(JSON.stringify(arr))
-
 	uiShowExistingNotes(arr)
 }
 
@@ -867,7 +868,7 @@ function dbPostData(uUrl,dataU){
 						uiSaveButton('serviceType', 'SAVED!!')
 					} else if (uUrl.includes('/clients')) {
 						let row = utilUpdateClientsData()
-						uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
+						uiGenSelectHTMLTable('#searchContainer', clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
 						uiOutlineTableRow('clientTable', row)
 						uiSetClientsHeader('#'+client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
 						uiSaveButton('client', 'SAVED!!')
@@ -886,9 +887,22 @@ function dbPostData(uUrl,dataU){
 	return ans
 }
 
-function dbResetClientForm(){
+function uiResetClientForm(){
 	// TODO Make sure Cancel button (resetClientForm) clears form & does some kind of reset.
 	// maybe need to keep previous client id when starting new client form
+console.log("CLEAR CLIENT FORM")
+
+	if (client = "") {
+
+	} else {
+		let index = clientData.filter(function( obj ) {
+			return obj.clientId == client.clientId
+		})
+		uiPopulateForm(client, 'clientForm')
+		//uiUpdateCurrentClient(index)
+	}
+
+	// $("#clientFormContainer").html("")
 }
 
 function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
@@ -945,7 +959,6 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 		$("#receiptBody").append("<p><strong>"+serviceType.serviceName+"</strong><br><strong>Category:</strong> "+serviceCategory+"<br><strong>Is USDA:</strong> "+serviceType.isUSDA+"</p>")
 	}
 	dbPostService(serviceType, itemsServed)
-
 }
 
 function dbPostService(serviceType, itemsServed){
@@ -1164,15 +1177,14 @@ function dbSearchClients(){
 			clientData = utilRemoveDupClients(d2.concat(d1))
 		}
 	}
-
-console.log("RESET TO GREY")
 	uiResetNotesTab()
 	if (clientData==null||clientData.length==0){
 		utilBeep()
 		uiSetClientsHeader("0 Clients Found")
 		// TODO clear current client
 	} else {
-		uiGenSelectHTMLTable('#searchContainer',clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
+		let columns = ["clientId","givenName","familyName","dob","street"]
+		uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
 		if (clientData.length === 1){
 			utilSetCurrentClient(0) // go straight to SERVICES
 			navGotoTab("tab2")
@@ -1451,7 +1463,7 @@ console.log("IN ADD SERVICE");
 
 	dbSaveService(serviceTypeId, serviceCategory, serviceButtons);
 	uiShowLastServed()
-	uiShowNote(serviceTypeId, "")
+	// uiShowNote(serviceTypeId, "")
 	uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
 	// TODO Create ability to UNDO the adding of a service.
 	// TODO Create tally of added services on the screen [the print button will be added there]
@@ -1497,9 +1509,6 @@ function utilCalcActiveServicesButtons(array, activeServiceTypes, targetServices
 			}
 		}
 	}
-
-console.log(btnPrimary)
-
 	if (array == "primary") return btnPrimary
 	if (array == "secondary") return btnSecondary
 }
@@ -1539,12 +1548,7 @@ function utilCalcActiveServiceTypes(){
 
 function utilCalcFamilyCounts(){
 	// age TODO Move this to correct Function
-
-console.log("UPDATING COUNTS")
 	if (client.dependents == undefined) client.dependents = []
-
-console.log(client.dependents)
-
 	for (var i = 0; i < client.dependents.length; i++) {
 		utilCalcDependentAge(i)
 	}
@@ -1833,7 +1837,7 @@ function utilSetCurrentClient(index){
 	client = clientData[index]
 	utilCalcClientAge()
 	utilCalcFamilyCounts() // calculate fields counts and ages
-	emergencyFood = false // **** TODO what is this for?
+	// emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
 	uiUpdateCurrentClient(index)
 }
@@ -1852,6 +1856,7 @@ function utilToday() {
 }
 
 function utilUpdateClientsData(){
+	// calculate what row a result is on the results table
 	let row = null
 	let data = utilFormToJSON('.clientForm')
 	$.each(data, function(key,value){

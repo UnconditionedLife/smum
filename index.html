@@ -5,9 +5,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-
-   <link rel="shortcut icon" href="">
-   <link rel="icon" href="">
    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
    <link rel="icon" href="favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" href="css/style.css">
@@ -28,7 +25,7 @@
       </div>
       <div class="searchDiv">
  	      <input id="searchField" class="search" type="text" value="" placeholder="Search clients">
-         <i class="fa fa-search-plus fa-lg searchIcon" aria-hidden="true" onclick="clientSearchResults()"></i>
+         <i class="fa fa-search-plus fa-lg searchIcon" aria-hidden="true" onclick="dbSearchClients()"></i>
          <!-- <img class="searchImage" src="images/search.png" onclick="clientSearchResults()"> -->
       </div>
 
@@ -80,8 +77,8 @@
             <input id="tab6" class="tabInput" type="radio" name="tabs">
             <label id="tabLable6" for="tab6">Notes</label>
 
-            <section id="content1"> <!-- Found -->
-               <div class="topFormButtonsDiv"><input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client"></div>
+            <section id="content1" class="viewOnly"> <!-- Found -->
+               <!-- <div class="topFormButtonsDiv"><input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client"></div> -->
                <container id="searchContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
             </section>
             <section id="content2"> <!-- Services -->
@@ -94,7 +91,7 @@
             </section>
             <section id="content3"> <!-- Client -->
                <div class="topFormButtonsDiv">
-                  <input id="newClientButton" class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client">
+                  <input id="newClientButton" class="solidButton viewOnly" onclick="uiShowNewClientForm()" type="button" value="New Client">
                   <input id="clientLeftSlider" class="leftSlider sliderActive" onclick="uiToggleClientViewEdit('view')" type="button" value="View">
                   <input id="clientRightSlider" class="rightSlider" onclick="uiToggleClientViewEdit('edit')" type="button" value="Edit">
                </div>

@@ -14,7 +14,7 @@
       <div class=""><input id="familyIdCheckedDate" type="date" class="inputBox clientForm"></div>
       <div class="lableDiv">Active Status</div>
       <div class="">
-         <select id="isActive" class="inputBox clientForm">
+         <select id="isActive" class="inputBox clientForm" defaultValue="Active">
             <option value="Active">Active</option>
             <option value="Emergency">Emergency</option>
             <option value="Inactive">Inactive</option>
@@ -93,8 +93,7 @@
 
       <div class="span6 editOnly" style="display: flex; justify-content: center; height: 60px; align-items: center;">
          <input id="clientSaveButton" class="solidButton" onclick="dbSaveClientForm()" type="button" value="Save">
-         <input class="openButton" onclick="cogCheckSession()" type="button" value="Cancel">
-         <!-- resetClientForm() -->
+         <input class="openButton" onclick="uiResetClientForm()" type="button" value="Cancel">
       </div>
    </div>
 </template>

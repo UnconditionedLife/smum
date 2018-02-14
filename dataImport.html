@@ -1,0 +1,65 @@
+<html>
+   <head>
+      <title></title>
+
+      <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+      <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+   </head>
+   <body>
+      <div id="name">
+         <h3>Given Names</h3>
+      </div>
+      <div id="name">
+         <input type="button" onClick="getGivenNames('clients.json')" value="Names from Clients">
+         <input type="button" onClick="getGivenNames('dependents.json')" value="Names from Dependents">
+         <input type="button" onClick="showNames()" value="Show Names & Store">
+      </div>
+      <div id="name">
+         <h3>Client Import</h3>
+      </div>
+      <div style="margin-left: 50px">
+         <p>
+            <input type="button" onClick="removeEmptyClientRecords()" value="Remove Empty Records">...<span id="cleanCount"></span>
+         </p>
+         <strong>1</strong> <input type="button" onClick="importClients(0, 100)" value="Import All Clients">...<span id="clientCount"></span>
+      </div>
+      <div id="name">
+         <h3>Dependents Import into Clients</h3>
+      </div>
+      <div style="margin-left: 50px">
+         <p>
+            <strong>2</strong> <input type="button" onClick="loadDependents()" value="Load Dependents JSON">...<span id="dependentsCount"></span>
+         </p>
+         <strong>3</strong> <input type="button" onClick="importDependents(0, 100)" value="Import Dependents">
+      </div>
+      <div id="name">
+         <h3>Last Served Food Import into Clients</h3>
+      </div>
+      <div  style="margin-left: 50px">
+         <strong>4</strong> <input type="button" onClick="importFoodLastServed(0, 100)" value="Import Last Served Food">
+         <!-- <input type="button" onClick="importFoodLastServed(101, 1000)" value="Import [1500 Clients]">
+         <input type="button" onClick="importFoodLastServed(1001, 2000)" value="Import [3000 Clients]">
+         <input type="button" onClick="importFoodLastServed(2001, "end")" value="Import [Remaining Clients]"> -->
+      </div>
+      <div id="name">
+         <h3>Services/Food Import into Services</h3>
+      </div>
+      <div  style="margin-left: 50px">
+         <p>
+            <strong>6</strong> <input type="button" onClick="loadServices()" value="Load Services JSON">...<span id="servicesCount"></span>
+         </p>
+         <strong>7</strong> <input type="button" onClick="importDependents(0, 100)" value="Import [100 Clients]">
+         <input type="button" onClick="importDependents(101, 1000)" value="Import [1500 Clients]">
+         <input type="button" onClick="importDependents(1001, 2000)" value="Import [3000 Clients]">
+         <input type="button" onClick="importDependents(2001, "end")" value="Import [Remaining Clients]">
+      </div>
+
+      <script src="http://code.jquery.com/jquery-3.2.1.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+      <!-- <script src="data/foodA.js"></script> -->
+      <!-- <script src="data/foodB.js"></script> -->
+      <script src="data/foodSmall.js"></script>
+      <script src="js/dataImport.js"></script>
+   </body>
+</html>

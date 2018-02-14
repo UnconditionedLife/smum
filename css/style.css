@@ -374,6 +374,9 @@ main{
 	display: inline-block;
 	width: 100%;
 	text-align: center;
+	position: absolute;
+	top: 250px;
+	left: 5px;
 }
 
 .bannerText {
@@ -810,9 +813,11 @@ th {/*css for td and th*/
     text-align: center;
 		color: white;
     padding: 6px; */
-		background-color: var(--light-green);
-		border-width: 1px;
-		border-style: solid;
+		/* background-color: var(--light-green); */
+		height: 38px;
+		background: linear-gradient(#C4E6C4, white, #C4E6C4);
+		/* border-width: 1px;
+		border-style: solid; */
 		border-color: var(--light-green);
 		text-align: center;
 		color: var(--blue);
@@ -1317,8 +1322,10 @@ label:hover {
 input:checked + label {
   color: #555;
   border: 1px solid #ddd;
-  border-top: 2px solid var(--blue);
+  border-top: 3px solid var(--blue);
   border-bottom: 1px solid #fff;
+	position: relative;
+ z-index:  5000;
 }
 
 #tab1:checked ~ #content1,
