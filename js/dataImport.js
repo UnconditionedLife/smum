@@ -1,7 +1,7 @@
-const dateTime = 'YYYY-MM-DDTHH:mm'
-const date = 'YYYY-MM-DD'
-const uiDate = 'MM/DD/YYYY'
-const uiDateTime = 'MM/DD/YYYY H:mma'
+// const dateTime = 'YYYY-MM-DDTHH:mm'
+// const date = 'YYYY-MM-DD'
+// const uiDate = 'MM/DD/YYYY'
+// const uiDateTime = 'MM/DD/YYYY H:mma'
 let givenNames = JSON.parse(localStorage.getItem("givenNames"))
 if (givenNames === null) givenNames = []
 let birthNames = getBirthNames("birthNames.json")
@@ -12,12 +12,14 @@ let birthNames = getBirthNames("birthNames.json")
 
 console.log(givenNames.length)
 
-let data = JSON.parse(localStorage.getItem('smumCleanClients'))
-console.log("# Clients: " + data.length)
-let clients = []
+let importClientData = JSON.parse(localStorage.getItem('smumCleanClients'))
+console.log("# Clients: " + importClientData.length)
+let importedClients = []
 let dependentData =[]
 let serviceData = []
 let foodData = []
+let usedClientIdArray =[]
+let unusedClientIdArray =[]
 
 console.log("foodSmall: " + foodSmall.length)
 
@@ -29,14 +31,15 @@ if (foodSmall == undefined) {
 
 
 function loadDependents(){
-  $.getJSON( "data/dependentsClean.json", function( depData ) {
+  $("#dependentsLoaded").html("Starting Load...")
+  $.getJSON( "data/dependentsClean1.json", function( depData ) {
     $.each( depData, function( i, item ) {
         dependentData.push(item)
     })
   })
   setTimeout(function(){
       console.log(dependentData.length)
-      $("#dependentsCount").html("  Record Count: "+ dependentData.length)
+      $("#dependentsLoaded").html("["+ dependentData.length+"]")
   }, 1000);
 }
 
@@ -48,30 +51,51 @@ function loadServices(){
   })
   setTimeout(function(){
       console.log(serviceData.length)
-      $("#servicesCount").html("  Record Count: "+ serviceData.length)
+      $("#servicesCount").html("["+ serviceData.length+"]")
   }, 1000);
 }
 
 function removeEmptyClientRecords(){
+  $("#cleanCount").html("Started Removing...")
   let clientCopy = [];
   $.getJSON( "data/clients.json", function( data ) {
     $.each( data, function( i, item ) {
       if (item.HouseholdID == "") {
         console.log("missing ID")
       } else {
+        if (item.DOB != "") item.DOB = cleanDate(item.DOB)
+        if (item.City == "") item.City = "San Jose"
+        if (typeof item.Street == "Number") item.Street = String(item.Street)
+
+        // if (item.Street != "") {
+        //   let street = item.Street.split('\u000b')
+        //   item.Street = street.join("'")
+        //   console.log(item.Street)
+        // }
+        if (item.Comments != "") {
+          let comments = item.Comments.split('\"')
+          item.Comments = comments.join("'")
+          console.log(item.Comments)
+        }
         clientCopy.push(item)
       }
     });
   });
-
   setTimeout(function(){
       console.log(clientCopy.length)
-      $("#cleanCount").html("  Record Count: "+ clientCopy.length)
+      $("#cleanCount").html("["+ clientCopy.length+"]")
       //saveJSON(JSON.stringify(clientCopy), "clientsClean.json" )
       localStorage.setItem('smumCleanClients', JSON.stringify(clientCopy));
-  }, 8000);
+  }, 6000);
 
-  data = clientCopy
+  importClientData = clientCopy
+}
+
+function cleanDate(date){
+  let yr = date.split('/')[2]
+  if (yr.length==2) yr = (yr > 18) ? '19'+yr : '20'+yr
+  date = date.split('/'); date[2] = yr; date.join('/')
+  return date
 }
 
 function saveJSON(text, filename){
@@ -83,9 +107,10 @@ function saveJSON(text, filename){
 
 
 function importClients(start, end){
+  $("#clientCount").html("Started Importing...")
   // $.getJSON( "data/clients.json", function( data ) {
-  if (end == "end") end = data.length -1
-  $.each( data, function( i, item ) {    // data.slice(start,end)
+  if (end == "end") end = importClientData.length -1
+  $.each( importClientData, function( i, item ) {    // data.slice(start,end)
     //clientCopy.push( "<li id='" + key + "'>" + val + "</li>" );
     if (item.GivenName == "") {
       console.log("missing Given: " + item.HouseholdID)
@@ -97,8 +122,11 @@ function importClients(start, end){
     }
 
     let record = {}
-    if (item.Status == "Client") record.isActive = "Active"
+    if (item.Status == "Client" || item.Status == "client") record.isActive = "Active"
+    if (item.Status == "Active" || item.Status == "active") record.isActive = "Active"
+    if (item.Status == "y" || item.Status == "Y") record.isActive = "Active"
     if (item.Status == "Emergency") record.isActive = item.Status
+    if (item.Status == "Inactive") record.isActive = "Inactive"
     if (item.Status == "") record.isActive = "Inactive"
 
     record.createdDateTime = moment(item.DateCreation_d, uiDate).format(dateTime)
@@ -111,10 +139,20 @@ function importClients(start, end){
     record.givenName = item.GivenName
     record.gender = getGender(item.GivenName)
     record.dob = moment(item.DOB, uiDate).format(date)
-    record.street = String(item.Street)
+    // if (moment().isBefore(record.dob))
+    if (item.Street == "") {
+      record.street = "*EMPTY*"
+    } else {
+      record.street = String(item.Street)
+    }
     record.city = item.City
-    record.state = item.State
-    record.zipcode = String(item.ZIP)
+    //TODO some states contain extra zipcode info not being imported
+    record.state = "CA" // item.State
+    if (item.ZIP == "") {
+      record.zipcode = "*EMPTY*"
+    } else {
+      record.zipcode = String(item.ZIP)
+    }
     if (item.ZIPSuffix != ""){
       record.zipSuffix = String(item.ZIPSuffix)
     } else {
@@ -127,30 +165,37 @@ function importClients(start, end){
     }
     record.email = "*EMPTY*"
     record.firstSeenDate = moment(item.FirstSeen, uiDate).format(date)
-    record.ethnicGroup = item["Ethnic Group"]
-    if (item.Homeless == "") {
+    if (item["Ethnic Group"] == ""){
+      record.ethnicGroup = "*EMPTY*"
+    } else {
+      record.ethnicGroup = item["Ethnic Group"]
+    }
+    if (item.Homeless == "" || item.Homeless == "No" || item.Homeless == "no" || item.Homeless == "NO") {
       record.homeless = "NO"
-    } if (item.Homeless == "No") {
-      record.homeless = "NO"
-    } if (item.Homeless == "Yes") {
+    }
+    if (item.Homeless == "Yes" || item.Homeless == "YES" || item.Homeless == "yes") {
       record.homeless = "YES"
     }
-    record.familyIdCheckedDate = moment(item.FamilyIDChecked, uiDate).format(date)
+    if (item.FamilyIDChecked == "") {
+      record.familyIdCheckedDate = "2000-01-01"
+    } else {
+      record.familyIdCheckedDate = moment(item.FamilyIDChecked, uiDate).format(date)
+    }
     record.financials = {}
     let fins = [item.Income, item.Rent, item["Govt Assistance"], item.FoodStamps]
     for (var i = 0; i < fins.length; i++) {
       if (fins[i] == "") {
-        fins[i] = 0
+        fins[i] = "0"
       } else if (typeof fins[i] == "string"){
 //console.log("S: " + fins[i])
         fins[i] = fins[i].replace(/\$/g, '')
         fins[i] = fins[i].replace(".00", '')
         fins[i] = fins[i].replace(",", '')
-        fins[i] = parseInt(fins[i])
+        fins[i] = String(fins[i])
 
       } else if (typeof fins[i] == "number"){
 // console.log("N: " + fins[i])
-
+        fins[i] = String(fins[i])
       }
     }
     record.financials.income = fins[0]
@@ -188,14 +233,12 @@ function importClients(start, end){
 
        	let dateArray = note.match(matchingDate)
         if (dateArray != null) {
-
           notesTemp.createdDateTime = moment(dateArray[0], uiDate).format(dateTime)
-
 //console.log(note + ": \n" + notesTemp.createdDateTime)
-
         } else {
           notesTemp.createdDateTime = moment(item.DateCreation_d, uiDate).format(dateTime)
         }
+        notesTemp.updatedDateTime = moment().format(dateTime)
         let alfonsoArray = note.match(matchAlfonso)
         if (alfonsoArray != null) {
           notesTemp.isImportant = true
@@ -212,13 +255,12 @@ function importClients(start, end){
 
 //    console.log(JSON.stringify(record.givenName + ":" + record.gender))
 
-    clients.push(record)
+    importedClients.push(record)
 
   })
   setTimeout(function(){
-      console.log(JSON.stringify(clients[66]))
-      console.log(clients)
-      $("#clientCount").html("  Record Count: "+ clients.length)
+      console.log(importedClients)
+      $("#clientCount").html("["+ importedClients.length+"]")
   }, 1000);
 }
 
@@ -234,47 +276,58 @@ function importClients(start, end){
 // 9) FoodStamps
 
 function importDependents(start,end){
-  $.each( clients, function( i, client ) { //clients.slice(start,end)
+  $("#dependentsImported").html("Starting Import...")
+  let dependentsLoaded = 0
+  $.each( importedClients, function( i, client ) { //importedClients.slice(start,end)
     let dependents = dependentData.filter(function( obj ) {
       return obj.HouseholdID == client.clientId
     })
-console.log("ID#: "+ client.clientId)
-//    console.log(dependents.length)
+// console.log("ID#: "+ client.clientId)
+
     let clientDependents = []
     for (var d = 0; d < dependents.length; d++) {
+
       let depRecord = {}
 //      console.log(dependents[d].CreationDate_d)
       depRecord.createdDateTime = moment(dependents[d].CreationDate_d, "MM/DD/YY").format(dateTime)
       depRecord.updatedDateTime = moment().format(dateTime)
       depRecord.givenName = dependents[d].GivenName
       depRecord.familyName = dependents[d].FamilyName
-      depRecord.dob = moment(dependents[d].DOB, uiDate).format(date)
+      if (dependents[d].DOB != "" && dependents[d].DOB != "*EMPTY*") {
+// console.log(dependents[d].HouseholdID + " | " + dependents[d].DOB)
+        dependents[d].DOB = cleanDate(dependents[d].DOB)
+        depRecord.dob = moment(dependents[d].DOB, uiDate).format(date)
+      } else {
+        depRecord.dob = "*EMPTY*"
+      }
       if (dependents[d].Gender == "F") depRecord.gender = "Female"
       if (dependents[d].Gender == "M") depRecord.gender = "Male"
       if (dependents[d].Gender == "") depRecord.gender = getGender(dependents[d].GivenName)
+      if (dependents[d].Gender == "*EMPTY*") depRecord.gender = getGender(dependents[d].GivenName)
       depRecord.relationship = dependents[d].DepRelationship
       depRecord.isActive = "Active"
       clientDependents.push(depRecord)
+      dependentsLoaded++
 //      console.log("Dependents Added")
     }
     client.dependents = clientDependents
   })
   setTimeout(function(){
-    console.log(clients)
+    console.log(importedClients)
+    $("#dependentsImported").html("["+ dependentsLoaded+"]")
   }, 10000);
 
 }
 
 function importFoodLastServed(start,end){
-  console.log("IN IMPORT FOOD")
-  $.each( clients, function( i, client ) { // clients.slice(start,end)
-    console.log("IN CLIENTS")
+  let lastServedCount = 0
+  $.each( importedClients, function( i, client ) { // importedClients.slice(start,end)
     let foods = foodSmall.filter(function( obj ) {
       return obj.HouseholdID == client.clientId
     })
-    console.log("ID#: " + client.clientId)
-    let latestUSDA = "1900/01/01"
-    let latestNonUSDA = "1900/01/01"
+// console.log("ID#: " + client.clientId)
+    let latestUSDA = "1900-01-01"
+    let latestNonUSDA = "1900-01-01"
     for (var f = 0; f < foods.length; f++) {
       if (foods[f].USDA == "USDA"){
         if (moment(foods[f].DateServed, "MM/DD/YYYY").isAfter(latestUSDA)) {
@@ -292,7 +345,8 @@ function importFoodLastServed(start,end){
       recordUSDA.isUSDA = "USDA"
       recordUSDA.serviceCategory = "Food"
       recordUSDA.serviceTypeId = "cj86davnj00013k7zi3715rf4"
-      clients[i].lastServed.push(recordUSDA)
+      importedClients[i].lastServed.push(recordUSDA)
+      lastServedCount++
     }
     if (latestNonUSDA != "1900/01/01") {
       let recordNonUSDA = {}
@@ -300,16 +354,41 @@ function importFoodLastServed(start,end){
       recordNonUSDA.isUSDA = "NonUSDA"
       recordNonUSDA.serviceCategory = "Food"
       recordNonUSDA.serviceTypeId = "c2e6fbfcd32adcfdyht56a14c166d0b304da3aa32"
-      clients[i].lastServed.push(recordNonUSDA)
+      importedClients[i].lastServed.push(recordNonUSDA)
+      lastServedCount++
     }
-
-    console.log("USDA: "+ latestUSDA)
-    console.log("NonUSDA: "+ latestNonUSDA)
-    console.log(clients[i].lastServed)
+//    console.log("USDA: "+ latestUSDA)
+//    console.log("NonUSDA: "+ latestNonUSDA)
+//    console.log(importedClients[i].lastServed)
   })
   setTimeout(function(){
-    console.log(clients)
+    console.log(importedClients)
+    $("#foodImported").html("["+ lastServedCount + "]")
   }, 10000);
+}
+
+function uploadToDynamoDB(){
+  let start = $("#clientUploadStart").val()
+  let end = $("#clientUploadEnd").val()
+
+console.log(start)
+console.log(end)
+
+  $("#dependentsImported").html("Imported Records: "+ importedClients.length)
+  let clientsUploaded = 0
+  $.each( importedClients.slice(start,end), function( i, client ) {
+    let URL = aws+"/clients/"
+
+    console.log("ID#:" + client.clientId + " i#:"+ i)
+
+  	result = dbPostData(URL,JSON.stringify(client))
+    if (result != null) {
+      console.log(JSON.stringify(client))
+    } else {
+      clientsUploaded++
+    }
+  })
+  $("#clientsUploaded").html("["+ clientsUploaded + "]")
 }
 // MISSING FROM DEPENDENTS:
 // 1) CreationDate_d [*not essential]
@@ -421,4 +500,33 @@ console.log(givenNames)
 
 function toTitleCase(str) {
   return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
+
+function generateUsedClientIDList(){
+  let temp =[]
+  for (var i = 0; i < importedClients.length; i++) {
+    temp.push(importedClients[i].clientId)
+  }
+  usedClientIdArray = temp
+  console.log(usedClientIdArray)
+}
+
+function generateUnusedClientIDList(){
+  let temp =[]
+  let l = usedClientIdArray.length -1
+console.log(l)
+  let lastID = usedClientIdArray[l]
+console.log(lastID)
+  for (var i = 0; i < lastID+1; i++) {
+    let found = usedClientIdArray.find(function(element) {
+      return element = i;
+    });
+console.log(found)
+
+    if (found == 2) {
+      temp.push(i)
+    }
+  }
+  unusedClientIdArray = temp
+  console.log(unusedClientIdArray)
 }

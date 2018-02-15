@@ -574,7 +574,9 @@ function uiGenSelectHTML(val,options,col,id){
 }
 
 function uiGenSelectHTMLTable(selector,data,col,tableID){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
+	if (data == undefined) return
+	// TODO FIX ON OF the calls to this function -- value two is "undefined"
+	// if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
   // CREATES DYNAMIC TABLE.
   let table = document.createElement("table")
   table.setAttribute("id", tableID)
@@ -854,9 +856,19 @@ function dbPostData(uUrl,dataU){
 	    dataType: "json",
 	    data: uData,
 	    contentType:'application/json',
+
 	    success: function(message){
-	    	console.log(message)
+				console.log(message)
+			//	console.log(message.__type)
 				if (typeof message.message !== 'undefined') {
+					ans = message.message
+					utilBeep()
+
+				} else if (message.__type != undefined) {
+					ans = message.__type
+
+					console.log("ERROR")
+
 					utilBeep()
 					// ***** TODO error message
 				} else {
@@ -867,16 +879,18 @@ function dbPostData(uUrl,dataU){
 						uiPopulateForm(serviceType, 'serviceTypes')
 						uiSaveButton('serviceType', 'SAVED!!')
 					} else if (uUrl.includes('/clients')) {
-						let row = utilUpdateClientsData()
-						uiGenSelectHTMLTable('#searchContainer', clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
-						uiOutlineTableRow('clientTable', row)
-						uiSetClientsHeader('#'+client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
-						uiSaveButton('client', 'SAVED!!')
+						// TODO REMOVED FOR UPLOAD ONLY
+						// let row = utilUpdateClientsData()
+						// uiGenSelectHTMLTable('#searchContainer', clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
+						// uiOutlineTableRow('clientTable', row)
+						// uiSetClientsHeader('#'+client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
+						// uiSaveButton('client', 'SAVED!!')
 					}
 				}
 		},
 		error: function(json){
 	    	console.log(json)
+				ans = json
 				if (uUrl.includes('/servicetypes')) {
 					uiSaveButton('serviceType', 'ERROR!!')
 				} else if (uUrl.includes('/clients')) {
@@ -1178,21 +1192,21 @@ function dbSearchClients(){
 		}
 	}
 	uiResetNotesTab()
-	if (clientData==null||clientData.length==0){
-		utilBeep()
-		uiSetClientsHeader("0 Clients Found")
-		// TODO clear current client
-	} else {
-		let columns = ["clientId","givenName","familyName","dob","street"]
-		uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
-		if (clientData.length === 1){
-			utilSetCurrentClient(0) // go straight to SERVICES
-			navGotoTab("tab2")
-		} else {
-			uiSetClientsHeader(clientData.length + ' Clients Found')
-			navGotoTab("tab1")
-		}
-	}
+	// if (clientData==null||clientData.length==0){
+	// 	utilBeep()
+	// 	uiSetClientsHeader("0 Clients Found")
+	// 	// TODO clear current client
+	// } else {
+	// 	let columns = ["clientId","givenName","familyName","dob","street"]
+	// 	uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
+	// 	if (clientData.length === 1){
+	// 		utilSetCurrentClient(0) // go straight to SERVICES
+	// 		navGotoTab("tab2")
+	// 	} else {
+	// 		uiSetClientsHeader(clientData.length + ' Clients Found')
+	// 		navGotoTab("tab1")
+	// 	}
+	// }
 }
 
 // **********************************************************************************************************
@@ -1212,7 +1226,7 @@ function cogCheckSession() {
 				alert(err);
 				return;
 		}
-	console.log('session validity: ' + session.isValid());
+//	console.log('session validity: ' + session.isValid());
 	})
 }
 
