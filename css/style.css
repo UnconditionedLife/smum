@@ -117,7 +117,7 @@ main{
 
 .contentHeader {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   grid-template-rows: 50px auto;
 }
 
@@ -1084,7 +1084,7 @@ checkbox[readonly]{
 	color: var(--grey-green);
 }
 
-.btnAdmin {
+.btnAlert {
 	margin: 0 10px 0 10px;
 	background-color: transparent;
 	border-color: var(--red);

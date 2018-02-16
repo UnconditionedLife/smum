@@ -386,6 +386,7 @@ function uiShowHistoryData(clientHistory){
 }
 
 let uiShowLastServed = function() {
+	let nextService = ""
 	if (client.clientId != undefined){
 		let visitHeader = "FIRST SERVICE VISIT";
 		if (client.lastServed[0] != undefined) {
@@ -397,25 +398,30 @@ let uiShowLastServed = function() {
 					let servedDate = moment().subtract(lastServed.lowestDays, "days");
 					let displayLastServed = moment(servedDate).fromNow() //lastServedFood[0].serviceDateTime
 					visitHeader = 'LAST SERVED ' + displayLastServed.toUpperCase()
+					let nonUSDAServiceInterval = utilGetFoodInterval("NonUSDA")
+					if (lastServed.lowestDays < nonUSDAServiceInterval){
+						let nextServiceDays = (nonUSDAServiceInterval - lastServed.lowestDays)
+						if (nextServiceDays == 1) {
+							nextService = "<br>" + "Next service is tomorrow!"
+						} else {
+							let nextServiceDate = moment().add(nextServiceDays, "days")
+							nextService = "<br>" + "Next service " + moment(nextServiceDate).format("dddd, MMMM Do") + "!"
+						}
+					}
 				}
 			}
 		}
-		$('#serviceLastVisit').html(visitHeader)
+		$('#serviceLastVisit').html(visitHeader + nextService)
 	}
 }
 
 function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-	// if (lastVisit < 14 && lastVisit > 1) {
-	// 	emergencyFood = true
-	// 	// TODO remove old static emergency button
-	// 	$('#servicePrimaryButtons').html('<div class="btnEmergency" onclick="utilAddService('+"'USDA Food','Items: 1','food'"+')">EMERGENCY FOOD ONLY</div>');
-	// } else {
-		let primaryButtons = "" //'<div class="primaryButtonContainer"><div class="buttonCenteredContainer">';
+		let primaryButtons = ""
 		for (let i=0; i<btnPrimary.length; i++){
-			let x = btnPrimary[i]; // index of active serviceTypes
-			let btnClass = "btnPrimary";
-			if (activeServiceTypes[x].serviceCategory == "Administration") btnClass = "btnAdmin";
+			let x = btnPrimary[i]
+			let btnClass = "btnPrimary"
+			if ((activeServiceTypes[x].serviceCategory == "Administration") || (activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
 			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'";
 			let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
 			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
@@ -520,9 +526,7 @@ function uiShowServicesButtons(){
 	let btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
 	uiShowServicesDateTime()
 	uiShowLastServed()
-
 	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
-
 	uiShowSecondaryServiceButtons(activeServiceTypes)
 }
 
@@ -1005,10 +1009,7 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 	let itemsServed = ""
 	let serviceType = {}
 	if (serviceButtons == "Primary"){
-		let serviceTypeArr = serviceTypes.filter(function( obj ) {
-			return obj.serviceTypeId == serviceTypeId
-		})
-		serviceType = serviceTypeArr[0]
+		serviceType = utilGetServiceTypeByID(serviceTypeId)
 		itemsServed = serviceType.numberItems
 		if (serviceType.itemsPer == "Person") itemsServed = itemsServed * client.family.totalSize
 		dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, serviceType.isUSDA)
@@ -1518,9 +1519,8 @@ console.log('made it past config')
 function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 console.log("IN ADD SERVICE");
-	let serviceType = serviceTypes.filter(function( obj ) {
-		return obj.serviceTypeId == serviceTypeId
-	})
+	let serviceType = utilGetServiceTypeByID(serviceTypeId)
+
 	// let itemsServed = "4"
 	// TODO Need real numberItems
 	// let totalServed = client.family.totalSize
@@ -1532,6 +1532,23 @@ console.log("IN ADD SERVICE");
 	uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
 	// TODO Create ability to UNDO the adding of a service.
 	// TODO Create tally of added services on the screen [the print button will be added there]
+}
+
+function utilGetServiceTypeByID(id){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	let serviceTypeArr = serviceTypes.filter(function( obj ) {
+		return obj.serviceTypeId == serviceTypeId
+	})
+	return = serviceTypeArr[0]
+}
+
+function utilGetFoodInterval(isUSDA){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	for (var i = 0; i < serviceTypes.length; i++) {
+		if ((serviceTypes[i].serviceButtons == "Primary") && (serviceTypes[i].serviceCategory == "Food") && (serviceTypes[i].isUSDA == isUSDA)){
+			return serviceTypes[i].serviceInterval
+		}
+	}
 }
 
 function utilBeep(){
