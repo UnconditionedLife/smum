@@ -190,6 +190,34 @@ console.log(client.lastServedFoodDateTime)
 	uiGenSelectHTMLTable('#historyTop',historyArray,columns,'historyTable')
 }
 
+function uiGenerateErrorBubble(errId, errText, input){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
+	// let parent = $(input).parent()
+	let position = $(input).position()
+
+console.log(position)
+
+	let width = $(input).width()
+	let left = (position.left)
+
+console.log(left)
+
+	let top = (position.top)
+
+console.log(top)
+
+	jQuery('<div/>', {
+		class: "errorBubble",
+     id: errId,
+     text: errText,
+	}).appendTo('.clientFormDiv');
+
+	$("#"+ errId).css({top: "216px"})
+	$("#"+ errId).css({left: left})
+
+console.log($("#"+ errId).position())
+}
+
 function uiOutlineTableRow(table, row){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', 'var(--blue) 1px dashed').siblings().css('outline', 'none')
@@ -1317,7 +1345,7 @@ console.log(requiredAttributes)
 
 
 console.log("needs new password - change the form")
-let newPassword = "Password321#"
+let newPassword = ""
 
 				// the api doesn't accept this field back
 				delete userAttributes.email_verified;
@@ -1369,7 +1397,7 @@ function cogGetUserAttributes(){
 // 	attributeList.push(attributeEmail);
 // 	attributeList.push(attributePhoneNumber);
 //
-// 	userPool.signUp('jleal67@gmail.com', 'Password123!', attributeList, null, function(err, result){
+// 	userPool.signUp('', '', attributeList, null, function(err, result){
 // 			if (err) {
 // 					alert(err);
 // 					return;
@@ -1391,13 +1419,13 @@ function cogLoginAdmin(){
 console.log("IN AUTHENTICATION")
 
 	let authenticationData = {
-		 Username : 'jleal67@gmail.com', // your username here
-		 Password : 'Password123!', // your password here
+		 Username : '', // your username here
+		 Password : '', // your password here
  	};
 
 	let userData = {
-		 Username : 'jleal67@gmail.com', // your username here
-		 Password : 'Password123!', // your password here
+		 Username : '', // your username here
+		 Password : '', // your password here
  	};
 
   let authenticationDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authenticationData);
@@ -1789,6 +1817,10 @@ function utilErrorHandler(errMessage, status, error, type) {
 
 function utilFormToJSON(form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+
+	uiGenerateErrorBubble("errorGivenName", "Field cannot be empty!", "#givenName.clientForm")
+
+
 	let vals = {}
 	console.log($(form))
 	let formElements = $(form)

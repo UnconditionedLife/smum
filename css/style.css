@@ -933,6 +933,32 @@ checkbox[readonly]{
 	display: inline-flex;
 }
 
+.errorBubble {
+  position: relative;
+  background-color: var(--red);
+  color: white;
+  height: 36px !important;
+  width:200px!important;
+  padding: 8px;
+  text-align:  center;
+  border-radius: 18px;
+}
+
+.errorBubble:after {
+  content:'';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 0;
+  height: 0;
+  border-top: solid 10px var(--red);
+  border-left: solid 10px transparent;
+  border-right: solid 10px transparent;
+}
+
+
 .clientNumber{
 	background-color: var(--blue);
 	border-radius: 5px;
