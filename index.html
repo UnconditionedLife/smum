@@ -77,9 +77,11 @@
             <input id="tab6" class="tabInput" type="radio" name="tabs">
             <label id="tabLable6" for="tab6">Notes</label>
 
-            <section id="content1" class="viewOnly"> <!-- Found -->
+            <section id="content1"> <!-- Found -->
                <!-- <div class="topFormButtonsDiv"><input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client"></div> -->
-               <container id="searchContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
+               <container id="searchContainer">
+                  <div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div>
+               </container>
             </section>
             <section id="content2"> <!-- Services -->
                <container id="serviceButtonContainer">
@@ -117,12 +119,10 @@
                <div id="newNoteButton" class="topFormButtonsDiv"><input class="solidButton" onclick="uiToggleNoteForm('show','')" type="button" value="New Note"></div>
                <div id="noteEditForm">
                   <div id="noteEditHeader">NEW NOTE</div>
-                  <form>
                      <div><textarea id="noteTextArea" class="noteForm" required></textarea></div>
                      <div style="padding: 12px"><input id="noteIsImportant" class="noteForm" type="checkbox" value="true"> <span class="checkboxtext">&nbsp; IMPORTANT!</span></div>
-                     <div style="padding-top: 8px;"><p><input class="solidButton" onclick="dbPostNote()" type="button" value="Save"></p></div>
-                     <div style="padding-top: 8px;"><input class="openButton" onclick="uiShowHideNoteForm('hide')" type="button" value="Cancel"></div>
-                  </form>
+                     <div style="padding-top: 8px;"><p><input class="solidButton" onclick="dbSaveNote()" type="button" value="Save"></p></div>
+                     <div style="padding-top: 8px;"><input class="openButton" onclick="uiToggleNoteForm("hide", "")" type="button" value="Cancel"></div>
                </div>
                <container id="notesContainer"></container>
             </section>
@@ -159,7 +159,11 @@
             <label id="atabLable4" for="aTab4">Users</label>
 
             <input id="aTab5" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable5" for="aTab5">Configure</label>
+            <label id="tabLable5" for="aTab5">Settings</label>
+
+            <input id="aTab6" class="tabInput" type="radio" name="tabs">
+            <label id="tabLable6" for="aTab6">Import</label>
+
 
             <section id="aContent1">
                <div class="topFormButtonsDiv">
@@ -182,6 +186,9 @@
                </div>
             </section>
             <section id="aContent5">
+
+            </section>
+            <section id="aContent6">
                <!-- <div id="name">
                   <h3>Given Names</h3>
                </div>

@@ -515,16 +515,21 @@ function generateUnusedClientIDList(){
   let temp =[]
   let l = usedClientIdArray.length -1
 console.log(l)
-  let lastID = usedClientIdArray[l]
+  let lastID = parseInt(usedClientIdArray[l]) + 1
 console.log(lastID)
-  for (var i = 0; i < lastID+1; i++) {
-    let found = usedClientIdArray.find(function(element) {
-      return element = i;
-    });
-console.log(found)
-
-    if (found == 2) {
+  for (var i = 1; i < lastID; i++) {
+    let theClient = importedClients.filter(function( obj ) {
+      return obj.clientId == i
+    })
+    if (theClient.length != 1) {
+//      console.log(theClient)
       temp.push(i)
+    } else {
+      // testClient = dbGetData(aws+"/clients/"+i).clients
+      // if (testClient == []) {
+      //   console.log(JSON.stringify(testClient) + "ID: "+ i)
+      //   utilBeep
+      // }
     }
   }
   unusedClientIdArray = temp

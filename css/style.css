@@ -592,7 +592,7 @@ input.inputBox:read-only {
 
 #noteEditForm {
   margin: 4px 50px 10px 4px;
-	width: 100%;
+	width: 99%;
 	display: grid;
 	grid-template-columns: auto 160px 160px 160px;
 	grid-template-rows: 28px 44px;
@@ -727,15 +727,16 @@ h4{
 }
 
 .notesHeader {
-	background-color: var(--light-green);
+	background: linear-gradient(#C4E6C4,white);
 	line-height: 26px;
-
 	font-weight: bold;
 	color: var(--blue);
+	text-align:  center;
 }
 
+
 .notes tr:nth-child(even) {background: white; }
-.notes tr:nth-child(odd) {background: var(--grey-green);}
+.notes tr:nth-child(odd) {background: linear-gradient(white, var(--grey-green), var(--grey-green),white);}
 /*alternates the colors of notes table*/
 
 .notesRow {
@@ -806,7 +807,7 @@ table {/*standard table css*/
 		border-collapse: separate;
 }
 
-table tr:nth-child(odd) {background: var(--grey-green)}
+table tr:nth-child(odd) {background: linear-gradient(white, var(--grey-green), var(--grey-green),white);}
 
 th {/*css for td and th*/
     /*border: 2px solid white;
@@ -815,7 +816,7 @@ th {/*css for td and th*/
     padding: 6px; */
 		/* background-color: var(--light-green); */
 		height: 38px;
-		background: linear-gradient(#C4E6C4, white, #C4E6C4);
+		background: linear-gradient(#C4E6C4,white);
 		/* border-width: 1px;
 		border-style: solid; */
 		border-color: var(--light-green);
@@ -926,6 +927,28 @@ tr {
 
 checkbox[readonly]{
 	background-color:transparent;
+}
+
+#clientsTitle{
+	display: inline-flex;
+}
+
+.clientNumber{
+	background-color: var(--blue);
+	border-radius: 5px;
+	color: white;
+	padding: 8px;
+	max-width:  fit-content;
+	line-height: 20px;
+	max-height:  fit-content;
+}
+
+.clientName{
+	color: var(--blue);
+	padding: 8px;
+	max-width:  fit-content;
+	line-height: 20px;
+	max-height:  fit-content;
 }
 
 .blueInline{/*blue and inline block text*/
@@ -1306,6 +1329,7 @@ label[for*='aTab2']:before { content: '\f274'; }
 label[for*='aTab3']:before { content: '\f080'; }
 label[for*='aTab4']:before { content: '\f007'; }
 label[for*='aTab5']:before { content: '\f013'; }
+label[for*='aTab6']:before { content: '\f019'; }
 
 label[for*='uTab1']:before { content: '\f2be'; }
 label[for*='uTab2']:before { content: '\f084'; }
@@ -1341,7 +1365,9 @@ input:checked + label {
 #aTab2:checked ~ #aContent2,
 #aTab3:checked ~ #aContent3,
 #aTab4:checked ~ #aContent4,
-#aTab5:checked ~ #aContent5 {
+#aTab5:checked ~ #aContent5,
+#aTab6:checked ~ #aContent6
+{
   display: block;
 }
 

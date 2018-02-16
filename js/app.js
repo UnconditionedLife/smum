@@ -13,7 +13,7 @@
 // **********************************************************************************************************
 let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 let rowNum = 1
-let MAX_ID_DIGITS = 4
+let MAX_ID_DIGITS = 5
 const uiDate = 'MM/DD/YYYY'
 const uiDateTime = 'MM/DD/YYYY H:mma'
 const uiDateTimeShort = 'MM/DD/YY H:mma'
@@ -22,7 +22,7 @@ const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
 const seniorAge = 60 // TODO set in Admin/Settings
 let clientData = null // current client search results
-let clientNotes = []
+// let clientNotes = []
 let client = {} // current client
 let serviceType = null
 let emergencyFood = false
@@ -159,24 +159,35 @@ function uiBuildHistoryBottom(){
 }
 
 function uiBuildHistoryTop(){
+	console.log("IN Build His Top")
   //data = dbGetServicesNotes(client.clientId)
-	let lastServedDateTime = ""
-  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastServedDateTime", "familyIdCheckedDate"]
-	let clientArray = []
-	clientArray.push(client)
+  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastServedFoodDateTime", "familyIdCheckedDate"]
+	utilSetLastServedFood()
+	let historyArray = []
+	let historyFields = {}
+	historyFields.createdDateTime = client.createdDateTime
+	historyFields.updatedDateTime = client.updatedDateTime
+	historyFields.firstSeenDate = client.firstSeenDate
+	historyFields.lastServedFoodDateTime = client.lastServedFoodDateTime
+	historyFields.familyIdCheckedDate = client.familyIdCheckedDate
+	historyArray.push(historyFields)
 
-console.log(JSON.stringify(clientArray))
+console.log(client.lastServedFoodDateTime)
 
-console.log(JSON.stringify(clientArray[0].lastServed))
+//console.log(JSON.stringify(clientArray))
 
-	if ((clientArray[0].lastServed[0] != undefined)) {
-		if ((clientArray[0].lastServed[0].serviceDateTime == undefined)) {
-			clientArray[0].lastServedDateTime = ""
-		} else {
-			clientArray[0].lastServedDateTime = clientArray[0].lastServed[0].serviceDateTime
-			uiGenSelectHTMLTable('#historyTop',clientArray,columns,'historyTable')
-		}
-	}
+//console.log(JSON.stringify(clientArray[0].lastServed))
+
+	// if ((clientArray[0].lastServed[0] != undefined)) {
+	// 	if ((clientArray[0].lastServed[0].serviceDateTime == undefined)) {
+	// 		clientArray[0].lastServedDateTime = ""
+	// 	} else {
+	// 		clientArray[0].lastServedDateTime = clientArray[0].lastServed[0].serviceDateTime
+	// 	}
+	// } else {
+	// 	clientArray[0].lastServedDateTime = ""
+	// }
+	uiGenSelectHTMLTable('#historyTop',historyArray,columns,'historyTable')
 }
 
 function uiOutlineTableRow(table, row){
@@ -191,20 +202,22 @@ function uiResetNotesTab(){
 	$("#noteIsImportant").prop("checked", false)
 }
 
-function uiShowExistingNotes(arr){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	arr.sort(function(x, y){
-    return moment(y.createdDateTime).isAfter(x.createdDateTime) // y.createdDateTime - x.createdDateTime;
+function uiShowExistingNotes(){
+	$('.notes').html("")
+	// TODO this sort does not seem to be working - verify and fix
+	client.notes.sort(function(x, y){
+    return moment(x.createdDateTime).isBefore(y.createdDateTime)
 	})
 	let important = ""
-	for (let i = 0; i < arr.length; i++){
-    let obj = arr[i];
+	for (let i = 0; i < client.notes.length; i++){
+		important = ""
+    let obj = client.notes[i];
 		if (obj.isImportant == "true" || obj.isImportant == true) {
 			important = "IMPORTANT"
 			hasImportantNote = "true"
 		}
 		// TODO need to provide link at TR level if the current user == the user who created the note
-    uiShowNote(moment(obj.createdDateTime).format(uiDateTimeShort), obj.noteText, obj.noteByUserName, important, obj.clientNoteId)
+    uiShowNote(moment(obj.createdDateTime).format(uiDateTimeShort), obj.noteText, obj.noteByUserName, important)
   }
 	if (hasImportantNote == "true") {
 		$("#tabLable6").css("color", "var(--red)")
@@ -213,17 +226,17 @@ function uiShowExistingNotes(arr){
 
 function uiToggleNoteForm(todo, id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	// TODO show / hide notes area  OR existing note
 	if (id.length > 1) {
-
+		// TODO check if note has been saved if it's an existing note.
 	}
-
 	if (todo == "show"){
 		$("#newNoteButton").hide()
 		$("#noteEditForm").show()
 	} else {
 		$("#newNoteButton").show()
 		$("#noteEditForm").hide()
+		$("#noteTextArea").val("")
+		$("#noteIsImportant").prop("checked", false)
 	}
 }
 
@@ -241,7 +254,9 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 function uiUpdateCurrentClient(index) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiOutlineTableRow('clientTable', index + 1)
-	uiSetClientsHeader('⇚' + client.clientId + '⇛ ' + client.givenName + ' ' + client.familyName)
+	let clientNumber = "<div class='clientNumber'>" + client.clientId + "</div>"
+	let clientName = "<div class='clientName'>" + client.givenName + ' ' + client.familyName + "</div>"
+	uiSetClientsHeader(clientNumber + clientName)
 	uiShowServicesButtons()
 	uiShowClientEdit(false)
 	navGotoTab("tab2")
@@ -315,8 +330,9 @@ function uiShowHidePassword(){
 }
 
 function uiShowHistory(){
+	//TODO disabled for testing
 	uiBuildHistoryTop()
-	uiBuildHistoryBottom()
+	// uiBuildHistoryBottom()
 }
 
 function uiShowHistoryData(clientHistory){
@@ -403,7 +419,8 @@ function uiShowClientEdit(isEdit){
 		uiToggleClientViewEdit('view')
 	}
 	uiShowDependents(isEdit)
-	dbLoadNotes(client.clientId)
+	uiShowExistingNotes()
+	// dbLoadNotes(client.clientId)
 }
 
 function uiShowDependents(isEdit){
@@ -423,21 +440,10 @@ function uiShowNewServiceTypeForm(){
 	navGotoTab("aTab2")
 }
 
-function uiShowNote(dateTime, text, user, important, noteId){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 5)) return
-
-	var textArea = document.getElementById("noteTextArea");
-
-	textArea.addEventListener("input", function (event) {
-	  if (textArea.validity.typeMismatch) {
-	    textArea.setCustomValidity("I expect an e-mail, darling!");
-	  } else {
-	    textArea.setCustomValidity("");
-	  }
-	});
-
-
+function uiShowNote(dateTime, text, user, important){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	let clickableRow = ""
+	let noteId = 1 // TODO need to keep orginal note index for recall/edit
 	if (important == "IMPORTANT") {
 		clickableRow = ' class=\"notesRow\" onClick=\"uiToggleNoteForm(\'show\',\'' + noteId + '\')\"'
 	}
@@ -502,7 +508,7 @@ function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$.each(data, function(key,value){
 
-console.log(key + " : " + value)
+//console.log(key + " : " + value)
 
 		if (typeof(data[key])=='object') {
 			let obj = data[key]
@@ -514,7 +520,7 @@ console.log(key + " : " + value)
 				} else {
 					$(el).val(value2)
 
-					console.log("ASSIGN : " + value2)
+					//console.log("ASSIGN : " + value2)
 				}
 			});
 		} else {
@@ -525,8 +531,8 @@ console.log(key + " : " + value)
 			} else {
 				$(el).val(value)
 
-				console.log("WAS : " + $(el).val())
-				console.log("ASSIGN : " + value)
+				//console.log("WAS : " + $(el).val())
+				//console.log("ASSIGN : " + value)
 
 			}
 		}
@@ -574,9 +580,11 @@ function uiGenSelectHTML(val,options,col,id){
 }
 
 function uiGenSelectHTMLTable(selector,data,col,tableID){
-	if (data == undefined) return
-	// TODO FIX ON OF the calls to this function -- value two is "undefined"
-	// if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
+	console.log("IN TABLE GEN " + tableID)
+	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
+	//if (data == undefined) return
+	// TODO FIX ONE OF the calls to this function -- value two is "undefined"
+
   // CREATES DYNAMIC TABLE.
   let table = document.createElement("table")
   table.setAttribute("id", tableID)
@@ -617,14 +625,21 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
     	} else if (col[j]=="dob"||col[j]=="firstSeenDate"||col[j]=="familyIdCheckedDate"||col[j]=="lastServedDateTime"){
 				tabCell.className = "historyTopText"
         tabCell.innerHTML = moment(data[i][col[j]]).format('MMM DD, YYYY')
-			} else if (col[j]=="lastSeenDate"){
+			} else if (col[j]=="lastServedFoodDateTime"){
 				tabCell.className = "historyTopText"
-				let lastServed = utilCalcLastServedDays()
+
+console.log("IN LAST SERVED DISPLAY")
+
+				//let lastServed = utilCalcLastServedDays()
 				let displayLastServed = "Never Served"
-				if (lastServed.lowestDays != 10000) {
-					let servedDate = moment().subtract(lastServed.lowestDays, "days");
-					let displayLastServed = moment(servedDate).format('MMM DD, YYYY')
+				if (client.lastServedFoodDateTime != "1900-01-01") {
+					displayLastServed = moment(client.lastServedFoodDateTime).format('MMM DD, YYYY | h:mm a')
 				}
+				//
+				// if (lastServed.lowestDays != 10000) {
+				// 	let servedDate = moment().subtract(lastServed.lowestDays, "days");
+				// 	let displayLastServed = moment(servedDate).format('MMM DD, YYYY')
+				// }
 				tabCell.innerHTML = displayLastServed
 			} else if (col[j]=="createdDateTime"||col[j]=="updatedDateTime"){
 				tabCell.className = "historyTopText"
@@ -765,14 +780,8 @@ function uiAddNoteButtonRow(){
 // **********************************************************************************************************
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
-function dbGetClientNotes(id){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	let URL = aws+"/clients/notes/"+id;
-	arr = dbGetData(URL).notes
-console.log("CLIENT NOTES: " + arr)
-	return arr
-}
 function dbGetData(uUrl){
+	//console.log("IN GET")
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	cogCheckSession()
 	let urlNew = uUrl;
@@ -801,9 +810,12 @@ function dbGetData(uUrl){
 			}
 		}
 	});
+	//console.log(ans)
 	return ans
 }
 function dbGetNewClientID(){
+
+	// TODO add the list of unused ID and use those up first
 	json = dbGetData(aws+"/clients/lastid")
 	lastid = json['lastId']
 //***** TODO confirm this works and put safeguards in place
@@ -815,19 +827,19 @@ function dbGetNewClientID(){
 	return newID
 }
 
-function dbGetServicesNotes(id){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	return dbGetData(aws+"/services/"+id).services
-}
+// function dbGetServicesNotes(id){
+// 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+// 	return dbGetData(aws+"/services/"+id).services
+// }
 
 function dbGetServicesTypes(){
 	return dbGetData(aws+"/servicetypes").serviceTypes
 }
 
-function dbLoadNotes(){
-	arr = dbGetClientNotes(client.clientId)
-	uiShowExistingNotes(arr)
-}
+// function dbLoadNotes(){
+// 	arr = dbGetClientNotes(client.clientId)
+// 	uiShowExistingNotes(arr)
+// }
 
 function dbLoadServiceHistory(){
 	let clientHistory = dbGetData(aws+"/clients/services/"+client.clientId).services
@@ -879,12 +891,15 @@ function dbPostData(uUrl,dataU){
 						uiPopulateForm(serviceType, 'serviceTypes')
 						uiSaveButton('serviceType', 'SAVED!!')
 					} else if (uUrl.includes('/clients')) {
-						// TODO REMOVED FOR UPLOAD ONLY
-						// let row = utilUpdateClientsData()
-						// uiGenSelectHTMLTable('#searchContainer', clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
-						// uiOutlineTableRow('clientTable', row)
-						// uiSetClientsHeader('#'+client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
-						// uiSaveButton('client', 'SAVED!!')
+						// TODO REMOVE BELOW FOR UPLOAD ONLY
+						// TODO DO WE NEED THE LINE BELOW
+						// let clientTableRow = utilUpdateClientsData()
+
+						uiGenSelectHTMLTable('#searchContainer', clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
+						if (clientData.length == 1) clientTableRow = 1
+						uiOutlineTableRow('clientTable', clientTableRow)
+						uiSetClientsHeader('#'+client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
+						uiSaveButton('client', 'SAVED!!')
 					}
 				}
 		},
@@ -1057,24 +1072,32 @@ console.log(data)
 	}
 }
 
-function dbPostNote(){
+function dbSaveNote(){
 	// TODO replace hardcoded values with real user variables
 	utilValidateForm(".noteForm")
-	let ans = {}
-	ans.noteOnClientId = client.clientId
-	ans.noteText = $("#noteTextArea").val().toString()
-	ans.createdDateTime = moment().format(dateTime)
-	ans.noteByUserName = session.user.username
+	let tmp = {}
+	tmp.noteText = $("#noteTextArea").val().toString()
+	tmp.createdDateTime = moment().format(dateTime)
+	tmp.updatedDateTime = moment().format(dateTime)
+	tmp.noteByUserName = session.user.username
 	let isImportant = false
-	if ($("#noteIsImportant").is(":checked")) {
-		isImportant = true
+	if ($("#noteIsImportant").is(":checked")) isImportant = true
+	tmp.isImportant = isImportant
+console.log(JSON.stringify(tmp))
+	client.notes.push(tmp)
+console.log(JSON.stringify(client.notes))
+// TODO SAVE CLIENT ... NEED TO USE UPDATE TO ONLY UPDATE SOME FIELDS
+	data = client
+	let URL = aws+"/clients/"
+	result = dbPostData(URL,JSON.stringify(data))
+	if (result == null) {
+		utilCalcFamilyCounts()
+		utilCalcClientAge()
+		uiToggleDependentsViewEdit("view")
+		uiToggleNoteForm("hide", "")
+		uiShowExistingNotes()
 	}
-	ans.isImportant = isImportant
-	ans.clientNoteId = cuid()
-console.log(JSON.stringify(ans))
-	dbPostData(aws+"/clients/notes/",JSON.stringify(ans))
-	uiToggleNoteForm("hide", "")
-	dbLoadNotes()
+
 }
 
 function dbSaveClientForm(){
@@ -1191,22 +1214,22 @@ function dbSearchClients(){
 			clientData = utilRemoveDupClients(d2.concat(d1))
 		}
 	}
-	uiResetNotesTab()
-	// if (clientData==null||clientData.length==0){
-	// 	utilBeep()
-	// 	uiSetClientsHeader("0 Clients Found")
-	// 	// TODO clear current client
-	// } else {
-	// 	let columns = ["clientId","givenName","familyName","dob","street"]
-	// 	uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
-	// 	if (clientData.length === 1){
-	// 		utilSetCurrentClient(0) // go straight to SERVICES
-	// 		navGotoTab("tab2")
-	// 	} else {
-	// 		uiSetClientsHeader(clientData.length + ' Clients Found')
-	// 		navGotoTab("tab1")
-	// 	}
-	// }
+	if (clientData==null||clientData.length==0){
+	 	utilBeep()
+	 	uiSetClientsHeader("0 Clients Found")
+	 	// TODO clear current client
+  } else {
+	 	let columns = ["clientId","givenName","familyName","dob","street"]
+	 	uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
+		uiResetNotesTab()
+		if (clientData.length == 1){
+			utilSetCurrentClient(0) // go straight to SERVICES
+			navGotoTab("tab2")
+		} else {
+			uiSetClientsHeader(clientData.length + ' Clients Found')
+			navGotoTab("tab1")
+		}
+	}
 }
 
 // **********************************************************************************************************
@@ -1608,6 +1631,27 @@ function utilCalcFamilyCounts(){
 // 	return lastIdCheck
 // }
 
+function utilSetLastServedFood(){
+	console.log("IN set last saved food")
+	// TODO too much duplicated code with utilCalcLastServedDays()
+	let lastServedFoodDateTime = "1900-01-01"
+	if (client.lastServed[0] == undefined) return lastServedFoodDateTime
+	let lastServedFood = client.lastServed.filter(function( obj ) {
+		return obj.serviceCategory == "Food"
+	})
+
+console.log(lastServedFood)
+
+	for (var i = 0; i < lastServedFood.length; i++) {
+		if (lastServedFood[i].isUSDA != "Emergency") {
+			if (moment(lastServedFood[i].serviceDateTime).isAfter(lastServedFoodDateTime)){
+				lastServedFoodDateTime = lastServedFood[i].serviceDateTime
+			}
+		}
+	}
+	client.lastServedFoodDateTime = lastServedFoodDateTime
+}
+
 function utilCalcLastServedDays() {
 	// get Last Served Date from client object & calculate number of days
 	let lastServed = {daysUSDA:"10000", daysNonUSDA:"10000", lowestDays:"10000"}
@@ -1798,7 +1842,7 @@ function utilKeyToLabel(x){
 				     firstSeenDate: "First Seen",
 				    	lastSeenDate: "Last Served",
        familyIdCheckedDate: "Last ID Check",
-			 	lastServedDateTime: "Last Served"
+	  lastServedFoodDateTime: "Last Served"
 	}
 	let y = data[x]
 	if (y==undefined){return x} else {return y}
@@ -1853,6 +1897,7 @@ function utilSetCurrentClient(index){
 	utilCalcFamilyCounts() // calculate fields counts and ages
 	// emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
+	// TODO need to show notes
 	uiUpdateCurrentClient(index)
 }
 
@@ -1876,6 +1921,9 @@ function utilUpdateClientsData(){
 	$.each(data, function(key,value){
 		client[key] = value
 	});
+
+console.log(data.length)
+
 	for (var i = 0; i < data.length; i++) {
 		if (client.clientId == data[i].clientId){
 			row = i+1
@@ -1884,6 +1932,9 @@ function utilUpdateClientsData(){
 			});
 		}
 	}
+
+console.log(row)
+
 	return row
 }
 
@@ -1931,7 +1982,7 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		} else {return true}
 	}
 
-console.log(lastServed)
+//console.log(lastServed)
 
 	if (activeServiceType.serviceButtons == "Primary") {
 		if (activeServiceType.serviceCategory == "Food") {
@@ -1960,16 +2011,16 @@ console.log(lastServed)
 				}
  			}
 		} else if (activeServiceType.serviceCategory == "Clothes") {
-	console.log("CLOTHING")
+//	console.log("CLOTHING")
 
-	console.log(lastServed.lowestDays + " < " + activeServiceType.serviceInterval)
+//	console.log(lastServed.lowestDays + " < " + activeServiceType.serviceInterval)
 
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) {
 				console.log("FALSE")
 				return false;
 			}
 		} else if (activeServiceType.serviceCategory == "Administration") {
-	console.log("ADMINISTRATION")
+//	console.log("ADMINISTRATION")
 			inLastServed = client.lastServed.filter(function( obj ) {
 				return obj.serviceCategory == "Administration"
 			})
@@ -1983,7 +2034,7 @@ console.log(lastServed)
 		}
 	} else {
 
-	console.log(lastServed.lowestDays + " < " + activeServiceType.serviceInterval)
+//	console.log(lastServed.lowestDays + " < " + activeServiceType.serviceInterval)
 
 		if (lastServed.lowestDays < activeServiceType.serviceInterval) {
 			return false;
@@ -2010,8 +2061,8 @@ function isLoggedIn(){
 
 
 
-function newNote(text,text2){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	uiShowNote(text,text2)
-	dbPostNote(text)
-}
+// function newNote(text,text2){
+// 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+// 	uiShowNote(text,text2)
+// 	dbSaveNote(text)
+// }

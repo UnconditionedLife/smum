@@ -1,0 +1,84 @@
+#set($inputRoot = $input.path('$'))
+{
+    "TableName": "smum-clients",
+    "Item": {
+
+	    "clientId": {"S": "$inputRoot.clientId"},
+        "givenName": {"S": "$inputRoot.givenName"},
+        "familyName": {"S": "$inputRoot.familyName"},
+        "gender": {"S": "$inputRoot.gender"},
+        "dob" : {"S": "$inputRoot.dob"},
+        "createdDateTime" : {"S": "$inputRoot.createdDateTime"},
+        "updatedDateTime" : {"S": "$inputRoot.updatedDateTime"},
+        "firstSeenDate" : {"S": "$inputRoot.firstSeenDate"},
+        "familyIdCheckedDate" : {"S": "$inputRoot.familyIdCheckedDate"},
+        "street" : {"S": "$inputRoot.street"},
+        "city" : {"S": "$inputRoot.city"},
+        "state" : {"S": "$inputRoot.state"},
+        "zipcode" : {"S": "$inputRoot.zipcode"},
+        "zipSuffix" : {"S": "$inputRoot.zipSuffix"},
+        "telephone" : {"S": "$inputRoot.telephone"},
+        "email" : {"S": "$inputRoot.email"},
+        "ethnicGroup" : {"S": "$inputRoot.ethnicGroup"},
+        "isActive" : {"S": "$inputRoot.isActive"},
+        "homeless" : {"S": "$inputRoot.homeless"},
+        "financials" : {
+            "M": {
+                "income": {"S": "$inputRoot.financials.income"},
+                "govtAssistance": {"S": "$inputRoot.financials.govtAssistance"},
+                "rent": {"S": "$inputRoot.financials.rent"},
+                "foodStamps": {"S": "$inputRoot.financials.foodStamps"}
+            }
+        },
+        "dependents" : {
+            "L": [
+                #foreach($elem in $inputRoot.dependents)
+                    {
+                        "M": {
+                            "createdDateTime": {"S": "$elem.createdDateTime"},
+                            "updatedDateTime": {"S": "$elem.updatedDateTime"},
+                            "givenName": {"S": "$elem.givenName"},
+                            "familyName": {"S": "$elem.familyName"},
+                            "dob": {"S": "$elem.dob"},
+                            "gender": {"S": "$elem.gender"},
+                            "relationship": {"S": "$elem.relationship"},
+                            "isActive": {"S": "$elem.isActive"}
+                        }
+                    }
+                #if($foreach.hasNext),#end
+                #end
+            ]
+        },
+         "notes" : {
+            "L": [
+                #foreach($elem in $inputRoot.notes)
+                    {
+                        "M": {
+                            "createdDateTime": {"S": "$elem.createdDateTime"},
+                            "updatedDateTime": {"S": "$elem.updatedDateTime"},
+                            "noteText": {"S": "$elem.noteText"},
+                            "isImportant": {"BOOL": "$elem.isImportant"},
+                            "noteByUserName": {"S": "$elem.noteByUserName"}
+                        }
+                    }
+                #if($foreach.hasNext),#end
+                #end
+            ]
+        },
+        "lastServed" : {
+            "L": [
+                #foreach($elem in $inputRoot.lastServed)
+                    {
+                        "M": {
+                            "serviceTypeId": {"S": "$elem.serviceTypeId"},
+                            "serviceDateTime": {"S": "$elem.serviceDateTime"},
+                            "serviceCategory": {"S": "$elem.serviceCategory"},
+                            "isUSDA": {"S": "$elem.isUSDA"}
+                        }
+                    }
+                #if($foreach.hasNext),#end
+                #end
+            ]
+        }
+    }
+}
