@@ -1120,7 +1120,7 @@ console.log(JSON.stringify(client.notes))
 	result = dbPostData(URL,JSON.stringify(data))
 	if (result == null) {
 		utilCalcFamilyCounts()
-		utilCalcClientAge()
+		utilCalcClientAge("db")
 		uiToggleDependentsViewEdit("view")
 		uiToggleNoteForm("hide", "")
 		uiShowExistingNotes()
@@ -1162,7 +1162,7 @@ console.log(JSON.stringify(data))
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
 	if (result == null) {
-		utilCalcClientAge()
+		utilCalcClientAge("db")
 		utilCalcFamilyCounts()
 		uiToggleClientViewEdit("view")
 	}
@@ -1194,7 +1194,7 @@ function dbSaveDependentsTable(){
 	result = dbPostData(URL,JSON.stringify(data))
 	if (result == null) {
 		utilCalcFamilyCounts()
-		utilCalcClientAge()
+		utilCalcClientAge("db")
 		uiToggleDependentsViewEdit("view")
 	}
 }
@@ -1897,9 +1897,12 @@ function utilRemoveDupClients(clients) {
 	return undupClients
 }
 
-function utilCalcClientAge(){
-	let dob = $("#dob.clientForm").val()
-	if (dob == undefined) {
+function utilCalcClientAge(source){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	let dob = ""
+	if (source == "form") {
+		dob = $("#dob.clientForm").val()
+	} else {
 		dob = client.dob
 	}
 	let age = moment().diff(dob, 'years')
@@ -1925,7 +1928,7 @@ function utilCalcDependentAge(index){
 function utilSetCurrentClient(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	client = clientData[index]
-	utilCalcClientAge()
+	utilCalcClientAge("db")
 	utilCalcFamilyCounts() // calculate fields counts and ages
 	// emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
@@ -2013,9 +2016,6 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 			return false;
 		} else {return true}
 	}
-
-//console.log(lastServed)
-
 	if (activeServiceType.serviceButtons == "Primary") {
 		if (activeServiceType.serviceCategory == "Food") {
 			if (activeServiceType.isUSDA == "USDA") {
@@ -2027,32 +2027,26 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 				let USDAServiceInterval = utilCalculateFoodInterval("USDA", activeServiceTypes)
 				if (lastServed.daysUSDA >= USDAServiceInterval) {
 					return false
-				} else if (lastServed.daysNonUSDA < activeServiceType.serviceInterval) {
+				} else if (lastServed.daysNonUSDA >= activeServiceType.serviceInterval) {
 					return false
 				}
 			} else if (activeServiceType.isUSDA == "Emergency") {
 				let USDAServiceInterval = utilCalculateFoodInterval("USDA", activeServiceTypes)
 				if (lastServed.daysUSDA >= USDAServiceInterval) {
-					console.log("FALSE")
 					return false
 				}
 				let nonUSDAServiceInterval = utilCalculateFoodInterval("NonUSDA", activeServiceTypes)
-				if (lastServed.daysNonUSDA >= nonUSDAServiceInterval) {
+				if (lastServed.daysNonUSDA <= nonUSDAServiceInterval) {
 					 console.log("FALSE")
 					 return false
 				}
  			}
 		} else if (activeServiceType.serviceCategory == "Clothes") {
-//	console.log("CLOTHING")
-
-//	console.log(lastServed.lowestDays + " < " + activeServiceType.serviceInterval)
-
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) {
 				console.log("FALSE")
 				return false;
 			}
 		} else if (activeServiceType.serviceCategory == "Administration") {
-//	console.log("ADMINISTRATION")
 			inLastServed = client.lastServed.filter(function( obj ) {
 				return obj.serviceCategory == "Administration"
 			})
@@ -2065,9 +2059,6 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 			}
 		}
 	} else {
-
-//	console.log(lastServed.lowestDays + " < " + activeServiceType.serviceInterval)
-
 		if (lastServed.lowestDays < activeServiceType.serviceInterval) {
 			return false;
 		}
