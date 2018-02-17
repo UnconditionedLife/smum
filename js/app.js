@@ -115,7 +115,7 @@ $("#noteEditForm").hide()
 
 document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); dbSearchClients()}
-}
+};
 // control the "save button" behaviour
 $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')})
 $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')})
