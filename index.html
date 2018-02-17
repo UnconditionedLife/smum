@@ -1,33 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-   <link rel="icon" href="favicon.ico" type="image/x-icon">
-	<link rel="stylesheet" href="css/style.css">
-   <link rel="import" href="templates.html">
-   <audio id="beep" src="sounds/beep.wav" autostart="false"></audio>
-   <audio id="bloop" src="sounds/bloop.wav" autostart="false"></audio>
-   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.122.0/aws-sdk.min.js"></script> -->
-   <script src="https://sdk.amazonaws.com/js/aws-sdk-2.190.0.min.js"></script>
-   <script src="js/aws-cognito-sdk.min.js"></script>
-   <script src="js/amazon-cognito-identity.min.js"></script>
-   <script src="https://use.fontawesome.com/4bcfc4269b.js"></script>
-  </head>
-  <body>
-    <nav class="navbar">
-      <div class="logo">
-         <img src="images/smumLogo.png" width="31" height="42" onClick="" alt="SMUM"></a>
-         <span>&nbsp;&nbsp;Santa Maria Urban Ministry</span>
-      </div>
-      <div class="searchDiv">
- 	      <input id="searchField" class="search" type="text" value="" placeholder="Search clients">
-         <i class="fa fa-search-plus fa-lg searchIcon" aria-hidden="true" onclick="dbSearchClients()"></i>
-         <!-- <img class="searchImage" src="images/search.png" onclick="clientSearchResults()"> -->
-      </div>
+   <head>
+      <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+      <link rel="icon" href="favicon.ico" type="image/x-icon">
+	   <link rel="stylesheet" href="css/style.css">
+      <link rel="import" href="templates.html">
+      <audio id="beep" src="sounds/beep.wav" autostart="false"></audio>
+      <audio id="bloop" src="sounds/bloop.wav" autostart="false"></audio>
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.122.0/aws-sdk.min.js"></script> -->
+      <script src="https://sdk.amazonaws.com/js/aws-sdk-2.190.0.min.js"></script>
+      <script src="js/aws-cognito-sdk.min.js"></script>
+      <script src="js/amazon-cognito-identity.min.js"></script>
+      <script src="https://use.fontawesome.com/4bcfc4269b.js"></script>
+   </head>
+   <body>
+      <nav class="navbar">
+         <div class="logo">
+            <img src="images/smumLogo.png" width="31" height="42" onClick="" alt="SMUM"></a>
+            <span>&nbsp;&nbsp;Santa Maria Urban Ministry</span>
+         </div>
+         <div class="searchDiv">
+    	      <input id="searchField" class="search" type="text" value="" placeholder="Search clients">
+            <i class="fa fa-search-plus fa-lg searchIcon" aria-hidden="true" onclick="dbSearchClients()"></i>
+            <!-- <img class="searchImage" src="images/search.png" onclick="clientSearchResults()"> -->
+         </div>
 
 	  <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
 	    <span class="navbar-toggler-icon"></span>
@@ -41,105 +40,99 @@
    	      <input class="form-control mr-sm searchHeader" type="text" placeholder="Search">
 	        <a href="#" onclick="searchResults('.main-div')"><img class="imgMargin" src="images/search.png" /></a></form>
 	    </ul> -->
-	   <div class="navButtons">
-         <ul class="navbar-nav">
-            <li id="nav1" class="navItem navActive" onClick="navSwitch('clients')">Services</li>
-            <!-- <li id="nav2" class="navItem" onClick="navSwitch('programs')">Programs</li> -->
-            <li id="nav3" class="navItem" onclick="navSwitch('admin')">Admin</li>
-            <li id="nav4" class="navItem" onclick="navSwitch('user')"></li>
-            <li id="nav5" class="navItem logInOut" onclick="navSwitch('logInOut')">Login</li>
-         </ul>
-	   </div>
-	</nav>uiShowNewServiceTypeForm
+   	   <div class="navButtons">
+            <ul class="navbar-nav">
+               <li id="nav1" class="navItem navActive" onClick="navSwitch('clients')">Services</li>
+               <!-- <li id="nav2" class="navItem" onClick="navSwitch('programs')">Programs</li> -->
+               <li id="nav3" class="navItem" onclick="navSwitch('admin')">Admin</li>
+               <li id="nav4" class="navItem" onclick="navSwitch('user')"></li>
+               <li id="nav5" class="navItem logInOut" onclick="navSwitch('logInOut')">Login</li>
+            </ul>
+   	   </div>
+	   </nav>
 
-	<div class="main-div">
-      <div id="clientsDiv">
-         <div class="contentHeader">
-           <div id="clientsTitle" class="contentTitle"></div>
-           <div class="sectionName">Services</div>
-         </div>
-         <div class="container" style="background-color:white;">
-            <input id="tab1" class="tabInput" type="radio" name="tabs" checked>
-            <label id="tabLable1" for="tab1" onload="fillDate()">Found</label>
-
-            <input id="tab2" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable2" for="tab2">Services</label>
-
-            <input id="tab3" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable3" for="tab3">Client</label>
-
-            <input id="tab4" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable4" for="tab4">Dependents</label>
-
-            <input id="tab5" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable5" for="tab5">History</label>
-
-            <input id="tab6" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable6" for="tab6">Notes</label>
-
-            <section id="content1"> <!-- Found -->
-               <!-- <div class="topFormButtonsDiv"><input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client"></div> -->
-               <container id="searchContainer">
-                  <div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div>
-               </container>
-            </section>
-            <section id="content2"> <!-- Services -->
-               <container id="serviceButtonContainer">
-                  <div id="serviceDateTime"></div>
-                  <div id="serviceLastVisit"></div>
-                  <div id="servicePrimaryButtons"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></div>
-                  <div id="serviceSecondaryButtons"></div>
-               </container>
-            </section>
-            <section id="content3"> <!-- Client -->
-               <div class="topFormButtonsDiv">
-                  <input id="newClientButton" class="solidButton viewOnly" onclick="uiShowNewClientForm()" type="button" value="New Client">
-                  <input id="clientLeftSlider" class="leftSlider sliderActive" onclick="uiToggleClientViewEdit('view')" type="button" value="View">
-                  <input id="clientRightSlider" class="rightSlider" onclick="uiToggleClientViewEdit('edit')" type="button" value="Edit">
-               </div>
-               <container id="clientFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
-            </section>
-            <section id="content4"> <!-- Dependents -->
-               <div class="topFormButtonsDiv">
-                  <input id="newDependentButton" class="solidButton dependentsEditOnly" onclick="uiAddNewDependentsRow()" type="button" value="New Dependent">
-                  <input id="dependentdLeftSlider" class="leftSlider sliderActive" onclick="uiToggleDependentsViewEdit('view')" type="button" value="View">
-                  <input id="dependentdRightSlider" class="rightSlider" onclick="uiToggleDependentsViewEdit('edit')" type="button" value="Edit">
-               </div>
-               <container id="dependentsFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
-               <div class="dependentsEditOnly" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-                  <input id="dependentsSaveButton" class="solidButton" onclick="dbSaveDependentsTable()" type="button" value="Save">
-                  <input class="openButton" onclick="uiResetDependentsTable()" type="button" value="Cancel">
-               </div>
-            </section>
-            <section id="content5"> <!-- History -->
-               <div id="historyTop"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container></div>
-               <div id="historyBottom"></div>
-            </section>
-            <section id="content6"> <!-- Notes -->
-               <div id="newNoteButton" class="topFormButtonsDiv"><input class="solidButton" onclick="uiToggleNoteForm('show','')" type="button" value="New Note"></div>
-               <div id="noteEditForm">
-                  <div id="noteEditHeader">NEW NOTE</div>
+   	<div class="main-div">
+         <div id="clientsDiv">
+            <div class="contentHeader">
+              <div id="clientsTitle" class="contentTitle"></div>
+              <div class="sectionName">Services</div>
+            </div>
+            <div class="container" style="background-color:white;">
+               <input id="tab1" class="tabInput" type="radio" name="tabs" checked>
+               <label id="tabLable1" for="tab1" onload="fillDate()">Found</label>
+               <input id="tab2" class="tabInput" type="radio" name="tabs">
+               <label id="tabLable2" for="tab2">Services</label>
+               <input id="tab3" class="tabInput" type="radio" name="tabs">
+               <label id="tabLable3" for="tab3">Client</label>
+               <input id="tab4" class="tabInput" type="radio" name="tabs">
+               <label id="tabLable4" for="tab4">Dependents</label>
+               <input id="tab5" class="tabInput" type="radio" name="tabs">
+               <label id="tabLable5" for="tab5">History</label>
+               <input id="tab6" class="tabInput" type="radio" name="tabs">
+               <label id="tabLable6" for="tab6">Notes</label>
+               <section id="content1"> <!-- Found -->
+                  <!-- <div class="topFormButtonsDiv"><input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client"></div> -->
+                  <container id="searchContainer">
+                     <div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div>
+                  </container>
+               </section>
+               <section id="content2"> <!-- Services -->
+                  <container id="serviceButtonContainer">
+                     <div id="serviceDateTime"></div>
+                     <div id="serviceLastVisit"></div>
+                     <div id="servicePrimaryButtons"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></div>
+                     <div id="serviceSecondaryButtons"></div>
+                  </container>
+               </section>
+               <section id="content3"> <!-- Client -->
+                  <div class="topFormButtonsDiv">
+                     <input id="newClientButton" class="solidButton viewOnly" onclick="uiShowNewClientForm()" type="button" value="New Client">
+                     <input id="clientLeftSlider" class="leftSlider sliderActive" onclick="uiToggleClientViewEdit('view')" type="button" value="View">
+                     <input id="clientRightSlider" class="rightSlider" onclick="uiToggleClientViewEdit('edit')" type="button" value="Edit">
+                  </div>
+                  <container id="clientFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
+               </section>
+               <section id="content4"> <!-- Dependents -->
+                  <div class="topFormButtonsDiv">
+                     <input id="newDependentButton" class="solidButton dependentsEditOnly" onclick="uiAddNewDependentsRow()" type="button" value="New Dependent">
+                     <input id="dependentdLeftSlider" class="leftSlider sliderActive" onclick="uiToggleDependentsViewEdit('view')" type="button" value="View">
+                     <input id="dependentdRightSlider" class="rightSlider" onclick="uiToggleDependentsViewEdit('edit')" type="button" value="Edit">
+                  </div>
+                  <container id="dependentsFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
+                  <div class="dependentsEditOnly" style="display: flex; justify-content: center; height: 60px; align-items: center;">
+                     <input id="dependentsSaveButton" class="solidButton" onclick="dbSaveDependentsTable()" type="button" value="Save">
+                     <input class="openButton" onclick="uiResetDependentsTable()" type="button" value="Cancel">
+                  </div>
+               </section>
+               <section id="content5"> <!-- History -->
+                  <div id="historyTop"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container></div>
+                  <div id="historyBottom"></div>
+               </section>
+               <section id="content6"> <!-- Notes -->
+                  <div id="newNoteButton" class="topFormButtonsDiv"><input class="solidButton" onclick="uiToggleNoteForm('show','')" type="button" value="New Note"></div>
+                  <div id="noteEditForm">
+                     <div id="noteEditHeader">NEW NOTE</div>
                      <div><textarea id="noteTextArea" class="noteForm" required></textarea></div>
                      <div style="padding: 12px"><input id="noteIsImportant" class="noteForm" type="checkbox" value="true"> <span class="checkboxtext">&nbsp; IMPORTANT!</span></div>
                      <div style="padding-top: 8px;"><p><input class="solidButton" onclick="dbSaveNote()" type="button" value="Save"></p></div>
                      <div style="padding-top: 8px;"><input class="openButton" onclick="uiToggleNoteForm("hide", "")" type="button" value="Cancel"></div>
-               </div>
-               <container id="notesContainer"></container>
-            </section>
-            <div id="receiptTab">
-               <span class="verticalText">R E C E I P T</span>
-               <div class="fillerBox"></div>
-               <div id="receiptContainer">
-                  <div id="receiptHeader">
-
                   </div>
-                  <div id="receiptBody">
+                  <container id="notesContainer"></container>
+               </section>
+               <div id="receiptTab">
+                  <span class="verticalText">R E C E I P T</span>
+                  <div class="fillerBox"></div>
+                  <div id="receiptContainer">
+                     <div id="receiptHeader">
 
+                     </div>
+                     <div id="receiptBody">
+
+                     </div>
                   </div>
                </div>
             </div>
          </div>
-      </div>
       <div id="adminDiv">
          <div class="contentHeader">
            <div id="adminTitle" class="contentTitle"></div>

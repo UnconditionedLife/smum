@@ -35,6 +35,7 @@ let  poolData = {
 		UserPoolId : 'us-west-2_AufYE4o3x', // Your user pool id here
 		ClientId : '7j3jhm5a3pkc67m52bf7tv10au' // Your client id here
 };
+
 let userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 let session = {}
 let cognitoUser = {}
@@ -42,6 +43,71 @@ let authorization = {}
 
 // **********************************************************************************************************
 // **********************************************************************************************************
+let NavGuard = (function NavGuard() {
+  let self = this;
+  self.addRandomHash = function() {
+    // This will harmlessly change the url hash to "#random",
+    // which will trigger onhashchange when they hit the back button
+    if ($.isEmptyObject(location.hash)) {
+      var random_hash = '#ng-' + new Date().getTime().toString(36);
+
+      // Push "#random" onto the history, making it the most recent "page"
+      history.pushState({navGuard: true}, '', random_hash)
+    }
+  };
+
+  self.enableGuard = function() {
+    var msg = 'NOTICE FROM NAVGUARD: Are you sure you want to navigate away from this screen? You may lose unsaved changes.';
+
+    self.addRandomHash();
+
+    $(window).off('hashchange.ng').on('hashchange.ng', function(event) {
+      if ($.isEmptyObject(location.hash)) {
+        var result = confirm(msg);
+        if (result) {
+          //Go back to where they were trying to go
+          //Only go back if there is something to go back to
+          if (window.history.length > 2) {
+            window.history.back();
+          }
+        } else {
+          // Put the hash back in; rinse and repeat
+          window.history.forward();
+        }
+      }
+    });
+
+  //While we are at it, also throw in the traditional beforeunload listener to guard against accidantal window closures
+  $(window).off('beforeunload.ng').on('beforeunload.ng', function(event) {
+    return msg;
+  });
+
+    //If navigating within app without pjax, don't show beforeunload warning
+    $('a').not('a,a:not([href]),[href^="#"],[href^="javascript"]').mousedown(function() {
+      $(window).off('beforeunload.ng');
+    });
+  };
+
+  __construct = function(that) {
+    console.log("constructor called for NavGuard");
+  }(this);
+
+  return {
+    destory: function() {
+      $(window).off('hashchange.ng');
+      $(window).off('beforeunload.ng');
+    },
+    init: function() {
+      var history_api = typeof history.pushState !== 'undefined';
+      if (history_api) {
+        self.enableGuard();
+      }
+    }
+  }
+})();
+
+NavGuard.init();
+
 uiFillDate()
 uiShowHideLogin('show')
 navGotoTab("tab1")
@@ -2079,7 +2145,7 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		}
 	}
 	return true
-}
+};
 
 // **********************************************************************************************************
 // UNUSED OR NEED WORK FUNCTIONS

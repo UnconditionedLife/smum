@@ -1,0 +1,9 @@
+
+*.json
+data/clientsMissingData.txt
+*.csv
+data/foodA.js
+data/foodALL.js
+data/foodB.js
+data/foodC.js
+data/foodSmall.js
