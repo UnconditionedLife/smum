@@ -64,6 +64,9 @@ function removeEmptyClientRecords(){
         console.log("missing ID")
       } else {
         if (item.DOB != "") item.DOB = cleanDate(item.DOB)
+        if (item["Ethnic Group"] == "Asian/Pac Islander") {
+      		item["Ethnic Group"] = "Asian/Pacific Islander"
+      	}
         if (item.City == "") item.City = "San Jose"
         if (typeof item.Street == "Number") item.Street = String(item.Street)
 

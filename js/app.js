@@ -116,6 +116,7 @@ $("#noteEditForm").hide()
 document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); dbSearchClients()}
 };
+
 // control the "save button" behaviour
 $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')})
 $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')})
@@ -2011,6 +2012,13 @@ function utilSetCurrentClient(index){
 	client = clientData[index]
 	utilCalcClientAge("db")
 	utilCalcFamilyCounts() // calculate fields counts and ages
+	// TODO workaround for Pacific Islander Ethnicity
+	// integrate solution into import
+	console.log(client.ethnicGroup)
+	if (client.ethnicGroup == "Asian/Pac Islander") {
+		client.ethnicGroup = "Asian/Pacific Islander"
+	}
+
 	// emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
 	// TODO need to show notes
