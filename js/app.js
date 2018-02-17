@@ -845,33 +845,29 @@ function dbGetData(uUrl){
 	//console.log(ans)
 	return ans
 }
+
 function dbGetNewClientID(){
-
-	// TODO add the list of unused ID and use those up first
-	json = dbGetData(aws+"/clients/lastid")
-	lastid = json['lastId']
-//***** TODO confirm this works and put safeguards in place
+	lastIdJson = dbGetData(aws+"/clients/lastid")
+	newId = lastIdJson.lastId
+	let notEmpty = true
+	while (notEmpty) {
+		result = dbGetData(aws+"/clients/exists/" + newId)
+		if (result.count == 0) {
+			notEmpty = false
+		} else {
+			newId++
+		}
+	}
 	request = {}
-	newID = Number(lastid)+1
-	newID = newID.toString()
-	request['lastId']=newID
+	newId = newId.toString()
+	request['lastId']=newId
 	dbPostData(aws+"/clients/lastid",JSON.stringify(request))
-	return newID
+	return newId
 }
-
-// function dbGetServicesNotes(id){
-// 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-// 	return dbGetData(aws+"/services/"+id).services
-// }
 
 function dbGetServicesTypes(){
 	return dbGetData(aws+"/servicetypes").serviceTypes
 }
-
-// function dbLoadNotes(){
-// 	arr = dbGetClientNotes(client.clientId)
-// 	uiShowExistingNotes(arr)
-// }
 
 function dbLoadServiceHistory(){
 	let clientHistory = dbGetData(aws+"/clients/services/"+client.clientId).services
@@ -1138,6 +1134,7 @@ console.log(JSON.stringify(client.dependents))
 		data = utilFormToJSON('.clientForm')
 		data.dependents = []
 		data.lastServed = []
+		data.notes = []
 	} else {
 		data = utilFormToJSON('.clientForm')
 
@@ -1151,10 +1148,11 @@ console.log(JSON.stringify(client.dependents))
 		for (var i = 0; i < data.dependents.length; i++) {
 			delete data.dependents[i].age
 		}
-
-
 		if (data.lastServed == undefined||data.lastServed == "") {
 			data.lastServed = []
+		}
+		if (data.notes == undefined||data.notes == "") {
+			data.notes = []
 		}
 	}
 console.log(data)
@@ -1539,7 +1537,7 @@ function utilGetServiceTypeByID(id){
 	let serviceTypeArr = serviceTypes.filter(function( obj ) {
 		return obj.serviceTypeId == serviceTypeId
 	})
-	return = serviceTypeArr[0]
+	return serviceTypeArr[0]
 }
 
 function utilGetFoodInterval(isUSDA){
