@@ -937,11 +937,13 @@ checkbox[readonly]{
   position: relative;
   background-color: var(--red);
   color: white;
-  height: 28px !important;
-  width:200px!important;
-  padding: 8px;
-  text-align:  center;
-  border-radius: 14px;
+  height: 26px !important;
+  width: max-content;
+  padding: 0 12px 0 12px;
+  text-align: center;
+  border-radius: 12px;
+	line-height: 26px;
+	cursor: pointer;
 }
 
 .errorBubble:after {
@@ -953,9 +955,13 @@ checkbox[readonly]{
   margin: 0 auto;
   width: 0;
   height: 0;
-  border-top: solid 10px var(--red);
-  border-left: solid 10px transparent;
-  border-right: solid 10px transparent;
+  border-top: solid 8px var(--red);
+  border-left: solid 8px transparent;
+  border-right: solid 8px transparent;
+}
+
+.errorField {
+	box-shadow: 0 0 5px var(--red)
 }
 
 
@@ -1330,7 +1336,7 @@ input[type="radio"] {
 label {
   display: inline-block;
   margin: 0 0 -1px;
-  padding: 15px 25px;
+  padding: 10px 22px;
   font-weight: 600;
   text-align: center;
   color: #bbb;

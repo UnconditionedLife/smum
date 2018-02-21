@@ -120,6 +120,8 @@ document.onkeydown = function(e) {
 // control the "save button" behaviour
 $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')})
 $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')})
+$(document.body).on('focusout','.clientForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
+
 $(document).ready(function(){
 	uiShowServicesDateTime()
   setInterval(uiShowServicesDateTime, 10000)
@@ -257,33 +259,45 @@ console.log(client.lastServedFoodDateTime)
 	uiGenSelectHTMLTable('#historyTop',historyArray,columns,'historyTable')
 }
 
-function uiGenerateErrorBubble(errId, errText, input){
+function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	// let parent = $(input).parent()
-	let position = $(input).position()
+	//errId = "err" + id
 
-console.log(position)
+//console.log(errId)
+	if ($('[id="err' + id + '"]').hasClass("errorBubble")) {
+		$('[id="err' + id + '"]').remove()
+	} else {
+		jQuery('<div/>', {
+			class: "errorBubble",
+	     id: "err" + id,
+	     text: errText,
+			 click: function(){
+				 console.log("HIDE")
+				 $('[id="err' + id + '"]').remove()
+				 $('[id="' + id + '"]').removeClass("errorField")
+			 }
+		}).appendTo('#content3');
+		// TODO make this variable to form parent
+		// TODO make field ID exact by using formClass
 
-	let width = $(input).width()
-	let left = (position.left)
+		let errElem = $('[id="err' + id + '"]')
 
-console.log(left)
+		console.log(errElem)
 
-	let top = (position.top)
+		errElem.position({
+	  	my: "center bottom-7",
+	  	at: "center top",
+	  	of: '[id="' + id + '"]'
+		});
 
-console.log(top)
-
-	jQuery('<div/>', {
-		class: "errorBubble",
-     id: errId,
-     text: errText,
-	}).appendTo('.clientFormDiv');
-
-	$("#"+ errId).css({top: "216px"})
-	$("#"+ errId).css({left: left})
-
-console.log($("#"+ errId).position())
+		$('[id="' + id + '"]').addClass("errorField")
+	}
 }
+
+// function uiHideError(){
+// 	console.log("HIDE")
+// }
 
 function uiOutlineTableRow(table, row){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -1166,7 +1180,7 @@ console.log(data)
 
 function dbSaveNote(){
 	// TODO replace hardcoded values with real user variables
-	utilValidateForm(".noteForm")
+	utilValidateFeild("#noteTextArea")
 	let tmp = {}
 	tmp.noteText = $("#noteTextArea").val().toString()
 	tmp.createdDateTime = moment().format(dateTime)
@@ -1893,16 +1907,12 @@ function utilErrorHandler(errMessage, status, error, type) {
 
 
 	}
-		//utilBeep()
-	 	//uiShowHideError("show")
+		utilBeep()
+	 	uiShowHideError("show")
 }
 
 function utilFormToJSON(form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-
-	uiGenerateErrorBubble("errorGivenName", "Field cannot be empty!", "#givenName.clientForm")
-
-
 	let vals = {}
 	console.log($(form))
 	let formElements = $(form)
@@ -2082,8 +2092,194 @@ function utilValidateArguments(func, arguments, count){
 	return true
 }
 
-function utilValidateForm(form){
-	data = utilFormToJSON(form)
+function utilValidationError(error, id, classes){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
+	switch (error) {
+		case "required":
+			console.log("ERROR: REQUIRED FIELD")
+			break
+		case "notBeforeNow":
+			console.log("ERROR: MUST BE DATE IN PAST")
+			break
+		case "notAfter2000":
+			console.log("ERROR: MUST BE DATE AFTER 2000")
+			break
+		case "noOneLetter":
+			console.log("ERROR: MUST be more that one letter")
+			break
+		case "noNumbers":
+			console.log("ERROR: NO NUMBERS")
+			break
+		case "notInLookup":
+			console.log("ERROR: Selection Not Valid")
+			break
+		case "noSpecialCharacters":
+			console.log("ERROR: NO SPECIAL CHARACTERS")
+			break
+		case "notZipCode":
+			console.log("ERROR: NOT VALID ZIPCODE")
+			break
+		case "notPhoneNum":
+			console.log("ERROR: NOT VALID PHONE NUMBER")
+			break
+		case "notEmail":
+			console.log("ERROR: NOT VALID EMAIL")
+			break
+	}
+}
+
+function utilValidateField(id, classes){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+	let hasError = false
+	let requiredError = false
+	let formClass = ""
+	if (classes.indexOf("clientForm") > -1){
+		formClass = "clientForm"
+	}
+	let ruleId = id.replace(".", "_")
+
+console.log(formClass, ruleId)
+
+	let rules = utilValidateConfig(formClass, ruleId)
+
+console.log(rules)
+
+	let lookupList = []
+//console.log(rules)
+	for (var i = 0; i < rules.length; i++) {
+		let rule = rules[i]
+		let ruleType = $.type(rules[i])
+//console.log(rule.lookup)
+		if (ruleType === "object") {
+// console.log(JSON.stringify(rule))
+			if (rule.lookup !== undefined) {
+				lookupList = rule.lookup
+				rule = "lookup"
+			}
+		}
+		let value = $('[id="' + id + '"]').val()
+console.log(rule+":"+value)
+		switch (rule) {
+			case "required":
+				if (value == "" || value == " " || value == undefined) {
+					hasError = true
+					requiredError = true
+					uiGenerateErrorBubble("Cannot be blank!", id, classes)
+				}
+				break
+			case "date":
+				if (value == "" || value == " " || value == undefined) {
+					hasError = true
+					uiGenerateErrorBubble("Not a valid date!", id, classes)
+				}
+				break
+			case "dateNowBefore":
+				if (moment(value).isValid()){
+					if (!moment().isAfter(value, 'day')) {
+						hasError = true
+						uiGenerateErrorBubble("notBeforeNow", id, classes)
+					}
+				}
+				break
+			case "dateAfter2000":
+				if (moment(value).isValid()){
+					if (!moment(value).isAfter('1999-12-31')) {
+						hasError = true
+						uiGenerateErrorBubble("Date is not after 1999!", id, classes)
+					}
+				}
+				break
+			case "phoneNumber":
+				if (requiredError == false) {
+					let phoneRegex = /([+]?\d{1,2}[.-\s]?)?(\d{3}[.-]?){2}\d{4}/g
+					if (!value.match(phoneRegex)) {
+						hasError = true
+						uiGenerateErrorBubble("notPhoneNum", id, classes)
+					}
+				}
+				break
+			case "email":
+				if (requiredError == false) {
+					let emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g
+					if (!value.match(emailRegex)) {
+						hasError = true
+						uiGenerateErrorBubble("Not a valid email address!", id, classes)
+					}
+				}
+				break
+			case "zipcode":
+				if (requiredError == false) {
+					if (!value.match(/^\d{5}/g)) {
+						hasError = true
+						uiGenerateErrorBubble("notZipCode", id, classes)
+					}
+				}
+				break
+			case "lookup":
+				if (requiredError == false) {
+					found = false
+					for (var i = 0; i < lookupList.length; i++) {
+						if (lookupList[i] == value) found = true
+					}
+					if (!found) {
+						hasError = true
+						uiGenerateErrorBubble("Not valid entry!", id, classes)
+					}
+				}
+				break
+			case "name":
+				if (requiredError == false) {
+					console.log("CHECK NAME LENGTH")
+					if (value.length < 2) {
+						hasError = true
+						uiGenerateErrorBubble("Must be longer than one letter!", id, classes)
+					}
+				}
+				// /^[\w.\-]+$/
+				let specialChars = /[^-éáóúñ\w]/g // /\W/g  //not word or underscore
+				if (value.match(specialChars)) {
+					hasError = true
+					uiGenerateErrorBubble("Special characters are not allowed!", id, classes)
+				}
+				if (hasError == false) {
+					if (value.match(/\d/g)) {
+						hasError = true
+						uiGenerateErrorBubble("Numbers are not allowed!", id, classes)
+					}
+				}
+				break
+		}
+		rules[i]
+	}
+	if (!hasError){
+		$('[id="err' + id + '"]').remove()
+		$('[id="' + id + '"]').removeClass("errorField")
+	}
+}
+
+function utilValidateConfig(form, id){
+		let clientForm = {
+			            firstSeenDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
+			      familyIdCheckedDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
+			                 isActive: [ 'required', {lookup: ["Active", "Emergency", "Inactive"]} ],
+			                givenName: [ 'required', 'name' ],
+					 					 familyName: [ 'required', 'name' ],
+					 								  dob: [ 'date','dateNowBefore' ],
+					 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
+					 				  ethnicGroup: [ 'required', {lookup: ["Afro-American", "Anglo-European", "Asian/Pacific Islander", "Filipino", "Latino", "Native American", "Other"]} ],
+					 				 		 homeless: [ 'required', {lookup: ["YES", "NO"]} ],
+					 						   street: [ 'required' ],
+					 							   city: [ 'required', {lookup: ["San Jose"]} ],
+					 							  state: [ 'required', {lookup: ["CA"]} ],
+					 						  zipcode: [ 'required', 'zipcode' ],
+					 					  telephone: [ 'phoneNumber' ],
+					 		  			 		email: [ 'email' ],
+					    financials_income: [ 'required' ],
+			financials_govtAssistance: [ 'required' ],
+					financials_foodStamps: [ 'required' ],
+								financials_rent: [ 'required' ]
+		}
+	if (form == "clientForm") return clientForm[id]
 }
 
 function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {

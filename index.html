@@ -6,6 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
       <link rel="icon" href="favicon.ico" type="image/x-icon">
+      <link rel="stylesheet" href="css/jquery-ui.min.css">
 	   <link rel="stylesheet" href="css/style.css">
       <link rel="import" href="templates.html">
       <audio id="beep" src="sounds/beep.wav" autostart="false"></audio>
@@ -90,7 +91,9 @@
                      <input id="clientLeftSlider" class="leftSlider sliderActive" onclick="uiToggleClientViewEdit('view')" type="button" value="View">
                      <input id="clientRightSlider" class="rightSlider" onclick="uiToggleClientViewEdit('edit')" type="button" value="Edit">
                   </div>
-                  <container id="clientFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
+                  <div id="clientFormWrap">
+                     <container id="clientFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
+                  </div>
                </section>
                <section id="content4"> <!-- Dependents -->
                   <div class="topFormButtonsDiv">
@@ -428,6 +431,8 @@
    </div>
 
    <script src="http://code.jquery.com/jquery-3.2.1.js"></script>
+   <script src="js/jquery-ui.min.js"></script>
+
 
    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 
