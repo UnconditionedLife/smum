@@ -364,6 +364,9 @@ main{
   margin-right: 6px;
   height: 28px;
   background-color: white;
+	top: 0;
+	left: 0;
+	display: subgrid;
 }
 
 .inputForTable {
@@ -910,14 +913,8 @@ tr {
   width: 100%;
 }
 
-/*input[readonly]{/*styling for readonly inputs*/
-  background-color:transparent;
-  border: 0;
-  font-size: 1em;
-}*/
-
 .blink{
-    animation:blink 900ms infinite alternate;
+  animation:blink 900ms infinite alternate;
 }
 
 @keyframes blink {

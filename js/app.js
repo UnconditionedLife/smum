@@ -31,7 +31,7 @@ let hasImportantNote = ""
 
 // cognito config
 let CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
-let  poolData = {
+let poolData = {
 		UserPoolId : 'us-west-2_AufYE4o3x', // Your user pool id here
 		ClientId : '7j3jhm5a3pkc67m52bf7tv10au' // Your client id here
 };
@@ -261,38 +261,36 @@ console.log(client.lastServedFoodDateTime)
 
 function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-	// let parent = $(input).parent()
-	//errId = "err" + id
-
 //console.log(errId)
-	if ($('[id="err' + id + '"]').hasClass("errorBubble")) {
-		$('[id="err' + id + '"]').remove()
-	} else {
-		jQuery('<div/>', {
-			class: "errorBubble",
-	     id: "err" + id,
-	     text: errText,
-			 click: function(){
-				 console.log("HIDE")
-				 $('[id="err' + id + '"]').remove()
-				 $('[id="' + id + '"]').removeClass("errorField")
-			 }
-		}).appendTo('#content3');
-		// TODO make this variable to form parent
-		// TODO make field ID exact by using formClass
-
-		let errElem = $('[id="err' + id + '"]')
-
-		console.log(errElem)
-
-		errElem.position({
-	  	my: "center bottom-7",
-	  	at: "center top",
-	  	of: '[id="' + id + '"]'
-		});
-
-		$('[id="' + id + '"]').addClass("errorField")
+	if ($('[id="err-' + id + '"]').hasClass("errorBubble")) {
+		$('[id="err-' + id + '"]').remove()
+		$('[id="' + id + '"]').removeClass("errorField")
 	}
+	jQuery('<div/>', {
+		class: "errorBubble",
+     id: "err-" + id,
+     text: errText,
+		 click: function(){
+// console.log("HIDE")
+			 $('[id="err-' + id + '"]').remove()
+			 $('[id="' + id + '"]').removeClass("errorField")
+		 }
+	}).appendTo('.clientFormDiv');
+	// TODO make this variable to form parent
+	// TODO make field ID exact by using formClass
+
+	let errElem = $('[id="err-' + id + '"]')
+
+// console.log(errElem)
+
+	errElem.position({
+  	my: "center bottom-7",
+  	at: "center top",
+  	of: '[id="' + id + '"]',
+		collision: "none"
+	});
+
+	$('[id="' + id + '"]').addClass("errorField")
 }
 
 // function uiHideError(){
@@ -363,9 +361,7 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 function uiUpdateCurrentClient(index) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiOutlineTableRow('clientTable', index + 1)
-	let clientNumber = "<div class='clientNumber'>" + client.clientId + "</div>"
-	let clientName = "<div class='clientName'>" + client.givenName + ' ' + client.familyName + "</div>"
-	uiSetClientsHeader(clientNumber + clientName)
+	uiSetClientsHeader("numberAndName")
 	uiShowServicesButtons()
 	uiShowClientEdit(false)
 	navGotoTab("tab2")
@@ -619,6 +615,7 @@ function uiShowServiceTypeForm(){
 
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+
 	$.each(data, function(key,value){
 
 //console.log(key + " : " + value)
@@ -642,7 +639,12 @@ function uiPopulateForm(data, form){
 				el = el + ' option[value="'+ value +'"]'
 				$(el).prop('selected', true);
 			} else {
+				// console.log("UPDATE TEXT FEILD " + key +":"+value)
+				// console.log($(el).attr("value"))
+				//$(el).attr("value", value)
 				$(el).val(value)
+				// console.log($(el).attr("value"))
+				// console.log($(el).val())
 
 				//console.log("WAS : " + $(el).val())
 				//console.log("ASSIGN : " + value)
@@ -658,21 +660,33 @@ function uiPopulateForm(data, form){
 		uiToggleClientAddress()
 	}
 	return
-}
+};
+
+function uiRemoveFormErrorBubbles(form) {
+	$('[id^="err-"]').remove()
+	$('.' + form).removeClass("errorField")
+};
 
 function uiSetClientsHeader(title){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	$("#clientsTitle").html(title)
-}
+	if (title == "numberAndName") {
+		let clientNumber = "<div class='clientNumber'>" + client.clientId + "</div>"
+		let clientName = "<div class='clientName'>" + client.givenName + ' ' + client.familyName + "</div>"
+		$("#clientsTitle").html(clientNumber + clientName)
+	} else {
+		$("#clientsTitle").html(title)
+	}
+
+};
 
 function uiSetServiceTypeHeader(){
 	$("#adminTitle").html($('#serviceName').val())
-}
+};
 
 function uiSetAdminHeader(title){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	$("#adminTitle").html(title)
-}
+};
 
 function uiShowServiceTypes(){
 	uiGenSelectHTMLTable('#serviceTypesContainer',serviceTypes,["serviceName","serviceDescription","isActive"],'serviceTypesTable')
@@ -1007,7 +1021,7 @@ function dbPostData(uUrl,dataU){
 						uiGenSelectHTMLTable('#searchContainer', clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
 						if (clientData.length == 1) clientTableRow = 1
 						uiOutlineTableRow('clientTable', clientTableRow)
-						uiSetClientsHeader('#'+client.clientId + ' | ' + client.givenName + ' ' + client.familyName)
+						uiSetClientsHeader("numberAndName")
 						uiSaveButton('client', 'SAVED!!')
 					}
 				}
@@ -1026,17 +1040,20 @@ function dbPostData(uUrl,dataU){
 }
 
 function uiResetClientForm(){
-	// TODO Make sure Cancel button (resetClientForm) clears form & does some kind of reset.
-	// maybe need to keep previous client id when starting new client form
-console.log("CLEAR CLIENT FORM")
 
-	if (client = "") {
+// console.log("CLEAR CLIENT FORM")
+// console.log(client)
 
+	if (client == {}) {
+		// TODO get this to blank out a new client form
 	} else {
-		let index = clientData.filter(function( obj ) {
-			return obj.clientId == client.clientId
-		})
+		// let index = clientData.filter(function( obj ) {
+		// 	return obj.clientId == client.clientId
+		// })
 		uiPopulateForm(client, 'clientForm')
+		console.log("BEFORE TOGGLE VIEW")
+		uiRemoveFormErrorBubbles('clientForm')
+		uiToggleClientViewEdit('view')
 		//uiUpdateCurrentClient(index)
 	}
 
@@ -1746,7 +1763,7 @@ function utilCalcFamilyCounts(){
 	client.family.totalSeniors = fam.totalSeniors
 	client.family.totalSize = fam.totalSize
 	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
-}
+};
 
 // function utilCalcLastIdCheckDays() {
 // 	// get Id Checked Date from client object & calculate number of days
@@ -1754,6 +1771,16 @@ function utilCalcFamilyCounts(){
 // 	let lastIdCheck = moment().diff(client.familyIdCheckedDate, 'days')
 // 	return lastIdCheck
 // }
+
+function utilRemoveEmptyPlaceholders(){
+	// TODO make this opperate on other forms / data
+	$.each(client, function(key,value){
+		if (value == "*EMPTY*" || (key == "zipSuffix" && value == 0)) {
+			client[key] = ""
+		}
+
+	})
+};
 
 function utilSetLastServedFood(){
 	console.log("IN set last saved food")
@@ -1774,7 +1801,7 @@ console.log(lastServedFood)
 		}
 	}
 	client.lastServedFoodDateTime = lastServedFoodDateTime
-}
+};
 
 function utilCalcLastServedDays() {
 	// get Last Served Date from client object & calculate number of days
@@ -1924,7 +1951,7 @@ function utilFormToJSON(form){
 			if (valType == 'hidden') {
 				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = utilNow()
 				// if (key === 'lastSeenDate') formVal = '*EMPTY*'
-			} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local') {
+			} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local'||valType == 'email') {
 console.log(key)
 				formVal = '*EMPTY*'
 			} else if (valType == 'number') {
@@ -2020,6 +2047,7 @@ function utilCalcDependentAge(index){
 function utilSetCurrentClient(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	client = clientData[index]
+	utilRemoveEmptyPlaceholders()
 	utilCalcClientAge("db")
 	utilCalcFamilyCounts() // calculate fields counts and ages
 	// TODO workaround for Pacific Islander Ethnicity
@@ -2090,60 +2118,19 @@ function utilValidateArguments(func, arguments, count){
 		}
 	}
 	return true
-}
-
-function utilValidationError(error, id, classes){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-	switch (error) {
-		case "required":
-			console.log("ERROR: REQUIRED FIELD")
-			break
-		case "notBeforeNow":
-			console.log("ERROR: MUST BE DATE IN PAST")
-			break
-		case "notAfter2000":
-			console.log("ERROR: MUST BE DATE AFTER 2000")
-			break
-		case "noOneLetter":
-			console.log("ERROR: MUST be more that one letter")
-			break
-		case "noNumbers":
-			console.log("ERROR: NO NUMBERS")
-			break
-		case "notInLookup":
-			console.log("ERROR: Selection Not Valid")
-			break
-		case "noSpecialCharacters":
-			console.log("ERROR: NO SPECIAL CHARACTERS")
-			break
-		case "notZipCode":
-			console.log("ERROR: NOT VALID ZIPCODE")
-			break
-		case "notPhoneNum":
-			console.log("ERROR: NOT VALID PHONE NUMBER")
-			break
-		case "notEmail":
-			console.log("ERROR: NOT VALID EMAIL")
-			break
-	}
-}
+};
 
 function utilValidateField(id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	let hasError = false
-	let requiredError = false
 	let formClass = ""
 	if (classes.indexOf("clientForm") > -1){
 		formClass = "clientForm"
 	}
 	let ruleId = id.replace(".", "_")
-
-console.log(formClass, ruleId)
-
+//console.log(formClass, ruleId)
 	let rules = utilValidateConfig(formClass, ruleId)
-
-console.log(rules)
-
+//console.log(rules)
 	let lookupList = []
 //console.log(rules)
 	for (var i = 0; i < rules.length; i++) {
@@ -2158,12 +2145,11 @@ console.log(rules)
 			}
 		}
 		let value = $('[id="' + id + '"]').val()
-console.log(rule+":"+value)
+// console.log(rule+":"+value)
 		switch (rule) {
 			case "required":
 				if (value == "" || value == " " || value == undefined) {
 					hasError = true
-					requiredError = true
 					uiGenerateErrorBubble("Cannot be blank!", id, classes)
 				}
 				break
@@ -2190,7 +2176,7 @@ console.log(rule+":"+value)
 				}
 				break
 			case "phoneNumber":
-				if (requiredError == false) {
+				if (hasError == false && value != "") {
 					let phoneRegex = /([+]?\d{1,2}[.-\s]?)?(\d{3}[.-]?){2}\d{4}/g
 					if (!value.match(phoneRegex)) {
 						hasError = true
@@ -2199,7 +2185,7 @@ console.log(rule+":"+value)
 				}
 				break
 			case "email":
-				if (requiredError == false) {
+				if (hasError == false && value != "") {
 					let emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g
 					if (!value.match(emailRegex)) {
 						hasError = true
@@ -2208,15 +2194,23 @@ console.log(rule+":"+value)
 				}
 				break
 			case "zipcode":
-				if (requiredError == false) {
+				if (hasError == false) {
 					if (!value.match(/^\d{5}/g)) {
 						hasError = true
-						uiGenerateErrorBubble("notZipCode", id, classes)
+						uiGenerateErrorBubble("Not a valid zipcode!", id, classes)
+					}
+				}
+				break
+			case "zipsuffix":
+				if (hasError == false && value != "") {
+					if (!value.match(/^\d{4}/g)) {
+						hasError = true
+						uiGenerateErrorBubble("Not a valid zipcode!", id, classes)
 					}
 				}
 				break
 			case "lookup":
-				if (requiredError == false) {
+				if (hasError == false) {
 					found = false
 					for (var i = 0; i < lookupList.length; i++) {
 						if (lookupList[i] == value) found = true
@@ -2228,18 +2222,21 @@ console.log(rule+":"+value)
 				}
 				break
 			case "name":
-				if (requiredError == false) {
-					console.log("CHECK NAME LENGTH")
+				if (hasError == false) {
+//console.log("CHECK NAME LENGTH")
 					if (value.length < 2) {
 						hasError = true
 						uiGenerateErrorBubble("Must be longer than one letter!", id, classes)
 					}
 				}
 				// /^[\w.\-]+$/
-				let specialChars = /[^-éáóúñ\w]/g // /\W/g  //not word or underscore
-				if (value.match(specialChars)) {
-					hasError = true
-					uiGenerateErrorBubble("Special characters are not allowed!", id, classes)
+				if (hasError == false) {
+//console.log("CHECK FOR NON ALPHA CHARS")
+					let specialChars = /[^-éáóúñ\w]/g // /\W/g  //not word or underscore
+					if (value.match(specialChars)) {
+						hasError = true
+						uiGenerateErrorBubble("Special characters are not allowed!", id, classes)
+					}
 				}
 				if (hasError == false) {
 					if (value.match(/\d/g)) {
@@ -2248,14 +2245,16 @@ console.log(rule+":"+value)
 					}
 				}
 				break
+			}
+	//	rules[i]
 		}
-		rules[i]
-	}
 	if (!hasError){
-		$('[id="err' + id + '"]').remove()
-		$('[id="' + id + '"]').removeClass("errorField")
-	}
-}
+//console.log("NO ERROR HIDE")
+	 	$('[id="err-' + id + '"]').remove()
+//console.log($('[id="' + id + '"]'))
+	 	$('[id="' + id + '"]').removeClass("errorField")
+	 }
+};
 
 function utilValidateConfig(form, id){
 		let clientForm = {
@@ -2272,6 +2271,7 @@ function utilValidateConfig(form, id){
 					 							   city: [ 'required', {lookup: ["San Jose"]} ],
 					 							  state: [ 'required', {lookup: ["CA"]} ],
 					 						  zipcode: [ 'required', 'zipcode' ],
+											zipSuffix: [ 'zipsuffix' ],
 					 					  telephone: [ 'phoneNumber' ],
 					 		  			 		email: [ 'email' ],
 					    financials_income: [ 'required' ],
@@ -2280,7 +2280,7 @@ function utilValidateConfig(form, id){
 								financials_rent: [ 'required' ]
 		}
 	if (form == "clientForm") return clientForm[id]
-}
+};
 
 function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -2291,7 +2291,7 @@ function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {
 		}
 	}
 	return foodServiceInterval
-}
+};
 
 function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
