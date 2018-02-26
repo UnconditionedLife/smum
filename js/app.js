@@ -2396,7 +2396,7 @@ function utilValidateField(id, classes){
 				// /^[\w.\-]+$/
 				if (hasError == false) {
 //console.log("CHECK FOR NON ALPHA CHARS")
-					let specialChars = /[^-éáóúñ\w]/g // /\W/g  //not word or underscore
+					let specialChars = /[^-éáó úñ\w]/g // /\W/g  //not word or underscore
 					if (value.match(specialChars)) {
 						hasError = true
 						uiGenerateErrorBubble("Special characters are not allowed!", id, classes)
