@@ -22,8 +22,10 @@ const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
 const seniorAge = 60 // TODO set in Admin/Settings
 let clientData = null // current client search results
-// let clientNotes = []
 let client = {} // current client
+let user = {} // authenticated
+let users = [] // all users
+let adminUser = {}
 let serviceType = null
 let emergencyFood = false
 let currentNavTab = "clients"
@@ -121,6 +123,7 @@ document.onkeydown = function(e) {
 $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')})
 $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')})
 $(document.body).on('focusout','.clientForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
+$(document.body).on('focusout','.userForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
 
 $(document).ready(function(){
 	uiShowServicesDateTime()
@@ -146,6 +149,7 @@ function navSwitch(link){
 			navGotoSec("nav3")
 			navGotoTab("aTab1")
 			uiShowServiceTypes()
+			uiShowUsers()
 			break
 		case "user":
 			navGotoSec("nav4")
@@ -261,11 +265,19 @@ console.log(client.lastServedFoodDateTime)
 
 function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-//console.log(errId)
+console.log(errText, " ", id)
 	if ($('[id="err-' + id + '"]').hasClass("errorBubble")) {
 		$('[id="err-' + id + '"]').remove()
 		$('[id="' + id + '"]').removeClass("errorField")
 	}
+
+	let parent = ".clientFormDiv"
+	let formClass = ".clientForm"
+	if (classes.indexOf("userForm") > -1){
+		parent = '.userFormDiv'
+		formClass = ".userForm"
+	}
+
 	jQuery('<div/>', {
 		class: "errorBubble",
      id: "err-" + id,
@@ -275,7 +287,7 @@ function uiGenerateErrorBubble(errText, id, classes){
 			 $('[id="err-' + id + '"]').remove()
 			 $('[id="' + id + '"]').removeClass("errorField")
 		 }
-	}).appendTo('.clientFormDiv');
+	}).appendTo(parent);
 	// TODO make this variable to form parent
 	// TODO make field ID exact by using formClass
 
@@ -283,14 +295,22 @@ function uiGenerateErrorBubble(errText, id, classes){
 
 // console.log(errElem)
 
+//	let inputId = "#" + id +".userForm"
+
+	classes = classes.replace("errorField", "")
+
+console.log(classes)
+
+
 	errElem.position({
   	my: "center bottom-7",
   	at: "center top",
-  	of: '[id="' + id + '"]',
+  	// of: '[id="' + id + '"][class="'+ classes +'"]',
+		of: '[id="' + id + '"]' + formClass,
 		collision: "none"
 	});
 
-	$('[id="' + id + '"]').addClass("errorField")
+	$('[id="' + id + '"][class="'+ classes +'"]').addClass("errorField")
 }
 
 // function uiHideError(){
@@ -532,7 +552,7 @@ function uiShowClientEdit(isEdit){
 	uiShowDependents(isEdit)
 	uiShowExistingNotes()
 	// dbLoadNotes(client.clientId)
-}
+};
 
 function uiShowDependents(isEdit){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -543,13 +563,28 @@ function uiShowDependents(isEdit){
 	// 	let plusButton = '<a href="#" onclick="uiAddTableRow()" style="font-size:18px;width:150px;margin-bottom:8px;margin-top:10px;display: inline-block;" class="btn btn-block btn-primary btn-success">+</a>'
 	// 	$('#dependents').append('<div class="formEntry">'+plusButton+'</div>')
 	// }
-}
+};
 
 function uiShowNewServiceTypeForm(){
 	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
 	$('#serviceTypeId').val(cuid())
 	navGotoTab("aTab2")
-}
+};
+
+function uiShowNewUserForm(){
+	$('#userFormContainer').html(uiGetTemplate('#userForm'))
+	uiToggleUserNewEdit("new")
+	navGotoTab("aTab5")
+};
+
+function uiShowUserForm(userName){
+	$('#userFormContainer').html(uiGetTemplate('#userForm'))
+
+console.log(adminUser)
+
+	uiPopulateForm(adminUser, 'userForm')
+
+};
 
 function uiShowNote(dateTime, text, user, important){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
@@ -618,7 +653,7 @@ function uiPopulateForm(data, form){
 
 	$.each(data, function(key,value){
 
-//console.log(key + " : " + value)
+console.log(key + " : " + value)
 
 		if (typeof(data[key])=='object') {
 			let obj = data[key]
@@ -692,6 +727,10 @@ function uiShowServiceTypes(){
 	uiGenSelectHTMLTable('#serviceTypesContainer',serviceTypes,["serviceName","serviceDescription","isActive"],'serviceTypesTable')
 }
 
+function uiShowUsers(){
+	uiGenSelectHTMLTable('#userListContainer', users, ["userName","givenName","familyName", "userRole", "isValid"],'usersTable')
+}
+
 function uiGenSelectHTML(val,options,col,id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	html = "<select id='"+col+"["+id+"]' class='inputBox dependentsForm'>"
@@ -729,6 +768,8 @@ function uiGenSelectHTMLTable(selector,data,col,tableID){
 			tr.setAttribute("onclick", 'utilSetCurrentClient(' + i + ')')
 		} else if (tableID == 'serviceTypesTable'){
 			tr.setAttribute("onclick", 'utilSetCurrentServiceType(' + i + ')')
+		} else if (tableID == 'usersTable'){
+			tr.setAttribute("onclick", 'utilSetCurrentAdminUser(' + i + ')')
 		}
     for (let j = 0; j < col.length; j++) {
 			let depNum = i
@@ -802,6 +843,15 @@ function uiToggleClientViewEdit(side){
 		$('select.clientForm').removeClass('selectBox')
 		$('.editOnly').show('slow')
 		$('.viewOnly').hide('slow')
+	}
+}
+
+function uiToggleUserNewEdit(type){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	if (type == 'new') {
+		$('#userName.userForm').prop('readonly', false)
+	} else {
+		$('#userName.userForm').prop('readonly', true)
 	}
 }
 
@@ -964,6 +1014,14 @@ function dbGetServicesTypes(){
 	return dbGetData(aws+"/servicetypes").serviceTypes
 }
 
+function dbGetUsers(){
+	return dbGetData(aws+"/users").users
+}
+
+function dbGetUser(){
+
+}
+
 function dbLoadServiceHistory(){
 	let clientHistory = dbGetData(aws+"/clients/services/"+client.clientId).services
 	uiShowHistoryData(clientHistory)
@@ -1111,7 +1169,39 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 		$("#receiptBody").append("<p><strong>"+serviceType.serviceName+"</strong><br><strong>Category:</strong> "+serviceCategory+"<br><strong>Is USDA:</strong> "+serviceType.isUSDA+"</p>")
 	}
 	dbPostService(serviceType, itemsServed)
-}
+};
+
+function dbSaveUser(){
+	// TODO Add the fuctionality to call the users API
+	let user = {
+	  "userName": "jleal67",
+	  "givenName": "Jose",
+	  "familyName": "Leal",
+	  "gender": "M",
+	  "dob": "1967-09-24",
+	  "createdDateTime": "2018-02-23T15:00",
+	  "updatedDateTime": "2018-02-23T15:00",
+	  "street": "1236 Copper Peak LN",
+	  "city": "San Jose",
+	  "state": "CA",
+	  "zipcode": "95120",
+	  "zipSuffix": "4267",
+	  "telephone": "+1-209-601-1038",
+	  "email": "jleal67@gmail.com",
+	  "isActive": "YES",
+	  "userRole": "techAdmin",
+	  "notes":
+	    [
+	      {
+	        "createdDateTime": "2018-02-23T15:00",
+	        "updatedDateTime": "2018-02-23T15:00",
+	        "noteText": "This is a test note!",
+	        "isImportant": false,
+	        "noteByUserName": "jleal67"
+	      }
+	    ]
+	}
+};
 
 function dbPostService(serviceType, itemsServed){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -1371,15 +1461,20 @@ function cogLogoutUser(){
 function cogCheckSession() {
 	cognitoUser.getSession(function(err, session) {
 		if (err) {
+				console.log(err)
 				alert(err);
 				return;
 		}
+
+		return session
+
 //	console.log('session validity: ' + session.isValid());
 	})
 }
 
 function cogUserChangePassword(){
-	cognitoUser.changePassword('oldPassword', 'newPassword', function(err, result) {
+	console.log("IN CHANGE PASSWORD")
+	cognitoUser.changePassword('Password123#', 'Password123ABC#' , function(err, result) {
     if (err) {
       alert(err);
       return;
@@ -1388,11 +1483,10 @@ function cogUserChangePassword(){
   });
 }
 
-function cogNewPasswordRequired(){
+function cogNewPasswordRequired(userAttributes){
 
-console.log("in new password required")
 
-}
+};
 
 function cogLoginUser() {
 	let username = $('#loginEmail').val(),
@@ -1418,6 +1512,9 @@ function cogLoginUser() {
 			navGotoSec('nav1')
 			cogGetUserAttributes()
 			serviceTypes = dbGetServicesTypes()
+			console.log(users)
+			users = dbGetUsers()
+			console.log(users)
     },
     onFailure: (err) => {
 			console.log("COGNITO ERROR")
@@ -1430,50 +1527,90 @@ function cogLoginUser() {
 			} else if (err == 'NotAuthorizedException: Incorrect username or password.') {
 				$("#loginError").html("Incorrect username or password.")
 			} else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
+				console.log("PasswordResetRequiredException")
 				$("#loginError").html("New Password is required.")
+				console.log("in new password required")
+				console.log("needs new password - change the form")
+
+
+					// cognitoidentityserviceprovider.adminInitiateAuth(
+					// 	{ AuthFlow: 'ADMIN_NO_SRP_AUTH',
+					// 		ClientId: 'your_own3j63rs8j16bxxxsto25db00obh',
+					// 		UserPoolId: 'us-east-1_DtNSUVT7n',
+					// 		AuthParameters: { USERNAME: 'user3', PASSWORD: 'original_password' } }, callback);
+
+				let newPassword = "ABCDEfg123$"
+
+
+								userAttributes = {}
+								userAttributes.given_name =  "Jose" // newPasswordUser.givenName
+				        userAttributes.family_name =  "Leal" // newPasswordUser.familyName
+								userAttributes.email =  "jose@wikidomo.com"
+
+								//console.log(cogCheckSession())
+
+								// the api doesn't accept this field back
+								delete userAttributes.email_verified;
+								delete userAttributes.phone_number_verified;
+
+
+								// Get these details and call
+					cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, {
+				  	onSuccess: function(result) {
+							console.log("RESET PASSWORD")
+						},
+				  	onFailure: function(err) {
+							console.log("ERROR: " + err)
+						}
+
+					})
 			} else if (err == 'InvalidParameterException: Missing required parameter USERNAME')
 			$("#loginError").html("Username is required.")
-    },
+		},
 		newPasswordRequired: function(userAttributes, requiredAttributes) {
 				// User was signed up by an admin and must provide new
 				// password and required attributes, if any, to complete
 				// authentication.
-console.log(requiredAttributes)
+console.log("Error is hitting callback!!!")
 
 
-console.log("needs new password - change the form")
-let newPassword = ""
 
-				// the api doesn't accept this field back
-				delete userAttributes.email_verified;
-				delete userAttributes.phone_number_verified;
-
-
-				// Get these details and call
-				cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, this);
 		}
   });
 }
 
+function cogResetPassword(userAttributes, user){
+	console.log("needs new password - change the form")
+	let newPassword = "ABCDEfg123$"
+
+					// the api doesn't accept this field back
+					delete userAttributes.email_verified;
+					delete userAttributes.phone_number_verified;
+
+
+					// Get these details and call
+					cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, this);
+}
+
+
 function cogGetUserAttributes(){
+	cognitoUser.getUserAttributes(function(err, result) {
+		if (err) {
+				alert(err);
+				return;
+		}
+		console.log(result)
+		console.log("USER: " + JSON.stringify(user))
 
-	// var params = {
-	//   AccessToken: authorization.accessToken /* required */
-	// };
-	// cognitoidentityserviceprovider.getUser(params, function(err, data) {
-	//   if (err) console.log(err, err.stack); // an error occurred
-	//   else     console.log(data);           // successful response
-	// });
+		console.log(cognitoUser.username)
+		user.username = cognitoUser.username
 
-// 	cognitoUser.getUserAttributes(function(err, result) {
-// 		if (err) {
-// 				alert(err);
-// 				return;
-// 		}
-// 		for (i = 0; i < result.length; i++) {
-// 				console.log('attribute ' + result[i].getName() + ' has value ' + result[i].getValue());
-// 		}
-// });
+		for (i = 0; i < result.length; i++) {
+				console.log('attribute: ' + result[i].getName() + ' has value ' + result[i].getValue());
+				user[result[i].getName()] = result[i].getValue()
+		}
+		console.log("USER: " + JSON.stringify(user))
+	});
 }
 
 // function cognitoSignUp(){
@@ -2044,6 +2181,21 @@ function utilCalcDependentAge(index){
 	}
 }
 
+function utilCalcUserAge(source){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	let dob = ""
+	if (source == "form") {
+		dob = $("#dob.userForm").val()
+	} else {
+		dob = adminUser.dob
+	}
+	let age = moment().diff(dob, 'years')
+	if (Number(age)){
+		$("#age.userForm").val(age)
+		adminUser.age = age
+	}
+}
+
 function utilSetCurrentClient(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	client = clientData[index]
@@ -2069,8 +2221,18 @@ function utilSetCurrentServiceType(index){
 	uiOutlineTableRow('serviceTypesTable', index+1)
 	uiSetAdminHeader(serviceType.serviceName)
 	uiShowServiceTypeForm()
-	navGotoTab("aTab2")
 }
+
+function utilSetCurrentAdminUser(index){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	adminUser = users[index]
+	uiOutlineTableRow('usersTable', index+1)
+	uiSetAdminHeader(adminUser.userName)
+	utilCalcUserAge("data")
+	uiToggleUserNewEdit("existing")
+	uiShowUserForm()
+	navGotoTab("aTab5")
+};
 
 function utilToday() {
 	return moment().format(date)
@@ -2126,6 +2288,8 @@ function utilValidateField(id, classes){
 	let formClass = ""
 	if (classes.indexOf("clientForm") > -1){
 		formClass = "clientForm"
+	} else if (classes.indexOf("userForm") > -1) {
+		formClass = "userForm"
 	}
 	let ruleId = id.replace(".", "_")
 //console.log(formClass, ruleId)
@@ -2268,8 +2432,11 @@ function utilValidateConfig(form, id){
 					 				  ethnicGroup: [ 'required', {lookup: ["Afro-American", "Anglo-European", "Asian/Pacific Islander", "Filipino", "Latino", "Native American", "Other"]} ],
 					 				 		 homeless: [ 'required', {lookup: ["YES", "NO"]} ],
 					 						   street: [ 'required' ],
-					 							   city: [ 'required', {lookup: ["San Jose"]} ],
-					 							  state: [ 'required', {lookup: ["CA"]} ],
+					 							   city: [ 'required', 'name'],
+					 							  state: [ 'required',{lookup: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
+													"IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
+													"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
+													"SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
 					 						  zipcode: [ 'required', 'zipcode' ],
 											zipSuffix: [ 'zipsuffix' ],
 					 					  telephone: [ 'phoneNumber' ],
@@ -2278,8 +2445,27 @@ function utilValidateConfig(form, id){
 			financials_govtAssistance: [ 'required' ],
 					financials_foodStamps: [ 'required' ],
 								financials_rent: [ 'required' ]
-		}
+										}
+		let userForm = {
+			                 isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
+			                givenName: [ 'required', 'name' ],
+					 					 familyName: [ 'required', 'name' ],
+					 					  birthdate: [ 'date','dateNowBefore' ],
+					 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
+					 				 		 userRole: [ 'required', {lookup: ["Admin", "TechAdmin", "Staff", "Volunteer"]} ],
+					 						   street: [ 'required' ],
+					 							   city: [ 'required', 'name', ],
+					 							  state: [ 'required', {lookup: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
+													"IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
+													"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
+													"SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
+					 						  zipcode: [ 'required', 'zipcode' ],
+											zipSuffix: [ 'zipsuffix' ],
+					 					  telephone: [ 'phoneNumber' ],
+					 		  			 		email: [ 'email' ]
+										}
 	if (form == "clientForm") return clientForm[id]
+	if (form == "userForm") return userForm[id]
 };
 
 function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {

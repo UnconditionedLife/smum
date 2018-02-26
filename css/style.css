@@ -68,7 +68,7 @@ main{
 	align-items: center;
 }
 
-.userFormDiv {
+.loginFormDiv {
   position: inherit;
 	display: grid;
 	grid-template-columns: 1fr 2fr 4fr 1fr;
@@ -298,7 +298,7 @@ main{
   padding: 3px 2em 3px 2em;
 }
 
-.userEditFormDiv {
+.userFormDiv {
   width: 100%;
   display: grid;
   grid-template-columns: 2fr 3fr 2fr 3fr 2fr 3fr;
@@ -1356,9 +1356,10 @@ label[for*='tab6']:before { content: '\f24a'; }
 label[for*='aTab1']:before { content: '\f00b'; }
 label[for*='aTab2']:before { content: '\f274'; }
 label[for*='aTab3']:before { content: '\f080'; }
-label[for*='aTab4']:before { content: '\f007'; }
-label[for*='aTab5']:before { content: '\f013'; }
-label[for*='aTab6']:before { content: '\f019'; }
+label[for*='aTab4']:before { content: '\f2b9'; }
+label[for*='aTab5']:before { content: '\f007'; }
+label[for*='aTab6']:before { content: '\f013'; }
+label[for*='aTab7']:before { content: '\f019'; }
 
 label[for*='uTab1']:before { content: '\f2be'; }
 label[for*='uTab2']:before { content: '\f084'; }

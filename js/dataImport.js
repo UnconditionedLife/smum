@@ -46,14 +46,59 @@ function loadDependents(){
 function loadServices(){
   $.getJSON( "data/services_no_food.json", function( servData ) {
     $.each( servData, function( i, item ) {
-        serviceData.push(item)
+      // // populate empty fields
+      // if (item.ServiceName == "") {
+      //   if (item.ServicesService == "") {
+      //     item.ServiceName = "Unknown"
+      //     item.ServicesService = "Unknown"
+      //   } else {
+      //     item.ServiceName = item.ServicesService
+      //   }
+      // }
+      // if (item.ServicesService == "") {
+      //   item.ServicesService = item.ServiceName
+      // }
+      //
+      // if (typeof item.ServiceName == "string") {
+      //   // cleanup Hygiene Kit Names
+      //   if (item.ServiceName.toLowerCase() == "hygiene kit") item.ServiceName = "Hygiene Kit"
+      //   if (item.ServicesService.toLowerCase() == "hygiene kit") item.ServicesService = "Hygiene Kit"
+      //   if (item.ServiceName == "3/19/13") item.ServiceName = "Hygiene Kit"
+      //   // cleanup Clothes Names
+      //   if (item.ServiceName.toLowerCase() == "clothes") item.ServiceName = "Clothes"
+      //   if (item.ServicesService.toLowerCase() == "clothes") item.ServicesService = "Clothes"
+      //   if (item.ServiceName == "Clothes" && item.ServicesService == "Christmas Chickens" && moment(item.DateofService, "M/D/YY").format("M") == 12) {
+      //     item.ServiceName = "Christmas Chickens"
+      //   }
+      //   if (item.ServiceName == "Clothes" && item.ServicesService == "Christmas Turkeys" && moment(item.DateofService, "M/D/YY").format("M") == 12) {
+      //     item.ServiceName = "Christmas Turkeys"
+      //   }
+      //
+      //   "Clothes:Thanksgiving Chicken"
+      //
+      //
+      // } else {
+      //   // cleanup Hygiene Kit Names
+      //   if (item.ServiceName == 8) item.ServiceName = "Hygiene Kit"
+      //   // cleanup Clothes Names
+      //   if (item.ServiceName == 12) item.ServiceName = "Clothes"
+      // }
+
+
+
+
+
+
+      // save into new object
+      console.log(item.ServiceName+" : "+item.ServicesService)
+      serviceData.push(item)
     })
   })
   setTimeout(function(){
-      console.log(serviceData.length)
+      console.log(serviceData)
       $("#servicesCount").html("["+ serviceData.length+"]")
   }, 1000);
-}
+};
 
 function removeEmptyClientRecords(){
   $("#cleanCount").html("Started Removing...")
@@ -392,52 +437,109 @@ console.log(end)
     }
   })
   $("#clientsUploaded").html("["+ clientsUploaded + "]")
-}
-// MISSING FROM DEPENDENTS:
-// 1) CreationDate_d [*not essential]
-// 2) Gender
-// 3) Status
+ //TODO  familyIdCheckedDate  **** ADD TO SERVICES ??? REMOVE AS FIELD ??? treat as servicetype  ****
+};
 
- // {
- //  x  clientId
- //  x  givenName
- //  x  familyName
- //     gender                       TODO **** TO BE CALCULATED ****
- //  x  dob
- //  x  createdDateTime
- //  x  updatedDateTime
- //  x  firstSeenDate
- //  x  familyIdCheckedDate          TODO **** ADD TO SERVICES ??? treat as servicetype  ****
- //  x  street
- //  x  city
- //  x  state
- //  x  zipcode
- //  x  telephone
- //  x  email
- //  x  ethnicGroup
- //  x  isActive
- //  x  homeless
- //  x  financials.income
- //  x  financials.govtAssistance
- //  x  financials.rent
- //  x  financials.foodStamps
- //  x  dependents[]
- //     dependents[].createdDateTime  TODO **** MISSING CreationDate_d ****
- //     dependents[].updatedDateTime
- //     dependents[].givenName
- //     dependents[].familyName
- //     dependents[].dob
- //     dependents[].gender           TODO **** MISSING Gender ****
- //     dependents[].relationship
- //     dependents[].isActive         TODO **** MISSING Status ****
- //  x  lastServed[]
- //     lastServed[].serviceTypeId
- //     lastServed[].serviceDateTime
- //     lastServed[].serviceCategory
- //     lastServed[].isUSDA
-// });
+function importServices(){
+  // Check if client id is in clients
+  // Get unique ServicesService & serviceName
+  uniqueServicesService = []
+  uniqueServiceName = []
+  for (var i = 0; i < serviceData.length; i++) {
+    let ss = serviceData[i].ServicesService
+    let sn = serviceData[i].ServiceName
+    if (!uniqueServicesService.includes(ss+":"+sn)) {
+      uniqueServicesService.push(ss+":"+sn)
+    }
+    if (!uniqueServiceName.includes(sn)) {
+      uniqueServiceName.push(sn)
+    }
+  }
+
+  // "serviceId"
+  // "servicedDateTime"
+  // "clientServedId"
+  // "servicedByUserName"
+  // "serviceTypeId"
+  // "serviceName" : {"S": "$inputRoot.serviceName"},
+  // "serviceCategory" : {"S": "$inputRoot.serviceCategory"},
+  // "serviceButtons" : {"S": "$inputRoot.serviceButtons"},
+  // "isUSDA" : {"S": "$inputRoot.isUSDA"},
+  //         "itemsServed" : {"S": "$inputRoot.itemsServed"},
+  //         "homeless" : {"S": "$inputRoot.homeless"},
+  //         "emergencyFood" : {"S": "$inputRoot.emergencyFood"},
+  //         "totalAdultsServed": {"S": "$inputRoot.totalAdultsServed"},
+  //         "totalChildrenServed": {"S": "$inputRoot.totalChildrenServed"},
+  //         "totalIndividualsServed": {"S": "$inputRoot.totalIndividualsServed"},
+  //         "totalSeniorsServed": {"S": "$inputRoot.totalSeniorsServed"},
+  //         "fulfillment" : {
+  //             "M": {
+  //                 "pending": {"BOOL": "$inputRoot.fulfillment.pending"},
+  //                 "dateTime": {"S": "$inputRoot.fulfillment.dateTime"},
+  //                 "voucherNumber": {"S": "$inputRoot.fulfillment.voucherNumber"},
+  //                 "byUserName": {"S": "$inputRoot.fulfillment.byUserName"},
+  //                 "itemCount": {"S": "$inputRoot.fulfillment.itemCount"}
+  //             }
 
 
+
+  console.log(uniqueServicesService)
+/*
+  "Christmas Gifts:Christmas Distribution", "Christmas Gifts:Christmas Gifts",
+  "Hygiene Kit:Christmas Gift Card",
+  "Clothes:Clothes", "Clothes:clothes", "Clothes:12", "Clothes:", "Clothes:CLOTHES", ":clothes",
+  "Thanksgiving Turkeys:Thanksgiving Turkeys",
+
+  "Sleeping bag:Sleeping Bag",
+  "School Supplies:School Supplies",
+  "Christmas Gifts:1",
+  "Christmas Gifts:Christmas Toys",
+  "Sleeping bag:8",
+  "Thanksgiving Chickens:Christmas Chickens", ":Thanksgiving Chicken",
+  ":",
+  "Christmas Gifts:12",
+  "Clothes:School Supplies",
+  "Christmas Chickens:Christmas Gift Card for Homeless",
+  "Clothes:Thanksgiving Chicken",
+  "Thanksgiving Gift Card for Homeless:Thanksgiving Gift Card for Homeless",
+  "Christmas Chickens:Thanksgiving Chicken",
+  "Christmas Turkeys:Christmas Turkeys",
+  "Thanksgiving Chickens:", "Thanksgiving Chickens:Thanksgiving Chickens",
+  "Christmas Gifts:",
+  "Thanksgiving Chickens:Christmas Turkeys",
+  "Christmas Chickens:",
+  ":Clothes",
+  "Sleeping bag:Sleeping bag",
+  "Thanksgiving Chickens:Thanksgiving Turkeys",
+  ":DMV Voucher",
+  "Christmas Chickens:Christmas Turkeys",
+  "Christmas Chickens:Clothes",
+  "Thanksgiving Chickens:Thanksgiving Gift Card for Homeless",
+  "Clothes:Christmas Turkeys",
+  "Clothes:Thanksgiving Turkeys",
+*/
+
+  console.log(uniqueServiceName)
+
+  // create record of service
+  // "Amount": "", empty
+  // "Backpack type": "",
+  // "Count services": 26154,
+  // "DateofService": "2/7/18",
+  // "LIComment": "",
+  // "LINumberBenefitted": 1,
+  // "ServiceName": "Clothes",
+  // "SumLINumber": 60064,
+  // "Total Amount": "",
+  // "ServicesService": "Clothes",
+  // "FamilyName": "Lucero",
+  // "GivenName": "Todd",
+  // "HouseholdID": 149
+};
+
+function uploadServicesToDynamoDB(){
+
+};
 
 function getGender(givenName) {
 // console.log(givenName)

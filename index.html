@@ -155,36 +155,46 @@
             <label id="atabLable4" for="aTab4">Users</label>
 
             <input id="aTab5" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable5" for="aTab5">Settings</label>
+            <label id="tabLable5" for="aTab5">User</label>
 
             <input id="aTab6" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable6" for="aTab6">Import</label>
+            <label id="tabLable6" for="aTab6">Settings</label>
+
+            <input id="aTab7" class="tabInput" type="radio" name="tabs">
+            <label id="tabLable7" for="aTab7">Import</label>
 
 
-            <section id="aContent1">
+             <section id="aContent1">  <!-- Services -->
                <div class="topFormButtonsDiv">
                   <input class="solidButton" onclick="uiShowNewServiceTypeForm()" type="button" value="New Service Type">
                </div>
                <container id="serviceTypesContainer"></container>
             </section>
-            <section id="aContent2">
+            <section id="aContent2"> <!--  ServiceTypes -->
                <div class="topFormButtonsDiv">
                   <input class="solidButton" onclick="uiShowNewServiceTypeForm()" type="button" value="New Service Type">
                </div>
                <container id="serviceTypeFormContainer"></container>
             </section>
-            <section id="aContent3">
+            <section id="aContent3"> <!--  Reports -->
 
             </section>
-            <section id="aContent4">
+            <section id="aContent4"> <!--  Users -->
                <div class="topFormButtonsDiv">
-                  <input class="solidButton" onclick="cogListUsers()" type="button" value="List Users">
+                  <input class="solidButton" onclick="uiShowNewUserForm()" type="button" value="New User">
                </div>
+               <container id="userListContainer"></container>
             </section>
-            <section id="aContent5">
+            <section id="aContent5"> <!--  User -->
+               <div class="topFormButtonsDiv">
+                  <input class="solidButton" onclick="uiShowNewUserForm()" type="button" value="New User">
+               </div>
+               <container id="userFormContainer"></container>
+            </section>
+            <section id="aContent6"> <!--  Settings -->
 
             </section>
-            <section id="aContent6">
+            <section id="aContent7"> <!--  Import -->
                <!-- <div id="name">
                   <h3>Given Names</h3>
                </div>
@@ -205,6 +215,9 @@
                         <td>
                            <input class="openButton" type="button" onClick="importClients(0, 100)" value="(1)Import Clients">
                         </td>
+                        <td>
+                           &nbsp;
+                        </td>
                      </tr>
                      <tr>
                         <td>
@@ -215,6 +228,9 @@
                         </td>
                         <td style="text-align: center">
                            <span id="clientCount">...</span>
+                        </td>
+                        <td>
+                           &nbsp;
                         </td>
                      </tr>
                      <tr>
@@ -227,6 +243,9 @@
                         <td>
                            <input class="openButton" type="button" onClick="importDependents(0, 100)" value="(3)Import Dependents">
                         </td>
+                        <td>
+                           &nbsp;
+                        </td>
                      </tr>
                      <tr>
                         <td>
@@ -237,6 +256,9 @@
                         </td>
                         <td style="text-align: center">
                            <span id="dependentsImported">...</span>
+                        </td>
+                        <td>
+                           &nbsp;
                         </td>
                      </tr>
                      <tr>
@@ -249,6 +271,9 @@
                         <td>
                            <input class="openButton" type="button" onClick="importFoodLastServed(0, 100)" value="(4)Import LastServed">
                         </td>
+                        <td>
+                           &nbsp;
+                        </td>
                      </tr>
                      <tr>
                         <td>
@@ -260,28 +285,28 @@
                         <td style="text-align: center">
                            <span id="foodImported">...</span>
                         </td>
+                        <td>
+                           &nbsp;
+                        </td>
                      </tr>
                      <tr>
                         <td>
                            <h3>Upload to DynamoDB</h3>
                         </td>
                         <td>
-                           <table>
-                              <tr>
-                                 <td>
-                                    <input id="clientUploadStart" class="inputBox" type="text" placeholder="Start Record" value="">
-                                 </td>
-                                 <td>
-                                    <input id="clientUploadEnd" class="inputBox" type="text" placeholder="End Record" value="">
-                                 </td>
-                              </tr>
-                           </table>
+                           <input id="clientUploadStart" class="inputBox" type="text" placeholder="Start Record" value="">
+                        </td>
+                        <td>
+                           <input id="clientUploadEnd" class="inputBox" type="text" placeholder="End Record" value="">
                         </td>
                         <td>
                            <input class="solidButton" type="button" onClick="uploadToDynamoDB()" value="(5)Upload To DB">
                         </td>
                      </tr>
                      <tr>
+                        <td>
+                           &nbsp;
+                        </td>
                         <td>
                            &nbsp;
                         </td>
@@ -302,6 +327,9 @@
                         <td>
                            <input class="openButton" type="button" onClick="generateUnusedClientIDList()" value="(7)Gen UNUSED ID's">
                         </td>
+                        <td>
+                           &nbsp;
+                        </td>
                      </tr>
                      <tr>
                         <td>
@@ -311,11 +339,17 @@
                            <input class="openButton" type="button" onClick="loadServices()" value="(1)Load Services">
                         </td>
                         <td>
-                           <input class="openButton" type="button" onClick="importDependents(0, 100)" value="(2)Import Services">
+                           <input class="openButton" type="button" onClick="importServices()" value="(2)Import Services">
+                        </td>
+                        <td>
+                           <input class="solidButton" type="button" onClick="uploadServicesToDynamoDB()" value="(2)Import Services">
                         </td>
                      </tr>
                      <tr>
                         <td>
+                           &nbsp;
+                        </td>
+                        <td style="text-align: center">
                            <span id="servicesCount">...</span>
                         </td>
                         <td>
@@ -394,7 +428,7 @@
 	    </div>
 	</div>
    <div id="loginOverlay" class="popupOverlay">
-      <div class="userFormDiv">
+      <div class="loginFormDiv">
          <div class="loginHeader span4">Login to Santa Maria Urban Ministry</div>
          <div class="span4"></div>
          <div></div>
@@ -415,7 +449,7 @@
       </div>
    </div>
    <div id="errorOverlay" class="popupOverlay">
-      <div class="userFormDiv">
+      <div class="loginFormDiv">
          <div class="loginHeader span4">APP ERROR</div>
          <div class="span4"></div>
          <div></div>
@@ -441,8 +475,8 @@
    crossorigin="anonymous" -->
 
    <script src="https://cdnjs.cloudflare.com/ajax/libs/cuid/1.3.8/browser-cuid.min.js"></script>
-   <!-- <script src="data/foodSmall.js"></script>
-   <script src="js/dataImport.js"></script> -->
+   <!-- <script src="data/foodSmall.js"></script>  -->
+   <script src="js/dataImport.js"></script>
    <script src="js/app.js"></script>
   </body>
 </html>

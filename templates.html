@@ -265,39 +265,69 @@
 </template>
 
 <template id="userForm">
-   <div class="userEditFormDiv">
+   <div class="userFormDiv">
+      <div class="lableDiv">User Name</div>
+      <div class="">
+         <!-- hidden fields -->
+         <input id="updatedDateTime" type="hidden" class="userForm">
+         <input id="createdDateTime" type="hidden" class="userForm">
+         <!-- visible field -->
+         <input id="userName" type="text" class="inputBox userForm" onchange="utilCheckForDuplicateUserName()" readonly>
+      </div>
       <div class="lableDiv">Given Name</div>
-      <div class=""><input id="given_name" type="text" class="inputBox userForm"></div>
+      <div class=""><input id="givenName" type="text" class="inputBox userForm"></div>
       <div class="lableDiv">Family Name</div>
-      <div class=""><input id="family_name" type="text" class="inputBox userForm"></div>
-      <div class="lableDiv">Birthdate</div>
-      <div class=""><input id="birthdate" type="date" class="inputBox userForm" onchange="utilUpdateClientAge()"></div>
+      <div class=""><input id="familyName" type="text" class="inputBox userForm"></div>
       <div class="lableDiv">Gender</div>
       <div class="">
-         <select id="gender" class="inputBox clientForm">
+         <select id="gender" class="inputBox userForm">
             <option value="Female">Female</option>
             <option value="Male">Male</option>
          </select>
       </div>
-      <div class="headingDiv span6">Address Info</div>
+      <div class="lableDiv">Birthdate</div>
+      <div class=""><input id="dob" type="date" class="inputBox userForm" onchange="utilCalcUserAge('form')"></div>
+      <div class="lableDiv">Age</div>
+      <div class=""><input id="age" type="text" class="inputBox userForm viewOnly" readonly></div>
+      <div class="headingDiv span6">User Access</div>
+      <div class="lableDiv">Role</div>
+      <div>
+         <select id="userRole" class="inputBox userForm">
+            <option value="Admin">Admin</option>
+            <option value="TechAdmin">TechAdmin</option>
+            <option value="Staff">Staff</option>
+            <option value="Volunteer">Volunteer</option>
+         </select>
+      </div>
+      <div class="lableDiv">Status</div>
+      <div class="">
+         <select id="isActive" class="inputBox userForm">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+         </select>
+      </div>
+      <div class="headingDiv span6">Home Address</div>
       <div class="lableDiv addressDiv">Street</div>
-      <div class="addressDiv span3"><input id="street_address" type="text" class="inputBox clientForm"></div>
+      <div class="addressDiv span3"><input id="street" type="text" class="inputBox userForm"></div>
+      <div class="span2"></div>
       <div class="lableDiv addressDiv">City</div>
-      <div class="addressDiv"><input id="city_address" type="text" class="inputBox clientForm"></div>
+      <div class="addressDiv"><input id="city" type="text" class="inputBox userForm"></div>
       <div class="lableDiv addressDiv">State</div>
-      <div class="addressDiv"><input id="state_address" type="text" class="inputBox clientForm"></div>
+      <div class="addressDiv"><input id="state" type="text" class="inputBox userForm"></div>
       <div class="lableDiv addressDiv">Zipcode</div>
-      <div class="addressDiv"><input id="zipcode_address" type="number" class="inputBox clientForm"></div>
+      <div class="addressDiv"><input id="zipcode" type="number" class="inputBox userForm" style="width: 80px"><input id="zipSuffix" type="number" class="inputBox userForm" style="width: 75px; margin-right: 0;"></div>
       <div class="headingDiv span6">Contact Info</div>
       <div class="lableDiv">Phone</div>
-      <div class=""><input id="phone_number" type="text" class="inputBox clientForm"></div>
-      <div class="lableDiv">Phone Varified</div>
-      <div class="span3"><input id="phone_number_verified" type="text" class="inputBox clientForm"></div>
+      <div class=""><input id="telephone" type="text" class="inputBox userForm"></div>
       <div class="lableDiv">Email</div>
-      <div class="span3"><input id="email" type="email" class="inputBox clientForm"></div>
-      <div class="span6 editOnly" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-         <input class="solidButton" onclick="saveUserForm()" type="button" value="Save">
-         <input class="openButton" onclick="resetUserForm()" type="button" value="Cancel">
+      <div class=""><input id="email" type="email" class="inputBox userForm"></div>
+      <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
+         <input class="solidButton" onclick="dbSaveUser()" type="button" value="Save"> <!--// TODO replace this saveUserForm -->
+         <input class="openButton" onclick="uiResetUserForm()" type="button" value="Cancel">
       </div>
    </div>
+</template>
+
+<template id="settingsForm">
+
 </template>
