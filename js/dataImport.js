@@ -46,43 +46,66 @@ function loadDependents(){
 function loadServices(){
   $.getJSON( "data/services_no_food.json", function( servData ) {
     $.each( servData, function( i, item ) {
-      // // populate empty fields
-      // if (item.ServiceName == "") {
-      //   if (item.ServicesService == "") {
-      //     item.ServiceName = "Unknown"
-      //     item.ServicesService = "Unknown"
-      //   } else {
-      //     item.ServiceName = item.ServicesService
-      //   }
-      // }
-      // if (item.ServicesService == "") {
-      //   item.ServicesService = item.ServiceName
-      // }
-      //
-      // if (typeof item.ServiceName == "string") {
-      //   // cleanup Hygiene Kit Names
-      //   if (item.ServiceName.toLowerCase() == "hygiene kit") item.ServiceName = "Hygiene Kit"
-      //   if (item.ServicesService.toLowerCase() == "hygiene kit") item.ServicesService = "Hygiene Kit"
-      //   if (item.ServiceName == "3/19/13") item.ServiceName = "Hygiene Kit"
-      //   // cleanup Clothes Names
-      //   if (item.ServiceName.toLowerCase() == "clothes") item.ServiceName = "Clothes"
-      //   if (item.ServicesService.toLowerCase() == "clothes") item.ServicesService = "Clothes"
-      //   if (item.ServiceName == "Clothes" && item.ServicesService == "Christmas Chickens" && moment(item.DateofService, "M/D/YY").format("M") == 12) {
-      //     item.ServiceName = "Christmas Chickens"
-      //   }
-      //   if (item.ServiceName == "Clothes" && item.ServicesService == "Christmas Turkeys" && moment(item.DateofService, "M/D/YY").format("M") == 12) {
-      //     item.ServiceName = "Christmas Turkeys"
-      //   }
-      //
-      //   "Clothes:Thanksgiving Chicken"
-      //
-      //
-      // } else {
-      //   // cleanup Hygiene Kit Names
-      //   if (item.ServiceName == 8) item.ServiceName = "Hygiene Kit"
-      //   // cleanup Clothes Names
-      //   if (item.ServiceName == 12) item.ServiceName = "Clothes"
-      // }
+      // populate empty fields
+      if (item.ServiceName == "") {
+        if (item.ServicesService == "") {
+          item.ServiceName = "Unknown"
+          item.ServicesService = "Unknown"
+        } else {
+          item.ServiceName = item.ServicesService
+        }
+      }
+      if (item.ServicesService == "") {
+        item.ServicesService = item.ServiceName
+      }
+
+      if (typeof item.ServiceName == "string") {
+        // cleanup Hygiene Kit Names
+        if (item.ServiceName.toLowerCase() == "hygiene kit") item.ServiceName = "Hygiene Kit"
+        if (item.ServiceName == "3/19/13") item.ServiceName = "Hygiene Kit"
+        // cleanup Clothes Names
+        if (item.ServiceName.toLowerCase() == "clothes") item.ServiceName = "Clothes"
+        // cleanup Sleeping Bag Names
+        if (item.ServiceName.toLowerCase() == "sleeping bag") item.ServiceName = "Sleeping Bag"
+
+        if (item.ServiceName == "Clothes" && item.ServicesService == "Christmas Chickens" && moment(item.DateofService, "M/D/YY").format("M") == 12) {
+          item.ServiceName = "Christmas Chickens"
+        }
+        if (item.ServiceName == "Clothes" && item.ServicesService == "Christmas Turkeys" && moment(item.DateofService, "M/D/YY").format("M") == 12) {
+          item.ServiceName = "Christmas Turkeys"
+        }
+        if (item.ServiceName == "Clothes" && item.ServicesService == "Thanksgiving Chickens" && moment(item.DateofService, "M/D/YY").format("M") == 11) {
+          item.ServiceName = "Thanksgiving Chickens"
+        }
+        if (item.ServiceName == "Clothes" && item.ServicesService == "Thanksgiving Turkeys" && moment(item.DateofService, "M/D/YY").format("M") == 11) {
+          item.ServiceName = "Thanksgiving Turkeys"
+        }
+        if (item.ServiceName == "Clothes" && item.ServicesService == "School Supplies" && moment(item.DateofService, "M/D/YY").format("M") == 8) {
+          item.ServiceName = "School Supplies"
+        }
+
+
+      } else {
+        // cleanup Christmas Gifts Names
+        if (item.ServiceName == 1) item.ServiceName = "Christmas Gifts"
+        // cleanup Hygiene Kit Names
+        if (item.ServiceName == 8 && item.ServicesService == "Hygiene Kit" ) item.ServiceName = "Hygiene Kit"
+        if (item.ServiceName == 8 && item.ServicesService == "Sleeping Bag" ) item.ServiceName = "Sleeping Bag"
+        // cleanup Clothes Names
+        if (item.ServiceName == 12) item.ServiceName = "Clothes"
+      }
+
+      if (typeof item.ServicesService == "string") {
+        // cleanup Hygiene Kit Names
+        if (item.ServicesService.toLowerCase() == "hygiene kit") item.ServicesService = "Hygiene Kit"
+        // cleanup Clothes Names
+        if (item.ServicesService.toLowerCase() == "clothes") item.ServicesService = "Clothes"
+        // cleanup Sleeping Bag Names
+        if (item.ServicesService.toLowerCase() == "sleeping bag") item.ServicesService = "Sleeping Bag"
+
+      } else {
+
+      }
 
 
 
@@ -441,7 +464,8 @@ console.log(end)
 };
 
 function importServices(){
-  // Check if client id is in clients
+  // Check if HouseholdID is in clientId
+
   // Get unique ServicesService & serviceName
   uniqueServicesService = []
   uniqueServiceName = []
@@ -522,18 +546,12 @@ function importServices(){
   console.log(uniqueServiceName)
 
   // create record of service
-  // "Amount": "", empty
+
   // "Backpack type": "",
-  // "Count services": 26154,
   // "DateofService": "2/7/18",
-  // "LIComment": "",
   // "LINumberBenefitted": 1,
   // "ServiceName": "Clothes",
-  // "SumLINumber": 60064,
-  // "Total Amount": "",
   // "ServicesService": "Clothes",
-  // "FamilyName": "Lucero",
-  // "GivenName": "Todd",
   // "HouseholdID": 149
 };
 

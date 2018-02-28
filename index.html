@@ -143,58 +143,58 @@
          </div>
          <div class="container" style="background-color:white;">
             <input id="aTab1" class="tabInput" type="radio" name="tabs" checked>
-            <label id="tabLable1" for="aTab1" onload="fillDate()">Services</label>
+            <label id="atabLable1" for="aTab1" onload="fillDate()">Services</label>
 
             <input id="aTab2" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable2" for="aTab2">Service Type</label>
+            <label id="atabLable2" for="aTab2">Service Type</label>
 
             <input id="aTab3" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable3" for="aTab3">Reports</label>
+            <label id="atabLable3" for="aTab3">Reports</label>
 
             <input id="aTab4" class="tabInput" type="radio" name="tabs">
             <label id="atabLable4" for="aTab4">Users</label>
 
             <input id="aTab5" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable5" for="aTab5">User</label>
+            <label id="atabLable5" for="aTab5">User</label>
 
             <input id="aTab6" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable6" for="aTab6">Settings</label>
+            <label id="atabLable6" for="aTab6">Settings</label>
 
             <input id="aTab7" class="tabInput" type="radio" name="tabs">
-            <label id="tabLable7" for="aTab7">Import</label>
+            <label id="atabLable7" for="aTab7">Import</label>
 
 
-             <section id="aContent1">  <!-- Services -->
+             <section id="aContent1">  <!-- Services Section -->
                <div class="topFormButtonsDiv">
                   <input class="solidButton" onclick="uiShowNewServiceTypeForm()" type="button" value="New Service Type">
                </div>
                <container id="serviceTypesContainer"></container>
             </section>
-            <section id="aContent2"> <!--  ServiceTypes -->
+            <section id="aContent2"> <!--  ServiceTypes Section -->
                <div class="topFormButtonsDiv">
                   <input class="solidButton" onclick="uiShowNewServiceTypeForm()" type="button" value="New Service Type">
                </div>
                <container id="serviceTypeFormContainer"></container>
             </section>
-            <section id="aContent3"> <!--  Reports -->
+            <section id="aContent3"> <!--  Reports Section -->
 
             </section>
-            <section id="aContent4"> <!--  Users -->
+            <section id="aContent4"> <!--  Users Section -->
                <div class="topFormButtonsDiv">
                   <input class="solidButton" onclick="uiShowNewUserForm()" type="button" value="New User">
                </div>
                <container id="userListContainer"></container>
             </section>
-            <section id="aContent5"> <!--  User -->
+            <section id="aContent5"> <!--  User Section -->
                <div class="topFormButtonsDiv">
                   <input class="solidButton" onclick="uiShowNewUserForm()" type="button" value="New User">
                </div>
                <container id="userFormContainer"></container>
             </section>
-            <section id="aContent6"> <!--  Settings -->
+            <section id="aContent6"> <!--  Settings Section -->
 
             </section>
-            <section id="aContent7"> <!--  Import -->
+            <section id="aContent7"> <!--  Import Section -->
                <!-- <div id="name">
                   <h3>Given Names</h3>
                </div>
@@ -433,14 +433,15 @@
          <div class="span4"></div>
          <div></div>
          <div class="lableDiv">Username</div>
-
-<!-- TODO : CHANGE loginEmail and input type to "Username" -->
-
-         <div class=""><input id="loginEmail" type="email" class="inputBox userForm"></div>
+         <div class=""><input id="loginUserName" type="email" class="inputBox loginForm"></div>
          <div></div>
          <div></div>
-         <div class="lableDiv">Password</div>
-         <div class=""><input id="loginPassword" type="password" class="inputBox userForm"> <i class="fa fa-eye fa-lg" style="float: right;" aria-hidden="true" onclick='uiShowHidePassword()'></i></div>
+         <div class="lableDiv passwordDiv">Password</div>
+         <div class="passwordDiv"><input id="loginPassword" type="password" class="inputBox loginForm"> <i class="fa fa-eye fa-lg" style="float: right;" aria-hidden="true" onclick='uiShowHidePassword()'></i></div>
+         <!-- <div class="codeDiv"></div>
+         <div class="codeDiv"></div> -->
+         <div class="lableDiv codeDiv">Validation #</div>
+         <div class="codeDiv"><input id="loginCode" type="text" class="inputBox loginForm"></div>
          <div></div>
          <div class="span4" style="display: flex; justify-content: center; height: 60px; align-items: center;">
             <input class="solidButton" onclick="cogLoginUser()" type="button" value="Login">

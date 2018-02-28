@@ -1396,7 +1396,8 @@ input:checked + label {
 #aTab3:checked ~ #aContent3,
 #aTab4:checked ~ #aContent4,
 #aTab5:checked ~ #aContent5,
-#aTab6:checked ~ #aContent6
+#aTab6:checked ~ #aContent6,
+#aTab7:checked ~ #aContent7
 {
   display: block;
 }

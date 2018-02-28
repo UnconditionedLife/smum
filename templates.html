@@ -266,16 +266,14 @@
 
 <template id="userForm">
    <div class="userFormDiv">
-      <div class="lableDiv">User Name</div>
-      <div class="">
-         <!-- hidden fields -->
-         <input id="updatedDateTime" type="hidden" class="userForm">
-         <input id="createdDateTime" type="hidden" class="userForm">
-         <!-- visible field -->
-         <input id="userName" type="text" class="inputBox userForm" onchange="utilCheckForDuplicateUserName()" readonly>
-      </div>
       <div class="lableDiv">Given Name</div>
-      <div class=""><input id="givenName" type="text" class="inputBox userForm"></div>
+      <div class="">
+        <!-- hidden fields -->
+        <input id="updatedDateTime" type="hidden" class="userForm">
+        <input id="createdDateTime" type="hidden" class="userForm">
+        <!-- visible field -->
+        <input id="givenName" type="text" class="inputBox userForm">
+      </div>
       <div class="lableDiv">Family Name</div>
       <div class=""><input id="familyName" type="text" class="inputBox userForm"></div>
       <div class="lableDiv">Gender</div>
@@ -285,11 +283,16 @@
             <option value="Male">Male</option>
          </select>
       </div>
-      <div class="lableDiv">Birthdate</div>
+      <div class="lableDiv">DOB</div>
       <div class=""><input id="dob" type="date" class="inputBox userForm" onchange="utilCalcUserAge('form')"></div>
       <div class="lableDiv">Age</div>
       <div class=""><input id="age" type="text" class="inputBox userForm viewOnly" readonly></div>
       <div class="headingDiv span6">User Access</div>
+      <div class="lableDiv newOnly">User Name</div>
+      <div class="newOnly"><input id="userName" type="text" class="inputBox userForm"></div>
+      <div class="lableDiv newOnly">Password</div>
+      <div class="newOnly"><input id="password" type="password" class="inputBox userForm"></div>
+      <div class="span2"></div>
       <div class="lableDiv">Role</div>
       <div>
          <select id="userRole" class="inputBox userForm">

@@ -30,14 +30,12 @@ let serviceType = null
 let emergencyFood = false
 let currentNavTab = "clients"
 let hasImportantNote = ""
-
 // cognito config
 let CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
 let poolData = {
 		UserPoolId : 'us-west-2_AufYE4o3x', // Your user pool id here
 		ClientId : '7j3jhm5a3pkc67m52bf7tv10au' // Your client id here
 };
-
 let userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 let session = {}
 let cognitoUser = {}
@@ -317,6 +315,14 @@ console.log(classes)
 // 	console.log("HIDE")
 // }
 
+function uiLoginFormValidationCode(){
+	console.log("REDO LOGIN TO SHOW VALIDATION FIELD")
+	// TODO add validation Code to form
+	$('.passwordDiv').hide()
+	$('.codeDiv').show("slow")
+
+};
+
 function uiOutlineTableRow(table, row){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', 'var(--blue) 1px dashed').siblings().css('outline', 'none')
@@ -439,10 +445,13 @@ function uiShowHideLogin(todo){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	if (todo === 'show'){
 		$('#loginOverlay').show().css('display', 'flex')
+		$('.codeDiv').hide()
 	} else {
+		$('.passwordDiv').show()
 		$('#loginOverlay').hide()
-		$('#loginEmail').val('')
+		$('#loginUserName').val('')
 		$('#loginPassword').val('')
+		$('#loginCode').val('')
 	}
 }
 
@@ -849,9 +858,9 @@ function uiToggleClientViewEdit(side){
 function uiToggleUserNewEdit(type){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	if (type == 'new') {
-		$('#userName.userForm').prop('readonly', false)
+		$('.newOnly.userForm').show()
 	} else {
-		$('#userName.userForm').prop('readonly', true)
+		$('.newOnly.userForm').hide()
 	}
 }
 
@@ -1035,9 +1044,7 @@ function dbPostData(uUrl,dataU){
 		consol.log("need to log in")
 		return
 	}
-
 // console.log(JSON.stringify(dataU))
-
 	var urlNew = uUrl;
 	var uData = dataU;
 	var ans = null;
@@ -1172,35 +1179,38 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 };
 
 function dbSaveUser(){
-	// TODO Add the fuctionality to call the users API
-	let user = {
-	  "userName": "jleal67",
-	  "givenName": "Jose",
-	  "familyName": "Leal",
-	  "gender": "M",
-	  "dob": "1967-09-24",
-	  "createdDateTime": "2018-02-23T15:00",
-	  "updatedDateTime": "2018-02-23T15:00",
-	  "street": "1236 Copper Peak LN",
-	  "city": "San Jose",
-	  "state": "CA",
-	  "zipcode": "95120",
-	  "zipSuffix": "4267",
-	  "telephone": "+1-209-601-1038",
-	  "email": "jleal67@gmail.com",
-	  "isActive": "YES",
-	  "userRole": "techAdmin",
-	  "notes":
-	    [
-	      {
-	        "createdDateTime": "2018-02-23T15:00",
-	        "updatedDateTime": "2018-02-23T15:00",
-	        "noteText": "This is a test note!",
-	        "isImportant": false,
-	        "noteByUserName": "jleal67"
-	      }
-	    ]
+	// TODO validate all active fields & show errors
+	// store new user in Users Table
+	let userData = utilFormToJSON(".userForm")
+	userData.notes = []
+	let URL = aws+"/users/"
+	result = dbPostData(URL, JSON.stringify(userData))
+	if (result == null) {
+		utilBloop() // TODO move bloop to successful POST ()
+		users = dbGetUsers()
+		uiShowUsers()
+
+console.log(result)
+		// check to see if new user or existing
+		if (userData.password == "") {
+			// existing user
+			// TODO Find user in Users and update adminUser
+
+		} else {
+			// new user
+			// signup for Cognito User Account
+			// TODO Format phone to match cognito NEEDS
+			// +12096011038 example
+
+			cogUserSignUp(userData.userName, userData.password, userData.email, userData.phone)
+			// TODO message "USER MUST VALIDATE EMAIL"
+		}
+	} else {
+		utilBeep()
+		console.log("Failed to Save User")
 	}
+
+
 };
 
 function dbPostService(serviceType, itemsServed){
@@ -1483,15 +1493,40 @@ function cogUserChangePassword(){
   });
 }
 
+function cogUserConfirm(validationCode, userName){
+	let userData = {
+		 Username: userName, //username,
+		 Pool: userPool
+	};
+	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+	cognitoUser.confirmRegistration(validationCode, true, function(err, result) {
+			if (err) {
+					alert(err);
+					return;
+			}
+			session.user = cognitoUser;
+			authorization.accessToken = result.getAccessToken().getJwtToken()
+			authorization.idToken = result.idToken.jwtToken
+			utilLoginUserShowScreens()
+			console.log('call result: ' + result);
+	});
+}
+
+
 function cogNewPasswordRequired(userAttributes){
 
 
 };
 
 function cogLoginUser() {
-	let username = $('#loginEmail').val(),
-			password = $('#loginPassword').val(),
-			authData = {
+	let validationCode = $('#loginCode').val(),
+			username = $('#loginUserName').val(),
+			password = $('#loginPassword').val()
+	if (validationCode != ""){
+		cogUserConfirm(validationCode, username)
+		return
+	}
+	let authData = {
      		Username: username,
      		Password: password
   		};
@@ -1503,29 +1538,30 @@ function cogLoginUser() {
   cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
   cognitoUser.authenticateUser(authDetails, {
     onSuccess: (result) => {
-      session.user = cognitoUser;
+			session.user = cognitoUser;
 			authorization.accessToken = result.getAccessToken().getJwtToken()
 			authorization.idToken = result.idToken.jwtToken
-			$('#nav4').html('<i class="fa fa-user" aria-hidden="true"></i> ' + session.user.username)
-			$('#nav5').html('Logout')
-			uiShowHideLogin('hide')
-			navGotoSec('nav1')
-			cogGetUserAttributes()
-			serviceTypes = dbGetServicesTypes()
-			console.log(users)
-			users = dbGetUsers()
-			console.log(users)
+			utilLoginUserShowScreens()
     },
     onFailure: (err) => {
 			console.log("COGNITO ERROR")
 			console.log('|'+err+'|');
 			utilBeep()
+
+
+
 			if (err == 'Error: Incorrect username or password.') {
 				$("#loginError").html("Incorrect username or password")
 			} else if (err == 'UserNotFoundException: User does not exist.') {
 				$("#loginError").html("Username does not exist.")
 			} else if (err == 'NotAuthorizedException: Incorrect username or password.') {
 				$("#loginError").html("Incorrect username or password.")
+			} else if (err == 'UserNotConfirmedException: User is not confirmed.') {
+				uiLoginFormValidationCode()
+				$("#loginError").html("Validation Code is Required.")
+				// TODO change login flow to deal with confirmation
+				// cogUserConfirm() //userName, verificationCode
+
 			} else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
 				console.log("PasswordResetRequiredException")
 				$("#loginError").html("New Password is required.")
@@ -1613,7 +1649,51 @@ function cogGetUserAttributes(){
 	});
 }
 
-// function cognitoSignUp(){
+function cogUserSignUp(userName, password, email, phone){
+	var attributeList = [];
+	var dataEmail = {
+			Name : 'email',
+			Value : email
+	}
+	var dataPhoneNumber = {
+			Name : 'phone_number',
+			Value : phone
+	}
+	var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+	var attributePhoneNumber = new AmazonCognitoIdentity.CognitoUserAttribute(dataPhoneNumber);
+	attributeList.push(attributeEmail);
+	attributeList.push(attributePhoneNumber);
+	userPool.signUp(userName, password, attributeList, null, function(err, result){
+			if (err) {
+					alert(err);
+					return;
+			}
+			cognitoUser = result.user;
+			console.log('user name is ' + cognitoUser.getUsername());
+	})
+};
+
+// function cogGetUserList(){
+// 	var params = {
+// 	  UserPoolId: poolData.UserPoolId, /* required */
+// 	  AttributesToGet: [
+// 	    'username',
+// 			'email',
+// 			'phone_number',
+// 			'given_name',
+// 			'family_name',
+// 			'status'
+// 	  ],
+// 	  // Filter: // "family_name = \"Reddy\"" 'STRING_VALUE',
+// 	  Limit: 60
+// 	  // PaginationToken: 'STRING_VALUE'
+// 	};
+// 	userPool.listUsers(params, function(err, data) {
+// 	  if (err) console.log(err, err.stack); // an error occurred
+// 	  else     console.log(data);           // successful response
+// 	});
+// };
+
 // 	var attributeList = [];
 //
 // 	var dataEmail = {
@@ -1909,6 +1989,18 @@ function utilCalcFamilyCounts(){
 // 	return lastIdCheck
 // }
 
+function utilLoginUserShowScreens(){
+	$('#nav4').html('<i class="fa fa-user" aria-hidden="true"></i> ' + session.user.username)
+	$('#nav5').html('Logout')
+	uiShowHideLogin('hide')
+	navGotoSec('nav1')
+	cogGetUserAttributes()
+	serviceTypes = dbGetServicesTypes()
+	console.log(users)
+	users = dbGetUsers()
+	console.log(users)
+};
+
 function utilRemoveEmptyPlaceholders(){
 	// TODO make this opperate on other forms / data
 	$.each(client, function(key,value){
@@ -2186,13 +2278,18 @@ function utilCalcUserAge(source){
 	let dob = ""
 	if (source == "form") {
 		dob = $("#dob.userForm").val()
+console.log(dob)
 	} else {
 		dob = adminUser.dob
 	}
 	let age = moment().diff(dob, 'years')
+console.log(age)
 	if (Number(age)){
 		$("#age.userForm").val(age)
 		adminUser.age = age
+	} else {
+		$("#age.userForm").val("")
+		adminUser.age = ""
 	}
 }
 
@@ -2292,7 +2389,7 @@ function utilValidateField(id, classes){
 		formClass = "userForm"
 	}
 	let ruleId = id.replace(".", "_")
-//console.log(formClass, ruleId)
+console.log(formClass, ruleId)
 	let rules = utilValidateConfig(formClass, ruleId)
 //console.log(rules)
 	let lookupList = []
@@ -2373,6 +2470,46 @@ function utilValidateField(id, classes){
 					}
 				}
 				break
+			case "username":
+				let userArray = users.filter(function( obj ) {
+					return obj.userName == $("#userName.userForm").val()
+				})
+				if (userArray.length == 1){
+					hasError = true
+					uiGenerateErrorBubble("Not valid: User Name exists!", id, classes)
+				}
+				if (value.length > 8 && hasError == false) {
+					hasError = true
+					uiGenerateErrorBubble("Not valid: Maximum 8 characters!", id, classes)
+				}
+				break
+			case "password":
+				if (value.length < 8) {
+					hasError = true
+					uiGenerateErrorBubble("Not valid: Minimum 8 characters!", id, classes)
+				}
+				// /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/g
+				let pwRegexLowercase = /(?=.*[a-z])/g
+				if (!value.match(pwRegexLowercase) && hasError == false) {
+					hasError = true
+					uiGenerateErrorBubble("Not valid: Minimum 1 lowercase letter!", id, classes)
+				}
+				let pwRegexUppercase = /(?=.*[A-Z])/g
+				if (!value.match(pwRegexUppercase) && hasError == false) {
+					hasError = true
+					uiGenerateErrorBubble("Not valid: Minimum 1 uppercase letter!", id, classes)
+				}
+				let pwRegexNumber = /(?=.*[0-9])/g
+				if (!value.match(pwRegexNumber) && hasError == false) {
+					hasError = true
+					uiGenerateErrorBubble("Not valid: Minimum 1 number!", id, classes)
+				}
+				let pwRegexSpecialChar = /[^\d\w]/g
+				if (!value.match(pwRegexSpecialChar) && hasError == false) {
+					hasError = true
+					uiGenerateErrorBubble("Not valid: Minimum 1 special character!", id, classes)
+				}
+				break
 			case "lookup":
 				if (hasError == false) {
 					found = false
@@ -2428,6 +2565,7 @@ function utilValidateConfig(form, id){
 			                givenName: [ 'required', 'name' ],
 					 					 familyName: [ 'required', 'name' ],
 					 								  dob: [ 'date','dateNowBefore' ],
+														age: [ ],
 					 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
 					 				  ethnicGroup: [ 'required', {lookup: ["Afro-American", "Anglo-European", "Asian/Pacific Islander", "Filipino", "Latino", "Native American", "Other"]} ],
 					 				 		 homeless: [ 'required', {lookup: ["YES", "NO"]} ],
@@ -2450,8 +2588,10 @@ function utilValidateConfig(form, id){
 			                 isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
 			                givenName: [ 'required', 'name' ],
 					 					 familyName: [ 'required', 'name' ],
-					 					  birthdate: [ 'date','dateNowBefore' ],
+					 					  			dob: [ 'date','dateNowBefore' ],
 					 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
+											 userName: [ 'username'],
+											 password: [ 'password'],
 					 				 		 userRole: [ 'required', {lookup: ["Admin", "TechAdmin", "Staff", "Volunteer"]} ],
 					 						   street: [ 'required' ],
 					 							   city: [ 'required', 'name', ],
