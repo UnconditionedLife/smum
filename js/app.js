@@ -315,11 +315,23 @@ console.log(classes)
 // 	console.log("HIDE")
 // }
 
-function uiLoginFormValidationCode(){
+function uiLoginFormToggleValidation(todo){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	console.log("REDO LOGIN TO SHOW VALIDATION FIELD")
 	// TODO add validation Code to form
-	$('.passwordDiv').hide()
-	$('.codeDiv').show("slow")
+	if (todo == "code") {
+		$('.loginDiv').hide()
+		$('.codeDiv').show("slow")
+	} else if (todo == "newPassword") {
+		$('.loginDiv').hide()
+		$('.codeDiv').hide()
+		$('.newPasswordDiv').show("slow")
+	} else {
+		$('.codeDiv').hide()
+		$('.newPasswordDiv').hide()
+		$('.loginDiv').show("slow")
+	}
+
 
 };
 
@@ -446,8 +458,9 @@ function uiShowHideLogin(todo){
 	if (todo === 'show'){
 		$('#loginOverlay').show().css('display', 'flex')
 		$('.codeDiv').hide()
+		$('.newPasswordDiv').hide()
 	} else {
-		$('.passwordDiv').show()
+		$('.loginDiv').show()
 		$('#loginOverlay').hide()
 		$('#loginUserName').val('')
 		$('#loginPassword').val('')
@@ -1493,40 +1506,122 @@ function cogUserChangePassword(){
   });
 }
 
-function cogUserConfirm(validationCode, userName){
-	let userData = {
-		 Username: userName, //username,
-		 Pool: userPool
-	};
+function cogUserConfirm(){
+	let validationCode = $('#loginCode').val(),
+		userName = $('#loginUserName').val(),
+		userData = {
+	 		Username: userName,
+	 		Pool: userPool
+		}
 	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
 	cognitoUser.confirmRegistration(validationCode, true, function(err, result) {
 			if (err) {
+				console.log("|"+err+"|")
+				if (err == ""){
+					$("#loginError").html("Error Message!")
+					return
+				} else {
 					alert(err);
 					return;
+				}
 			}
-			session.user = cognitoUser;
-			authorization.accessToken = result.getAccessToken().getJwtToken()
-			authorization.idToken = result.idToken.jwtToken
-			utilLoginUserShowScreens()
+			utilBloop()
+			uiLoginFormToggleValidation("login")
+			$("#loginError").html("You're confirmed! Please Login.")
 			console.log('call result: ' + result);
 	});
 }
 
+function cogResendValidationCode(){
+	let userName = $('#loginUserName').val(),
+		userData = {
+			Username: userName,
+			Pool: userPool
+		}
+	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+	cognitoUser.resendConfirmationCode(function(err, result) {
+		if (err) {
+			alert(err);
+			return;
+		}
+		$("#loginError").html("New Validation has been sent.")
+	});
+}
 
-function cogNewPasswordRequired(userAttributes){
 
+function cogForgotPassword(){
+console.log("IN FORGOT PASSWORD")
+	let userName = $("#loginUserName").val()
+	if (userName == "") {
+		$("#loginError").html("Username is required above!")
+		return
+	}
+	let userData = {
+		Username: userName,
+		Pool: userPool
+	};
+	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData)
+	cognitoUser.forgotPassword({
+    onSuccess: function (result) {
+      console.log('call result: ' + JSON.stringify(result))
+			console.log('sent to: ' + result.CodeDeliveryDetails.Destination)
+			$("#loginError").html("Validation Code sent to: " + result.CodeDeliveryDetails.Destination)
+			uiLoginFormToggleValidation("newPassword")
+			//console.log(callback.inputVerificationCode(data))
+    },
+    onFailure: function(err) {
+			console.log("|"+err+"|")
+			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time."){
+				$("#loginError").html("Too many requests. Try again later!")
+				return
+			} else {
+				alert(err)
+				return
+			}
+    }
+  });
+};
 
+function cogUserConfirmPassword() {
+	console.log("IN CONFIRM PASSWORD")
+	let validationCode = $('#loginCode').val(),
+		newPassword = $('#loginNewPassword').val(),
+		userName = $('#loginUserName').val(),
+		userData = {
+			Username: userName, //username,
+			Pool: userPool
+		};
+	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+	cognitoUser.confirmPassword(validationCode, newPassword, {
+    onSuccess: function (result) {
+      // console.log('call result: ' + JSON.stringify(result))
+			// console.log('sent to: ' + result.CodeDeliveryDetails.Destination)
+			// $("#loginError").html("Validation Code sent to: " + result.CodeDeliveryDetails.Destination)
+			// uiLoginFormToggleValidation("newPassword")
+			//console.log(callback.inputVerificationCode(data))
+			utilBloop()
+			$("#loginPassword").val("")
+			uiLoginFormToggleValidation("login")
+			$("#loginError").html("New Password set! Please Login.")
+			console.log('call result: ' + result);
+    },
+    onFailure: function(err) {
+			console.log("|"+err+"|")
+			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time."){
+				$("#loginError").html("Too many requests. Try again later!")
+				return
+			} else {
+				alert(err)
+				return
+			}
+    }
+	})
 };
 
 function cogLoginUser() {
-	let validationCode = $('#loginCode').val(),
-			username = $('#loginUserName').val(),
-			password = $('#loginPassword').val()
-	if (validationCode != ""){
-		cogUserConfirm(validationCode, username)
-		return
-	}
-	let authData = {
+	let username = $('#loginUserName').val(),
+			password = $('#loginPassword').val(),
+ 			authData = {
      		Username: username,
      		Password: password
   		};
@@ -1557,11 +1652,13 @@ function cogLoginUser() {
 			} else if (err == 'NotAuthorizedException: Incorrect username or password.') {
 				$("#loginError").html("Incorrect username or password.")
 			} else if (err == 'UserNotConfirmedException: User is not confirmed.') {
-				uiLoginFormValidationCode()
-				$("#loginError").html("Validation Code is Required.")
+				uiLoginFormToggleValidation("code")
+				$("#loginError").html("Validation Code is required.")
 				// TODO change login flow to deal with confirmation
 				// cogUserConfirm() //userName, verificationCode
-
+			} else if (err == 'NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED.') {
+				uiLoginFormToggleValidation("login")
+				$("#loginError").html("No longer UNCONFIRMED")
 			} else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
 				console.log("PasswordResetRequiredException")
 				$("#loginError").html("New Password is required.")
@@ -1665,85 +1762,30 @@ function cogUserSignUp(userName, password, email, phone){
 	attributeList.push(attributePhoneNumber);
 	userPool.signUp(userName, password, attributeList, null, function(err, result){
 			if (err) {
+				if (err == "UsernameExistsException: User already exists") {
+					uiGenerateErrorBubble("User Username already exists!", "userName", "inputBox userForm")
+					return
+				} else {
 					alert(err);
 					return;
+				}
 			}
 			cognitoUser = result.user;
 			console.log('user name is ' + cognitoUser.getUsername());
 	})
 };
 
-// function cogGetUserList(){
-// 	var params = {
-// 	  UserPoolId: poolData.UserPoolId, /* required */
-// 	  AttributesToGet: [
-// 	    'username',
-// 			'email',
-// 			'phone_number',
-// 			'given_name',
-// 			'family_name',
-// 			'status'
-// 	  ],
-// 	  // Filter: // "family_name = \"Reddy\"" 'STRING_VALUE',
-// 	  Limit: 60
-// 	  // PaginationToken: 'STRING_VALUE'
-// 	};
-// 	userPool.listUsers(params, function(err, data) {
-// 	  if (err) console.log(err, err.stack); // an error occurred
-// 	  else     console.log(data);           // successful response
-// 	});
-// };
-
-// 	var attributeList = [];
-//
-// 	var dataEmail = {
-// 			Name : 'email',
-// 			Value : 'jleal67@gmail.com'
-// 	};
-//
-// 	var dataPhoneNumber = {
-// 			Name : 'phone_number',
-// 			Value : '+12096011038'
-// 	};
-// 	var attributeEmail = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataEmail);
-// 	var attributePhoneNumber = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataPhoneNumber);
-//
-// 	attributeList.push(attributeEmail);
-// 	attributeList.push(attributePhoneNumber);
-//
-// 	userPool.signUp('', '', attributeList, null, function(err, result){
-// 			if (err) {
-// 					alert(err);
-// 					return;
-// 			}
-// 			cognitoUser = result.user;
-// 			console.log('user name is ' + cognitoUser.getUsername());
-// 	});
-// }
-
-// let userData = {
-// 	 Username: 'jleal67',
-// 	 Pool: userPool
-// };
-//
-// cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
-
 function cogLoginAdmin(){
-
 console.log("IN AUTHENTICATION")
-
 	let authenticationData = {
-		 Username : '', // your username here
-		 Password : '', // your password here
- 	};
-
+		 Username : '',
+		 Password : ''
+ 	}
 	let userData = {
-		 Username : '', // your username here
-		 Password : '', // your password here
- 	};
-
-  let authenticationDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authenticationData);
-
+		 Username : '',
+		 Password : '' // your password here
+ 	}
+  let authenticationDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authenticationData)
   let cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
   cognitoUser.authenticateUser(authenticationDetails, {
 		onSuccess: function (result) {
@@ -1756,8 +1798,8 @@ console.log("IN AUTHENTICATION")
 			let verificationCode = prompt('Please input verification code' ,'');
 			cognitoUser.sendMFACode(verificationCode, this);
 		}
- });
-}
+ })
+};
 
 function cogListUsers(){
 	// Set the region where your identity pool exists (us-east-1, eu-west-1)
