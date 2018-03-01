@@ -432,14 +432,16 @@ function uiSaveButton(form, action){
 		action = action.replace(/[#_!.*]/g, '')
 		$('#'+form+'SaveButton').addClass(action)
 	}
-}
+};
 
-function uiSetMenuForUser(){
-	if (currentUser.userRole == "Admin"){
-		$("#nav3").show()
-	} else if (currentUser.userRole == "TechAdmin"){
-		$("#nav3").show()
-		$("#atabLable7").show()
+function uiSetMenusForUser(){
+	if (currentUser.isActive == "Active") {
+		if (currentUser.userRole == "Admin"){
+			$("#nav3").show()
+		} else if (currentUser.userRole == "TechAdmin"){
+			$("#nav3").show()
+			$("#atabLable7").show()
+		}
 	}
 };
 
@@ -452,7 +454,7 @@ function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, to
 		document.getElementById("family.totalSeniors").value = totalSeniors
 		document.getElementById("family.totalSize").value = totalSize
 	}
-}
+};
 
 function uiShowHideError(todo, title, message){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
@@ -463,7 +465,7 @@ function uiShowHideError(todo, title, message){
 		$('#errorTitle').val('')
 		$('#errorMessage').val('')
 	}
-}
+};
 
 function uiShowHideLogin(todo){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -624,13 +626,9 @@ function uiShowNewUserForm(){
 	navGotoTab("aTab5")
 };
 
-function uiShowUserForm(userName){
+function uiShowUserForm(){
 	$('#userFormContainer').html(uiGetTemplate('#userForm'))
-
-console.log(adminUser)
-
 	uiPopulateForm(adminUser, 'userForm')
-
 };
 
 function uiShowNote(dateTime, text, user, important){
@@ -896,10 +894,16 @@ function uiToggleClientViewEdit(side){
 
 function uiToggleUserNewEdit(type){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+
+console.log("IN TOGGLE FIELDS")
+
 	if (type == 'new') {
-		$('.newOnly.userForm').show()
+		$('.newUserOnly').show()
 	} else {
-		$('.newOnly.userForm').hide()
+
+console.log($('.newUserOnly'))
+
+		$('.newUserOnly').hide()
 	}
 }
 
@@ -1238,6 +1242,15 @@ console.log(result)
 			// TODO Find user in Users and update adminUser
 
 			cogUpdateAttributes()
+
+			console.log($("#isActive.userForm").val())
+			let isActive = $("#isActive.userForm").val()
+
+			if (isActive == "Inactive") {
+
+				console.log("USER IS INACTIVE")
+
+			}
 
 		} else {
 			// new user
@@ -2047,11 +2060,11 @@ function utilLoginUserShowScreens(){
 	serviceTypes = dbGetServicesTypes()
 	users = dbGetUsers()
 	utilSetCurrentUser()
-	uiSetMenuForUser()
+	uiSetMenusForUser()
 };
 
 function utilRemoveEmptyPlaceholders(){
-	// TODO make this opperate on other forms / data
+	// TODO make this operate on other forms / data
 	$.each(client, function(key,value){
 		if (value == "*EMPTY*" || (key == "zipSuffix" && value == 0)) {
 			client[key] = ""
