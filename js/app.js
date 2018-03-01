@@ -24,6 +24,7 @@ const seniorAge = 60 // TODO set in Admin/Settings
 let clientData = null // current client search results
 let client = {} // current client
 let user = {} // authenticated
+let currentUser = {}
 let users = [] // all users
 let adminUser = {}
 let serviceType = null
@@ -112,6 +113,8 @@ uiFillDate()
 uiShowHideLogin('show')
 navGotoTab("tab1")
 $("#noteEditForm").hide()
+$("#nav3").hide()
+$("#atabLable7").hide()
 
 document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); dbSearchClients()}
@@ -152,7 +155,7 @@ function navSwitch(link){
 		case "user":
 			navGotoSec("nav4")
 			navGotoTab("uTab1")
-			// userProfile()
+			uiShowProfileForm()
 			break
 		case "logInOut":
 			navGotoSec("nav5")
@@ -431,6 +434,15 @@ function uiSaveButton(form, action){
 	}
 }
 
+function uiSetMenuForUser(){
+	if (currentUser.userRole == "Admin"){
+		$("#nav3").show()
+	} else if (currentUser.userRole == "TechAdmin"){
+		$("#nav3").show()
+		$("#atabLable7").show()
+	}
+};
+
 function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, totalSeniors, totalSize){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 5)) return
 	if (document.getElementById("family.totalAdults") != null){
@@ -547,7 +559,7 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 		}
 		$('#servicePrimaryButtons').html(primaryButtons)
 	//}
-}
+};
 
 let uiShowServicesDateTime = function() {
 	if (client.clientId != undefined){
@@ -555,11 +567,24 @@ let uiShowServicesDateTime = function() {
 		// TODO separate
 		$('#receiptHeader').html(moment().format(longDate)+"<br>"+client.givenName+" "+client.familyName)
 	}
-}
+};
 
 function uiShowUserEdit(){
+	$('#profileFormContainer').html("") // remove user form in user profile
 	$('#userFormContainer').html(uiGetTemplate('#userForm'))
-}
+};
+
+function uiShowProfileForm(){
+	console.log("IN PROFILE LOAD FORM")
+	$('#userFormContainer').html("") // remove user form in Admin
+	$('#profileFormContainer').html(uiGetTemplate('#userForm'))
+	$('.adminOnly').hide()
+
+console.log(currentUser)
+console.log(user)
+
+	uiPopulateForm(currentUser, 'userForm')
+};
 
 function uiShowClientEdit(isEdit){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -673,10 +698,9 @@ function uiShowServiceTypeForm(){
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 
+console.log("IN POPULATE")
+
 	$.each(data, function(key,value){
-
-console.log(key + " : " + value)
-
 		if (typeof(data[key])=='object') {
 			let obj = data[key]
 			$.each(obj, function(key2,value2){
@@ -715,6 +739,8 @@ console.log(key + " : " + value)
 	} else if (form === 'clientForm'){
 		$('#clientAge').val(client.age) // readonly unsaved value
 		uiToggleClientAddress()
+	} else if (form === 'userForm'){
+		// TODO HIDE ADMIN Fields
 	}
 	return
 };
@@ -1201,13 +1227,17 @@ function dbSaveUser(){
 	if (result == null) {
 		utilBloop() // TODO move bloop to successful POST ()
 		users = dbGetUsers()
+		utilSetCurrentUser()
 		uiShowUsers()
 
 console.log(result)
 		// check to see if new user or existing
 		if (userData.password == "") {
 			// existing user
+			// TODO Find user in Users and update currentUser
 			// TODO Find user in Users and update adminUser
+
+			cogUpdateAttributes()
 
 		} else {
 			// new user
@@ -1222,8 +1252,6 @@ console.log(result)
 		utilBeep()
 		console.log("Failed to Save User")
 	}
-
-
 };
 
 function dbPostService(serviceType, itemsServed){
@@ -1544,7 +1572,7 @@ function cogResendValidationCode(){
 			alert(err);
 			return;
 		}
-		$("#loginError").html("New Validation has been sent.")
+		$("#loginError").html("New code has been sent.")
 	});
 }
 
@@ -1618,6 +1646,30 @@ function cogUserConfirmPassword() {
 	})
 };
 
+function cogUpdateAttributes(){
+	let attributeList = [];
+  let attribute = {
+      Name : 'email',
+      Value : $("#email.userForm").val()
+  };
+  attribute = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(attribute)
+	attributeList.push(attribute);
+	attribute = {
+			Name : 'phone_number',
+			Value : $("#telephone.userForm").val()
+	};
+	attribute = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(attribute)
+  attributeList.push(attribute);
+
+  cognitoUser.updateAttributes(attributeList, function(err, result) {
+      if (err) {
+          alert(err);
+          return;
+      }
+      console.log('call result: ' + result);
+  });
+};
+
 function cogLoginUser() {
 	let username = $('#loginUserName').val(),
 			password = $('#loginPassword').val(),
@@ -1633,18 +1685,17 @@ function cogLoginUser() {
   cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
   cognitoUser.authenticateUser(authDetails, {
     onSuccess: (result) => {
-			session.user = cognitoUser;
+			session.user = cognitoUser
+			user = cognitoUser
 			authorization.accessToken = result.getAccessToken().getJwtToken()
 			authorization.idToken = result.idToken.jwtToken
+
 			utilLoginUserShowScreens()
     },
     onFailure: (err) => {
 			console.log("COGNITO ERROR")
 			console.log('|'+err+'|');
 			utilBeep()
-
-
-
 			if (err == 'Error: Incorrect username or password.') {
 				$("#loginError").html("Incorrect username or password")
 			} else if (err == 'UserNotFoundException: User does not exist.') {
@@ -1662,57 +1713,14 @@ function cogLoginUser() {
 			} else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
 				console.log("PasswordResetRequiredException")
 				$("#loginError").html("New Password is required.")
-				console.log("in new password required")
-				console.log("needs new password - change the form")
-
-
-					// cognitoidentityserviceprovider.adminInitiateAuth(
-					// 	{ AuthFlow: 'ADMIN_NO_SRP_AUTH',
-					// 		ClientId: 'your_own3j63rs8j16bxxxsto25db00obh',
-					// 		UserPoolId: 'us-east-1_DtNSUVT7n',
-					// 		AuthParameters: { USERNAME: 'user3', PASSWORD: 'original_password' } }, callback);
-
-				let newPassword = "ABCDEfg123$"
-
-
-								userAttributes = {}
-								userAttributes.given_name =  "Jose" // newPasswordUser.givenName
-				        userAttributes.family_name =  "Leal" // newPasswordUser.familyName
-								userAttributes.email =  "jose@wikidomo.com"
-
-								//console.log(cogCheckSession())
-
-								// the api doesn't accept this field back
-								delete userAttributes.email_verified;
-								delete userAttributes.phone_number_verified;
-
-
-								// Get these details and call
-					cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, {
-				  	onSuccess: function(result) {
-							console.log("RESET PASSWORD")
-						},
-				  	onFailure: function(err) {
-							console.log("ERROR: " + err)
-						}
-
-					})
 			} else if (err == 'InvalidParameterException: Missing required parameter USERNAME')
 			$("#loginError").html("Username is required.")
-		},
-		newPasswordRequired: function(userAttributes, requiredAttributes) {
-				// User was signed up by an admin and must provide new
-				// password and required attributes, if any, to complete
-				// authentication.
-console.log("Error is hitting callback!!!")
-
-
-
 		}
-  });
-}
+	})
+};
 
 function cogResetPassword(userAttributes, user){
+	// TODO Add reset password functionality to user profile
 	console.log("needs new password - change the form")
 	let newPassword = "ABCDEfg123$"
 
@@ -1723,8 +1731,7 @@ function cogResetPassword(userAttributes, user){
 
 					// Get these details and call
 					cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, this);
-}
-
+};
 
 function cogGetUserAttributes(){
 	cognitoUser.getUserAttributes(function(err, result) {
@@ -1733,7 +1740,7 @@ function cogGetUserAttributes(){
 				return;
 		}
 		console.log(result)
-		console.log("USER: " + JSON.stringify(user))
+		//console.log("USER: " + JSON.stringify(user))
 
 		console.log(cognitoUser.username)
 		user.username = cognitoUser.username
@@ -1742,7 +1749,7 @@ function cogGetUserAttributes(){
 				console.log('attribute: ' + result[i].getName() + ' has value ' + result[i].getValue());
 				user[result[i].getName()] = result[i].getValue()
 		}
-		console.log("USER: " + JSON.stringify(user))
+		//console.log("USER: " + JSON.stringify(user))
 	});
 }
 
@@ -2038,9 +2045,9 @@ function utilLoginUserShowScreens(){
 	navGotoSec('nav1')
 	cogGetUserAttributes()
 	serviceTypes = dbGetServicesTypes()
-	console.log(users)
 	users = dbGetUsers()
-	console.log(users)
+	utilSetCurrentUser()
+	uiSetMenuForUser()
 };
 
 function utilRemoveEmptyPlaceholders(){
@@ -2371,6 +2378,17 @@ function utilSetCurrentAdminUser(index){
 	uiToggleUserNewEdit("existing")
 	uiShowUserForm()
 	navGotoTab("aTab5")
+};
+
+function utilSetCurrentUser(){
+
+	console.log(users)
+	console.log(user.username)
+
+	let foundUser = users.filter(function( obj ) {
+		return obj.userName == user.username
+	})
+	currentUser = foundUser[0]
 };
 
 function utilToday() {

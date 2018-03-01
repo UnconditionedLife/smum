@@ -287,14 +287,14 @@
       <div class=""><input id="dob" type="date" class="inputBox userForm" onchange="utilCalcUserAge('form')"></div>
       <div class="lableDiv">Age</div>
       <div class=""><input id="age" type="text" class="inputBox userForm viewOnly" readonly></div>
-      <div class="headingDiv span6">User Access</div>
-      <div class="lableDiv newOnly">User Name</div>
-      <div class="newOnly"><input id="userName" type="text" class="inputBox userForm" maxlength="8"></div>
-      <div class="lableDiv newOnly">Password</div>
-      <div class="newOnly"><input id="password" type="password" class="inputBox userForm"></div>
-      <div class="span2"></div>
-      <div class="lableDiv">Role</div>
-      <div>
+      <div class="headingDiv adminOnly span6">User Access</div>
+      <div class="lableDiv newOnly adminOnly">User Name</div>
+      <div class="newOnly adminOnly"><input id="userName" type="text" class="inputBox userForm" maxlength="8"></div>
+      <div class="lableDiv newOnly adminOnly">Password</div>
+      <div class="newOnly adminOnly"><input id="password" type="password" class="inputBox userForm"></div>
+      <div class="newOnly adminOnly span2"></div>
+      <div class="lableDiv adminOnly">Role</div>
+      <div class="adminOnly">
          <select id="userRole" class="inputBox userForm">
             <option value="Admin">Admin</option>
             <option value="TechAdmin">TechAdmin</option>
@@ -302,8 +302,8 @@
             <option value="Volunteer" selected>Volunteer</option>
          </select>
       </div>
-      <div class="lableDiv">Status</div>
-      <div class="">
+      <div class="lableDiv adminOnly">Status</div>
+      <div class="adminOnly">
          <select id="isActive" class="inputBox userForm">
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
