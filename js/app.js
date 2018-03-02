@@ -1232,8 +1232,7 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 		itemsServed = serviceType.numberItems
 		if (serviceType.itemsPer == "Person") itemsServed = itemsServed * client.family.totalSize
 		dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, serviceType.isUSDA)
-		// TODO move to FUNCTION
-		$("#receiptBody").append("<p><strong>"+serviceType.serviceName+"</strong><br><strong>Category:</strong> "+serviceCategory+"<br><strong>Is USDA:</strong> "+serviceType.isUSDA+"</p>")
+		utilAddServiceToReceipt(serviceType.serviceName, serviceCategory, itemsServed)
 	}
 	dbPostService(serviceType, itemsServed)
 };
@@ -1906,6 +1905,7 @@ console.log('made it past config')
 // **********************************************************************************************************
 // *********************************************** UTIL FUNCTIONS *******************************************
 // **********************************************************************************************************
+
 function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 console.log("IN ADD SERVICE");
@@ -1914,7 +1914,6 @@ console.log("IN ADD SERVICE");
 	// let itemsServed = "4"
 	// TODO Need real numberItems
 	// let totalServed = client.family.totalSize
-	// TODO Need items per [family][person] in Service Types
 
 	dbSaveService(serviceTypeId, serviceCategory, serviceButtons);
 	uiShowLastServed()
@@ -1922,7 +1921,14 @@ console.log("IN ADD SERVICE");
 	uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
 	// TODO Create ability to UNDO the adding of a service.
 	// TODO Create tally of added services on the screen [the print button will be added there]
-}
+};
+
+function utilAddServiceToReceipt(serviceName, serviceCategory, itemsServed){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
+	let header = "<p><strong>" + serviceCategory + ":</strong> " + serviceName + "<br>"
+	let body = "<strong>Items Served: " + itemsServed
+	$("#receiptBody").append(header + body)
+};
 
 function utilGetServiceTypeByID(serviceTypeId){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -2395,6 +2401,7 @@ function utilSetCurrentClient(index){
 	// emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
 	uiUpdateCurrentClient(index)
+	$('#receiptBody').html("") //clear reciept // TODO move to function
 };
 
 function utilSetCurrentServiceType(index){
