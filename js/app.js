@@ -42,6 +42,8 @@ let session = {}
 let cognitoUser = {}
 let authorization = {}
 
+// TODO build some selects in forms from data in settings (ie. Categories)
+
 // **********************************************************************************************************
 // **********************************************************************************************************
 let NavGuard = (function NavGuard() {
@@ -123,9 +125,11 @@ document.onkeydown = function(e) {
 // control the "save button" behaviour
 $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')})
 $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')})
+// do error checking
 $(document.body).on('focusout','.clientForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
 $(document.body).on('focusout','.userForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
 $(document.body).on('focusout','.serviceTypeForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
+$(document.body).on('focusout','.passwordForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
 
 $(document).ready(function(){
 	uiShowServicesDateTime()
@@ -157,6 +161,7 @@ function navSwitch(link){
 			navGotoSec("nav4")
 			navGotoTab("uTab1")
 			uiShowProfileForm()
+			uiShowChangePasswordForm()
 			break
 		case "logInOut":
 			navGotoSec("nav5")
@@ -281,6 +286,9 @@ console.log(errText, " ", id)
 	} else if (classes.indexOf("serviceTypeForm") > -1){
 		parent = ".serviceTypeFormDiv"
 		formClass = ".serviceTypeForm"
+	} else if (classes.indexOf("passwordForm") > -1){
+		parent = ".changePasswordFormDiv"
+		formClass = ".passwordForm"
 	}
 	jQuery('<div/>', {
 		class: "errorBubble",
@@ -315,7 +323,7 @@ console.log(classes)
 	});
 
 	$('[id="' + id + '"][class="'+ classes +'"]').addClass("errorField")
-}
+};
 
 // function uiHideError(){
 // 	console.log("HIDE")
@@ -337,21 +345,19 @@ function uiLoginFormToggleValidation(todo){
 		$('.newPasswordDiv').hide()
 		$('.loginDiv').show("slow")
 	}
-
-
 };
 
 function uiOutlineTableRow(table, row){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', 'var(--blue) 1px dashed').siblings().css('outline', 'none')
-}
+};
 
 function uiResetNotesTab(){
 	hasImportantNote = ""
 	$("#tabLable6").css("color", "#bbb")
 	$("#noteTextArea").val("")
 	$("#noteIsImportant").prop("checked", false)
-}
+};
 
 function uiShowExistingNotes(){
 	$('.notes').html("")
@@ -373,7 +379,7 @@ function uiShowExistingNotes(){
 	if (hasImportantNote == "true") {
 		$("#tabLable6").css("color", "var(--red)")
 	}
-}
+};
 
 function uiToggleNoteForm(todo, id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -389,7 +395,7 @@ function uiToggleNoteForm(todo, id){
 		$("#noteTextArea").val("")
 		$("#noteIsImportant").prop("checked", false)
 	}
-}
+};
 
 function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
@@ -400,7 +406,7 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 		$("#btn-"+serviceTypeId).removeClass("buttonGrayOut")
 		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).removeClass("imageGrayOut")
 	}
-}
+};
 
 function uiUpdateCurrentClient(index) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -409,15 +415,19 @@ function uiUpdateCurrentClient(index) {
 	uiShowServicesButtons()
 	uiShowClientEdit(false)
 	navGotoTab("tab2")
-}
+};
 
 function uiUpdateAdminHeader() {
 	$("#adminTitle").html($("#serviceName").val())
-}
+};
 
 function uiResetDependentsTable() {
 	// TODO write reset code
-}
+};
+
+function uiResetChangePasswordForm(){
+	$(".passwordForm").val("")
+};
 
 function uiSaveButton(form, action){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -463,10 +473,12 @@ function uiShowHideError(todo, title, message){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	if (todo === 'show'){
 		$('#errorOverlay').show().css('display', 'flex')
+		$('#errorTitle').html(title)
+		$('#errorMessage').html(message)
 	} else {
 		$('#errorOverlay').hide()
-		$('#errorTitle').val('')
-		$('#errorMessage').val('')
+		$('#errorTitle').html('')
+		$('#errorMessage').html('')
 	}
 };
 
@@ -580,15 +592,14 @@ function uiShowUserEdit(){
 };
 
 function uiShowProfileForm(){
-	console.log("IN PROFILE LOAD FORM")
 	$('#userFormContainer').html("") // remove user form in Admin
 	$('#profileFormContainer').html(uiGetTemplate('#userForm'))
 	$('.adminOnly').hide()
-
-console.log(currentUser)
-console.log(user)
-
 	uiPopulateForm(currentUser, 'userForm')
+};
+
+function uiShowChangePasswordForm(){
+	$('#userPasswordFormContainer').html(uiGetTemplate('#changePasswordForm'))
 };
 
 function uiShowClientEdit(isEdit){
@@ -1039,24 +1050,26 @@ function dbGetData(uUrl){
 				$('#nav5').html('Login')
 				$('#nav4').html('')
 				$(loginError).html("Sorry, your session has expired.")
-				alert( "Unauthorized" );
+				console.log("Unauthorized")
 			}
 		},
 		error: function(jqXHR, status, error){
 			// utilErrorHandler(message, status, error, "aws")
-			console.log(jqXHR)
-			console.log(jqXHR.statusCode)
-			console.log(jqXHR + ", " + status + ", " + error)
-			// alert(error);
-			// TODO try to capture the error 401 - ????
-			// TODO add same error handling to dbPostData
-
-			if (error.indexOf("NetworkError: Failed to execute 'send' on 'XMLHttpRequest'") > -1) {
-				cogLogoutUser()
-				$('#nav5').html('Login')
-				$('#nav4').html('')
-				$(loginError).html("Sorry, your session has expired.")
-			}
+			// console.log(jqXHR)
+			// console.log(jqXHR.statusCode)
+			// console.log(jqXHR + ", " + status + ", " + error)
+			// // alert(error);
+			// // TODO try to capture the error 401 - ????
+			// // TODO add same error handling to dbPostData
+			//
+			// console.log(typeof error)
+			//
+			// // if (error.indexOf("NetworkError: Failed to execute 'send' on 'XMLHttpRequest'") > -1) {
+			// 	cogLogoutUser()
+			// 	$('#nav5').html('Login')
+			// 	$('#nav4').html('')
+			// 	$(loginError).html("Sorry, your session has expired.")
+			// //}
 
 			if (message.readyState == 0) {
 				console.log("Error of some kind!")
@@ -1246,26 +1259,19 @@ function dbSaveUser(){
 	result = dbPostData(URL, JSON.stringify(userData))
 	if (result == null) {
 		utilBloop() // TODO move bloop to successful POST ()
+		// TODO add sounds settings in Admin Settings (ON / OFF)
 		users = dbGetUsers()
 		utilSetCurrentUser()
 		uiShowUsers()
-
-console.log(result)
+		userData.telephone = utilCognitoPhoneFormat(userData.telephone)
 		// check to see if new user or existing
 		if (userData.password == "") {
 			// existing user
-			// TODO Find user in Users and update currentUser
+			cogUpdateAttributes(userData.email, userData.telephone) // update phone and email
 			// TODO Find user in Users and update adminUser
-
-			cogUpdateAttributes()
-
 		} else {
-			// new user
-			// signup for Cognito User Account
-			// TODO Format phone to match cognito NEEDS
-			// +12096011038 example
-
-			cogUserSignUp(userData.userName, userData.password, userData.email, userData.phone)
+			// new user - signup for Cognito User Account
+			cogUserSignUp(userData.userName, userData.password, userData.email, userData.telephone)
 			// TODO message "USER MUST VALIDATE EMAIL"
 		}
 	} else {
@@ -1545,14 +1551,34 @@ function cogCheckSession() {
 };
 
 function cogUserChangePassword(){
-	console.log("IN CHANGE PASSWORD")
-	cognitoUser.changePassword('Password123#', 'Password123ABC#' , function(err, result) {
-    if (err) {
-      alert(err);
-      return;
-    }
-    console.log('call result: ' + result);
-  });
+	let password = $("#existingPassword").val(),
+			newPassword = $("#newPassword").val(),
+			confirmPassword = $("#confirmPassword").val()
+	if (newPassword == confirmPassword) {
+		cognitoUser.changePassword(password, newPassword, function(err, result) {
+	    if (err) {
+				if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.") {
+					uiShowHideError("show", "Too many attemps!!", "Please try again later.")
+				} else {
+					alert(err)
+				 	return
+				}
+	    } else {
+				uiResetChangePasswordForm()
+				utilBloop()
+				cogLogoutUser()
+				$('#nav5').html('Login')
+				$('#nav4').html('')
+				$(loginError).html("Login with your New Password.")
+				//TODO make utilLogout function takes message as input
+			}
+	  });
+	} else {
+		utilBeep()
+		console.log(newPassword, confirmPassword)
+		console.log("PASSWORDS DONT MATCH")
+		// TODO show error
+	}
 }
 
 function cogUserConfirm(){
@@ -1667,18 +1693,18 @@ function cogUserConfirmPassword() {
 	})
 };
 
-function cogUpdateAttributes(){
+function cogUpdateAttributes(email, telephone){
 	let attributeList = [];
   let attribute = {
       Name : 'email',
-      Value : $("#email.userForm").val()
-  };
+      Value : email
+  }
   attribute = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(attribute)
 	attributeList.push(attribute);
 	attribute = {
 			Name : 'phone_number',
-			Value : $("#telephone.userForm").val()
-	};
+			Value : telephone
+	}
 	attribute = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(attribute)
   attributeList.push(attribute);
 
@@ -1688,7 +1714,7 @@ function cogUpdateAttributes(){
           return;
       }
       console.log('call result: ' + result);
-  });
+  })
 };
 
 function cogLoginUser() {
@@ -1766,21 +1792,14 @@ function cogGetUserAttributes(){
 				alert(err);
 				return;
 		}
-		console.log(result)
-		//console.log("USER: " + JSON.stringify(user))
-
-		console.log(cognitoUser.username)
 		user.username = cognitoUser.username
-
 		for (i = 0; i < result.length; i++) {
-				console.log('attribute: ' + result[i].getName() + ' has value ' + result[i].getValue());
 				user[result[i].getName()] = result[i].getValue()
 		}
-		//console.log("USER: " + JSON.stringify(user))
-	});
-}
+	})
+};
 
-function cogUserSignUp(userName, password, email, phone){
+function cogUserSignUp(userName, password, email, telephone){
 	var attributeList = [];
 	var dataEmail = {
 			Name : 'email',
@@ -1788,7 +1807,7 @@ function cogUserSignUp(userName, password, email, phone){
 	}
 	var dataPhoneNumber = {
 			Name : 'phone_number',
-			Value : phone
+			Value : telephone
 	}
 	var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
 	var attributePhoneNumber = new AmazonCognitoIdentity.CognitoUserAttribute(dataPhoneNumber);
@@ -1803,6 +1822,8 @@ function cogUserSignUp(userName, password, email, phone){
 					alert(err);
 					return;
 				}
+			} else {
+				utilBloop()
 			}
 			cognitoUser = result.user;
 			console.log('user name is ' + cognitoUser.getUsername());
@@ -1910,11 +1931,6 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 console.log("IN ADD SERVICE");
 	let serviceType = utilGetServiceTypeByID(serviceTypeId)
-
-	// let itemsServed = "4"
-	// TODO Need real numberItems
-	// let totalServed = client.family.totalSize
-
 	dbSaveService(serviceTypeId, serviceCategory, serviceButtons);
 	uiShowLastServed()
 	// uiShowNote(serviceTypeId, "")
@@ -1930,13 +1946,22 @@ function utilAddServiceToReceipt(serviceName, serviceCategory, itemsServed){
 	$("#receiptBody").append(header + body)
 };
 
+function utilCognitoPhoneFormat(telephone){
+	let cogFormat= /^\+[1][0-9]{10}$/g
+	let cleanTel = telephone.replace(/[.( )-]/g, '')
+
+console.log(cleanTel)
+
+	return cleanTel
+};
+
 function utilGetServiceTypeByID(serviceTypeId){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let serviceTypeArr = serviceTypes.filter(function( obj ) {
 		return obj.serviceTypeId == serviceTypeId
 	})
 	return serviceTypeArr[0]
-}
+};
 
 function utilGetFoodInterval(isUSDA){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -2099,7 +2124,6 @@ function utilRemoveEmptyPlaceholders(){
 		if (value == "*EMPTY*" || (key == "zipSuffix" && value == 0)) {
 			client[key] = ""
 		}
-
 	})
 };
 
@@ -2493,9 +2517,11 @@ function utilValidateField(id, classes){
 		formClass = "userForm"
 	} else if (classes.indexOf("serviceTypeForm") > -1) {
 		formClass = "serviceTypeForm"
+	} else if (classes.indexOf("passwordForm") > -1) {
+		formClass = "passwordForm"
 	}
 	let ruleId = id.replace(".", "_")
-console.log(formClass, ruleId)
+//console.log(formClass, ruleId)
 	let rules = utilValidateConfig(formClass, ruleId)
 //console.log(rules)
 	let lookupList = []
@@ -2509,6 +2535,10 @@ console.log(formClass, ruleId)
 			if (rule.lookup !== undefined) {
 				lookupList = rule.lookup
 				rule = "lookup"
+			}
+			if (rule.match !== undefined) {
+				matchField = rule.match
+				rule = "match"
 			}
 		}
 		let value = $('[id="' + id + '"]').val()
@@ -2625,6 +2655,14 @@ console.log(formClass, ruleId)
 					if (!found) {
 						hasError = true
 						uiGenerateErrorBubble("Not valid entry!", id, classes)
+					}
+				}
+				break
+			case "match":
+				if (hasError == false) {
+					if ($("#" + matchField).val() != value ) {
+						hasError = true
+						uiGenerateErrorBubble("Passwords do not match!", id, classes)
 					}
 				}
 				break
@@ -2746,9 +2784,15 @@ function utilValidateConfig(form, id){
    fulfillment_fromDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ],
 	   fulfillment_toDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ]
 	}
+	let passwordForm = {
+		existingPassword: [ 'password'],
+				 newPassword: [ 'password'],
+		 confirmPassword: [ 'password', {match: ["newPassword"]} ]
+	}
 	if (form == "clientForm") return clientForm[id]
 	if (form == "userForm") return userForm[id]
 	if (form == "serviceTypeForm") return serviceTypeForm[id]
+	if (form == "passwordForm") return passwordForm[id]
 };
 
 function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {

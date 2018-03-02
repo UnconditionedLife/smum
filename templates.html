@@ -334,3 +334,19 @@
 <template id="settingsForm">
 
 </template>
+
+<template id="changePasswordForm">
+   <div class="changePasswordFormDiv">
+      <div class="span6"><span class="messageText">This will change your login password for this application. You will be required to login after changing the password.</span></div>
+      <div class="lableDiv">Existing Password</div>
+      <div class=""><input id="existingPassword" type="password" class="inputBox passwordForm"></div>
+      <div class="lableDiv">New Password</div>
+      <div class=""><input id="newPassword" type="password" class="inputBox passwordForm"></div>
+      <div class="lableDiv">Confirm Password</div>
+      <div class=""><input id="confirmPassword" type="password" class="inputBox passwordForm"></div>
+      <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
+         <input class="solidButton" onclick="cogUserChangePassword()" type="button" value="Change">
+         <input class="openButton" onclick="uiResetChangePasswordForm()" type="button" value="Cancel">
+      </div>
+   </div>
+</template>

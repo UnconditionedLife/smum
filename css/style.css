@@ -68,6 +68,10 @@ main{
 	align-items: center;
 }
 
+.errorOverlay {
+	background-color: rgba(0,0,0,0.35);
+}
+
 .loginFormDiv {
   position: inherit;
 	display: grid;
@@ -80,6 +84,26 @@ main{
   font-size: 12px;
   overflow: hidden;
 	border-radius: 5px;
+}
+
+.errorMessageDiv {
+	position: inherit;
+	display: grid;
+	grid-template-columns: 1fr 6fr 1fr;
+	grid-template-rows: repeat(7, 28px);
+	grid-gap: 6px;
+	width: 400px;
+	height: 180px;
+	background-color: white;
+	font-size: 12px;
+	overflow: hidden;
+	border-radius: 5px;
+}
+
+.messageText{
+	color: var(--blue);
+	font-size: 14px;
+	line-height: 18px;
 }
 
 .loginHeader{
@@ -302,6 +326,15 @@ main{
   width: 100%;
   display: grid;
   grid-template-columns: 2fr 3fr 2fr 3fr 2fr 3fr;
+  grid-template-rows: repeat(10, 28px);
+  grid-gap: 6px;
+  padding: 3px 2em 3px 2em;
+}
+
+.changePasswordFormDiv {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr;
   grid-template-rows: repeat(10, 28px);
   grid-gap: 6px;
   padding: 3px 2em 3px 2em;
