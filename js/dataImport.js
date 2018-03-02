@@ -193,10 +193,10 @@ function importClients(start, end){
     }
 
     let record = {}
-    if (item.Status == "Client" || item.Status == "client") record.isActive = "Active"
-    if (item.Status == "Active" || item.Status == "active") record.isActive = "Active"
-    if (item.Status == "y" || item.Status == "Y") record.isActive = "Active"
-    if (item.Status == "Emergency") record.isActive = item.Status
+    if (item.Status == "Client" || item.Status == "client") record.isActive = "Client"
+    if (item.Status == "Active" || item.Status == "active") record.isActive = "Client"
+    if (item.Status == "y" || item.Status == "Y") record.isActive = "Client"
+    if (item.Status == "Emergency") record.isActive = "NonClient" //item.Status
     if (item.Status == "Inactive") record.isActive = "Inactive"
     if (item.Status == "") record.isActive = "Inactive"
 
@@ -414,7 +414,7 @@ function importFoodLastServed(start,end){
       let recordUSDA = {}
       recordUSDA.serviceDateTime = latestUSDA
       recordUSDA.isUSDA = "USDA"
-      recordUSDA.serviceCategory = "Food"
+      recordUSDA.serviceCategory = "Food_Pantry"
       recordUSDA.serviceTypeId = "cj86davnj00013k7zi3715rf4"
       importedClients[i].lastServed.push(recordUSDA)
       lastServedCount++
@@ -423,7 +423,7 @@ function importFoodLastServed(start,end){
       let recordNonUSDA = {}
       recordNonUSDA.serviceDateTime = latestNonUSDA
       recordNonUSDA.isUSDA = "NonUSDA"
-      recordNonUSDA.serviceCategory = "Food"
+      recordNonUSDA.serviceCategory = "Food_Pantry"
       recordNonUSDA.serviceTypeId = "c2e6fbfcd32adcfdyht56a14c166d0b304da3aa32"
       importedClients[i].lastServed.push(recordNonUSDA)
       lastServedCount++
@@ -657,4 +657,31 @@ console.log(lastID)
   }
   unusedClientIdArray = temp
   console.log(unusedClientIdArray)
+}
+
+function changeAllClients(){
+  let data = {}
+  for (var i = 3500; i < 4600; i++) { //4600
+    data = dbGetData(aws+"/clients/"+i).clients
+
+    if (data.length > 0){
+      data = data[0]
+      console.log(data.clientId, data.isActive)
+      if (data.isActive == "Active" ) {
+        data.isActive = "Client"
+      } else if (data.isActive == "Emergency" ) {
+        data.isActive = "NonClient"
+      }
+      console.log(data.clientId, data.isActive)
+      for (var l = 0; l < data.lastServed.length; l++) {
+        if (data.lastServed[l].serviceCategory == "Food"){
+          data.lastServed[l].serviceCategory = "Food_Pantry"
+        }
+      }
+      console.log(data.lastServed)
+      data = JSON.stringify(data)
+      let URL = aws+"/clients/"
+      result = dbPostData(URL,data)
+    }
+  }
 }

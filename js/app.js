@@ -125,6 +125,7 @@ $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Sa
 $(document.body).on('change','.serviceTypeForm',function(){uiSaveButton('serviceType', 'Save')})
 $(document.body).on('focusout','.clientForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
 $(document.body).on('focusout','.userForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
+$(document.body).on('focusout','.serviceTypeForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
 
 $(document).ready(function(){
 	uiShowServicesDateTime()
@@ -275,10 +276,12 @@ console.log(errText, " ", id)
 	let parent = ".clientFormDiv"
 	let formClass = ".clientForm"
 	if (classes.indexOf("userForm") > -1){
-		parent = '.userFormDiv'
+		parent = ".userFormDiv"
 		formClass = ".userForm"
+	} else if (classes.indexOf("serviceTypeForm") > -1){
+		parent = ".serviceTypeFormDiv"
+		formClass = ".serviceTypeForm"
 	}
-
 	jQuery('<div/>', {
 		class: "errorBubble",
      id: "err-" + id,
@@ -493,7 +496,7 @@ function uiShowHidePassword(){
 function uiShowHistory(){
 	//TODO disabled for testing
 	uiBuildHistoryTop()
-	// uiBuildHistoryBottom()
+	uiBuildHistoryBottom()
 }
 
 function uiShowHistoryData(clientHistory){
@@ -956,7 +959,7 @@ function uiToggleIsUSDA() {
 
 console.log("ToggleUSDA")
 
-	if ($("#serviceCategory").val() == "Food"){
+	if ($("#serviceCategory").val() == "Food_Pantry"){
 		$('.USDADiv').show('slow')
 	} else {
 		$("#isUSDA").val("NA")
@@ -1017,31 +1020,52 @@ function dbGetData(uUrl){
 	let ans = null;
 // console.log('idToken + ' + authorization.idToken)
 	$.ajax({
-	    type: "GET",
-	    url: urlNew,
-			headers: {"Authorization": authorization.idToken},
-	    async: false,
-	    dataType: "json",
-			contentType:'application/json',
-	    success: function(json){
-				if (json!==undefined) {
-					// console.log(json.count)
-					// console.log(urlNew)
-				}
-	    	ans = json
+    type: "GET",
+    url: urlNew,
+		headers: {"Authorization": authorization.idToken},
+    async: false,
+    dataType: "json",
+		contentType:'application/json',
+    success: function(json){
+			if (json!==undefined) {
+				// console.log(json.count)
+				// console.log(urlNew)
+			}
+    	ans = json
 		},
-		error: function(message, status, error){
-			utilErrorHandler(message, status, error, "aws")
-			console.log(message + ", " + status + ", " + error)
-			alert(error);
+		statusCode: {
+			401: function() {
+				cogLogoutUser()
+				$('#nav5').html('Login')
+				$('#nav4').html('')
+				$(loginError).html("Sorry, your session has expired.")
+				alert( "Unauthorized" );
+			}
+		},
+		error: function(jqXHR, status, error){
+			// utilErrorHandler(message, status, error, "aws")
+			console.log(jqXHR)
+			console.log(jqXHR.statusCode)
+			console.log(jqXHR + ", " + status + ", " + error)
+			// alert(error);
+			// TODO try to capture the error 401 - ????
+			// TODO add same error handling to dbPostData
+
+			if (error.indexOf("NetworkError: Failed to execute 'send' on 'XMLHttpRequest'") > -1) {
+				cogLogoutUser()
+				$('#nav5').html('Login')
+				$('#nav4').html('')
+				$(loginError).html("Sorry, your session has expired.")
+			}
+
 			if (message.readyState == 0) {
 				console.log("Error of some kind!")
 			}
 		}
-	});
+	})
 	//console.log(ans)
 	return ans
-}
+};
 
 function dbGetNewClientID(){
 	lastIdJson = dbGetData(aws+"/clients/lastid")
@@ -1183,19 +1207,12 @@ function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 				newLastServed.push(client.lastServed[i])
 			}
 		}
-	} else {
-		notPushed = false
-		newLastServed.push(newRecord)
 	}
-	if (notPushed) {
-		newLastServed.push(newRecord)
-	}
+	if (notPushed) newLastServed.push(newRecord)
 	client.lastServed = newLastServed
-	data = client
+	let data = utilPadEmptyFields(client)
 	data = JSON.stringify(data)
-
-console.log(data)
-
+//console.log(data)
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,data)
 	if (result == null) {
@@ -1243,15 +1260,6 @@ console.log(result)
 
 			cogUpdateAttributes()
 
-			console.log($("#isActive.userForm").val())
-			let isActive = $("#isActive.userForm").val()
-
-			if (isActive == "Inactive") {
-
-				console.log("USER IS INACTIVE")
-
-			}
-
 		} else {
 			// new user
 			// signup for Cognito User Account
@@ -1270,16 +1278,19 @@ console.log(result)
 function dbPostService(serviceType, itemsServed){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	// TODO Create table by clientID and add new services to top of array
-	// TODO add senior cutoff age to the Settings (now configure)
-	// TODO add Zipcode to the Settings (now configure) - make client for zipcode a pull-down with values
+	// TODO add senior cutoff age to the Settings
+	// TODO add Service area Zipcodes to the Settings
+	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
 	let emergencyFood = "NO"
+	let servicedMonth = moment().format("YYYYMM")
 	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
-
 	let serviceRecord = {
 							serviceId: cuid(),
 			 servicedDateTime: moment().format(dateTime),
+			 		servicedMonth: servicedMonth,
 			 	 clientServedId: client.clientId,
-		 servicedByUserName: session.user.username,
+				   clientStatus: client.isActive,
+		 servicedByUserName: currentUser.userName,
 			    serviceTypeId: serviceType.serviceTypeId,
 					  serviceName: serviceType.serviceName,
 				serviceCategory: serviceType.serviceCategory,
@@ -1438,8 +1449,6 @@ function dbSaveDependentsTable(){
 		dependents[keyNum][keyName] = data[Object.keys(data)[i]]
 	}
 	client.dependents = dependents
-// TODO - fix lastServed
-//	client.lastServed = []
 	data = client
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
@@ -1520,21 +1529,21 @@ function cogLogoutUser(){
 		cognitoUser.signOut();
 		uiShowHideLogin('show')
 	}
-}
+};
 
 function cogCheckSession() {
 	cognitoUser.getSession(function(err, session) {
 		if (err) {
-				console.log(err)
-				alert(err);
-				return;
+			console.log(err)
+			cogLogoutUser()
+			$('#nav5').html('Login')
+			$('#nav4').html('')
+			$(loginError).html("Sorry, your session has expired.")
+			return
 		}
-
 		return session
-
-//	console.log('session validity: ' + session.isValid());
 	})
-}
+};
 
 function cogUserChangePassword(){
 	console.log("IN CHANGE PASSWORD")
@@ -1702,8 +1711,14 @@ function cogLoginUser() {
 			user = cognitoUser
 			authorization.accessToken = result.getAccessToken().getJwtToken()
 			authorization.idToken = result.idToken.jwtToken
-
 			utilLoginUserShowScreens()
+			// logout if user is set to Inactive
+			if (currentUser.isActive == "Inactive") {
+				cogLogoutUser()
+				$('#nav5').html('Login')
+				$('#nav4').html('')
+				$(loginError).html("Sorry, your account is INACTIVE.")
+			}
     },
     onFailure: (err) => {
 			console.log("COGNITO ERROR")
@@ -1909,7 +1924,7 @@ console.log("IN ADD SERVICE");
 	// TODO Create tally of added services on the screen [the print button will be added there]
 }
 
-function utilGetServiceTypeByID(id){
+function utilGetServiceTypeByID(serviceTypeId){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let serviceTypeArr = serviceTypes.filter(function( obj ) {
 		return obj.serviceTypeId == serviceTypeId
@@ -1920,7 +1935,7 @@ function utilGetServiceTypeByID(id){
 function utilGetFoodInterval(isUSDA){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	for (var i = 0; i < serviceTypes.length; i++) {
-		if ((serviceTypes[i].serviceButtons == "Primary") && (serviceTypes[i].serviceCategory == "Food") && (serviceTypes[i].isUSDA == isUSDA)){
+		if ((serviceTypes[i].serviceButtons == "Primary") && (serviceTypes[i].serviceCategory == "Food_Pantry") && (serviceTypes[i].isUSDA == isUSDA)){
 			return serviceTypes[i].serviceInterval
 		}
 	}
@@ -1956,7 +1971,7 @@ function utilCalcActiveServicesButtons(array, activeServiceTypes, targetServices
 		}
 		if (display) {
 			if (activeServiceTypes[i].serviceButtons == "Primary") {
-				if (activeServiceTypes[i].serviceCategory == "Food") {
+				if (activeServiceTypes[i].serviceCategory == "Food_Pantry") {
 					btnPrimary.unshift(i)
 				} else {
 					btnPrimary.push(i)
@@ -2063,6 +2078,15 @@ function utilLoginUserShowScreens(){
 	uiSetMenusForUser()
 };
 
+function utilPadEmptyFields(data){
+	$.each(data, function(key,value){
+		if (value == "" || (key == "zipSuffix" && value == 0)) {
+			data[key] = "*EMPTY*"
+		}
+	})
+	return data
+};
+
 function utilRemoveEmptyPlaceholders(){
 	// TODO make this operate on other forms / data
 	$.each(client, function(key,value){
@@ -2079,7 +2103,7 @@ function utilSetLastServedFood(){
 	let lastServedFoodDateTime = "1900-01-01"
 	if (client.lastServed[0] == undefined) return lastServedFoodDateTime
 	let lastServedFood = client.lastServed.filter(function( obj ) {
-		return obj.serviceCategory == "Food"
+		return obj.serviceCategory == "Food_Pantry"
 	})
 
 console.log(lastServedFood)
@@ -2099,7 +2123,7 @@ function utilCalcLastServedDays() {
 	let lastServed = {daysUSDA:"10000", daysNonUSDA:"10000", lowestDays:"10000"}
 	if (client.lastServed[0] == undefined) return lastServed
 	let lastServedFood = client.lastServed.filter(function( obj ) {
-		return obj.serviceCategory == "Food"
+		return obj.serviceCategory == "Food_Pantry"
 	})
 	for (var i = 0; i < lastServedFood.length; i++) {
 		if (lastServedFood[i].isUSDA != "Emergency") {
@@ -2370,9 +2394,8 @@ function utilSetCurrentClient(index){
 
 	// emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
-	// TODO need to show notes
 	uiUpdateCurrentClient(index)
-}
+};
 
 function utilSetCurrentServiceType(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -2380,6 +2403,7 @@ function utilSetCurrentServiceType(index){
 	uiOutlineTableRow('serviceTypesTable', index+1)
 	uiSetAdminHeader(serviceType.serviceName)
 	uiShowServiceTypeForm()
+	navGotoTab("aTab2")
 }
 
 function utilSetCurrentAdminUser(index){
@@ -2460,6 +2484,8 @@ function utilValidateField(id, classes){
 		formClass = "clientForm"
 	} else if (classes.indexOf("userForm") > -1) {
 		formClass = "userForm"
+	} else if (classes.indexOf("serviceTypeForm") > -1) {
+		formClass = "serviceTypeForm"
 	}
 	let ruleId = id.replace(".", "_")
 console.log(formClass, ruleId)
@@ -2595,6 +2621,16 @@ console.log(formClass, ruleId)
 					}
 				}
 				break
+			case "integer":
+				if (hasError == false) {
+					if (value != ""){
+						if (!Number.isInteger(Number(value))) {
+							hasError = true
+							uiGenerateErrorBubble("Entry must be a number!", id, classes)
+						}
+					}
+				}
+				break
 			case "name":
 				if (hasError == false) {
 //console.log("CHECK NAME LENGTH")
@@ -2631,61 +2667,88 @@ console.log(formClass, ruleId)
 };
 
 function utilValidateConfig(form, id){
-		let clientForm = {
-			            firstSeenDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
-			      familyIdCheckedDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
-			                 isActive: [ 'required', {lookup: ["Active", "Emergency", "Inactive"]} ],
-			                givenName: [ 'required', 'name' ],
-					 					 familyName: [ 'required', 'name' ],
-					 								  dob: [ 'date','dateNowBefore' ],
-														age: [ ],
-					 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
-					 				  ethnicGroup: [ 'required', {lookup: ["Afro-American", "Anglo-European", "Asian/Pacific Islander", "Filipino", "Latino", "Native American", "Other"]} ],
-					 				 		 homeless: [ 'required', {lookup: ["YES", "NO"]} ],
-					 						   street: [ 'required' ],
-					 							   city: [ 'required', 'name'],
-					 							  state: [ 'required',{lookup: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
-													"IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
-													"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
-													"SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
-					 						  zipcode: [ 'required', 'zipcode' ],
-											zipSuffix: [ 'zipsuffix' ],
-					 					  telephone: [ 'phoneNumber' ],
-					 		  			 		email: [ 'email' ],
-					    financials_income: [ 'required' ],
-			financials_govtAssistance: [ 'required' ],
-					financials_foodStamps: [ 'required' ],
-								financials_rent: [ 'required' ]
-										}
-		let userForm = {
-			                 isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
-			                givenName: [ 'required', 'name' ],
-					 					 familyName: [ 'required', 'name' ],
-					 					  			dob: [ 'date','dateNowBefore' ],
-					 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
-											 userName: [ 'username'],
-											 password: [ 'password'],
-					 				 		 userRole: [ 'required', {lookup: ["Admin", "TechAdmin", "Staff", "Volunteer"]} ],
-					 						   street: [ 'required' ],
-					 							   city: [ 'required', 'name', ],
-					 							  state: [ 'required', {lookup: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
-													"IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
-													"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
-													"SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
-					 						  zipcode: [ 'required', 'zipcode' ],
-											zipSuffix: [ 'zipsuffix' ],
-					 					  telephone: [ 'phoneNumber' ],
-					 		  			 		email: [ 'email' ]
-										}
+	let clientForm = {
+		            firstSeenDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
+		      familyIdCheckedDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
+		                 isActive: [ 'required', {lookup: ["Client", "NonClient", "Inactive"]} ],
+		                givenName: [ 'required', 'name' ],
+				 					 familyName: [ 'required', 'name' ],
+				 								  dob: [ 'date','dateNowBefore' ],
+													age: [ ],
+				 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
+				 				  ethnicGroup: [ 'required', {lookup: ["Afro-American", "Anglo-European", "Asian/Pacific Islander", "Filipino", "Latino", "Native American", "Other"]} ],
+				 				 		 homeless: [ 'required', {lookup: ["YES", "NO"]} ],
+				 						   street: [ 'required' ],
+				 							   city: [ 'required', 'name'],
+				 							  state: [ 'required',{lookup: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
+												"IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
+												"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
+												"SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
+				 						  zipcode: [ 'required', 'zipcode' ],
+										zipSuffix: [ 'zipsuffix' ],
+				 					  telephone: [ 'phoneNumber' ],
+				 		  			 		email: [ 'email' ],
+				    financials_income: [ 'required' ],
+		financials_govtAssistance: [ 'required' ],
+				financials_foodStamps: [ 'required' ],
+							financials_rent: [ 'required' ]
+	}
+	let userForm = {
+     isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
+    givenName: [ 'required', 'name' ],
+		 familyName: [ 'required', 'name' ],
+		  			dob: [ 'date','dateNowBefore' ],
+		 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
+		 userName: [ 'username'],
+		 password: [ 'password'],
+	 		 userRole: [ 'required', {lookup: ["Admin", "TechAdmin", "Staff", "Volunteer"]} ],
+			   street: [ 'required' ],
+				   city: [ 'required', 'name', ],
+				  state: [ 'required', {lookup: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
+				"IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
+				"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
+				"SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
+			  zipcode: [ 'required', 'zipcode' ],
+		zipSuffix: [ 'zipsuffix' ],
+		  telephone: [ 'phoneNumber' ],
+			 		email: [ 'email' ]
+	}
+	let serviceTypeForm = {
+								serviceName: [ 'required', 'name' ],
+						serviceCategory: [ 'required', {lookup: ["Administration", "Back_To_School", "Clothes_Closet", "Food_Pantry", "Hygiene_Supplies", "Household_Items", "Thanksgiving", "Christmas", "Vouchers", "Winter_Warming"]} ],
+									 isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
+				 serviceDescription: [ 'required' ],
+				     serviceButtons: [ 'required', {lookup: ["Primary", "Secondary"]} ],
+						    numberItems: [ 'required', 'integer' ],
+								   itemsPer: [ 'required', {lookup: ["Family", "Person"]} ],
+						serviceInterval: [ 'required', 'integer' ],
+										 isUSDA: [ 'required', {lookup: ["NA", "USDA", "NonUSDA", "Emergency"]} ],
+		available_dateFromMonth: [ 'required', {lookup: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]} ],
+			available_dateFromDay: [ 'required', 'integer' ], // TODO day available in month above
+			available_dateToMonth: [ 'required', {lookup: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]} ],
+				available_dateToDay: [ 'required', 'integer' ], // TODO day available in month above
+						target_homeless: [ 'required', {lookup: ["Unselected", "YES", "NO"]} ],
+						  target_family: [ 'required', {lookup: ["Unselected", "Single_Individual", "Couple", "Family_with_Children"]} ],
+						  target_gender: [ 'required', {lookup: ["Unselected", "Female", "Male"]} ],
+						   target_child: [ 'required', {lookup: ["Unselected", "YES", "NO"]} ],
+				 target_childMinAge: [ 'integer' ], // TODO required if terget child is "YES"
+			 	 target_childMaxAge: [ 'integer' ], // TODO required if terget child is "YES"
+			 target_childMinGrade: [ 'integer' ], // TODO required if terget child is "YES"
+			 target_childMaxGrade: [ 'integer' ], // TODO required if terget child is "YES"
+			     fulfillment_type: [ 'required', {lookup: ["Fulfill", "Notify", "Voucher"]} ],
+   fulfillment_fromDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ],
+	   fulfillment_toDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ]
+	}
 	if (form == "clientForm") return clientForm[id]
 	if (form == "userForm") return userForm[id]
+	if (form == "serviceTypeForm") return serviceTypeForm[id]
 };
 
 function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	let foodServiceInterval = ""
 	for (var i = 0; i < activeServiceTypes.length; i++) {
-		if (activeServiceTypes[i].serviceCategory == "Food" && activeServiceTypes[i].serviceButtons == "Primary" && activeServiceTypes[i].isUSDA == isUSDA) {
+		if (activeServiceTypes[i].serviceCategory == "Food_Pantry" && activeServiceTypes[i].serviceButtons == "Primary" && activeServiceTypes[i].isUSDA == isUSDA) {
 			foodServiceInterval = activeServiceTypes[i].serviceInterval
 		}
 	}
@@ -2696,12 +2759,12 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
 	if (client.lastServed.length == 0 || lastServed.lowestDays == 10000) {
-		if ((activeServiceType.serviceCategory == "Food" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "NonUSDA")||(activeServiceType.serviceCategory == "Food" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "Emergency")) {
+		if ((activeServiceType.serviceCategory == "Food_Pantry" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "NonUSDA")||(activeServiceType.serviceCategory == "Food_Pantry" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "Emergency")) {
 			return false;
 		} else {return true}
 	}
 	if (activeServiceType.serviceButtons == "Primary") {
-		if (activeServiceType.serviceCategory == "Food") {
+		if (activeServiceType.serviceCategory == "Food_Pantry") {
 			if (activeServiceType.isUSDA == "USDA") {
 				if (lastServed.daysUSDA < activeServiceType.serviceInterval) {
 					console.log("FALSE")
@@ -2725,7 +2788,7 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 					 return false
 				}
  			}
-		} else if (activeServiceType.serviceCategory == "Clothes") {
+		} else if (activeServiceType.serviceCategory == "Clothes_Closet") {
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) {
 				console.log("FALSE")
 				return false;

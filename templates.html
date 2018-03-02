@@ -15,8 +15,8 @@
       <div class="lableDiv">Active Status</div>
       <div class="">
          <select id="isActive" class="inputBox clientForm" defaultValue="Active">
-            <option value="Active">Active</option>
-            <option value="Emergency">Emergency</option>
+            <option value="Client">Client</option>
+            <option value="NonClient">NonClient</option>
             <option value="Inactive">Inactive</option>
          </select>
       </div>
@@ -99,7 +99,7 @@
 </template>
 
 <template id="serviceTypeForm">
-   <div class="serviceTypeformDiv">
+   <div class="serviceTypeFormDiv">
       <div class="lableDiv">Service</div>
       <div>
          <input id="serviceTypeId" type="hidden" class="serviceTypeForm">
@@ -110,16 +110,15 @@
       <div class="lableDiv">Category</div>
       <select id="serviceCategory" class="inputBox serviceTypeForm" onChange="uiToggleIsUSDA()">
          <option value="Administration">Administration</option>
-         <option value="Clothes">Clothes</option>
-         <option value="Food">Food</option>
-         <option value="Gift_Card">Gifts Card</option>
-         <option value="Hygiene">Hygiene</option>
-         <option value="School">School</option>
-         <option value="Shelter">Shelter</option>
-         <option value="Services">Services</option>
-         <option value="Toys">Toys</option>
-         <option value="Voucher">Voucher</option>
-
+         <option value="Back_To_School">Back To School</option>
+         <option value="Clothes_Closet">Clothes Closet</option>
+         <option value="Food_Pantry">Food Pantry</option>
+         <option value="Hygiene_Supplies">Hygiene Supplies</option>
+         <option value="Household_Items">Household Items</option>
+         <option value="Thanksgiving">Thanksgiving</option>
+         <option value="Christmas">Christmas</option>
+         <option value="Vouchers">Vouchers</option>
+         <option value="Winter_Warming">Winter Warming</option>
       </select>
       <div class="lableDiv">Status</div>
       <div>
@@ -213,9 +212,9 @@
       <div>
          <select id="target.family" class="inputBox serviceTypeForm">
             <option value="Unselected">Unselected</option>
-            <option value="Single Individual">Single Individual</option>
+            <option value="Single_Individual">Single Individual</option>
             <option value="Couple">Couple</option>
-            <option value="Family with Children">With Children</option>
+            <option value="Family_with_Children">With Children</option>
          </select>
       </div>
       <div class="lableDiv">Gender</div>
@@ -248,10 +247,11 @@
       <div class="headingDiv span6">Fullfillment</div>
       <div class="lableDiv">Type</div>
       <div>
-         <select id="fulfillment.type" class="inputBox serviceTypeForm" onchange="uitoggleFulfillDates()">
-            <option value="Voucher">Voucher</option>
-            <option value="Fulfill">Fulfill</option>
-         </select>
+        <select id="fulfillment.type" class="inputBox serviceTypeForm" onchange="uiToggleFulfillDates()">
+          <option value="Fulfill">Fulfill</option>
+          <option value="Notify">Notify</option>
+          <option value="Voucher">Voucher</option>
+        </select>
       </div>
       <div class="lableDiv fulfillDiv">From</div>
       <div class="fulfillDiv"><input id="fulfillment.fromDateTime" type="datetime-local" class="inputBox serviceTypeForm"></div>
