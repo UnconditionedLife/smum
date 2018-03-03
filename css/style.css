@@ -89,8 +89,8 @@ main{
 .errorMessageDiv {
 	position: inherit;
 	display: grid;
-	grid-template-columns: 1fr 6fr 1fr;
-	grid-template-rows: repeat(7, 28px);
+	grid-template-columns: 1fr 8fr 1fr;
+	grid-template-rows: 28px 15px 44px 60px;
 	grid-gap: 6px;
 	width: 400px;
 	height: 180px;
@@ -103,7 +103,8 @@ main{
 .messageText{
 	color: var(--blue);
 	font-size: 14px;
-	line-height: 18px;
+	line-height: 22px;
+	text-align:  center;
 }
 
 .loginHeader{
@@ -335,6 +336,15 @@ main{
   width: 100%;
   display: grid;
   grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr;
+  grid-template-rows: repeat(10, 28px);
+  grid-gap: 6px;
+  padding: 3px 2em 3px 2em;
+}
+
+.adminSettingsFormDiv {
+	width: 100%;
+  display: grid;
+  grid-template-columns: 2fr 3fr 2fr 3fr 2fr 3fr;
   grid-template-rows: repeat(10, 28px);
   grid-gap: 6px;
   padding: 3px 2em 3px 2em;

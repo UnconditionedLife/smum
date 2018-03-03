@@ -156,6 +156,7 @@ function navSwitch(link){
 			navGotoTab("aTab1")
 			uiShowServiceTypes()
 			uiShowUsers()
+			uiShowSettings()
 			break
 		case "user":
 			navGotoSec("nav4")
@@ -791,6 +792,12 @@ function uiShowUsers(){
 	uiGenSelectHTMLTable('#userListContainer', users, ["userName","givenName","familyName", "userRole", "isValid"],'usersTable')
 }
 
+function uiShowSettings(){
+	$('#settingsFormContainer').html(uiGetTemplate('#settingsForm'))
+	// TODO build Table, API, object for settings
+	// uiPopulateForm(globalSettings, 'settingsForm')
+}
+
 function uiGenSelectHTML(val,options,col,id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	html = "<select id='"+col+"["+id+"]' class='inputBox dependentsForm'>"
@@ -1056,7 +1063,7 @@ function dbGetData(uUrl){
 		error: function(jqXHR, status, error){
 			// utilErrorHandler(message, status, error, "aws")
 			// console.log(jqXHR)
-			// console.log(jqXHR.statusCode)
+			console.log(jqXHR.status)
 			// console.log(jqXHR + ", " + status + ", " + error)
 			// // alert(error);
 			// // TODO try to capture the error 401 - ????
@@ -1071,9 +1078,9 @@ function dbGetData(uUrl){
 			// 	$(loginError).html("Sorry, your session has expired.")
 			// //}
 
-			if (message.readyState == 0) {
-				console.log("Error of some kind!")
-			}
+			// if (message.readyState == 0) {
+			// 	console.log("Error of some kind!")
+			// }
 		}
 	})
 	//console.log(ans)
@@ -1251,8 +1258,13 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 };
 
 function dbSaveUser(){
-	// TODO validate all active fields & show errors
-	// store new user in Users Table
+	// TODO Add uiResetUserForm functionality
+	let hasError = utilValidateForm("userForm")
+	if (hasError) {
+		utilBeep()
+		return
+	}
+	// store user in Users Table
 	let userData = utilFormToJSON(".userForm")
 	userData.notes = []
 	let URL = aws+"/users/"
@@ -1390,11 +1402,14 @@ console.log(JSON.stringify(client.notes))
 		uiToggleNoteForm("hide", "")
 		uiShowExistingNotes()
 	}
-
-}
+};
 
 function dbSaveClientForm(){
-console.log(JSON.stringify(client.dependents))
+	let hasError = utilValidateForm("clientForm")
+	if (hasError) {
+		utilBeep()
+		return
+	}
 	$("#updatedDateTime.clientForm").val(utilNow())
 	let data = ""
 	if (client == "") {
@@ -1465,6 +1480,11 @@ function dbSaveDependentsTable(){
 }
 
 function dbSaveServiceTypeForm(){
+	let hasError = utilValidateForm("serviceTypeForm")
+	if (hasError) {
+		utilBeep()
+		return
+	}
 	let data = utilFormToJSON('.serviceTypeForm')
 	let URL = aws+"/servicetypes"
 	uiSaveButton('serviceType', 'Saving...')
@@ -1551,6 +1571,10 @@ function cogCheckSession() {
 };
 
 function cogUserChangePassword(){
+	if (utilValidateForm("passwordForm")) {
+		utilBeep()
+		return
+	}
 	let password = $("#existingPassword").val(),
 			newPassword = $("#newPassword").val(),
 			confirmPassword = $("#confirmPassword").val()
@@ -1559,6 +1583,8 @@ function cogUserChangePassword(){
 	    if (err) {
 				if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.") {
 					uiShowHideError("show", "Too many attemps!!", "Please try again later.")
+				} else if (err == "NotAuthorizedException: Incorrect username or password."){
+					uiShowHideError("show", "Incorrect password", "Please enter your Existing Password again.<br>Make sure the <b>caps lock</b> is not on.")
 				} else {
 					alert(err)
 				 	return
@@ -1577,6 +1603,7 @@ function cogUserChangePassword(){
 		utilBeep()
 		console.log(newPassword, confirmPassword)
 		console.log("PASSWORDS DONT MATCH")
+		uiShowHideError("show", "Passwords don't match!!", "Please enter the new password correctly in both fields.")
 		// TODO show error
 	}
 }
@@ -1770,20 +1797,6 @@ function cogLoginUser() {
 			$("#loginError").html("Username is required.")
 		}
 	})
-};
-
-function cogResetPassword(userAttributes, user){
-	// TODO Add reset password functionality to user profile
-	console.log("needs new password - change the form")
-	let newPassword = "ABCDEfg123$"
-
-					// the api doesn't accept this field back
-					delete userAttributes.email_verified;
-					delete userAttributes.phone_number_verified;
-
-
-					// Get these details and call
-					cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, this);
 };
 
 function cogGetUserAttributes(){
@@ -2521,9 +2534,9 @@ function utilValidateField(id, classes){
 		formClass = "passwordForm"
 	}
 	let ruleId = id.replace(".", "_")
-//console.log(formClass, ruleId)
+console.log(formClass, ruleId)
 	let rules = utilValidateConfig(formClass, ruleId)
-//console.log(rules)
+console.log(rules)
 	let lookupList = []
 //console.log(rules)
 	for (var i = 0; i < rules.length; i++) {
@@ -2536,9 +2549,9 @@ function utilValidateField(id, classes){
 				lookupList = rule.lookup
 				rule = "lookup"
 			}
-			if (rule.match !== undefined) {
-				matchField = rule.match
-				rule = "match"
+			if (rule.matching !== undefined) {
+				matchField = rule.matching
+				rule = "matching"
 			}
 		}
 		let value = $('[id="' + id + '"]').val()
@@ -2647,10 +2660,12 @@ function utilValidateField(id, classes){
 				}
 				break
 			case "lookup":
-				if (hasError == false) {
-					found = false
+				if (!hasError) {
+					let found = false
 					for (var i = 0; i < lookupList.length; i++) {
-						if (lookupList[i] == value) found = true
+						if (lookupList[i] == value) {
+							found = true
+						}
 					}
 					if (!found) {
 						hasError = true
@@ -2658,7 +2673,8 @@ function utilValidateField(id, classes){
 					}
 				}
 				break
-			case "match":
+			case "matching":
+				console.log("IN MATCHING")
 				if (hasError == false) {
 					if ($("#" + matchField).val() != value ) {
 						hasError = true
@@ -2704,15 +2720,38 @@ function utilValidateField(id, classes){
 	//	rules[i]
 		}
 	if (!hasError){
-//console.log("NO ERROR HIDE")
 	 	$('[id="err-' + id + '"]').remove()
-//console.log($('[id="' + id + '"]'))
 	 	$('[id="' + id + '"]').removeClass("errorField")
-	 }
+	}
+	return hasError
+};
+
+function utilValidateForm(form){
+
+console.log("IN FORM VAL")
+
+	let formElements = $("."+form)
+
+console.log(formElements)
+	let hasErrors = false
+	for (let i = 0; i < formElements.length; i++) {
+
+console.log(formElements[i].id)
+
+		let id = formElements[i].id,
+			valType = formElements[i].type,
+			classes = formElements[i].class
+		let hasError = utilValidateField(id,form+" "+"inputBox")
+		if (hasError) hasErrors = true
+	}
+	return hasErrors
 };
 
 function utilValidateConfig(form, id){
 	let clientForm = {
+										 clientId: [ 'required' ],
+			  			createdDateTime: [ 'required' ],
+						  updatedDateTime: [ 'required' ],
 		            firstSeenDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
 		      familyIdCheckedDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
 		                 isActive: [ 'required', {lookup: ["Client", "NonClient", "Inactive"]} ],
@@ -2733,32 +2772,43 @@ function utilValidateConfig(form, id){
 										zipSuffix: [ 'zipsuffix' ],
 				 					  telephone: [ 'phoneNumber' ],
 				 		  			 		email: [ 'email' ],
-				    financials_income: [ 'required' ],
-		financials_govtAssistance: [ 'required' ],
-				financials_foodStamps: [ 'required' ],
-							financials_rent: [ 'required' ]
+				    financials_income: [ 'required', 'integer' ],
+		financials_govtAssistance: [ 'required', 'integer' ],
+				financials_foodStamps: [ 'required', 'integer' ],
+							financials_rent: [ 'required', 'integer' ],
+					 family_totalAdults: [ 'required', 'integer' ],
+				 family_totalChildren: [ 'required', 'integer' ],
+				  family_totalSeniors: [ 'required', 'integer' ],
+	family_totalOtherDependents: [ 'required', 'integer' ],
+						 family_totalSize: [ 'required', 'integer' ]
 	}
 	let userForm = {
-     isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
-    givenName: [ 'required', 'name' ],
-		 familyName: [ 'required', 'name' ],
-		  			dob: [ 'date','dateNowBefore' ],
-		 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
-		 userName: [ 'username'],
-		 password: [ 'password'],
-	 		 userRole: [ 'required', {lookup: ["Admin", "TechAdmin", "Staff", "Volunteer"]} ],
-			   street: [ 'required' ],
-				   city: [ 'required', 'name', ],
-				  state: [ 'required', {lookup: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
-				"IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
-				"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
-				"SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
-			  zipcode: [ 'required', 'zipcode' ],
-		zipSuffix: [ 'zipsuffix' ],
-		  telephone: [ 'phoneNumber' ],
-			 		email: [ 'email' ]
+		createdDateTime: [ 'required' ],
+		updatedDateTime: [ 'required' ],
+           isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
+          givenName: [ 'required', 'name' ],
+		     familyName: [ 'required', 'name' ],
+		  			    dob: [ 'date','dateNowBefore' ],
+								age: [ ],
+		 		     gender: [ 'required', {lookup: ["Female", "Male"]} ],
+		       userName: [ 'username'],
+		       password: [ 'password'],
+	 		     userRole: [ 'required', {lookup: ["Admin", "TechAdmin", "Staff", "Volunteer"]} ],
+			       street: [ 'required' ],
+				       city: [ 'required', 'name', ],
+				      state: [ 'required', {lookup: ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
+										 	 "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
+											 "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
+											 "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
+			       zipcode: [ 'required', 'zipcode' ],
+		       zipSuffix: [ 'zipsuffix' ],
+		       telephone: [ 'phoneNumber' ],
+			 		     email: [ 'email' ]
 	}
 	let serviceTypeForm = {
+							serviceTypeId: [ 'required' ],
+						createdDateTime: [ 'required' ],
+						updatedDateTime: [ 'required' ],
 								serviceName: [ 'required', 'name' ],
 						serviceCategory: [ 'required', {lookup: ["Administration", "Back_To_School", "Clothes_Closet", "Food_Pantry", "Hygiene_Supplies", "Household_Items", "Thanksgiving", "Christmas", "Vouchers", "Winter_Warming"]} ],
 									 isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
@@ -2787,7 +2837,7 @@ function utilValidateConfig(form, id){
 	let passwordForm = {
 		existingPassword: [ 'password'],
 				 newPassword: [ 'password'],
-		 confirmPassword: [ 'password', {match: ["newPassword"]} ]
+		 confirmPassword: [ 'password', {matching: ["newPassword"]} ]
 	}
 	if (form == "clientForm") return clientForm[id]
 	if (form == "userForm") return userForm[id]

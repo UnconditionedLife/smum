@@ -332,12 +332,36 @@
 </template>
 
 <template id="settingsForm">
-
+   <div class="adminSettingsFormDiv">
+      <div class="span6"><span class="messageText"><b>System settings. Be careful with changes.</b></span></div>
+      <div class="headingDiv span6">Interface</div>
+      <div class="lableDiv">Play Sounds</div>
+      <div>
+         <select id="playSound" class="inputBox settingsForm">
+            <option value="YES">YES</option>
+            <option value="NO">NO</option>
+         </select>
+      </div>
+      <div class="headingDiv span6">Services</div>
+      <div class="lableDiv">Our Zipcodes</div>
+      <div class="span5"><input id="serviceAreaZipcodes" type="text" class="inputBox settingsForm"></div>
+      <div class="lableDiv">Categories</div>
+      <div class="span5"><input id="serviceCategories" type="text" class="inputBox settingsForm"></div>
+      <div class="headingDiv span6">Clients</div>
+      <div class="lableDiv">Senior Age</div>
+      <div class=""><input id="seniorAgeCutoff" type="number" class="inputBox settingsForm"></div>
+      <div class="lableDiv">??</div>
+      <div class=""><input id="confirmPassword" type="password" class="inputBox settingsForm"></div>
+      <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
+         <input class="solidButton" onclick="cogUserChangePassword()" type="button" value="Change">
+         <input class="openButton" onclick="uiResetChangePasswordForm()" type="button" value="Cancel">
+      </div>
+   </div>
 </template>
 
 <template id="changePasswordForm">
    <div class="changePasswordFormDiv">
-      <div class="span6"><span class="messageText">This will change your login password for this application. You will be required to login after changing the password.</span></div>
+      <div class="span6"><span class="messageText"><b>This will change your login password for this application. You will be required to login after changing the password.</b></span></div>
       <div class="lableDiv">Existing Password</div>
       <div class=""><input id="existingPassword" type="password" class="inputBox passwordForm"></div>
       <div class="lableDiv">New Password</div>
