@@ -46,70 +46,77 @@ let authorization = {}
 
 // **********************************************************************************************************
 // **********************************************************************************************************
-let NavGuard = (function NavGuard() {
-  let self = this;
-  self.addRandomHash = function() {
-    // This will harmlessly change the url hash to "#random",
-    // which will trigger onhashchange when they hit the back button
-    if ($.isEmptyObject(location.hash)) {
-      var random_hash = '#ng-' + new Date().getTime().toString(36);
-
-      // Push "#random" onto the history, making it the most recent "page"
-      history.pushState({navGuard: true}, '', random_hash)
-    }
-  };
-
-  self.enableGuard = function() {
-    var msg = 'NOTICE FROM NAVGUARD: Are you sure you want to navigate away from this screen? You may lose unsaved changes.';
-
-    self.addRandomHash();
-
-    $(window).off('hashchange.ng').on('hashchange.ng', function(event) {
-      if ($.isEmptyObject(location.hash)) {
-        var result = confirm(msg);
-        if (result) {
-          //Go back to where they were trying to go
-          //Only go back if there is something to go back to
-          if (window.history.length > 2) {
-            window.history.back();
-          }
-        } else {
-          // Put the hash back in; rinse and repeat
-          window.history.forward();
-        }
-      }
-    });
+// let NavGuard = (function NavGuard() {
+//   let self = this;
+//   self.addRandomHash = function() {
+//     // This will harmlessly change the url hash to "#random",
+//     // which will trigger onhashchange when they hit the back button
+//     if ($.isEmptyObject(location.hash)) {
+//       var random_hash = '#ng-' + new Date().getTime().toString(36);
+//
+//       // Push "#random" onto the history, making it the most recent "page"
+//       history.pushState({navGuard: true}, '', random_hash)
+//     }
+//   };
+//
+//   self.enableGuard = function() {
+//     var msg = 'NOTICE FROM NAVGUARD: Are you sure you want to navigate away from this screen? You may lose unsaved changes.';
+//
+//     self.addRandomHash();
+//
+//     $(window).off('hashchange.ng').on('hashchange.ng', function(event) {
+//       if ($.isEmptyObject(location.hash)) {
+//         var result = confirm(msg);
+//         if (result) {
+//           //Go back to where they were trying to go
+//           //Only go back if there is something to go back to
+//           if (window.history.length > 2) {
+//             window.history.back();
+//           }
+//         } else {
+//           // Put the hash back in; rinse and repeat
+//           window.history.forward();
+//         }
+//       }
+//     });
+// TODO install unload prevention
+// TODO remove all NavGuard code
+// $( window ).unload(function() {
+// 	console.log("Trying to get out.")
+//   return "Handler for .unload() called.";
+// });
 
   //While we are at it, also throw in the traditional beforeunload listener to guard against accidantal window closures
-  $(window).off('beforeunload.ng').on('beforeunload.ng', function(event) {
-    return msg;
-  });
+  // $(window).off('beforeunload.ng').on('beforeunload.ng', function(event) {
+	// 	console.log("Trying to get out!!")
+  //   // return msg;
+  // });
+	//
+  //   //If navigating within app without ajax, don't show beforeunload warning
+  //   $('a').not('a,a:not([href]),[href^="#"],[href^="javascript"]').mousedown(function() {
+  //     $(window).off('beforeunload.ng');
+  //   });
+  // };
 
-    //If navigating within app without pjax, don't show beforeunload warning
-    $('a').not('a,a:not([href]),[href^="#"],[href^="javascript"]').mousedown(function() {
-      $(window).off('beforeunload.ng');
-    });
-  };
-
-  __construct = function(that) {
-    console.log("constructor called for NavGuard");
-  }(this);
-
-  return {
-    destory: function() {
-      $(window).off('hashchange.ng');
-      $(window).off('beforeunload.ng');
-    },
-    init: function() {
-      var history_api = typeof history.pushState !== 'undefined';
-      if (history_api) {
-        self.enableGuard();
-      }
-    }
-  }
-})();
-
-NavGuard.init();
+//   __construct = function(that) {
+//     console.log("constructor called for NavGuard");
+//   }(this);
+//
+//   return {
+//     destory: function() {
+//       $(window).off('hashchange.ng');
+//       $(window).off('beforeunload.ng');
+//     },
+//     init: function() {
+//       var history_api = typeof history.pushState !== 'undefined';
+//       if (history_api) {
+//         self.enableGuard();
+//       }
+//     }
+//   }
+// })();
+//
+// NavGuard.init();
 
 uiFillDate()
 uiShowHideLogin('show')
