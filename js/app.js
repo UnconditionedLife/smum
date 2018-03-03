@@ -1258,15 +1258,14 @@ function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 
 function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-	let itemsServed = ""
 	let serviceType = {}
+	serviceType = utilGetServiceTypeByID(serviceTypeId)
+	let itemsServed = serviceType.numberItems
+	if (serviceType.itemsPer == "Person") itemsServed = itemsServed * client.family.totalSize
 	if (serviceButtons == "Primary"){
-		serviceType = utilGetServiceTypeByID(serviceTypeId)
-		itemsServed = serviceType.numberItems
-		if (serviceType.itemsPer == "Person") itemsServed = itemsServed * client.family.totalSize
 		dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, serviceType.isUSDA)
-		utilAddServiceToReceipt(serviceType.serviceName, serviceCategory, itemsServed)
 	}
+	utilAddServiceToReceipt(serviceType.serviceName, serviceCategory, itemsServed)
 	dbPostService(serviceType, itemsServed)
 };
 
@@ -1307,10 +1306,12 @@ function dbSaveUser(){
 
 function dbPostService(serviceType, itemsServed){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	// TODO Create table by clientID and add new services to top of array
 	// TODO add senior cutoff age to the Settings
 	// TODO add Service area Zipcodes to the Settings
 	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
+
+console.log(itemsServed)
+
 	let emergencyFood = "NO"
 	let servicedMonth = moment().format("YYYYMM")
 	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
@@ -1342,40 +1343,7 @@ function dbPostService(serviceType, itemsServed){
 					}
 	}
 
-	console.log(session.user)
-
-	// {
-	// 	"serviceId": {"S": "$inputRoot.serviceId"},
-	// 		"servicedDateTime": {"S": "$inputRoot.servicedDateTime"},
-	// 		"clientServedId": {"S": "$inputRoot.clientServedId"},
-	// 		"servicedByUserId": {"S": "$inputRoot.servicedByUserId"},
-	// 		"servicedByUserName" : {"S": "$inputRoot.servicedByUserName"},
-	// 		"serviceTypeId" : {"S": "$inputRoot.serviceTypeId"},
-	// 		"serviceName" : {"S": "$inputRoot.serviceName"},
-	// 		"serviceCategory" : {"S": "$inputRoot.serviceCategory"},
-	// 		"serviceButtons" : {"S": "$inputRoot.serviceButtons"},
-	// 		"isUSA" : {"S": "$inputRoot.isUSA"},
-	// 		"itemsServed" : {"N": "$inputRoot.itemsServed"},
-	// 		"homeless" : {"S": "$inputRoot.homeless"},
-	// 		"emergencyFood" : {"S": "$inputRoot.emergencyFood"},
-	// 		"total" : {
-	// 				"M": {
-	// 						"adultsServed": {"N": "$inputRoot.total.adultsServed"},
-	// 						"childrenServed": {"N": "$inputRoot.total.childrenServed"},
-	// 						"individualsServed": {"N": "$inputRoot.total.individualsServed"},
-	// 						"seniorsServed": {"N": "$inputRoot.total.seniorsServed"}
-	// 				}
-	// 		},
-	// 		"fulfillment" : {
-	// 				"M": {
-	// 						"pending": {"BOOL": "$inputRoot.fulfillment.pending"},
-	// 						"dateTime": {"S": "$inputRoot.fulfillment.dateTime"},
-	// 						"voucherNumber": {"N": "$inputRoot.fulfillment.voucherNumber"},
-	// 						"byUserId": {"S": "$inputRoot.fulfillment.byUserId"},
-	// 						"byUserName": {"S": "$inputRoot.fulfillment.byUserName"},
-	// 						"itemCount": {"N": "$inputRoot.fulfillment.itemCount"}
-	// 				}
-	// 		}
+console.log(session.user)
 
 	let data = serviceRecord
 	data = JSON.stringify(data)
