@@ -1037,6 +1037,7 @@ function dbGetData(uUrl){
 	let urlNew = uUrl;
 	let ans = null;
 // console.log('idToken + ' + authorization.idToken)
+	// TODO /// move Ajax calls to [.done .fail . always syntax]
 	$.ajax({
     type: "GET",
     url: urlNew,
@@ -1045,6 +1046,7 @@ function dbGetData(uUrl){
     dataType: "json",
 		contentType:'application/json',
     success: function(json){
+			console.log("SUCCESS")
 			if (json!==undefined) {
 				// console.log(json.count)
 				// console.log(urlNew)
@@ -1058,6 +1060,9 @@ function dbGetData(uUrl){
 				$('#nav4').html('')
 				$(loginError).html("Sorry, your session has expired.")
 				console.log("Unauthorized")
+			},
+			0: function() {
+				console.log("Status code: 0")
 			}
 		},
 		error: function(jqXHR, status, error){
@@ -1082,6 +1087,14 @@ function dbGetData(uUrl){
 			// 	console.log("Error of some kind!")
 			// }
 		}
+	}).done(function(data, textStatus, jqXHR) {
+    console.log("DONE")
+		console.log(data)
+  }).fail(function (jqXHR, textStatus, errorThrown) {
+    console.log("status", jqXHR.status)
+		console.log("errorThrown", errorThrown)
+	}).always(function (data, textStatus, jqXHR) {
+    console.log(jqXHR.status)
 	})
 	//console.log(ans)
 	return ans
