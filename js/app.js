@@ -498,6 +498,7 @@ function uiShowHideLogin(todo){
 		$('#loginOverlay').show().css('display', 'flex')
 		$('.codeDiv').hide()
 		$('.newPasswordDiv').hide()
+		$('#loginUserName').focus()
 	} else {
 		$('.loginDiv').show()
 		$('#loginOverlay').hide()
@@ -1214,7 +1215,7 @@ console.log(JSON.stringify(dataU))
 						serviceTypes = dbGetServicesTypes()
 						uiShowServiceTypes()
 						uiSetServiceTypeHeader()
-						uiPopulateForm(serviceType, 'serviceTypes')
+						uiPopulateForm(serviceTypes, 'serviceTypes')
 						uiSaveButton('serviceType', 'SAVED!!')
 					} else if (uUrl.includes('/clients')) {
 						// TODO REMOVE BELOW FOR UPLOAD ONLY
@@ -1314,6 +1315,7 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 function dbSaveUser(context){
 	// TODO Add uiResetUserForm functionality
 	// update dates if they are empty before validation
+	// TODO move below to function
 	let fields = ["updatedDateTime", "createdDateTime"]
 	for (var i = 0; i < fields.length; i++) {
 		if ($("#" + fields[i] + ".userForm").val() == "") {
@@ -1523,6 +1525,12 @@ function dbSaveDependentsTable(){
 }
 
 function dbSaveServiceTypeForm(context){
+	let fields = ["updatedDateTime", "createdDateTime"]
+	for (var i = 0; i < fields.length; i++) {
+		if ($("#" + fields[i] + ".serviceTypeForm").val() == "") {
+			$("#" + fields[i] + ".serviceTypeForm").val(utilNow())
+		}
+	}
 	let hasErrors = utilValidateForm("serviceTypeForm", context)
 	if (hasErrors) return
 	let data = utilFormToJSON('.serviceTypeForm')
@@ -2700,6 +2708,7 @@ console.log(rules)
 				}
 				break
 			case "lookup":
+				console.log("IN LOOKUP")
 				if (!hasError) {
 					let found = false
 					for (var i = 0; i < lookupList.length; i++) {

@@ -253,6 +253,7 @@ main{
 
 .navItem:hover {
   color: var(--blue);
+  user-select:  none;
 }
 
 .navActive {
@@ -1391,6 +1392,7 @@ label {
   text-align: center;
   color: #bbb;
   border: 1px solid transparent;
+  user-select:  none;
 }
 
 label:before {
@@ -1432,7 +1434,8 @@ input:checked + label {
   border-top: 3px solid var(--blue);
   border-bottom: 1px solid #fff;
 	position: relative;
- z-index:  1500;
+ 	z-index:  1500;
+	user-select: none;
 }
 
 #tab1:checked ~ #content1,
