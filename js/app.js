@@ -592,8 +592,8 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 let uiShowServicesDateTime = function() {
 	if (client.clientId != undefined){
 		$('#serviceDateTime').html(moment().format(longDate))
-		// TODO separate
-		$('#receiptHeader').html(moment().format(longDate)+"<br>"+client.givenName+" "+client.familyName)
+		// TODO separate out from this function
+		$('#receiptHeader').html(moment().format(longDate)+"<br>(<b>"+client.clientId + "</b>) " + client.givenName+" "+client.familyName)
 	}
 };
 
@@ -1303,8 +1303,12 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	let serviceType = {}
 	serviceType = utilGetServiceTypeByID(serviceTypeId)
-	let itemsServed = serviceType.numberItems
-	if (serviceType.itemsPer == "Person") itemsServed = itemsServed * client.family.totalSize
+	let numItems = serviceType.numberItems
+	if (serviceType.itemsPer == "Person") {
+		itemsServed = numItems * client.family.totalSize
+	} else {
+		itemsServed = numItems
+	}
 	if (serviceButtons == "Primary"){
 		dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, serviceType.isUSDA)
 	}
@@ -2001,7 +2005,13 @@ console.log("IN ADD SERVICE");
 function utilAddServiceToReceipt(serviceName, serviceCategory, itemsServed){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	let header = "<p><strong>" + serviceCategory + ":</strong> " + serviceName + "<br>"
-	let body = "<strong>Items Served: " + itemsServed
+	let body = "<strong>Items Served:</strong> " + itemsServed
+	if (serviceCategory == "Clothes_Closet") {
+		body = body + "<br><strong>Adults Served:</strong> " + client.family.totalAdults + "<br><strong>Children Served:</strong>  " + client.family.totalChildren
+	}
+	if (serviceCategory == "Food_Pantry") {
+		body = body + "<br><strong>Family Size:</strong> " + client.family.totalSize
+	}
 	$("#receiptBody").append(header + body)
 };
 
@@ -2712,6 +2722,8 @@ console.log(rules)
 				if (!hasError) {
 					let found = false
 					for (var i = 0; i < lookupList.length; i++) {
+						console.log("|"+lookupList[i]+"|")
+						console.log("|"+value+"|")
 						if (lookupList[i] == value) {
 							found = true
 						}
