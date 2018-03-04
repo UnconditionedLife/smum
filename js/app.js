@@ -249,7 +249,7 @@ function uiBuildHistoryBottom(){
 function uiBuildHistoryTop(){
 	console.log("IN Build His Top")
   //data = dbGetServicesNotes(client.clientId)
-  columns = ["createdDateTime","updatedDateTime","firstSeenDate", "lastServedFoodDateTime", "familyIdCheckedDate"]
+  columns = ["createdDateTime", "updatedDateTime", "firstSeenDate", "lastServedFoodDateTime", "familyIdCheckedDate"]
 	utilSetLastServedFood()
 	let historyArray = []
 	let historyFields = {}
@@ -261,6 +261,8 @@ function uiBuildHistoryTop(){
 	historyArray.push(historyFields)
 
 console.log(client.lastServedFoodDateTime)
+
+console.log(historyArray)
 
 //console.log(JSON.stringify(clientArray))
 
@@ -275,7 +277,7 @@ console.log(client.lastServedFoodDateTime)
 	// } else {
 	// 	clientArray[0].lastServedDateTime = ""
 	// }
-	uiGenSelectHTMLTable('#historyTop',historyArray,columns,'historyTable')
+	uiGenSelectHTMLTable('#historyTop', historyArray, columns,'historyTable')
 }
 
 function uiGenerateErrorBubble(errText, id, classes){
@@ -615,6 +617,7 @@ function uiShowClientEdit(isEdit){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiDisplayNotes("Client Notes")
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
+	$('#clientSaveButton.newOnly').remove()
 	uiPopulateForm(client, 'clientForm')
 	if (isEdit){
 		uiToggleClientViewEdit('edit')
@@ -669,6 +672,7 @@ function uiShowNewClientForm(){
 	client = ""
 	$("#clientsTitle").html("New Client")
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
+	$('#clientSaveButton.existingOnly').remove()
 	uiToggleClientViewEdit("edit")
 	$('#createdDateTime.clientForm').val(utilNow())
 	$('#updatedDateTime.clientForm').val(utilNow())
@@ -774,14 +778,20 @@ function uiRemoveFormErrorBubbles(form) {
 
 function uiSetClientsHeader(title){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+
+	console.log(title)
+
 	if (title == "numberAndName") {
 		let clientNumber = "<div class='clientNumber'>" + client.clientId + "</div>"
 		let clientName = "<div class='clientName'>" + client.givenName + ' ' + client.familyName + "</div>"
 		$("#clientsTitle").html(clientNumber + clientName)
+	} else if (title == "newClient") {
+		let clientNumber = "<div class='clientNumber'>" + $('#clientId.clientForm').val() + "</div>"
+		let clientName = "<div class='clientName'>" + $('#givenName.clientForm').val() + ' ' + $('#familyName.clientForm').val() + "</div>"
+		$("#clientsTitle").html(clientNumber + clientName)
 	} else {
 		$("#clientsTitle").html(title)
 	}
-
 };
 
 function uiSetServiceTypeHeader(){
@@ -821,7 +831,7 @@ function uiGenSelectHTML(val,options,col,id){
 	return html
 }
 
-function uiGenSelectHTMLTable(selector,data,col,tableID){
+function uiGenSelectHTMLTable(selector, data, col, tableID){
 	console.log("IN TABLE GEN " + tableID)
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	//if (data == undefined) return
@@ -1074,6 +1084,11 @@ function dbGetData(uUrl){
 			},
 			0: function() {
 				console.log("Status code: 0")
+				cogLogoutUser()
+				$('#nav5').html('Login')
+				$('#nav4').html('')
+				$(loginError).html("Sorry, your session has expired.")
+				console.log("Unauthorized")
 			}
 		},
 		error: function(jqXHR, status, error){
@@ -1103,10 +1118,13 @@ function dbGetData(uUrl){
 		console.log(data)
   }).fail(function (jqXHR, textStatus, errorThrown) {
     console.log("status", jqXHR.status)
-		console.log("errorThrown", errorThrown)
-		if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
-			console.log("ACCESS ERROR") // force logon
+		if (jqXHR.status == 0) {
+
 		}
+		console.log("errorThrown", errorThrown)
+		// if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
+		// 	console.log("ACCESS ERROR") // force logon
+		// }
 	}).always(function (data, textStatus, jqXHR) {
     console.log(jqXHR.status)
 	})
@@ -1190,7 +1208,7 @@ console.log(JSON.stringify(dataU))
 					console.log("ERROR")
 
 					utilBeep()
-					// ***** TODO error message
+					// ***** TODO need proper error messaging
 				} else {
 					if (uUrl.includes('/servicetypes')) {
 						serviceTypes = dbGetServicesTypes()
@@ -1202,11 +1220,12 @@ console.log(JSON.stringify(dataU))
 						// TODO REMOVE BELOW FOR UPLOAD ONLY
 						// TODO DO WE NEED THE LINE BELOW
 						// let clientTableRow = utilUpdateClientsData()
-
-						uiGenSelectHTMLTable('#searchContainer', clientData,["clientId","givenName","familyName","dob","street"],'clientTable')
-						if (clientData.length == 1) clientTableRow = 1
-						uiOutlineTableRow('clientTable', clientTableRow)
-						uiSetClientsHeader("numberAndName")
+						if (clientData != null) {
+							uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
+							if (clientData.length == 1) clientTableRow = 1
+							uiOutlineTableRow('clientTable', clientTableRow)
+							uiSetClientsHeader("numberAndName")
+						}
 						uiSaveButton('client', 'SAVED!!')
 					}
 				}
@@ -1292,20 +1311,20 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 	dbPostService(serviceType, itemsServed)
 };
 
-function dbSaveUser(instance){
+function dbSaveUser(context){
 	// TODO Add uiResetUserForm functionality
 	// update dates if they are empty before validation
 	let fields = ["updatedDateTime", "createdDateTime"]
 	for (var i = 0; i < fields.length; i++) {
 		if ($("#" + fields[i] + ".userForm").val() == "") {
-			$("#" + fields[i] + ".userForm").val(moment().format(dateTime))
+			$("#" + fields[i] + ".userForm").val(utilNow())
 		}
 	}
 
 console.log("IN SAVE USER")
 
 console.log("BEFORE FORM VALIDATION")
-	let hasErrors = utilValidateForm("userForm", instance)
+	let hasErrors = utilValidateForm("userForm", context)
 
 console.log(hasErrors)
 
@@ -1421,16 +1440,15 @@ console.log(JSON.stringify(client.notes))
 	}
 };
 
-function dbSaveClientForm(){
-	let hasError = utilValidateForm("clientForm")
-	if (hasError) {
-		utilBeep()
-		return
-	}
+function dbSaveClientForm(context){
+	let hasErrors = utilValidateForm("clientForm", context)
+	if (hasErrors) return
 	$("#updatedDateTime.clientForm").val(utilNow())
 	let data = ""
 	if (client == "") {
-		$("#clientId.clientForm").val(dbGetNewClientID())
+		let clientId = dbGetNewClientID()
+		$("#clientId.clientForm").val(clientId)
+
 		data = utilFormToJSON('.clientForm')
 		data.dependents = []
 		data.lastServed = []
@@ -1460,10 +1478,18 @@ console.log(JSON.stringify(data))
 	uiSaveButton('client', 'Saving...')
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
-	if (result == null) {
+
+console.log(client)
+
+	if (result == null && client != "") {
 		utilCalcClientAge("db")
 		utilCalcFamilyCounts()
 		uiToggleClientViewEdit("view")
+	} else {
+
+console.log("NEW CLIENT")
+
+		uiSetClientsHeader("newClient")
 	}
 }
 
@@ -1496,12 +1522,9 @@ function dbSaveDependentsTable(){
 	}
 }
 
-function dbSaveServiceTypeForm(){
-	let hasError = utilValidateForm("serviceTypeForm")
-	if (hasError) {
-		utilBeep()
-		return
-	}
+function dbSaveServiceTypeForm(context){
+	let hasErrors = utilValidateForm("serviceTypeForm", context)
+	if (hasErrors) return
 	let data = utilFormToJSON('.serviceTypeForm')
 	let URL = aws+"/servicetypes"
 	uiSaveButton('serviceType', 'Saving...')
@@ -1588,10 +1611,8 @@ function cogCheckSession() {
 };
 
 function cogUserChangePassword(){
-	if (utilValidateForm("passwordForm")) {
-		utilBeep()
-		return
-	}
+	let hasErrors = utilValidateForm("passwordForm", "context")
+	if (hasErrors) return
 	let password = $("#existingPassword").val(),
 			newPassword = $("#newPassword").val(),
 			confirmPassword = $("#confirmPassword").val()
@@ -2590,7 +2611,7 @@ console.log(rules)
 				break
 			case "dateNowBefore":
 				if (moment(value).isValid()){
-					if (!moment().isAfter(value, 'day')) {
+					if (!moment().isAfter(value)) {
 						hasError = true
 						uiGenerateErrorBubble("notBeforeNow", id, classes)
 					}
@@ -2746,7 +2767,7 @@ console.log(rules)
 	return hasError
 };
 
-function utilValidateForm(form, instance){
+function utilValidateForm(form, context){
 
 console.log("IN FORM VAL")
 
@@ -2762,7 +2783,10 @@ console.log(formElements[i].id)
 				valType = formElements[i].type,
 				classes = formElements[i].class,
 				hasError = false
-		if (instance != "userProfile" && (id != "password" && id != "userName")) {
+		if ((context != "userProfile" &&
+				(id != "password" && id != "userName"))&&
+				(context != "newClient" &&
+				(id != "clientId"))) {
 			hasError = utilValidateField(id,form+" "+"inputBox")
 		}
 
