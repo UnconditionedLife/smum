@@ -23,6 +23,7 @@ const dateTime = 'YYYY-MM-DDTHH:mm'
 const seniorAge = 60 // TODO set in Admin/Settings
 let clientData = null // current client search results
 let client = {} // current client
+uiClearCurrentClient()
 let user = {} // authenticated
 let currentUser = {}
 let users = [] // all users
@@ -282,7 +283,9 @@ console.log(historyArray)
 
 function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
+
 console.log(errText, " ", id)
+
 	if ($('[id="err-' + id + '"]').hasClass("errorBubble")) {
 		$('[id="err-' + id + '"]').remove()
 		$('[id="' + id + '"]').removeClass("errorField")
@@ -300,6 +303,9 @@ console.log(errText, " ", id)
 		parent = ".changePasswordFormDiv"
 		formClass = ".passwordForm"
 	}
+
+console.log(errText, id, parent, formClass)
+
 	jQuery('<div/>', {
 		class: "errorBubble",
      id: "err-" + id,
@@ -315,7 +321,7 @@ console.log(errText, " ", id)
 
 	let errElem = $('[id="err-' + id + '"]')
 
-// console.log(errElem)
+console.log(errElem)
 
 //	let inputId = "#" + id +".userForm"
 
@@ -325,7 +331,7 @@ console.log(classes)
 
 
 	errElem.position({
-  	my: "center bottom-7",
+  	my: "center bottom-7", // push up 7 pixels
   	at: "center top",
   	// of: '[id="' + id + '"][class="'+ classes +'"]',
 		of: '[id="' + id + '"]' + formClass,
@@ -334,10 +340,6 @@ console.log(classes)
 
 	$('[id="' + id + '"][class="'+ classes +'"]').addClass("errorField")
 };
-
-// function uiHideError(){
-// 	console.log("HIDE")
-// }
 
 function uiLoginFormToggleValidation(todo){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -421,6 +423,7 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 function uiUpdateCurrentClient(index) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiOutlineTableRow('clientTable', index + 1)
+	uiShowCurrentClientButtons()
 	uiSetClientsHeader("numberAndName")
 	uiShowServicesButtons()
 	uiShowClientEdit(false)
@@ -1448,7 +1451,12 @@ console.log(JSON.stringify(client.notes))
 
 function dbSaveClientForm(context){
 	let hasErrors = utilValidateForm("clientForm", context)
-	if (hasErrors) return
+	if (hasErrors) {
+		console.log("VALIDATION FAILED")
+		return
+	} else {
+		console.log("VALIDATION PASSED")
+	}
 	$("#updatedDateTime.clientForm").val(utilNow())
 	let data = ""
 	if (client == "") {
@@ -1494,8 +1502,11 @@ console.log(client)
 	} else {
 
 console.log("NEW CLIENT")
-
-		uiSetClientsHeader("newClient")
+		clientId = $('#clientId.clientForm').val()
+		$('#searchField').val(clientId)
+		dbSearchClients()
+		// clientData = dbGetData(aws+"/clients/"+clientId).clients
+		//uiSetClientsHeader("newClient")
 	}
 }
 
@@ -1582,6 +1593,8 @@ function dbSearchClients(){
 	if (clientData==null||clientData.length==0){
 	 	utilBeep()
 	 	uiSetClientsHeader("0 Clients Found")
+		client = {}
+		uiClearCurrentClient()
 	 	// TODO clear current client
   } else {
 	 	let columns = ["clientId","givenName","familyName","dob","street"]
@@ -2159,6 +2172,36 @@ function utilCalcFamilyCounts(){
 	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
 };
 
+function uiClearCurrentClient(){
+	let blank = "<div class='bannerDiv'><span class='bannerText'>USE SEARCH TO FIND A CLIENT</span></div>"
+	$("#searchContainer").html(blank)
+	$("#clientFormContainer").html(blank)
+		$("#clientLeftSlider").hide()
+		$("#clientRightSlider").hide()
+	$("#servicePrimaryButtons").html(blank)
+		$("#serviceDateTime").html("")
+		$("#serviceLastVisit").html("")
+		$("#serviceSecondaryButtons").html("")
+	$("#dependentsFormContainer").html(blank)
+		$("#dependentdLeftSlider").hide()
+		$("#dependentdRightSlider").hide()
+		$(".dependentsEditOnly").hide()
+	$("#historyTop").html(blank)
+		$("#historyBottom").html("")
+	$("#notesContainer").html(blank)
+		$("#newNoteButton").hide()
+		$("#noteEditForm").hide()
+};
+
+function uiShowCurrentClientButtons(){
+	$("#clientLeftSlider").show()
+	$("#clientRightSlider").show()
+	$("#newNoteButton").show()
+	$("#dependentdLeftSlider").show()
+	$("#dependentdRightSlider").show()
+	$("#newNoteButton").show()
+}
+
 // function utilCalcLastIdCheckDays() {
 // 	// get Id Checked Date from client object & calculate number of days
 // 	// let familyIdCheckedDate = moment(client.familyIdCheckedDate, dbDate)
@@ -2613,7 +2656,7 @@ console.log(rules)
 			}
 		}
 		let value = $('[id="' + id + '"]').val()
-// console.log(rule+":"+value)
+console.log(rule+":"+value)
 		switch (rule) {
 			case "required":
 				if (value == "" || value == " " || value == undefined) {
@@ -2621,25 +2664,38 @@ console.log(rules)
 					uiGenerateErrorBubble("Cannot be blank!", id, classes)
 				}
 				break
-			case "date":
+			case "dateString":
+				console.log("date: ", value)
 				if (value == "" || value == " " || value == undefined) {
+					console.log("DATE ERROR")
 					hasError = true
+
+console.log(hasError)
+
+
+					//$('[id="' + id + '"][class="'+ classes +'"]').addClass("errorField")
 					uiGenerateErrorBubble("Not a valid date!", id, classes)
+					console.log(id, classes)
+					console.log("DATE ERROR AFTER SHOW BUBBLE")
 				}
 				break
 			case "dateNowBefore":
-				if (moment(value).isValid()){
-					if (!moment().isAfter(value)) {
-						hasError = true
-						uiGenerateErrorBubble("notBeforeNow", id, classes)
+				if (hasError == false) {
+					if (moment(value).isValid()){
+						if (!moment().isAfter(value)) {
+							hasError = true
+							uiGenerateErrorBubble("notBeforeNow", id, classes)
+						}
 					}
 				}
 				break
 			case "dateAfter2000":
-				if (moment(value).isValid()){
-					if (!moment(value).isAfter('1999-12-31')) {
-						hasError = true
-						uiGenerateErrorBubble("Date is not after 1999!", id, classes)
+				if (hasError == false) {
+					if (moment(value).isValid()){
+						if (!moment(value).isAfter('1999-12-31')) {
+							hasError = true
+							uiGenerateErrorBubble("Date is not after 1999!", id, classes)
+						}
 					}
 				}
 				break
@@ -2779,6 +2835,7 @@ console.log(rules)
 				break
 			}
 	//	rules[i]
+	console.log(hasError)
 		}
 	if (!hasError){
 	 	$('[id="err-' + id + '"]').remove()
@@ -2804,15 +2861,28 @@ console.log(formElements[i].id)
 				valType = formElements[i].type,
 				classes = formElements[i].class,
 				hasError = false
-		if ((context != "userProfile" &&
-				(id != "password" && id != "userName"))&&
-				(context != "newClient" &&
-				(id != "clientId"))) {
+		if (form == "userForm" && context != "userProfile" && (id != "password" && id != "userName")) {
 			hasError = utilValidateField(id,form+" "+"inputBox")
 		}
 
-		console.log("ERRORS: ", hasErrors)
-		if (hasError == true) hasErrors = true
+		console.log(form, context, id)
+
+		if (form == "clientForm") {
+			if (context == "newClient"){
+				if (id != "clientId") {
+					console.log("NEW CLIENT PASSED TEST")
+					hasError = utilValidateField(id,form+" "+"inputBox")
+				}
+			} else {
+				console.log("EXIST CLIENT PASSED TEST")
+				hasError = utilValidateField(id,form+" "+"inputBox")
+			}
+		}
+
+		console.log("ERRORS: ", hasError)
+		if (hasError) {
+			hasErrors = true
+		}
 	}
 	console.log("ERRORS: ", hasErrors)
 	if (hasErrors == true) utilBeep()
@@ -2824,12 +2894,12 @@ function utilValidateConfig(form, id){
 										 clientId: [ 'required' ],
 			  			createdDateTime: [ 'required' ],
 						  updatedDateTime: [ 'required' ],
-		            firstSeenDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
-		      familyIdCheckedDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
+		            firstSeenDate: [ 'dateString', 'dateNowBefore', 'dateAfter2000' ],
+		      familyIdCheckedDate: [ 'dateString', 'dateNowBefore', 'dateAfter2000' ],
 		                 isActive: [ 'required', {lookup: ["Client", "NonClient", "Inactive"]} ],
 		                givenName: [ 'required', 'name' ],
 				 					 familyName: [ 'required', 'name' ],
-				 								  dob: [ 'date','dateNowBefore' ],
+				 								  dob: [ 'dateString','dateNowBefore' ],
 													age: [ ],
 				 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
 				 				  ethnicGroup: [ 'required', {lookup: ["Afro-American", "Anglo-European", "Asian/Pacific Islander", "Filipino", "Latino", "Native American", "Other"]} ],
@@ -2860,7 +2930,7 @@ function utilValidateConfig(form, id){
            isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
           givenName: [ 'required', 'name' ],
 		     familyName: [ 'required', 'name' ],
-		  			    dob: [ 'date','dateNowBefore' ],
+		  			    dob: [ 'dateString','dateNowBefore' ],
 								age: [ ],
 		 		     gender: [ 'required', {lookup: ["Female", "Male"]} ],
 		       userName: [ 'username'],
@@ -2903,8 +2973,8 @@ function utilValidateConfig(form, id){
 			 target_childMinGrade: [ 'integer' ], // TODO required if terget child is "YES"
 			 target_childMaxGrade: [ 'integer' ], // TODO required if terget child is "YES"
 			     fulfillment_type: [ 'required', {lookup: ["Fulfill", "Notify", "Voucher"]} ],
-   fulfillment_fromDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ],
-	   fulfillment_toDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ]
+   fulfillment_fromDateTime: [ 'dateString', 'dateAfterNow', 'dateAfterNow' ],
+	   fulfillment_toDateTime: [ 'dateString', 'dateAfterNow', 'dateAfterNow' ]
 	}
 	let passwordForm = {
 		existingPassword: [ 'password'],

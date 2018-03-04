@@ -32,15 +32,57 @@ if (foodSmall == undefined) {
 
 function loadDependents(){
   $("#dependentsLoaded").html("Starting Load...")
-  $.getJSON( "data/dependentsClean1.json", function( depData ) {
+  $.getJSON( "data/Feb18-dependents.json", function( depData ) { //data/Mar-3-18-dependents-v2.json
     $.each( depData, function( i, item ) {
+      existingDep = dependentData.filter(function( obj ) {
+        return obj.DepID == item.DepID
+      })
+      console.log(existingDep.length)
+      if (existingDep.length == 0 ) {
         dependentData.push(item)
+      } else {
+        console.log(existingDep[0].DOB, " : ", item.DOB)
+        console.log(existingDep[0].GivenName, " : ", item.GivenName)
+      }
     })
   })
+  console.log("DONE DEPS")
+  // $.getJSON( "data/Mar-3-18-child-deps.json", function( depData ) {
+  //   $.each( depData, function( i, item ) {
+  //     existingDep = dependentData.filter(function( obj ) {
+  //       return (obj.HouseholdID == item.HouseholdID && obj.DOB == item.DOB && obj.GivenName == item.givenName)
+  //     })
+  //     console.log(existingDep.length)
+  //     if (existingDep.length == 0 ) {
+  //       dependentData.push(item)
+  //     } else {
+  //       console.log(existingDep[0].DOB, " : ", item.DOB)
+  //       console.log(existingDep[0].GivenName, " : ", item.GivenName)
+  //     }
+  //   })
+  // })
+  // console.log("DONE CHILD")
+  // $.getJSON( "data/Mar-3-18-spouse-deps.json", function( depData ) {
+  //   $.each( depData, function( i, item ) {
+  //     existingDep = dependentData.filter(function( obj ) {
+  //       return (obj.HouseholdID == item.HouseholdID && obj.DOB == item.DOB && obj.GivenName == item.givenName)
+  //     })
+  //     console.log(existingDep.length)
+  //     if (existingDep.length == 0 ) {
+  //       dependentData.push(item)
+  //     } else {
+  //       console.log(existingDep[0].DOB, " : ", item.DOB)
+  //       console.log(existingDep[0].GivenName, " : ", item.GivenName)
+  //     }
+  //   })
+  // })
+  // console.log("DONE SPOUSE")
+
+
   setTimeout(function(){
       console.log(dependentData.length)
       $("#dependentsLoaded").html("["+ dependentData.length+"]")
-  }, 1000);
+  }, 4000);
 }
 
 function loadServices(){
@@ -131,24 +173,32 @@ function removeEmptyClientRecords(){
       if (item.HouseholdID == "") {
         console.log("missing ID")
       } else {
-        if (item.DOB != "") item.DOB = cleanDate(item.DOB)
-        if (item["Ethnic Group"] == "Asian/Pac Islander") {
-      		item["Ethnic Group"] = "Asian/Pacific Islander"
-      	}
-        if (item.City == "") item.City = "San Jose"
-        if (typeof item.Street == "Number") item.Street = String(item.Street)
+        // check if it exists
+        existingClient = clientCopy.filter(function( obj ) {
+  				return obj.HouseholdID == item.HouseholdID
+  			})
+        console.log(existingClient.length)
+        if (existingClient.length == 0 ) {
+          if (item.DOB != "") item.DOB = cleanDate(item.DOB)
+          if (item["Ethnic Group"] == "Asian/Pac Islander") {
+        		item["Ethnic Group"] = "Asian/Pacific Islander"
+        	}
+          if (item.City == "") item.City = "San Jose"
+          if (typeof item.Street == "Number") item.Street = String(item.Street)
 
-        // if (item.Street != "") {
-        //   let street = item.Street.split('\u000b')
-        //   item.Street = street.join("'")
-        //   console.log(item.Street)
-        // }
-        if (item.Comments != "") {
-          let comments = item.Comments.split('\"')
-          item.Comments = comments.join("'")
-          console.log(item.Comments)
+          // if (item.Street != "") {
+          //   let street = item.Street.split('\u000b')
+          //   item.Street = street.join("'")
+          //   console.log(item.Street)
+          // }
+          if (item.Comments != "") {
+            console.log(item.Comments)
+            let comments = item.Comments.split('\"')
+            item.Comments = comments.join("'")
+            console.log(item.Comments)
+          }
+          clientCopy.push(item)
         }
-        clientCopy.push(item)
       }
     });
   });
@@ -158,8 +208,8 @@ function removeEmptyClientRecords(){
       //saveJSON(JSON.stringify(clientCopy), "clientsClean.json" )
       localStorage.setItem('smumCleanClients', JSON.stringify(clientCopy));
   }, 6000);
-
   importClientData = clientCopy
+  console.log(importClientData.length)
 }
 
 function cleanDate(date){
@@ -174,8 +224,7 @@ function saveJSON(text, filename){
   a.setAttribute('href', 'data:text/plain;charset=utf-u,'+encodeURIComponent(text));
   a.setAttribute('download', filename);
   a.click()
-}
-
+};
 
 function importClients(start, end){
   $("#clientCount").html("Started Importing...")
@@ -365,7 +414,7 @@ function importDependents(start,end){
       depRecord.givenName = dependents[d].GivenName
       depRecord.familyName = dependents[d].FamilyName
       if (dependents[d].DOB != "" && dependents[d].DOB != "*EMPTY*") {
-// console.log(dependents[d].HouseholdID + " | " + dependents[d].DOB)
+console.log(dependents[d].HouseholdID + " | " + dependents[d].DOB)
         dependents[d].DOB = cleanDate(dependents[d].DOB)
         depRecord.dob = moment(dependents[d].DOB, uiDate).format(date)
       } else {
