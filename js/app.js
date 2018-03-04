@@ -597,6 +597,7 @@ let uiShowServicesDateTime = function() {
 function uiShowUserEdit(){
 	$('#profileFormContainer').html("") // remove user form in user profile
 	$('#userFormContainer').html(uiGetTemplate('#userForm'))
+	$('.profileOnly').hide()
 };
 
 function uiShowProfileForm(){
@@ -645,6 +646,7 @@ function uiShowNewServiceTypeForm(){
 function uiShowNewUserForm(){
 	$('#userFormContainer').html(uiGetTemplate('#userForm'))
 	uiToggleUserNewEdit("new")
+	$('.profileOnly').hide()
 	navGotoTab("aTab5")
 };
 
@@ -924,10 +926,12 @@ function uiToggleUserNewEdit(type){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 
 console.log("IN TOGGLE FIELDS")
+console.log(type)
 
 	if (type == 'new') {
 		$('.newUserOnly').show()
-	} else {
+	}
+	if (type == 'existing') {
 
 console.log($('.newUserOnly'))
 
@@ -1100,6 +1104,9 @@ function dbGetData(uUrl){
   }).fail(function (jqXHR, textStatus, errorThrown) {
     console.log("status", jqXHR.status)
 		console.log("errorThrown", errorThrown)
+		if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
+			console.log("ACCESS ERROR") // force logon
+		}
 	}).always(function (data, textStatus, jqXHR) {
     console.log(jqXHR.status)
 	})
@@ -1145,16 +1152,22 @@ function dbLoadServiceHistory(){
 
 function dbPostData(uUrl,dataU){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+console.log("IN POST DATA")
+
 	cogCheckSession()
 	if (authorization.idToken == 'undefined') {
 		utilBeep()
 		consol.log("need to log in")
 		return
 	}
-// console.log(JSON.stringify(dataU))
-	var urlNew = uUrl;
-	var uData = dataU;
-	var ans = null;
+
+console.log("PAST SessionCheck")
+
+console.log(JSON.stringify(dataU))
+
+	let urlNew = uUrl;
+	let uData = dataU;
+	let ans = null;
 	$.ajax({
 	    type: "POST",
 	    url: urlNew,
@@ -1199,12 +1212,15 @@ function dbPostData(uUrl,dataU){
 				}
 		},
 		error: function(json){
+				console.log("ERROR")
 	    	console.log(json)
 				ans = json
 				if (uUrl.includes('/servicetypes')) {
 					uiSaveButton('serviceType', 'ERROR!!')
 				} else if (uUrl.includes('/clients')) {
 					uiSaveButton('client', 'ERROR!!')
+				} else if (uUrl.includes('/users')) {
+					console.log("show error in button")
 				}
 		}
 	});
@@ -1276,13 +1292,26 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 	dbPostService(serviceType, itemsServed)
 };
 
-function dbSaveUser(){
+function dbSaveUser(instance){
 	// TODO Add uiResetUserForm functionality
-	let hasError = utilValidateForm("userForm")
-	if (hasError) {
-		utilBeep()
-		return
+	// update dates if they are empty before validation
+	let fields = ["updatedDateTime", "createdDateTime"]
+	for (var i = 0; i < fields.length; i++) {
+		if ($("#" + fields[i] + ".userForm").val() == "") {
+			$("#" + fields[i] + ".userForm").val(moment().format(dateTime))
+		}
 	}
+
+console.log("IN SAVE USER")
+
+console.log("BEFORE FORM VALIDATION")
+	let hasErrors = utilValidateForm("userForm", instance)
+
+console.log(hasErrors)
+
+	if (hasErrors) return
+
+
 	// store user in Users Table
 	let userData = utilFormToJSON(".userForm")
 	userData.notes = []
@@ -2444,8 +2473,8 @@ function utilSetCurrentAdminUser(index){
 	uiOutlineTableRow('usersTable', index+1)
 	uiSetAdminHeader(adminUser.userName)
 	utilCalcUserAge("data")
-	uiToggleUserNewEdit("existing")
 	uiShowUserForm()
+	uiToggleUserNewEdit("existing")
 	navGotoTab("aTab5")
 };
 
@@ -2510,6 +2539,7 @@ function utilValidateArguments(func, arguments, count){
 
 function utilValidateField(id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+	console.log("IN FIELD VAL")
 	let hasError = false
 	let formClass = ""
 	if (classes.indexOf("clientForm") > -1){
@@ -2528,6 +2558,7 @@ console.log(rules)
 	let lookupList = []
 //console.log(rules)
 	for (var i = 0; i < rules.length; i++) {
+		hasError = false
 		let rule = rules[i]
 		let ruleType = $.type(rules[i])
 //console.log(rule.lookup)
@@ -2711,10 +2742,11 @@ console.log(rules)
 	 	$('[id="err-' + id + '"]').remove()
 	 	$('[id="' + id + '"]').removeClass("errorField")
 	}
+	console.log("FIELD ERR: ", hasError)
 	return hasError
 };
 
-function utilValidateForm(form){
+function utilValidateForm(form, instance){
 
 console.log("IN FORM VAL")
 
@@ -2727,11 +2759,18 @@ console.log(formElements)
 console.log(formElements[i].id)
 
 		let id = formElements[i].id,
-			valType = formElements[i].type,
-			classes = formElements[i].class
-		let hasError = utilValidateField(id,form+" "+"inputBox")
-		if (hasError) hasErrors = true
+				valType = formElements[i].type,
+				classes = formElements[i].class,
+				hasError = false
+		if (instance != "userProfile" && (id != "password" && id != "userName")) {
+			hasError = utilValidateField(id,form+" "+"inputBox")
+		}
+
+		console.log("ERRORS: ", hasErrors)
+		if (hasError == true) hasErrors = true
 	}
+	console.log("ERRORS: ", hasErrors)
+	if (hasErrors == true) utilBeep()
 	return hasErrors
 };
 

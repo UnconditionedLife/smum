@@ -992,6 +992,7 @@ checkbox[readonly]{
   border-radius: 12px;
 	line-height: 26px;
 	cursor: pointer;
+	z-index: 100100;
 }
 
 .errorBubble:after {
@@ -1431,7 +1432,7 @@ input:checked + label {
   border-top: 3px solid var(--blue);
   border-bottom: 1px solid #fff;
 	position: relative;
- z-index:  5000;
+ z-index:  1500;
 }
 
 #tab1:checked ~ #content1,

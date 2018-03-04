@@ -325,7 +325,8 @@
       <div class="lableDiv">Email</div>
       <div class=""><input id="email" type="email" class="inputBox userForm"></div>
       <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-         <input class="solidButton" onclick="dbSaveUser()" type="button" value="Save"> <!--// TODO replace this saveUserForm -->
+         <input class="solidButton adminOnly" onclick="dbSaveUser('userAdmin')" type="button" value="Save"> <!--// TODO replace this saveUserForm -->
+         <input class="solidButton profileOnly" onclick="dbSaveUser('userProfile')" type="button" value="Save">
          <input class="openButton" onclick="uiResetUserForm()" type="button" value="Cancel">
       </div>
    </div>
