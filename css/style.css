@@ -987,8 +987,7 @@ checkbox[readonly]{
   background-color: transparent;
   color: transparent;
   height: 26px !important;
-  width: max-content;
-  padding: 0 12px 0 12px;
+  width: 120px;
   text-align: center;
   border-radius: 12px;
 	line-height: 26px;
@@ -1018,7 +1017,8 @@ checkbox[readonly]{
   width: max-content;
   padding: 0 12px 0 12px;
   text-align: center;
-  border-radius: 12px;
+	border-radius: 12px;
+	border: 1px solid white;
 	line-height: 26px;
 	cursor: pointer;
 	z-index: 100100;
