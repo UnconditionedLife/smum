@@ -674,22 +674,25 @@ function uiShowNote(dateTime, text, user, important){
 }
 
 function uiShowNewClientForm(){
-	client = ""
+	client = {}
+	uiClearCurrentClient()
 	$("#clientsTitle").html("New Client")
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
 	$('#clientSaveButton.existingOnly').remove()
+	$('#clientLeftSlider').show()
+	$('#clientRightSlider').show()
 	uiToggleClientViewEdit("edit")
 	$('#createdDateTime.clientForm').val(utilNow())
 	$('#updatedDateTime.clientForm').val(utilNow())
 	$('#firstSeenDate.clientForm').val(utilToday())
 	$('#familyIdCheckedDate.clientForm').val(utilToday())
-	$('#homeless.clientForm').val('false')
+	$('#homeless.clientForm').val('NO')
 	$('#city.clientForm').val('San Jose')
 	$('#state.clientForm').val('CA')
-	$('#financials.income').val('0')
-	$('#financials.govtAssistance').val('0')
-	$('#financials.foodStamps').val('0')
-	$('#financials.rent').val('0')
+	$("[id='financials.income']").val(0)
+	$("[id='financials.govtAssistance']").val(0)
+	$("[id='financials.foodStamps']").val(0)
+	$("[id='financials.rent']").val(0)
 	navGotoTab("tab3")
 }
 
@@ -1260,8 +1263,9 @@ function uiResetClientForm(){
 // console.log("CLEAR CLIENT FORM")
 console.log(client)
 
-	if (client == "") {
+	if (client == {}) {
 		// TODO get this to blank out a new client form
+		uiShowNewClientForm()
 	} else {
 		// let index = clientData.filter(function( obj ) {
 		// 	return obj.clientId == client.clientId
