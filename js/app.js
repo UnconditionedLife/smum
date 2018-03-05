@@ -281,15 +281,20 @@ console.log(historyArray)
 	uiGenSelectHTMLTable('#historyTop', historyArray, columns,'historyTable')
 }
 
+function uiClearAllErrorBubbles(){
+	$('.errorBubble').remove()
+	$('.errorField').removeClass("errorField")
+};
+
 function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 
 console.log(errText, " ", id)
 
-	if ($('[id="err-' + id + '"]').hasClass("errorBubble")) {
+	//if ($('[id="err-' + id + '"]').hasClass("errorBubble")) {
 		$('[id="err-' + id + '"]').remove()
 		$('[id="' + id + '"]').removeClass("errorField")
-	}
+	//}
 
 	let parent = ".clientFormDiv"
 	let formClass = ".clientForm"
@@ -306,6 +311,13 @@ console.log(errText, " ", id)
 
 console.log(errText, id, parent, formClass)
 
+
+
+jQuery('<div/>', {
+	class: "errorBubbleContainer",
+	 id: "errContainer-" + id
+}).appendTo(parent);
+
 	jQuery('<div/>', {
 		class: "errorBubble",
      id: "err-" + id,
@@ -315,17 +327,16 @@ console.log(errText, id, parent, formClass)
 			 $('[id="err-' + id + '"]').remove()
 			 $('[id="' + id + '"]').removeClass("errorField")
 		 }
-	}).appendTo(parent);
+	}).appendTo('#errContainer-' + id);
+
 	// TODO make this variable to form parent
 	// TODO make field ID exact by using formClass
 
-	let errElem = $('[id="err-' + id + '"]')
+	let errElem = $('[id="errContainer-' + id + '"]')
 
 console.log(errElem)
 
 //	let inputId = "#" + id +".userForm"
-
-	classes = classes.replace("errorField", "")
 
 console.log(classes)
 
@@ -338,7 +349,7 @@ console.log(classes)
 		collision: "none"
 	});
 
-	$('[id="' + id + '"][class="'+ classes +'"]').addClass("errorField")
+	$('[id="' + id + '"]' + formClass).addClass("errorField")
 };
 
 function uiLoginFormToggleValidation(todo){
@@ -693,6 +704,11 @@ function uiShowNewClientForm(){
 	$("[id='financials.govtAssistance']").val(0)
 	$("[id='financials.foodStamps']").val(0)
 	$("[id='financials.rent']").val(0)
+	$("[id='family.totalAdults']").val(0)
+	$("[id='family.totalChildren']").val(0)
+	$("[id='family.totalOtherDependents']").val(0)
+	$("[id='family.totalSeniors']").val(0)
+	$("[id='family.totalSize']").val(0)
 	navGotoTab("tab3")
 }
 
@@ -1126,8 +1142,8 @@ function dbGetData(uUrl){
 			// }
 		}
 	}).done(function(data, textStatus, jqXHR) {
-    console.log("DONE")
-		console.log(data)
+    //console.log("DONE")
+		//console.log(data)
   }).fail(function (jqXHR, textStatus, errorThrown) {
     console.log("status", jqXHR.status)
 		if (jqXHR.status == 0) {
@@ -1138,7 +1154,7 @@ function dbGetData(uUrl){
 		// 	console.log("ACCESS ERROR") // force logon
 		// }
 	}).always(function (data, textStatus, jqXHR) {
-    console.log(jqXHR.status)
+    // TODO most likely remove .always
 	})
 	//console.log(ans)
 	return ans
@@ -1183,7 +1199,6 @@ function dbLoadServiceHistory(){
 function dbPostData(uUrl,dataU){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 console.log("IN POST DATA")
-
 	cogCheckSession()
 	if (authorization.idToken == 'undefined') {
 		utilBeep()
@@ -1459,29 +1474,21 @@ console.log(JSON.stringify(client.notes))
 };
 
 function dbSaveClientForm(context){
+	uiClearAllErrorBubbles()
 	let hasErrors = utilValidateForm("clientForm", context)
-	if (hasErrors) {
-		console.log("VALIDATION FAILED")
-		return
-	} else {
-		console.log("VALIDATION PASSED")
-	}
+	if (hasErrors) return
 	$("#updatedDateTime.clientForm").val(utilNow())
 	let data = ""
-	if (client == "") {
+	if (client.clientId == undefined) {
+		console.log("GETTING CLIENT ID")
 		let clientId = dbGetNewClientID()
 		$("#clientId.clientForm").val(clientId)
-
 		data = utilFormToJSON('.clientForm')
 		data.dependents = []
 		data.lastServed = []
 		data.notes = []
 	} else {
 		data = utilFormToJSON('.clientForm')
-
-console.log(JSON.stringify(data.dependents))
-console.log(JSON.stringify(client.dependents))
-
 		if (client.dependents == undefined) client.dependents = []
 		if (client.lastServed == undefined) client.lastServed = []
 		data.dependents = client.dependents
@@ -1496,26 +1503,17 @@ console.log(JSON.stringify(client.dependents))
 			data.notes = []
 		}
 	}
-console.log(data)
-console.log(JSON.stringify(data))
 	uiSaveButton('client', 'Saving...')
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
-
-console.log(client)
-
-	if (result == null && client != "") {
+	if (result == null && client.clientId != undefined) {
 		utilCalcClientAge("db")
 		utilCalcFamilyCounts()
 		uiToggleClientViewEdit("view")
-	} else {
-
-console.log("NEW CLIENT")
+	} else if (result == null) {
 		clientId = $('#clientId.clientForm').val()
 		$('#searchField').val(clientId)
 		dbSearchClients()
-		// clientData = dbGetData(aws+"/clients/"+clientId).clients
-		//uiSetClientsHeader("newClient")
 	}
 }
 
@@ -2699,7 +2697,7 @@ console.log(hasError)
 					if (moment(value).isValid()){
 						if (!moment().isAfter(value)) {
 							hasError = true
-							uiGenerateErrorBubble("notBeforeNow", id, classes)
+							uiGenerateErrorBubble("Date must be before now!", id, classes)
 						}
 					}
 				}
@@ -2719,7 +2717,7 @@ console.log(hasError)
 					let phoneRegex = /([+]?\d{1,2}[.-\s]?)?(\d{3}[.-]?){2}\d{4}/g
 					if (!value.match(phoneRegex)) {
 						hasError = true
-						uiGenerateErrorBubble("notPhoneNum", id, classes)
+						uiGenerateErrorBubble("Not a valid phone number!", id, classes)
 					}
 				}
 				break
@@ -2853,6 +2851,7 @@ console.log(hasError)
 	console.log(hasError)
 		}
 	if (!hasError){
+		console.log("WIPE ERROR")
 	 	$('[id="err-' + id + '"]').remove()
 	 	$('[id="' + id + '"]').removeClass("errorField")
 	}
@@ -2916,7 +2915,7 @@ function utilValidateConfig(form, id){
 		                 isActive: [ 'required', {lookup: ["Client", "NonClient", "Inactive"]} ],
 		                givenName: [ 'required', 'name' ],
 				 					 familyName: [ 'required', 'name' ],
-				 								  dob: [ 'date' ], //,'dateNowBefore'
+				 								  dob: [ 'date', 'dateNowBefore' ],
 													age: [ ],
 				 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
 				 				  ethnicGroup: [ 'required', {lookup: ["Afro-American", "Anglo-European", "Asian/Pacific Islander", "Filipino", "Latino", "Native American", "Other"]} ],

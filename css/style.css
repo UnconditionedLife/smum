@@ -982,6 +982,34 @@ checkbox[readonly]{
 	display: inline-flex;
 }
 
+.errorBubbleContainer {
+  position: relative;
+  background-color: transparent;
+  color: transparent;
+  height: 26px !important;
+  width: max-content;
+  padding: 0 12px 0 12px;
+  text-align: center;
+  border-radius: 12px;
+	line-height: 26px;
+	cursor: pointer;
+	z-index: 100100;
+}
+
+.errorBubbleContainer:after {
+  content:'';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 0;
+  height: 0;
+  border-top: solid 8px transparent;
+  border-left: solid 8px transparent;
+  border-right: solid 8px transparent;
+}
+
 .errorBubble {
   position: relative;
   background-color: var(--red);
