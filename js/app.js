@@ -2209,6 +2209,7 @@ function uiClearCurrentClient(){
 	$("#notesContainer").html(blank)
 		$("#newNoteButton").hide()
 		$("#noteEditForm").hide()
+		$("#tabLable6").css("color", "#bbb")
 };
 
 function uiShowCurrentClientButtons(){
