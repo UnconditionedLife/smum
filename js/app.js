@@ -686,6 +686,10 @@ function uiShowNewClientForm(){
 	$('#homeless.clientForm').val('false')
 	$('#city.clientForm').val('San Jose')
 	$('#state.clientForm').val('CA')
+	$('#financials.income').val('0')
+	$('#financials.govtAssistance').val('0')
+	$('#financials.foodStamps').val('0')
+	$('#financials.rent').val('0')
 	navGotoTab("tab3")
 }
 
@@ -1254,9 +1258,9 @@ console.log(JSON.stringify(dataU))
 function uiResetClientForm(){
 
 // console.log("CLEAR CLIENT FORM")
-// console.log(client)
+console.log(client)
 
-	if (client == {}) {
+	if (client == "") {
 		// TODO get this to blank out a new client form
 	} else {
 		// let index = clientData.filter(function( obj ) {
@@ -1512,6 +1516,8 @@ console.log("NEW CLIENT")
 }
 
 function dbSaveDependentsTable(){
+	// TODO validate dependents and field level
+	// TODO validate dependents and form level
 	let dependents = [] // client.dependents
 	data = utilFormToJSON('.dependentsForm')
 	let numKey = Object.keys(data).length
@@ -2646,7 +2652,6 @@ console.log(rules)
 	let lookupList = []
 //console.log(rules)
 	for (var i = 0; i < rules.length; i++) {
-		hasError = false
 		let rule = rules[i]
 		let ruleType = $.type(rules[i])
 //console.log(rule.lookup)
@@ -2670,7 +2675,7 @@ console.log(rule+":"+value)
 					uiGenerateErrorBubble("Cannot be blank!", id, classes)
 				}
 				break
-			case "dateString":
+			case "date":
 				console.log("date: ", value)
 				if (value == "" || value == " " || value == undefined) {
 					console.log("DATE ERROR")
@@ -2873,6 +2878,8 @@ console.log(formElements[i].id)
 
 		console.log(form, context, id)
 
+
+
 		if (form == "clientForm") {
 			if (context == "newClient"){
 				if (id != "clientId") {
@@ -2900,12 +2907,12 @@ function utilValidateConfig(form, id){
 										 clientId: [ 'required' ],
 			  			createdDateTime: [ 'required' ],
 						  updatedDateTime: [ 'required' ],
-		            firstSeenDate: [ 'dateString', 'dateNowBefore', 'dateAfter2000' ],
-		      familyIdCheckedDate: [ 'dateString', 'dateNowBefore', 'dateAfter2000' ],
+		            firstSeenDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
+		      familyIdCheckedDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
 		                 isActive: [ 'required', {lookup: ["Client", "NonClient", "Inactive"]} ],
 		                givenName: [ 'required', 'name' ],
 				 					 familyName: [ 'required', 'name' ],
-				 								  dob: [ 'dateString','dateNowBefore' ],
+				 								  dob: [ 'date' ], //,'dateNowBefore'
 													age: [ ],
 				 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
 				 				  ethnicGroup: [ 'required', {lookup: ["Afro-American", "Anglo-European", "Asian/Pacific Islander", "Filipino", "Latino", "Native American", "Other"]} ],
@@ -2936,7 +2943,7 @@ function utilValidateConfig(form, id){
            isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
           givenName: [ 'required', 'name' ],
 		     familyName: [ 'required', 'name' ],
-		  			    dob: [ 'dateString','dateNowBefore' ],
+		  			    dob: [ 'date','dateNowBefore' ],
 								age: [ ],
 		 		     gender: [ 'required', {lookup: ["Female", "Male"]} ],
 		       userName: [ 'username'],
@@ -2979,8 +2986,8 @@ function utilValidateConfig(form, id){
 			 target_childMinGrade: [ 'integer' ], // TODO required if terget child is "YES"
 			 target_childMaxGrade: [ 'integer' ], // TODO required if terget child is "YES"
 			     fulfillment_type: [ 'required', {lookup: ["Fulfill", "Notify", "Voucher"]} ],
-   fulfillment_fromDateTime: [ 'dateString', 'dateAfterNow', 'dateAfterNow' ],
-	   fulfillment_toDateTime: [ 'dateString', 'dateAfterNow', 'dateAfterNow' ]
+   fulfillment_fromDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ],
+	   fulfillment_toDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ]
 	}
 	let passwordForm = {
 		existingPassword: [ 'password'],
