@@ -1531,6 +1531,7 @@ function dbSaveDependentsTable(){
 	}
 	client.dependents = dependents
 	data = client
+	data = utilPadEmptyFields(data)
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
 	if (result == null) {
