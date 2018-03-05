@@ -991,7 +991,6 @@ checkbox[readonly]{
   text-align: center;
   border-radius: 12px;
 	line-height: 26px;
-	cursor: pointer;
 	z-index: 100100;
 }
 

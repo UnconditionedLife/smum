@@ -288,9 +288,7 @@ function uiClearAllErrorBubbles(){
 
 function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-
-console.log(errText, " ", id)
-
+// console.log(errText, " ", id)
 	$('[id="err-' + id + '"]').remove()
 	$('[id="' + id + '"]').removeClass("errorField")
 	let parent = ".clientFormDiv"
@@ -308,11 +306,7 @@ console.log(errText, " ", id)
 		parent = "#noteEditForm"
 		formClass = ".noteForm"
 	}
-
-console.log(errText, id, parent, formClass)
-
-
-
+//console.log(errText, id, parent, formClass)
 jQuery('<div/>', {
 	class: "errorBubbleContainer",
 	 id: "errContainer-" + id
@@ -327,20 +321,12 @@ jQuery('<div/>', {
 			 $('[id="err-' + id + '"]').remove()
 			 $('[id="' + id + '"]').removeClass("errorField")
 		 }
-	}).appendTo('#errContainer-' + id);
-
+	}).appendTo('[id="errContainer-' + id + '"]');
 	// TODO make this variable to form parent
 	// TODO make field ID exact by using formClass
-
 	let errElem = $('[id="errContainer-' + id + '"]')
-
-console.log(errElem)
-
-//	let inputId = "#" + id +".userForm"
-
-console.log(classes)
-
-
+// console.log(errElem)
+// console.log(classes)
 	errElem.position({
   	my: "center bottom-7", // push up 7 pixels
   	at: "center top",
@@ -348,7 +334,6 @@ console.log(classes)
 		of: '[id="' + id + '"]' + formClass,
 		collision: "none"
 	});
-
 	$('[id="' + id + '"]' + formClass).addClass("errorField")
 };
 
@@ -1095,7 +1080,7 @@ function dbGetData(uUrl){
     dataType: "json",
 		contentType:'application/json',
     success: function(json){
-			console.log("SUCCESS")
+//console.log("SUCCESS")
 			if (json!==undefined) {
 				// console.log(json.count)
 				// console.log(urlNew)
@@ -1554,13 +1539,18 @@ function dbSaveDependentsTable(){
 }
 
 function dbSaveServiceTypeForm(context){
+	uiClearAllErrorBubbles()
+	// populate dates
 	let fields = ["updatedDateTime", "createdDateTime"]
 	for (var i = 0; i < fields.length; i++) {
 		if ($("#" + fields[i] + ".serviceTypeForm").val() == "") {
 			$("#" + fields[i] + ".serviceTypeForm").val(utilNow())
 		}
 	}
-	let hasErrors = utilValidateForm("serviceTypeForm", context)
+	let hasErrors = utilValidateForm("serviceTypeForm", "serviceTypeForm")
+
+console.log("ServiceForm Val: ", hasErrors)
+
 	if (hasErrors) return
 	let data = utilFormToJSON('.serviceTypeForm')
 	let URL = aws+"/servicetypes"
@@ -2640,12 +2630,10 @@ function utilValidateArguments(func, arguments, count){
 
 function utilValidateField(id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	console.log("IN FIELD VAL")
+//console.log("IN FIELD VAL")
 	let hasError = false
 	let formClass = ""
-
-console.log(classes)
-
+//console.log(classes)
 	if (classes.indexOf("clientForm") > -1){
 		formClass = "clientForm"
 	} else if (classes.indexOf("userForm") > -1) {
@@ -2658,9 +2646,9 @@ console.log(classes)
 		formClass = "noteForm"
 	}
 	let ruleId = id.replace(".", "_")
-console.log(formClass, ruleId)
+//console.log(formClass, ruleId)
 	let rules = utilValidateConfig(formClass, ruleId)
-console.log(rules)
+//console.log(rules)
 	let lookupList = []
 //console.log(rules)
 	for (var i = 0; i < rules.length; i++) {
@@ -2679,7 +2667,7 @@ console.log(rules)
 			}
 		}
 		let value = $('[id="' + id + '"]').val()
-console.log(rule+":"+value)
+//console.log(rule+":"+value)
 		switch (rule) {
 			case "required":
 				if (value == "" || value == " " || value == undefined) {
@@ -2688,29 +2676,45 @@ console.log(rule+":"+value)
 				}
 				break
 			case "date":
-				console.log("date: ", value)
-				if (value == "" || value == " " || value == undefined) {
-					console.log("DATE ERROR")
-					hasError = true
-					uiGenerateErrorBubble("Not a valid date!", id, classes)
+				if (hasError == false) {
+					if (value != "" && value != " " && value != undefined) {
+						hasError = true
+						uiGenerateErrorBubble("Not a valid date!", id, classes)
+					}
 				}
 				break
 			case "dateNowBefore":
 				if (hasError == false) {
-					if (moment(value).isValid()){
-						if (!moment().isAfter(value)) {
-							hasError = true
-							uiGenerateErrorBubble("Date must be before now!", id, classes)
+					if (value != "" && value != " " && value != undefined) {
+						if (moment(value).isValid()){
+							if (!moment().isAfter(value)) {
+								hasError = true
+								uiGenerateErrorBubble("Date must be before now!", id, classes)
+							}
+						}
+					}
+				}
+				break
+			case "dateAfterNow":
+				if (hasError == false) {
+					if (value != "" && value != " " && value != undefined) {
+						if (moment(value).isValid()){
+							if (!moment().isBefore(value)) {
+								hasError = true
+								uiGenerateErrorBubble("Date must be after now!", id, classes)
+							}
 						}
 					}
 				}
 				break
 			case "dateAfter2000":
 				if (hasError == false) {
-					if (moment(value).isValid()){
-						if (!moment(value).isAfter('1999-12-31')) {
-							hasError = true
-							uiGenerateErrorBubble("Date is not after 1999!", id, classes)
+					if (value != "" && value != " " && value != undefined) {
+						if (moment(value).isValid()){
+							if (!moment(value).isAfter('1999-12-31')) {
+								hasError = true
+								uiGenerateErrorBubble("Date is not after 1999!", id, classes)
+							}
 						}
 					}
 				}
@@ -2753,7 +2757,7 @@ console.log(rule+":"+value)
 				let userArray = users.filter(function( obj ) {
 					return obj.userName == $("#userName.userForm").val()
 				})
-				if (userArray.length == 1){
+				if (userArray.length == 1 && hasError == false){
 					hasError = true
 					uiGenerateErrorBubble("Not valid: User Name exists!", id, classes)
 				}
@@ -2763,7 +2767,7 @@ console.log(rule+":"+value)
 				}
 				break
 			case "password":
-				if (value.length < 8) {
+				if (value.length < 8 && hasError == false) {
 					hasError = true
 					uiGenerateErrorBubble("Not valid: Minimum 8 characters!", id, classes)
 				}
@@ -2851,10 +2855,10 @@ console.log(rule+":"+value)
 				break
 			}
 	//	rules[i]
-	console.log(hasError)
+//console.log(hasError)
 		}
 	if (!hasError){
-		console.log("WIPE ERROR")
+// console.log("WIPE ERROR")
 	 	$('[id="err-' + id + '"]').remove()
 	 	$('[id="' + id + '"]').removeClass("errorField")
 	}
@@ -2863,11 +2867,8 @@ console.log(rule+":"+value)
 };
 
 function utilValidateForm(form, context){
-
 console.log("IN FORM VAL")
-
 	let formElements = $("."+form)
-
 console.log(formElements)
 	let hasErrors = false
 	for (let i = 0; i < formElements.length; i++) {
@@ -2890,12 +2891,15 @@ console.log(formElements[i].id)
 			if (context == "newClient"){
 				if (id != "clientId") {
 					console.log("NEW CLIENT PASSED TEST")
-					hasError = utilValidateField(id,form+" "+"inputBox")
+					hasError = utilValidateField(id, form +" "+ "inputBox")
 				}
 			} else {
 				console.log("EXIST CLIENT PASSED TEST")
 				hasError = utilValidateField(id,form+" "+"inputBox")
 			}
+		}
+		if (form == "serviceTypeForm") {
+			hasError = utilValidateField(id, form + " " + "inputBox")
 		}
 
 		console.log("ERRORS: ", hasError)
@@ -2913,12 +2917,12 @@ function utilValidateConfig(form, id){
 										 clientId: [ 'required' ],
 			  			createdDateTime: [ 'required' ],
 						  updatedDateTime: [ 'required' ],
-		            firstSeenDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
-		      familyIdCheckedDate: [ 'date', 'dateNowBefore', 'dateAfter2000' ],
+		            firstSeenDate: [ 'required', 'date', 'dateNowBefore', 'dateAfter2000' ],
+		      familyIdCheckedDate: [ 'required', 'date', 'dateNowBefore', 'dateAfter2000' ],
 		                 isActive: [ 'required', {lookup: ["Client", "NonClient", "Inactive"]} ],
 		                givenName: [ 'required', 'name' ],
 				 					 familyName: [ 'required', 'name' ],
-				 								  dob: [ 'date', 'dateNowBefore' ],
+				 								  dob: [ 'required', 'date', 'dateNowBefore' ],
 													age: [ ],
 				 					 		 gender: [ 'required', {lookup: ["Female", "Male"]} ],
 				 				  ethnicGroup: [ 'required', {lookup: ["Afro-American", "Anglo-European", "Asian/Pacific Islander", "Filipino", "Latino", "Native American", "Other"]} ],
@@ -2949,7 +2953,7 @@ function utilValidateConfig(form, id){
            isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
           givenName: [ 'required', 'name' ],
 		     familyName: [ 'required', 'name' ],
-		  			    dob: [ 'date','dateNowBefore' ],
+		  			    dob: [ 'required', 'date','dateNowBefore' ],
 								age: [ ],
 		 		     gender: [ 'required', {lookup: ["Female", "Male"]} ],
 		       userName: [ 'username'],
@@ -3091,15 +3095,3 @@ function isLoggedIn(){
 		return true
 	}
 }
-
-
-
-
-
-
-
-// function newNote(text,text2){
-// 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-// 	uiShowNote(text,text2)
-// 	dbSaveNote(text)
-// }
