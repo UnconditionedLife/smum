@@ -412,7 +412,8 @@ function uiToggleNoteForm(todo, id){
 function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	if (action == "gray") {
-		$("#btn-"+serviceTypeId).css({'color': 'var(--grey-green', 'border-color': 'var(--grey-green'}) //addClass("buttonGrayOut")
+		$("#btn-"+serviceTypeId).css({'color': 'var(--grey-green', 'border-color': 'var(--grey-green'})
+		$("#btn-"+serviceTypeId).addClass("buttonGrayOut")
 		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).addClass("imageGrayOut")
 	} else {
 		$("#btn-"+serviceTypeId).removeClass("buttonGrayOut")
@@ -2005,14 +2006,18 @@ console.log('made it past config')
 
 function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
+
+	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
+		// TODO Create ability to UNDO the adding of a service.
+		utilBeep()
+		return
+	}
 console.log("IN ADD SERVICE");
 	let serviceType = utilGetServiceTypeByID(serviceTypeId)
 	dbSaveService(serviceTypeId, serviceCategory, serviceButtons);
 	uiShowLastServed()
 	// uiShowNote(serviceTypeId, "")
 	uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
-	// TODO Create ability to UNDO the adding of a service.
-	// TODO Create tally of added services on the screen [the print button will be added there]
 };
 
 function utilAddServiceToReceipt(serviceName, serviceCategory, itemsServed){
