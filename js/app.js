@@ -291,11 +291,8 @@ function uiGenerateErrorBubble(errText, id, classes){
 
 console.log(errText, " ", id)
 
-	//if ($('[id="err-' + id + '"]').hasClass("errorBubble")) {
-		$('[id="err-' + id + '"]').remove()
-		$('[id="' + id + '"]').removeClass("errorField")
-	//}
-
+	$('[id="err-' + id + '"]').remove()
+	$('[id="' + id + '"]').removeClass("errorField")
 	let parent = ".clientFormDiv"
 	let formClass = ".clientForm"
 	if (classes.indexOf("userForm") > -1){
@@ -307,6 +304,9 @@ console.log(errText, " ", id)
 	} else if (classes.indexOf("passwordForm") > -1){
 		parent = ".changePasswordFormDiv"
 		formClass = ".passwordForm"
+	} else if (classes.indexOf("noteForm") > -1){
+		parent = "#noteEditForm"
+		formClass = ".noteForm"
 	}
 
 console.log(errText, id, parent, formClass)
@@ -1447,8 +1447,11 @@ console.log(data)
 }
 
 function dbSaveNote(){
-	// TODO replace hardcoded values with real user variables
-	utilValidateFeild("#noteTextArea")
+	hasError = utilValidateField("noteTextArea", "noteForm")
+	if (hasError) {
+		utilBeep()
+		return
+	}
 	let tmp = {}
 	tmp.noteText = $("#noteTextArea").val().toString()
 	tmp.createdDateTime = moment().format(dateTime)
@@ -1461,7 +1464,8 @@ console.log(JSON.stringify(tmp))
 	client.notes.push(tmp)
 console.log(JSON.stringify(client.notes))
 // TODO SAVE CLIENT ... NEED TO USE UPDATE TO ONLY UPDATE SOME FIELDS
-	data = client
+	//data = client
+	let data = utilPadEmptyFields(client)
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
 	if (result == null) {
@@ -2638,6 +2642,9 @@ function utilValidateField(id, classes){
 	console.log("IN FIELD VAL")
 	let hasError = false
 	let formClass = ""
+
+console.log(classes)
+
 	if (classes.indexOf("clientForm") > -1){
 		formClass = "clientForm"
 	} else if (classes.indexOf("userForm") > -1) {
@@ -2646,6 +2653,8 @@ function utilValidateField(id, classes){
 		formClass = "serviceTypeForm"
 	} else if (classes.indexOf("passwordForm") > -1) {
 		formClass = "passwordForm"
+	} else if (classes.indexOf("noteForm") > -1) {
+		formClass = "noteForm"
 	}
 	let ruleId = id.replace(".", "_")
 console.log(formClass, ruleId)
@@ -2990,10 +2999,15 @@ function utilValidateConfig(form, id){
 				 newPassword: [ 'password'],
 		 confirmPassword: [ 'password', {matching: ["newPassword"]} ]
 	}
+	let noteForm = {
+			  noteTextArea: [ 'required' ],
+		 noteIsImportant: []
+	}
 	if (form == "clientForm") return clientForm[id]
 	if (form == "userForm") return userForm[id]
 	if (form == "serviceTypeForm") return serviceTypeForm[id]
 	if (form == "passwordForm") return passwordForm[id]
+	if (form == "noteForm") return noteForm[id]
 };
 
 function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {
