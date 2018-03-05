@@ -2795,7 +2795,7 @@ function utilValidateField(id, classes){
 				break
 			case "lookup":
 				console.log("IN LOOKUP")
-				if (!hasError) {
+				if (hasError == false) {
 					let found = false
 					for (var i = 0; i < lookupList.length; i++) {
 						console.log("|"+lookupList[i]+"|")
@@ -2804,7 +2804,7 @@ function utilValidateField(id, classes){
 							found = true
 						}
 					}
-					if (!found) {
+					if (found == false) {
 						hasError = true
 						uiGenerateErrorBubble("Not valid entry!", id, classes)
 					}
