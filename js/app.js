@@ -2650,7 +2650,7 @@ function utilValidateField(id, classes){
 	let rules = utilValidateConfig(formClass, ruleId)
 //console.log(rules)
 	let lookupList = []
-//console.log(rules)
+console.log(rules)
 	for (var i = 0; i < rules.length; i++) {
 		let rule = rules[i]
 		let ruleType = $.type(rules[i])
@@ -2672,14 +2672,18 @@ function utilValidateField(id, classes){
 			case "required":
 				if (value == "" || value == " " || value == undefined) {
 					hasError = true
+console.log("FAIL: required")
 					uiGenerateErrorBubble("Cannot be blank!", id, classes)
 				}
 				break
 			case "date":
 				if (hasError == false) {
 					if (value != "" && value != " " && value != undefined) {
-						hasError = true
-						uiGenerateErrorBubble("Not a valid date!", id, classes)
+						if (!moment(value).isValid()){
+console.log("FAIL: date")
+							hasError = true
+							uiGenerateErrorBubble("Not a valid date!", id, classes)
+						}
 					}
 				}
 				break
@@ -2688,6 +2692,7 @@ function utilValidateField(id, classes){
 					if (value != "" && value != " " && value != undefined) {
 						if (moment(value).isValid()){
 							if (!moment().isAfter(value)) {
+console.log("FAIL: dateNowBefore")
 								hasError = true
 								uiGenerateErrorBubble("Date must be before now!", id, classes)
 							}
@@ -2700,6 +2705,7 @@ function utilValidateField(id, classes){
 					if (value != "" && value != " " && value != undefined) {
 						if (moment(value).isValid()){
 							if (!moment().isBefore(value)) {
+console.log("FAIL: dateAfterNow")
 								hasError = true
 								uiGenerateErrorBubble("Date must be after now!", id, classes)
 							}
@@ -2712,6 +2718,7 @@ function utilValidateField(id, classes){
 					if (value != "" && value != " " && value != undefined) {
 						if (moment(value).isValid()){
 							if (!moment(value).isAfter('1999-12-31')) {
+console.log("FAIL: dateAfter2000")
 								hasError = true
 								uiGenerateErrorBubble("Date is not after 1999!", id, classes)
 							}
@@ -2805,6 +2812,7 @@ function utilValidateField(id, classes){
 						}
 					}
 					if (found == false) {
+console.log("FAIL: lookup")
 						hasError = true
 						uiGenerateErrorBubble("Not valid entry!", id, classes)
 					}
@@ -2862,7 +2870,7 @@ function utilValidateField(id, classes){
 	 	$('[id="err-' + id + '"]').remove()
 	 	$('[id="' + id + '"]').removeClass("errorField")
 	}
-	console.log("FIELD ERR: ", hasError)
+// console.log("FIELD ERR: ", hasError)
 	return hasError
 };
 
