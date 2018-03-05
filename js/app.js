@@ -2682,14 +2682,7 @@ console.log(rule+":"+value)
 				if (value == "" || value == " " || value == undefined) {
 					console.log("DATE ERROR")
 					hasError = true
-
-console.log(hasError)
-
-
-					//$('[id="' + id + '"][class="'+ classes +'"]').addClass("errorField")
 					uiGenerateErrorBubble("Not a valid date!", id, classes)
-					console.log(id, classes)
-					console.log("DATE ERROR AFTER SHOW BUBBLE")
 				}
 				break
 			case "dateNowBefore":
@@ -2714,10 +2707,10 @@ console.log(hasError)
 				break
 			case "phoneNumber":
 				if (hasError == false && value != "") {
-					let phoneRegex = /([+]?\d{1,2}[.-\s]?)?(\d{3}[.-]?){2}\d{4}/g
+					let phoneRegex = /(\+\d[-\s]?)(\d{3}[-\s]?){2}\d{4}/g
 					if (!value.match(phoneRegex)) {
 						hasError = true
-						uiGenerateErrorBubble("Not a valid phone number!", id, classes)
+						uiGenerateErrorBubble("Not a valid phone format!", id, classes)
 					}
 				}
 				break
@@ -2726,7 +2719,7 @@ console.log(hasError)
 					let emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/g
 					if (!value.match(emailRegex)) {
 						hasError = true
-						uiGenerateErrorBubble("Not a valid email address!", id, classes)
+						uiGenerateErrorBubble("Not a valid email format!", id, classes)
 					}
 				}
 				break
