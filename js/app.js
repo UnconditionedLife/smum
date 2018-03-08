@@ -22,6 +22,7 @@ const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
 const seniorAge = 60 // TODO set in Admin/Settings
 let clientData = null // current client search results
+let servicesRendered = [] // tally of services as they are clicked
 let client = {} // current client
 uiClearCurrentClient()
 let user = {} // authenticated
@@ -219,6 +220,8 @@ function navGotoTab(tab){
 // **********************************************************************************************************
 // *********************************************** UI FUNCTIONS *********************************************
 // **********************************************************************************************************
+
+// *** UI A ***
 function uiAddNewDependentsRow(){
 	let nextRow = '00';
 	if (client.dependents!=null){
@@ -236,8 +239,15 @@ function uiAddNewDependentsRow(){
 	dependentRow+="</tr>"
 	$('#dependentsTable').append(dependentRow)
 	uiToggleDependentsViewEdit('edit');
+};
+
+function uiAddNoteButtonRow(){
+	var buttonRow = '<div class="row"><a data-toggle="modal" data-target="#myModal" class="btn-nav addNoteButton">'
+	buttonRow+='+Note</a></div></table>'
+	$('#notesContainer').append(buttonRow)
 }
 
+// *** UI B ***
 function uiBuildHistoryBottom(){
 	const headerLabels = ["Served", "Service", "isUSDA", "Homeless", "# Items", "# Adults", "# Children", "# Individuals", "# Seniors", "Serviced By"]
 	$("#historyBottom").html("")
@@ -245,7 +255,7 @@ function uiBuildHistoryBottom(){
 		$("#historyBottom").append("<div class='historyHeader'>" + headerLabels[i] + "</div>")
 	}
 	$("#historyBottom").append("<div class='historyLoadButton solidButton' onClick='dbLoadServiceHistory()'>Load History</div>")
-}
+};
 
 function uiBuildHistoryTop(){
 	console.log("IN Build His Top")
@@ -281,11 +291,25 @@ console.log(historyArray)
 	uiGenSelectHTMLTable('#historyTop', historyArray, columns,'historyTable')
 }
 
+// *** UI C ***
 function uiClearAllErrorBubbles(){
 	$('.errorBubble').remove()
 	$('.errorField').removeClass("errorField")
 };
 
+// *** UI D ***
+function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	//setMainSideDiv()
+	const tableStr = '<table class="notes"></table>'
+	$('#notesContainer').html(tableStr)
+	// var headerRow = '<tr style="height:50px;padding:10px;"><td><h4 class="siteHeading">'+pageName+'</h4>'
+	// headerRow+='<h5 class="siteHeading">'+moment().format(uiDate)+'</h5></td></tr>'
+	const headerRow = '<tr><td class="notesHeader">Created</td><td class="notesHeader">Note</td><td class="notesHeader">Created By</td><td class="notesHeader">Important</td></tr>'
+	$('.notes').append(headerRow)
+}
+
+// *** UI G ***
 function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 // console.log(errText, " ", id)
@@ -336,7 +360,7 @@ jQuery('<div/>', {
 	});
 	$('[id="' + id + '"]' + formClass).addClass("errorField")
 };
-
+// *** UI L ***
 function uiLoginFormToggleValidation(todo){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	console.log("REDO LOGIN TO SHOW VALIDATION FIELD")
@@ -355,9 +379,19 @@ function uiLoginFormToggleValidation(todo){
 	}
 };
 
+// *** UI O ***
 function uiOutlineTableRow(table, row){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', 'var(--blue) 1px dashed').siblings().css('outline', 'none')
+};
+
+// *** UI R ***
+function uiResetDependentsTable() {
+	// TODO write reset code
+};
+
+function uiResetChangePasswordForm(){
+	$(".passwordForm").val("")
 };
 
 function uiResetNotesTab(){
@@ -367,6 +401,22 @@ function uiResetNotesTab(){
 	$("#noteIsImportant").prop("checked", false)
 };
 
+function uiResetUserForm () {
+	if ($("#userSaveAdmin").css("display") != "none"){
+		let view = "new"
+		if ($("#userPasswordDiv").css("display") == "none") {
+			view = "existing"
+			uiShowUserForm()
+		} else {
+			uiShowNewUserForm()
+		}
+		uiToggleUserNewEdit(view)
+	} else {
+		uiShowProfileForm()
+	}
+};
+
+// *** UI S ***
 function uiShowExistingNotes(){
 	$('.notes').html("")
 	// TODO this sort does not seem to be working - verify and fix
@@ -388,7 +438,7 @@ function uiShowExistingNotes(){
 		$("#tabLable6").css("color", "var(--red)")
 	}
 };
-
+// *** UI T ***
 function uiToggleNoteForm(todo, id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	if (id.length > 1) {
@@ -408,7 +458,7 @@ function uiToggleNoteForm(todo, id){
 function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	if (action == "gray") {
-		$("#btn-"+serviceTypeId).css({'color': 'var(--grey-green', 'border-color': 'var(--grey-green'})
+		//$("#btn-"+serviceTypeId).css({'color': 'var(--grey-green)', 'border-color': 'var(--grey-green)'})
 		$("#btn-"+serviceTypeId).addClass("buttonGrayOut")
 		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).addClass("imageGrayOut")
 	} else {
@@ -416,7 +466,7 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).removeClass("imageGrayOut")
 	}
 };
-
+// *** UI U ***
 function uiUpdateCurrentClient(index) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiOutlineTableRow('clientTable', index + 1)
@@ -431,13 +481,7 @@ function uiUpdateAdminHeader() {
 	$("#adminTitle").html($("#serviceName").val())
 };
 
-function uiResetDependentsTable() {
-	// TODO write reset code
-};
 
-function uiResetChangePasswordForm(){
-	$(".passwordForm").val("")
-};
 
 function uiSaveButton(form, action){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -951,16 +995,10 @@ function uiToggleUserNewEdit(type){
 console.log("IN TOGGLE FIELDS")
 console.log(type)
 
-	if (type == 'new') {
-		$('.newUserOnly').show()
-	}
-	if (type == 'existing') {
-
-console.log($('.newUserOnly'))
-
-		$('.newUserOnly').hide()
-	}
-}
+	$(".profileOnly").hide()
+	if (type == 'new') $('.newUserOnly').show()
+	if (type == 'existing') $('.newUserOnly').hide()
+};
 
 function uiToggleDependentsViewEdit(side){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -1044,26 +1082,79 @@ function uiResetServiceTypeForm(){
 	uiPopulateForm(serviceType, 'serviceTypeForm')
 }
 
-function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	//setMainSideDiv()
-	const tableStr = '<table class="notes"></table>'
-	$('#notesContainer').html(tableStr)
-	// var headerRow = '<tr style="height:50px;padding:10px;"><td><h4 class="siteHeading">'+pageName+'</h4>'
-	// headerRow+='<h5 class="siteHeading">'+moment().format(uiDate)+'</h5></td></tr>'
-	const headerRow = '<tr><td class="notesHeader">Created</td><td class="notesHeader">Note</td><td class="notesHeader">Created By</td><td class="notesHeader">Important</td></tr>'
-	$('.notes').append(headerRow)
-}
 
-function uiAddNoteButtonRow(){
-	var buttonRow = '<div class="row"><a data-toggle="modal" data-target="#myModal" class="btn-nav addNoteButton">'
-	buttonRow+='+Note</a></div></table>'
-	$('#notesContainer').append(buttonRow)
-}
 
 // **********************************************************************************************************
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
+function dbDeleteData(uUrl){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+
+console.log(uUrl)
+
+let ans = null
+
+	$.ajax({
+    type: "DELETE",
+    url: uUrl,
+		headers: {"Authorization": authorization.idToken},
+    async: false,
+    // dataType: "json",
+		// contentType:'application/json',
+    success: function(json){
+console.log("SUCCESSFUL DELETE")
+			if (json!==undefined) {
+				// console.log(json.count)
+				// console.log(urlNew)
+			}
+    	ans = json
+		},
+		statusCode: {
+			401: function() {
+
+console.log("Error: 401")
+
+				cogLogoutUser()
+				$('#nav5').html('Login')
+				$('#nav4').html('')
+				$(loginError).html("Sorry, your session has expired.")
+				console.log("Unauthorized")
+			},
+			0: function() {
+console.log("Error: 0")
+				console.log("Status code: 0")
+				cogLogoutUser()
+				$('#nav5').html('Login')
+				$('#nav4').html('')
+				$(loginError).html("Sorry, your session has expired.")
+				console.log("Unauthorized")
+			}
+		},
+		error: function(jqXHR, status, error){
+
+
+		}
+	}).done(function(data, textStatus, jqXHR) {
+
+console.log("DELETE DONE")
+		//console.log(data)
+  }).fail(function (jqXHR, textStatus, errorThrown) {
+    console.log("status", jqXHR.status)
+		if (jqXHR.status == 0) {
+
+		}
+		console.log("errorThrown", errorThrown)
+		// if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
+		// 	console.log("ACCESS ERROR") // force logon
+		// }
+	}).always(function (data, textStatus, jqXHR) {
+    // TODO most likely remove .always
+	})
+	//console.log(ans)
+	return ans
+
+};
+
 function dbGetData(uUrl){
 	//console.log("IN GET")
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -1071,6 +1162,9 @@ function dbGetData(uUrl){
 	let urlNew = uUrl;
 	let ans = null;
 // console.log('idToken + ' + authorization.idToken)
+
+console.log(urlNew)
+
 	// TODO /// move Ajax calls to [.done .fail . always syntax]
 	$.ajax({
     type: "GET",
@@ -1089,6 +1183,9 @@ function dbGetData(uUrl){
 		},
 		statusCode: {
 			401: function() {
+
+console.log("Error: 401")
+
 				cogLogoutUser()
 				$('#nav5').html('Login')
 				$('#nav4').html('')
@@ -1096,6 +1193,7 @@ function dbGetData(uUrl){
 				console.log("Unauthorized")
 			},
 			0: function() {
+console.log("Error: 0")
 				console.log("Status code: 0")
 				cogLogoutUser()
 				$('#nav5').html('Login')
@@ -1193,9 +1291,13 @@ console.log("IN POST DATA")
 
 console.log("PAST SessionCheck")
 
+
 console.log(JSON.stringify(dataU))
 
 	let urlNew = uUrl;
+
+console.log(urlNew)
+
 	let uData = dataU;
 	let ans = null;
 	$.ajax({
@@ -1311,6 +1413,10 @@ function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 	}
 }
 
+function dbDeleteService(serviceId){
+
+}
+
 function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	let serviceType = {}
@@ -1415,6 +1521,10 @@ console.log(itemsServed)
 						      itemCount: itemsServed
 					}
 	}
+	// store for use durring session
+	servicesRendered.push(serviceRecord)
+	// TODO reset servicesRendered variable to [] whith each client
+	// TODO reset servicesRendered variable to [] with New Client & 0 results
 
 console.log(session.user)
 
@@ -2012,7 +2122,21 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 
 	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
 		// TODO Create ability to UNDO the adding of a service.
-		utilBeep()
+		const serviceItem = servicesRendered
+				.filter(function( obj ) {
+			return obj.serviceTypeId == serviceTypeId
+		})
+console.log(serviceItem[0].serviceId)
+		// TODO Need to revert old Last Served from current client ?????
+		// let result = dbDeleteData(aws+"/clients/services/delete/" + serviceItem[0].serviceId)
+console.log(result)
+		if (result == {}) {
+			uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
+			if (serviceButtons == "Primary") $("#image-"+serviceTypeId).removeClass("imageGrayOut")
+		} else {
+			// TODO UNable to save message
+			utilBeep()
+		}
 		return
 	}
 console.log("IN ADD SERVICE");
@@ -2181,7 +2305,7 @@ function utilCalcFamilyCounts(){
 };
 
 function uiClearCurrentClient(){
-	let blank = "<div class='bannerDiv'><span class='bannerText'>USE SEARCH TO FIND A CLIENT</span></div>"
+	let blank = "<div class='bannerDiv'><span class='bannerText'>SEARCH FOR CLIENT</span></div>"
 	$("#searchContainer").html(blank)
 	$("#clientFormContainer").html(blank)
 		$("#clientLeftSlider").hide()

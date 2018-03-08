@@ -73,15 +73,13 @@
                <label id="tabLable6" for="tab6">Notes</label>
                <section id="content1"> <!-- Found -->
                   <!-- <div class="topFormButtonsDiv"><input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client"></div> -->
-                  <container id="searchContainer">
-                     <div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div>
-                  </container>
+                  <container id="searchContainer"></container>
                </section>
                <section id="content2"> <!-- Services -->
                   <container id="serviceButtonContainer">
                      <div id="serviceDateTime"></div>
                      <div id="serviceLastVisit"></div>
-                     <div id="servicePrimaryButtons"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></div>
+                     <div id="servicePrimaryButtons"><div class="bannerDiv"><span class="bannerText">SEARCH FOR A CLIENT</span></div></div>
                      <div id="serviceSecondaryButtons"></div>
                   </container>
                </section>
@@ -92,7 +90,7 @@
                      <input id="clientRightSlider" class="rightSlider" onclick="uiToggleClientViewEdit('edit')" type="button" value="Edit">
                   </div>
                   <div id="clientFormWrap">
-                     <container id="clientFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
+                     <container id="clientFormContainer"></container>
                   </div>
                </section>
                <section id="content4"> <!-- Dependents -->
@@ -101,14 +99,14 @@
                      <input id="dependentdLeftSlider" class="leftSlider sliderActive" onclick="uiToggleDependentsViewEdit('view')" type="button" value="View">
                      <input id="dependentdRightSlider" class="rightSlider" onclick="uiToggleDependentsViewEdit('edit')" type="button" value="Edit">
                   </div>
-                  <container id="dependentsFormContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
+                  <container id="dependentsFormContainer"></container>
                   <div class="dependentsEditOnly" style="display: flex; justify-content: center; height: 60px; align-items: center;">
                      <input id="dependentsSaveButton" class="solidButton" onclick="dbSaveDependentsTable()" type="button" value="Save">
                      <input class="openButton" onclick="uiResetDependentsTable()" type="button" value="Cancel">
                   </div>
                </section>
                <section id="content5"> <!-- History -->
-                  <div id="historyTop"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container></div>
+                  <div id="historyTop"><div class="bannerDiv"><span class="bannerText">SEARCH FOR CLIENT</span></div></container></div>
                   <div id="historyBottom"></div>
                </section>
                <section id="content6"> <!-- Notes -->
@@ -120,7 +118,7 @@
                      <div style="padding-top: 8px;"><p><input class="solidButton" onclick="dbSaveNote()" type="button" value="Save"></p></div>
                      <div style="padding-top: 8px;"><input class="openButton" onclick="uiToggleNoteForm('hide', '')" type="button" value="Cancel"></div>
                   </div>
-                  <container id="notesContainer"><div class="bannerDiv"><span class="bannerText">USE SEARCH TO FIND A CLIENT</span></div></container>
+                  <container id="notesContainer"></container>
                </section>
                <div id="receiptTab">
                   <span class="verticalText">R E C E I P T</span>
@@ -433,11 +431,11 @@
          <div class="span4"></div>
          <div></div>
          <div class="lableDiv loginDiv">Username</div>
-         <div class="loginDiv"><input id="loginUserName" type="email" class="inputBox loginForm"></div>
+         <div class="loginDiv"><input id="loginUserName" type="email" class="inputBox loginForm" tabindex="1"></div>
          <div class="loginDiv"></div>
          <div class="loginDiv"></div>
          <div class="lableDiv loginDiv">Password</div>
-         <div class="loginDiv"><input id="loginPassword" type="password" class="inputBox loginForm"> <i class="fa fa-eye fa-lg" style="float: right;" aria-hidden="true" onclick='uiShowHidePassword()'></i></div>
+         <div class="loginDiv"><input id="loginPassword" type="password" class="inputBox loginForm" tabindex="2"> <i class="fa fa-eye fa-lg" style="float: right;" aria-hidden="true" onclick='uiShowHidePassword()'></i></div>
          <div class="lableDiv codeDiv newPasswordDiv">Validation Code</div>
          <div class="codeDiv newPasswordDiv"><input id="loginCode" type="text" class="inputBox loginForm"></div>
          <div class="newPasswordDiv"></div>
@@ -449,10 +447,10 @@
             <span class="textLink" onclick='cogResendValidationCode()'>Resend Validation Code</span>
          </div>
          <div class="span4 loginDiv" style="display: flex; justify-content: center; align-items: center;">
-            <span class="textLink" onclick='cogForgotPassword()'>Forgot Password</span>
+            <span class="textLink" onclick='cogForgotPassword()' tabindex="4">Forgot Password</span>
          </div>
          <div class="span4 loginDiv" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-            <input class="solidButton" onclick="cogLoginUser()" type="button" value="Login">
+            <input class="solidButton" onclick="cogLoginUser()" type="button" value="Login" tabindex="3">
          </div>
          <div class="span4 codeDiv" style="display: flex; justify-content: center; height: 60px; align-items: center;">
             <input class="solidButton" onclick="cogUserConfirm()" type="button" value="VALIDATE">

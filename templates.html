@@ -273,30 +273,30 @@
         <input id="updatedDateTime" type="hidden" class="userForm">
         <input id="createdDateTime" type="hidden" class="userForm">
         <!-- visible field -->
-        <input id="givenName" type="text" class="inputBox userForm">
+        <input id="givenName" type="text" class="inputBox userForm" tabindex="1">
       </div>
       <div class="lableDiv">Family Name</div>
-      <div class=""><input id="familyName" type="text" class="inputBox userForm"></div>
+      <div class=""><input id="familyName" type="text" class="inputBox userForm" tabindex="2"></div>
       <div class="lableDiv">Gender</div>
       <div class="">
-         <select id="gender" class="inputBox userForm">
+         <select id="gender" class="inputBox userForm" tabindex="3">
             <option value="Female">Female</option>
             <option value="Male">Male</option>
          </select>
       </div>
       <div class="lableDiv">DOB</div>
-      <div class=""><input id="dob" type="date" class="inputBox userForm" onchange="utilCalcUserAge('form')"></div>
+      <div class=""><input id="dob" type="date" class="inputBox userForm" onchange="utilCalcUserAge('form')" tabindex="4"></div>
       <div class="lableDiv">Age</div>
       <div class=""><input id="age" type="text" class="inputBox userForm viewOnly" readonly></div>
       <div class="headingDiv adminOnly span6">User Access</div>
       <div class="lableDiv newUserOnly adminOnly">User Name</div>
-      <div class="newUserOnly adminOnly"><input id="userName" type="text" class="inputBox userForm" maxlength="8"></div>
+      <div class="newUserOnly adminOnly"><input id="userName" type="text" class="inputBox userForm" maxlength="8" tabindex="5"></div>
       <div class="lableDiv newUserOnly adminOnly">Password</div>
-      <div class="newUserOnly adminOnly"><input id="password" type="password" class="inputBox userForm"></div>
+      <div id="userPasswordDiv" class="newUserOnly adminOnly"><input id="password" type="password" class="inputBox userForm" tabindex="6"></div>
       <div class="newUserOnly adminOnly span2"></div>
       <div class="lableDiv adminOnly">Role</div>
       <div class="adminOnly">
-         <select id="userRole" class="inputBox userForm">
+         <select id="userRole" class="inputBox userForm" tabindex="7">
             <option value="Admin">Admin</option>
             <option value="TechAdmin">TechAdmin</option>
             <option value="Staff">Staff</option>
@@ -305,30 +305,30 @@
       </div>
       <div class="lableDiv adminOnly">Status</div>
       <div class="adminOnly">
-         <select id="isActive" class="inputBox userForm">
+         <select id="isActive" class="inputBox userForm" tabindex="8">
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
          </select>
       </div>
       <div class="headingDiv span6">Home Address</div>
       <div class="lableDiv addressDiv">Street</div>
-      <div class="addressDiv span3"><input id="street" type="text" class="inputBox userForm"></div>
+      <div class="addressDiv span3"><input id="street" type="text" class="inputBox userForm" tabindex="9"></div>
       <div class="span2"></div>
       <div class="lableDiv addressDiv">City</div>
-      <div class="addressDiv"><input id="city" type="text" class="inputBox userForm"></div>
+      <div class="addressDiv"><input id="city" type="text" class="inputBox userForm" tabindex="10"></div>
       <div class="lableDiv addressDiv">State</div>
-      <div class="addressDiv"><input id="state" type="text" class="inputBox userForm"></div>
+      <div class="addressDiv"><input id="state" type="text" class="inputBox userForm" tabindex="11"></div>
       <div class="lableDiv addressDiv">Zipcode</div>
-      <div class="addressDiv"><input id="zipcode" type="number" class="inputBox userForm" style="width: 80px"><input id="zipSuffix" type="number" class="inputBox userForm" style="width: 75px; margin-right: 0;"></div>
+      <div class="addressDiv"><input id="zipcode" type="number" class="inputBox userForm" style="width: 80px" tabindex="12"><input id="zipSuffix" type="number" class="inputBox userForm" style="width: 75px; margin-right: 0;" tabindex="13"></div>
       <div class="headingDiv span6">Contact Info</div>
       <div class="lableDiv">Phone</div>
-      <div class=""><input id="telephone" type="text" class="inputBox userForm"></div>
+      <div class=""><input id="telephone" type="text" class="inputBox userForm" tabindex="14"></div>
       <div class="lableDiv">Email</div>
-      <div class=""><input id="email" type="email" class="inputBox userForm"></div>
+      <div class=""><input id="email" type="email" class="inputBox userForm" tabindex="15"></div>
       <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-         <input class="solidButton adminOnly" onclick="dbSaveUser('userAdmin')" type="button" value="Save"> <!--// TODO replace this saveUserForm -->
-         <input class="solidButton profileOnly" onclick="dbSaveUser('userProfile')" type="button" value="Save">
-         <input class="openButton" onclick="uiResetUserForm()" type="button" value="Cancel">
+         <input id="userSaveAdmin" class="solidButton adminOnly" onclick="dbSaveUser('userAdmin')" type="button" value="Save" tabindex="16"> <!--// TODO replace this saveUserForm -->
+         <input id="userSaveProfile" class="solidButton profileOnly" onclick="dbSaveUser('userProfile')" type="button" value="Save"  tabindex="17">
+         <input class="openButton" onclick="uiResetUserForm()" type="button" value="Cancel" tabindex="18">
       </div>
    </div>
 </template>
