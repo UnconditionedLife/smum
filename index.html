@@ -8,6 +8,7 @@
       <link rel="icon" href="favicon.ico" type="image/x-icon">
       <link rel="stylesheet" href="css/jquery-ui.min.css">
 	   <link rel="stylesheet" href="css/style.css">
+      <link rel="stylesheet" href="css/reports.css">
       <link rel="import" href="templates.html">
       <audio id="beep" src="sounds/beep.wav" autostart="false"></audio>
       <audio id="bloop" src="sounds/bloop.wav" autostart="false"></audio>
@@ -175,7 +176,7 @@
                <container id="serviceTypeFormContainer"></container>
             </section>
             <section id="aContent3"> <!--  Reports Section -->
-
+               <container id="reportsFormContainer"></container>
             </section>
             <section id="aContent4"> <!--  Users Section -->
                <div class="topFormButtonsDiv">
@@ -473,9 +474,13 @@
          </div>
       </div>
    </div>
+   <div id="printOverlay" class="popupOverlay">
+      <div id="printBodyDiv"></div>
+   </div>
 
    <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
    <script src="js/jquery-ui.min.js"></script>
+   <script src="js/jquery-printme.min.js"></script>
 
 
    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>

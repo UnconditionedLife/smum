@@ -46,80 +46,6 @@ let authorization = {}
 
 // TODO build some selects in forms from data in settings (ie. Categories)
 
-// **********************************************************************************************************
-// **********************************************************************************************************
-// let NavGuard = (function NavGuard() {
-//   let self = this;
-//   self.addRandomHash = function() {
-//     // This will harmlessly change the url hash to "#random",
-//     // which will trigger onhashchange when they hit the back button
-//     if ($.isEmptyObject(location.hash)) {
-//       var random_hash = '#ng-' + new Date().getTime().toString(36);
-//
-//       // Push "#random" onto the history, making it the most recent "page"
-//       history.pushState({navGuard: true}, '', random_hash)
-//     }
-//   };
-//
-//   self.enableGuard = function() {
-//     var msg = 'NOTICE FROM NAVGUARD: Are you sure you want to navigate away from this screen? You may lose unsaved changes.';
-//
-//     self.addRandomHash();
-//
-//     $(window).off('hashchange.ng').on('hashchange.ng', function(event) {
-//       if ($.isEmptyObject(location.hash)) {
-//         var result = confirm(msg);
-//         if (result) {
-//           //Go back to where they were trying to go
-//           //Only go back if there is something to go back to
-//           if (window.history.length > 2) {
-//             window.history.back();
-//           }
-//         } else {
-//           // Put the hash back in; rinse and repeat
-//           window.history.forward();
-//         }
-//       }
-//     });
-// TODO install unload prevention
-// TODO remove all NavGuard code
-// $( window ).unload(function() {
-// 	console.log("Trying to get out.")
-//   return "Handler for .unload() called.";
-// });
-
-  //While we are at it, also throw in the traditional beforeunload listener to guard against accidantal window closures
-  // $(window).off('beforeunload.ng').on('beforeunload.ng', function(event) {
-	// 	console.log("Trying to get out!!")
-  //   // return msg;
-  // });
-	//
-  //   //If navigating within app without ajax, don't show beforeunload warning
-  //   $('a').not('a,a:not([href]),[href^="#"],[href^="javascript"]').mousedown(function() {
-  //     $(window).off('beforeunload.ng');
-  //   });
-  // };
-
-//   __construct = function(that) {
-//     console.log("constructor called for NavGuard");
-//   }(this);
-//
-//   return {
-//     destory: function() {
-//       $(window).off('hashchange.ng');
-//       $(window).off('beforeunload.ng');
-//     },
-//     init: function() {
-//       var history_api = typeof history.pushState !== 'undefined';
-//       if (history_api) {
-//         self.enableGuard();
-//       }
-//     }
-//   }
-// })();
-//
-// NavGuard.init();
-
 uiFillDate()
 uiShowHideLogin('show')
 navGotoTab("tab1")
@@ -143,7 +69,7 @@ $(document.body).on('focusout','.passwordForm',function(){utilValidateField($(th
 $(document).ready(function(){
 	uiShowServicesDateTime()
   setInterval(uiShowServicesDateTime, 10000)
-});
+})
 
 // **********************************************************************************************************
 // ********************************************** NAV FUNCTIONS *********************************************
@@ -166,6 +92,7 @@ function navSwitch(link){
 			uiShowServiceTypes()
 			uiShowUsers()
 			uiShowSettings()
+			uiShowReports()
 			break
 		case "user":
 			navGotoSec("nav4")
@@ -417,6 +344,15 @@ function uiResetUserForm () {
 };
 
 // *** UI S ***
+function uiShowCurrentClientButtons(){
+	$("#clientLeftSlider").show()
+	$("#clientRightSlider").show()
+	$("#newNoteButton").show()
+	$("#dependentdLeftSlider").show()
+	$("#dependentdRightSlider").show()
+	$("#newNoteButton").show()
+};
+
 function uiShowExistingNotes(){
 	$('.notes').html("")
 	// TODO this sort does not seem to be working - verify and fix
@@ -438,6 +374,7 @@ function uiShowExistingNotes(){
 		$("#tabLable6").css("color", "var(--red)")
 	}
 };
+
 // *** UI T ***
 function uiToggleNoteForm(todo, id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -502,9 +439,11 @@ function uiSaveButton(form, action){
 };
 
 function uiSetMenusForUser(){
+	// TODO remove TechAmin from dropdown for admins that are not Tech
 	if (currentUser.isActive == "Active") {
 		if (currentUser.userRole == "Admin"){
 			$("#nav3").show()
+			$("#atabLable7").hide()
 		} else if (currentUser.userRole == "TechAdmin"){
 			$("#nav3").show()
 			$("#atabLable7").show()
@@ -525,7 +464,10 @@ function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, to
 
 function uiShowHideError(todo, title, message){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-	if (todo === 'show'){
+//	alert("IN MESSAGE!!!")
+	if (todo == 'show'){
+//alert("IN SHOW MESSAGE!!!")
+
 		$('#errorOverlay').show().css('display', 'flex')
 		$('#errorTitle').html(title)
 		$('#errorMessage').html(message)
@@ -533,6 +475,17 @@ function uiShowHideError(todo, title, message){
 		$('#errorOverlay').hide()
 		$('#errorTitle').html('')
 		$('#errorMessage').html('')
+	}
+};
+
+function uiShowHidePrint(todo){
+	if (todo == 'show'){
+		console.log($('#printOverlay'))
+		$('#printOverlay').show().css('display', 'flex')
+		console.log($('#printOverlay').children())
+		console.log($("#printBodyDiv"))
+	} else {
+		$('#printOverlay').hide()
 	}
 };
 
@@ -633,6 +586,11 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 	//}
 };
 
+function uiShowReports(){
+	$('#reportsFormContainer').html(uiGetTemplate('#reportsForm'))
+	// TODO populate the date fields to reflect current period/last completed period
+};
+
 let uiShowServicesDateTime = function() {
 	if (client.clientId != undefined){
 		$('#serviceDateTime').html(moment().format(longDate))
@@ -715,6 +673,7 @@ function uiShowNote(dateTime, text, user, important){
 
 function uiShowNewClientForm(){
 	client = {}
+	servicesRendered = []
 	uiClearCurrentClient()
 	$("#clientsTitle").html("New Client")
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
@@ -1255,6 +1214,10 @@ function dbGetNewClientID(){
 			newId++
 		}
 	}
+	// setTimeout(function(){
+	// 	uiShowHideError("hide", "", "")
+	// }, 2000);
+
 	request = {}
 	newId = newId.toString()
 	request['lastId']=newId
@@ -1413,11 +1376,7 @@ function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 	}
 }
 
-function dbDeleteService(serviceId){
-
-}
-
-function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
+function dbSaveService(serviceTypeId, serviceId, serviceValid){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	let serviceType = {}
 	serviceType = utilGetServiceTypeByID(serviceTypeId)
@@ -1427,11 +1386,11 @@ function dbSaveService(serviceTypeId, serviceCategory, serviceButtons){
 	} else {
 		itemsServed = numItems
 	}
-	if (serviceButtons == "Primary"){
-		dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, serviceType.isUSDA)
+	if (serviceType.serviceButtons == "Primary"){
+		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, itemsServed, serviceType.isUSDA)
 	}
-	utilAddServiceToReceipt(serviceType.serviceName, serviceCategory, itemsServed)
-	dbPostService(serviceType, itemsServed)
+	dbPostService(serviceType, itemsServed, serviceId, serviceValid)
+	utilAddServiceToReceipt()
 };
 
 function dbSaveUser(context){
@@ -1483,21 +1442,23 @@ console.log(hasErrors)
 	}
 };
 
-function dbPostService(serviceType, itemsServed){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+function dbPostService(serviceType, itemsServed, serviceId, serviceValid){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	// TODO add senior cutoff age to the Settings
 	// TODO add Service area Zipcodes to the Settings
 	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
 
-console.log(itemsServed)
-
-	let emergencyFood = "NO"
-	let servicedMonth = moment().format("YYYYMM")
+	let emergencyFood = "NO",
+			servicedMonth = moment().format("YYYYMM"),
+	 		servicedDay = moment().format("YYYYMMDD")
+	if (serviceId == "") serviceId = cuid()
 	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
 	let serviceRecord = {
-							serviceId: cuid(),
+							serviceId: serviceId,
+					 serviceValid: serviceValid,
 			 servicedDateTime: moment().format(dateTime),
 			 		servicedMonth: servicedMonth,
+					  servicedDay: servicedDay,
 			 	 clientServedId: client.clientId,
 				   clientStatus: client.isActive,
 		 servicedByUserName: currentUser.userName,
@@ -1522,22 +1483,21 @@ console.log(itemsServed)
 					}
 	}
 	// store for use durring session
-	servicesRendered.push(serviceRecord)
-	// TODO reset servicesRendered variable to [] whith each client
-	// TODO reset servicesRendered variable to [] with New Client & 0 results
-
-console.log(session.user)
-
+	if (serviceValid) {
+		servicesRendered.push(serviceRecord)
+	} else {
+		const temp = servicesRendered
+			.filter(function(item) {
+    	return item.serviceId !== serviceId
+		})
+		servicesRendered = temp
+	}
 	let data = serviceRecord
 	data = JSON.stringify(data)
-
-console.log(data)
-
 	let URL = aws+"/clients/services"
 	result = dbPostData(URL,data)
 	if (result == null) {
 		utilBloop() // TODO move bloop to successful POST ()
-		console.log("SUCCESS: " + result)
 	}
 }
 
@@ -1579,7 +1539,7 @@ function dbSaveClientForm(context){
 	$("#updatedDateTime.clientForm").val(utilNow())
 	let data = ""
 	if (client.clientId == undefined) {
-		console.log("GETTING CLIENT ID")
+		$("body").css("cursor", "progress");
 		let clientId = dbGetNewClientID()
 		$("#clientId.clientForm").val(clientId)
 		data = utilFormToJSON('.clientForm')
@@ -1605,6 +1565,7 @@ function dbSaveClientForm(context){
 	uiSaveButton('client', 'Saving...')
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
+	$("body").css("cursor", "default");
 	if (result == null && client.clientId != undefined) {
 		utilCalcClientAge("db")
 		utilCalcFamilyCounts()
@@ -1708,6 +1669,7 @@ function dbSearchClients(){
 	 	utilBeep()
 	 	uiSetClientsHeader("0 Clients Found")
 		client = {}
+		servicesRendered = []
 		uiClearCurrentClient()
 	 	// TODO clear current client
   } else {
@@ -2119,45 +2081,43 @@ console.log('made it past config')
 
 function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-
+	let serviceType = utilGetServiceTypeByID(serviceTypeId)
 	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
 		// TODO Create ability to UNDO the adding of a service.
+		// TODO remove service from services rendered array
 		const serviceItem = servicesRendered
-				.filter(function( obj ) {
+			.filter(function( obj ) {
 			return obj.serviceTypeId == serviceTypeId
 		})
-console.log(serviceItem[0].serviceId)
+		console.log(serviceItem[0].serviceId)
+		let serviceValid = false
+		dbSaveService(serviceTypeId, serviceItem[0].serviceId, serviceValid)
 		// TODO Need to revert old Last Served from current client ?????
-		// let result = dbDeleteData(aws+"/clients/services/delete/" + serviceItem[0].serviceId)
-console.log(result)
-		if (result == {}) {
-			uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
-			if (serviceButtons == "Primary") $("#image-"+serviceTypeId).removeClass("imageGrayOut")
-		} else {
-			// TODO UNable to save message
-			utilBeep()
-		}
-		return
-	}
+		uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
+		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).removeClass("imageGrayOut")
+	} else {
 console.log("IN ADD SERVICE");
-	let serviceType = utilGetServiceTypeByID(serviceTypeId)
-	dbSaveService(serviceTypeId, serviceCategory, serviceButtons);
-	uiShowLastServed()
-	// uiShowNote(serviceTypeId, "")
-	uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
+		let serviceValid = true
+		dbSaveService(serviceTypeId, "", serviceValid)
+		uiShowLastServed()
+		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
+	}
 };
 
-function utilAddServiceToReceipt(serviceName, serviceCategory, itemsServed){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-	let header = "<p><strong>" + serviceCategory + ":</strong> " + serviceName + "<br>"
-	let body = "<strong>Items Served:</strong> " + itemsServed
-	if (serviceCategory == "Clothes_Closet") {
-		body = body + "<br><strong>Adults Served:</strong> " + client.family.totalAdults + "<br><strong>Children Served:</strong>  " + client.family.totalChildren
+function utilAddServiceToReceipt(){
+	$("#receiptBody").html("")
+	for (var i = 0; i < servicesRendered.length; i++) {
+		let header = "<p><strong>" + servicesRendered[i].serviceCategory + ":</strong> " + servicesRendered[i].serviceName + "<br>"
+		let body = "<strong>Items Served:</strong> " + servicesRendered[i].itemsServed
+		if (servicesRendered[i].serviceCategory == "Clothes_Closet") {
+			body = body + "<br><strong>Adults Served:</strong> " + client.family.totalAdults + "<br><strong>Children Served:</strong>  " + client.family.totalChildren
+		}
+		if (servicesRendered[i].serviceCategory == "Food_Pantry") {
+			body = body + "<br><strong>Family Size:</strong> " + client.family.totalSize
+		}
+		$("#receiptBody").append(header + body)
 	}
-	if (serviceCategory == "Food_Pantry") {
-		body = body + "<br><strong>Family Size:</strong> " + client.family.totalSize
-	}
-	$("#receiptBody").append(header + body)
+
 };
 
 function utilCognitoPhoneFormat(telephone){
@@ -2326,14 +2286,7 @@ function uiClearCurrentClient(){
 		$("#tabLable6").css("color", "#bbb")
 };
 
-function uiShowCurrentClientButtons(){
-	$("#clientLeftSlider").show()
-	$("#clientRightSlider").show()
-	$("#newNoteButton").show()
-	$("#dependentdLeftSlider").show()
-	$("#dependentdRightSlider").show()
-	$("#newNoteButton").show()
-}
+
 
 // function utilCalcLastIdCheckDays() {
 // 	// get Id Checked Date from client object & calculate number of days
@@ -2341,6 +2294,39 @@ function uiShowCurrentClientButtons(){
 // 	let lastIdCheck = moment().diff(client.familyIdCheckedDate, 'days')
 // 	return lastIdCheck
 // }
+
+function utilGenerateDailyReport(){
+	let header = uiGetTemplate('#reportHeader')
+	let reportBodyHeader = uiGetTemplate('#reportBodyHeader')
+
+
+	let reportTitle = "FOOD DISTRIBUTION"
+	if ($("#reportsDailyType").val() == "ALL") {
+		reportTitle = "SERVICE DISTRIBUTION"
+	}
+
+	uiShowHidePrint("show")
+  $("#printBodyDiv").append(header)
+	$("#printBodyDiv").append(reportBodyHeader)
+	// TODO get data from services
+
+	let data = [
+		{},
+		{},
+		{},
+		{},
+		{},
+	]
+
+
+
+	$("#reportTitle").html(reportTitle)
+
+	// $("#printBodyDiv").html("<BR> TESTING #2")
+
+	// $("#printBodyDiv").printMe({ "title": reportTitle });
+	// $("#printBodyDiv").printMe({ "path": ["css/reports.css"] });
+};
 
 function utilLoginUserShowScreens(){
 	$('#nav4').html('<i class="fa fa-user" aria-hidden="true"></i> ' + session.user.username)
@@ -2639,12 +2625,10 @@ function utilCalcUserAge(source){
 	let dob = ""
 	if (source == "form") {
 		dob = $("#dob.userForm").val()
-console.log(dob)
 	} else {
 		dob = adminUser.dob
 	}
 	let age = moment().diff(dob, 'years')
-console.log(age)
 	if (Number(age)){
 		$("#age.userForm").val(age)
 		adminUser.age = age
@@ -2652,10 +2636,11 @@ console.log(age)
 		$("#age.userForm").val("")
 		adminUser.age = ""
 	}
-}
+};
 
 function utilSetCurrentClient(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	servicesRendered = []
 	client = clientData[index]
 	utilRemoveEmptyPlaceholders()
 	utilCalcClientAge("db")

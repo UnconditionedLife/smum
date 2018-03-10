@@ -378,3 +378,102 @@
       </div>
    </div>
 </template>
+
+<template id="reportsForm">
+   <div class="adminReportsFormDiv">
+      <div class="headingDiv span6"><span style="font-size: 20px; line-height: 30px;">Distribution Reports</span></div>
+      <div class="headingDiv span6">Daily Report</div>
+      <div class="lableDiv">Include</div>
+      <div>
+         <select id="reportsDailyType" class="inputBox settingsForm">
+            <option value="ALL">ALL SERVICES</option>
+            <option value="FOOD">FOOD ONLY</option>
+         </select>
+      </div>
+      <div class="lableDiv">Date</div>
+      <div>
+          <input id="reportsDailyDate" type="date" class="inputBox settingsForm" value="">
+      </div>
+      <div></div>
+      <div>
+        <input class="solidButton" onclick="utilGenerateDailyReport()" type="button" value="Run">
+      </div>
+      <div class="headingDiv span6">Weekly Report</div>
+      <div class="lableDiv">Include</div>
+      <div>
+         <select id="reportsDailyType" class="inputBox settingsForm">
+            <option value="ALL">ALL SERVICES</option>
+            <option value="FOOD">FOOD ONLY</option>
+         </select>
+      </div>
+      <div class="lableDiv">Week Dates</div>
+      <div>
+        <input id="reportsWeeklyStartDate" type="date" class="inputBox settingsForm" value="">
+      </div>
+      <div>
+        <input id="reportsWeeklyEndDate" type="date" class="inputBox settingsForm" value="">
+      </div>
+      <div>
+        <input class="solidButton" onclick="utilGenerateWeeklyReport()" type="button" value="Run">
+      </div>
+      <!-- <div class="headingDiv span6">Services</div>
+      <div class="lableDiv">Our Zipcodes</div>
+      <div class="span5"><input id="serviceAreaZipcodes" type="text" class="inputBox settingsForm"></div>
+      <div class="lableDiv">Categories</div>
+      <div class="span5"><input id="serviceCategories" type="text" class="inputBox settingsForm"></div>
+      <div class="headingDiv span6">Clients</div>
+      <div class="lableDiv">Senior Age</div>
+      <div class=""><input id="seniorAgeCutoff" type="number" class="inputBox settingsForm"></div>
+      <div class="lableDiv">??</div>
+      <div class=""><input id="confirmPassword" type="password" class="inputBox settingsForm"></div>
+      <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
+         <input class="solidButton" onclick="cogUserChangePassword()" type="button" value="Change">
+         <input class="openButton" onclick="uiResetChangePasswordForm()" type="button" value="Cancel">
+      </div> -->
+   </div>
+</template>
+
+<template id="reportHeader">
+  <div class="reportHeaderBox">
+    <div class="reportHeaderSides">DAILY</div>
+    <div class="reportHeaderCenter">
+        <span id="orgName">SANTA MARIA URBAN MINISTRY</span><br />
+        <b></b><span id="reportType">FOOD DISTRIBUTION</span></b><br />
+        <span id="reportDates">MARCH 8, 2018</span>
+    </div>
+    <div class="reportHeaderSides">REPORT</div>
+  </div>
+</template>
+
+<template id="reportBodyHeader">
+  <div class="reportBodyHeaderBox">
+    <div id="headerUSDA" class="reportBodyHeaderItem">USDA<br />NonUSDA</div>
+    <div id="headerClientsServed" class="reportBodyHeaderItem">Clients Served</div>
+    <div id="headerHomelessServed" class="reportBodyHeaderItem">Homeless Served</div>
+    <div id="headerNonClientsServed" class="reportBodyHeaderItem">NonClients Served</div>
+    <div class="reportBodyHeaderItem">Households</div>
+    <div class="reportBodyHeaderItem">Individuals</div>
+    <div class="reportBodyHeaderItem">Children</div>
+    <div class="reportBodyHeaderItem">Adults</div>
+    <div class="reportBodyHeaderItem">Seniors</div>
+    <div class="reportBodyHeaderItem">Families</div>
+    <div class="reportBodyHeaderItem">Individuals</div>
+    <div class="reportBodyHeaderItem">Families</div>
+    <div class="reportBodyHeaderItem">Individuals</div>
+  </div>
+</template>
+
+<template id="reportRow">
+  <div class="reportRowBox">
+    <div id="rowUSDA" class="reportRowItem">USDA<br />NonUSDA</div>
+    <div id="rowClientHousehold" class="reportRowItem"></div>
+    <div id="rowClientIndividual" class="reportRowItem"></div>
+    <div id="rowClientChildren" class="reportRowItem"></div>
+    <div id="rowClientAdults" class="reportRowItem"></div>
+    <div id="rowClientSeniors" class="reportRowItem"></div>
+    <div id="rowHomelessFamilies" class="reportRowItem"></div>
+    <div id="rowHomelessIndividuals" class="reportRowItem"></div>
+    <div id="row  " class="reportRowItem"></div>
+    <div id="" class="reportRowItem"></div>
+  </div>
+</template>

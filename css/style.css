@@ -30,12 +30,13 @@ body {
   /*grid-template-columns define columns. It means that both columns will grow to fill the screen, but the content column will always be 3 times as wide as the nav column (provided the nav column stays wider than 200px) fr means free unit or fraction unit.
 
 */
-
   grid-gap: 15px;
 }
+
 header{
   grid-column: 1 / 3;
 }
+
 nav{
   grid-row: 2 / span 2;
 }
@@ -348,6 +349,15 @@ main{
 }
 
 .adminSettingsFormDiv {
+	width: 100%;
+  display: grid;
+  grid-template-columns: 2fr 3fr 2fr 3fr 2fr 3fr;
+  grid-template-rows: repeat(10, 28px);
+  grid-gap: 6px;
+  padding: 3px 2em 3px 2em;
+}
+
+.adminReportsFormDiv {
 	width: 100%;
   display: grid;
   grid-template-columns: 2fr 3fr 2fr 3fr 2fr 3fr;
