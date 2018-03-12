@@ -11,6 +11,12 @@
 // **********************************************************************************************************
 // *********************************************** GLOBAL VARS **********************************************
 // **********************************************************************************************************
+// TODO cleanup History sort
+// TODO add number of Dependents to Dependents tab ie. Dependents(5) ... do not show () if 0
+// TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
+// TODO have loading of history happen when history tab is clicked
+// TODO confirm that lastIdCheck is being updated when that service is clicked.
+
 let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 let rowNum = 1
 let MAX_ID_DIGITS = 5
@@ -382,10 +388,25 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	if (action == "gray") {
 		//$("#btn-"+serviceTypeId).css({'color': 'var(--grey-green)', 'border-color': 'var(--grey-green)'})
+		// TODO This should be cleaner.... for some reason the classes where not working (maybe make colors a secondar class and remove and add)
 		$("#btn-"+serviceTypeId).addClass("buttonGrayOut")
+		$("#btn-"+serviceTypeId).css("border-color", "var(--grey-green)")
+		$("#btn-"+serviceTypeId).css("color", "var(--grey-green)")
 		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).addClass("imageGrayOut")
 	} else {
 		$("#btn-"+serviceTypeId).removeClass("buttonGrayOut")
+		if (serviceButtons == "Primary") {
+			if (serviceTypeId == "cjd3tc95v00003i8ex6gltfjl" || serviceTypeId == "cjcryvin100003i8dv6e72m6j") {
+				$("#btn-"+serviceTypeId).css("border-color", "var(--red)")
+				$("#btn-"+serviceTypeId).css("color", "var(--red)")
+			} else {
+				$("#btn-"+serviceTypeId).css("border-color", "var(--brown)")
+				$("#btn-"+serviceTypeId).css("color", "var(--brown)")
+			}
+		} else {
+			$("#btn-"+serviceTypeId).css("border-color", "var(--blue)")
+			$("#btn-"+serviceTypeId).css("color", "var(--blue)")
+		}
 		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).removeClass("imageGrayOut")
 	}
 };
@@ -707,9 +728,12 @@ function uiShowServicesButtons(){
 // TODO IF lastidcheck is current service then may not need idCheck field
 
 	let lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
+console.log(lastServed)
 	let activeServiceTypes = utilCalcActiveServiceTypes() // checks active date ranges of each serviceTypes
 	let targetServices = utilCalcTargetServices(activeServiceTypes); // changes setting to specific variables matching client
+console.log(targetServices)
 	let btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
+console.log(btnPrimary)
 	let btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
 	uiShowServicesDateTime()
 	uiShowLastServed()
@@ -1571,7 +1595,9 @@ function dbSaveDependentsTable(){
 	}
 	client.dependents = dependents
 	data = client
+console.log(data)
 	data = utilPadEmptyFields(data)
+console.log(data)
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
 	if (result == null) {
@@ -3024,7 +3050,7 @@ function utilValidateConfig(form, id){
 	let userForm = {
 		createdDateTime: [ 'required' ],
 		updatedDateTime: [ 'required' ],
-           isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
+           isActive: [],
           givenName: [ 'required', 'name' ],
 		     familyName: [ 'required', 'name' ],
 		  			    dob: [ 'required', 'date','dateNowBefore' ],
@@ -3050,7 +3076,7 @@ function utilValidateConfig(form, id){
 						updatedDateTime: [ 'required' ],
 								serviceName: [ 'required', 'name' ],
 						serviceCategory: [ 'required', {lookup: ["Administration", "Back_To_School", "Clothes_Closet", "Food_Pantry", "Hygiene_Supplies", "Household_Items", "Thanksgiving", "Christmas", "Vouchers", "Winter_Warming"]} ],
-									 isActive: [ 'required', {lookup: ["Active", "Inactive"]} ],
+									 isActive: [],
 				 serviceDescription: [ 'required' ],
 				     serviceButtons: [ 'required', {lookup: ["Primary", "Secondary"]} ],
 						    numberItems: [ 'required', 'integer' ],
@@ -3104,35 +3130,52 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
 	if (client.lastServed.length == 0 || lastServed.lowestDays == 10000) {
-		if ((activeServiceType.serviceCategory == "Food_Pantry" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "NonUSDA")||(activeServiceType.serviceCategory == "Food_Pantry" && activeServiceType.serviceButtons == "Primary" && activeServiceType.isUSDA == "Emergency")) {
+		console.log("NO LAST SERVED")
+		if ((activeServiceType.serviceCategory == "Food_Pantry"
+			&& activeServiceType.serviceButtons == "Primary"
+			&& activeServiceType.isUSDA == "NonUSDA")
+			||(activeServiceType.serviceCategory == "Food_Pantry"
+			&& activeServiceType.serviceButtons == "Primary"
+			&& activeServiceType.isUSDA == "Emergency")) {
 			return false;
 		} else {return true}
 	}
 	if (activeServiceType.serviceButtons == "Primary") {
 		if (activeServiceType.serviceCategory == "Food_Pantry") {
-			if (activeServiceType.isUSDA == "USDA") {
-				if (lastServed.daysUSDA < activeServiceType.serviceInterval) {
-					//console.log("FALSE")
+			let nonUSDAServiceInterval = utilCalculateFoodInterval("NonUSDA", activeServiceTypes)
+			let USDAServiceInterval = utilCalculateFoodInterval("USDA", activeServiceTypes)
+			console.log(activeServiceType.isUSDA)
+			console.log(lastServed.lowestDays, "<", nonUSDAServiceInterval)
+			if (lastServed.lowestDays < nonUSDAServiceInterval) {
+				console.log(lastServed.daysUSDA, "<", USDAServiceInterval)
+				if (activeServiceType.isUSDA == "Emergency") return true
+				if (activeServiceType.isUSDA == "USDA") {
 					return false
+				} else if (activeServiceType.isUSDA == "NonUSDA") {
+					return false
+				} else if (activeServiceType.isUSDA == "Emergency") {
+					return true
 				}
-			} else if (activeServiceType.isUSDA == "NonUSDA") {
-				let USDAServiceInterval = utilCalculateFoodInterval("USDA", activeServiceTypes)
+			} else {
+				if (activeServiceType.isUSDA == "Emergency") return false
 				if (lastServed.daysUSDA >= USDAServiceInterval) {
-					return false
-				} else if (lastServed.daysNonUSDA >= activeServiceType.serviceInterval) {
-					return false
+					if (activeServiceType.isUSDA == "USDA") {
+						return true
+					} else if (activeServiceType.isUSDA == "NonUSDA") {
+						return false
+					}
+				} else {
+					if (activeServiceType.isUSDA == "Emergency") return false
+					if (activeServiceType.isUSDA == "USDA") return false
+					if (lastServed.daysNonUSDA >= activeServiceType.serviceInterval) {
+						if (activeServiceType.isUSDA == "USDA") {
+							return false
+						} else if (activeServiceType.isUSDA == "NonUSDA") {
+							return true
+						}
+					}
 				}
-			} else if (activeServiceType.isUSDA == "Emergency") {
-				let USDAServiceInterval = utilCalculateFoodInterval("USDA", activeServiceTypes)
-				if (lastServed.daysUSDA >= USDAServiceInterval) {
-					return false
-				}
-				let nonUSDAServiceInterval = utilCalculateFoodInterval("NonUSDA", activeServiceTypes)
-				if (lastServed.daysNonUSDA <= nonUSDAServiceInterval) {
-					 //console.log("FALSE")
-					 return false
-				}
- 			}
+			}
 		} else if (activeServiceType.serviceCategory == "Clothes_Closet") {
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) {
 				//console.log("FALSE")
