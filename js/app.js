@@ -185,7 +185,7 @@ function uiBuildHistoryBottom(){
 };
 
 function uiBuildHistoryTop(){
-	console.log("IN Build His Top")
+//console.log("IN Build His Top")
   //data = dbGetServicesNotes(client.clientId)
   columns = ["createdDateTime", "updatedDateTime", "firstSeenDate", "lastServedFoodDateTime", "familyIdCheckedDate"]
 	utilSetLastServedFood()
@@ -197,24 +197,10 @@ function uiBuildHistoryTop(){
 	historyFields.lastServedFoodDateTime = client.lastServedFoodDateTime
 	historyFields.familyIdCheckedDate = client.familyIdCheckedDate
 	historyArray.push(historyFields)
-
-console.log(client.lastServedFoodDateTime)
-
-console.log(historyArray)
-
+//console.log(client.lastServedFoodDateTime)
+//console.log(historyArray)
 //console.log(JSON.stringify(clientArray))
-
 //console.log(JSON.stringify(clientArray[0].lastServed))
-
-	// if ((clientArray[0].lastServed[0] != undefined)) {
-	// 	if ((clientArray[0].lastServed[0].serviceDateTime == undefined)) {
-	// 		clientArray[0].lastServedDateTime = ""
-	// 	} else {
-	// 		clientArray[0].lastServedDateTime = clientArray[0].lastServed[0].serviceDateTime
-	// 	}
-	// } else {
-	// 	clientArray[0].lastServedDateTime = ""
-	// }
 	uiGenSelectHTMLTable('#historyTop', historyArray, columns,'historyTable')
 }
 
@@ -739,9 +725,7 @@ function uiShowServiceTypeForm(){
 
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-
-console.log("IN POPULATE")
-
+//console.log("IN POPULATE")
 	$.each(data, function(key,value){
 		if (typeof(data[key])=='object') {
 			let obj = data[key]
@@ -794,9 +778,7 @@ function uiRemoveFormErrorBubbles(form) {
 
 function uiSetClientsHeader(title){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-
-	console.log(title)
-
+//console.log(title)
 	if (title == "numberAndName") {
 		let clientNumber = "<div class='clientNumber'>" + client.clientId + "</div>"
 		let clientName = "<div class='clientName'>" + client.givenName + ' ' + client.familyName + "</div>"
@@ -848,7 +830,7 @@ function uiGenSelectHTML(val,options,col,id){
 }
 
 function uiGenSelectHTMLTable(selector, data, col, tableID){
-	console.log("IN TABLE GEN " + tableID)
+//console.log("IN TABLE GEN " + tableID)
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	//if (data == undefined) return
 	// TODO FIX ONE OF the calls to this function -- value two is "undefined"
@@ -897,9 +879,7 @@ function uiGenSelectHTMLTable(selector, data, col, tableID){
         tabCell.innerHTML = moment(data[i][col[j]]).format('MMM DD, YYYY')
 			} else if (col[j]=="lastServedFoodDateTime"){
 				tabCell.className = "historyTopText"
-
-console.log("IN LAST SERVED DISPLAY")
-
+//console.log("IN LAST SERVED DISPLAY")
 				//let lastServed = utilCalcLastServedDays()
 				let displayLastServed = "Never Served"
 				if (client.lastServedFoodDateTime != "1900-01-01") {
@@ -1121,10 +1101,8 @@ function dbGetData(uUrl){
 	let urlNew = uUrl;
 	let ans = null;
 // console.log('idToken + ' + authorization.idToken)
-
-console.log(urlNew)
-
-	// TODO /// move Ajax calls to [.done .fail . always syntax]
+//console.log(urlNew)
+// TODO /// move Ajax calls to [.done .fail . always syntax]
 	$.ajax({
     type: "GET",
     url: urlNew,
@@ -1244,23 +1222,17 @@ function dbLoadServiceHistory(){
 
 function dbPostData(uUrl,dataU){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-console.log("IN POST DATA")
+//console.log("IN POST DATA")
 	cogCheckSession()
 	if (authorization.idToken == 'undefined') {
 		utilBeep()
 		consol.log("need to log in")
 		return
 	}
-
-console.log("PAST SessionCheck")
-
-
-console.log(JSON.stringify(dataU))
-
+//console.log("PAST SessionCheck")
+//console.log(JSON.stringify(dataU))
 	let urlNew = uUrl;
-
-console.log(urlNew)
-
+//console.log(urlNew)
 	let uData = dataU;
 	let ans = null;
 	$.ajax({
@@ -2359,16 +2331,14 @@ function utilRemoveEmptyPlaceholders(){
 };
 
 function utilSetLastServedFood(){
-	console.log("IN set last saved food")
+//console.log("IN set last saved food")
 	// TODO too much duplicated code with utilCalcLastServedDays()
 	let lastServedFoodDateTime = "1900-01-01"
 	if (client.lastServed[0] == undefined) return lastServedFoodDateTime
 	let lastServedFood = client.lastServed.filter(function( obj ) {
 		return obj.serviceCategory == "Food_Pantry"
 	})
-
-console.log(lastServedFood)
-
+//console.log(lastServedFood)
 	for (var i = 0; i < lastServedFood.length; i++) {
 		if (lastServedFood[i].isUSDA != "Emergency") {
 			if (moment(lastServedFood[i].serviceDateTime).isAfter(lastServedFoodDateTime)){
@@ -2645,13 +2615,6 @@ function utilSetCurrentClient(index){
 	utilRemoveEmptyPlaceholders()
 	utilCalcClientAge("db")
 	utilCalcFamilyCounts() // calculate fields counts and ages
-	// TODO workaround for Pacific Islander Ethnicity
-	// integrate solution into import
-	console.log(client.ethnicGroup)
-	if (client.ethnicGroup == "Asian/Pac Islander") {
-		client.ethnicGroup = "Asian/Pacific Islander"
-	}
-
 	// emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
 	uiUpdateCurrentClient(index)
@@ -2679,10 +2642,8 @@ function utilSetCurrentAdminUser(index){
 };
 
 function utilSetCurrentUser(){
-
-	console.log(users)
-	console.log(user.username)
-
+//console.log(users)
+//console.log(user.username)
 	let foundUser = users.filter(function( obj ) {
 		return obj.userName == user.username
 	})
@@ -2700,9 +2661,7 @@ function utilUpdateClientsData(){
 	$.each(data, function(key,value){
 		client[key] = value
 	});
-
-console.log(data.length)
-
+//console.log(data.length)
 	for (var i = 0; i < data.length; i++) {
 		if (client.clientId == data[i].clientId){
 			row = i+1
@@ -2711,9 +2670,7 @@ console.log(data.length)
 			});
 		}
 	}
-
-console.log(row)
-
+//console.log(row)
 	return row
 }
 
@@ -3155,7 +3112,7 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		if (activeServiceType.serviceCategory == "Food_Pantry") {
 			if (activeServiceType.isUSDA == "USDA") {
 				if (lastServed.daysUSDA < activeServiceType.serviceInterval) {
-					console.log("FALSE")
+					//console.log("FALSE")
 					return false
 				}
 			} else if (activeServiceType.isUSDA == "NonUSDA") {
@@ -3172,13 +3129,13 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 				}
 				let nonUSDAServiceInterval = utilCalculateFoodInterval("NonUSDA", activeServiceTypes)
 				if (lastServed.daysNonUSDA <= nonUSDAServiceInterval) {
-					 console.log("FALSE")
+					 //console.log("FALSE")
 					 return false
 				}
  			}
 		} else if (activeServiceType.serviceCategory == "Clothes_Closet") {
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) {
-				console.log("FALSE")
+				//console.log("FALSE")
 				return false;
 			}
 		} else if (activeServiceType.serviceCategory == "Administration") {
@@ -3188,7 +3145,7 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 			if (inLastServed.length > 0) {
 				let lastServedDate = moment(inLastServed[0].serviceDateTime).startOf('day')
 				if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) {
-					console.log("FALSE")
+					//console.log("FALSE")
 					return false
 				}
 			}
