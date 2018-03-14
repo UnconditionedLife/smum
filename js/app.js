@@ -448,12 +448,16 @@ function uiSaveButton(form, action){
 function uiSetMenusForUser(){
 	// TODO remove TechAmin from dropdown for admins that are not Tech
 	if (currentUser.isActive == "Active") {
+		console.log(currentUser.userRole)
 		if (currentUser.userRole == "Admin"){
 			$("#nav3").show()
 			$("#atabLable7").hide()
 		} else if (currentUser.userRole == "TechAdmin"){
 			$("#nav3").show()
 			$("#atabLable7").show()
+		} else if (currentUser.userRole == "Volunteer" || currentUser.userRole == "Staff") {
+			$("#nav3").hide()
+			$("#atabLable7").hide()
 		}
 	}
 };
