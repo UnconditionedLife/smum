@@ -1350,7 +1350,7 @@ function dbGetServicesTypes(){
 }
 
 function dbGetTodaysServices(){
-	dateToday = moment("2018-03-17").format("YYYYMMDD") //"2018-03-17"
+	dateToday = moment().format("YYYYMMDD") //"2018-03-17"
 	return dbGetData(aws+"/clients/services/byday/"+dateToday).services
 }
 
