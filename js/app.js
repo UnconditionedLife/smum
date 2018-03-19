@@ -58,7 +58,7 @@ navGotoTab("tab1")
 $("#noteEditForm").hide()
 $("#nav3").hide()
 $("#atabLable7").hide()
-
+uiShowTodayReportHeader()
 document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); dbSearchClients()}
 };
@@ -117,7 +117,7 @@ function navGotoSec(nav){
 	$("#"+nav).addClass("navActive")
 	$("#"+currentNavTab).hide()
 	switch (nav) {
-		case "nav1": // SERVICES
+		case "nav1": // CLIENTS
 			currentNavTab = "clientsDiv"
 			break
 		case "nav2": // PROGRAMS
@@ -164,7 +164,7 @@ function uiAddNewDependentsRow(){
 	let dependentRow = "<tr>"
 	dependentRow+="<td><input id='givenName["+nextRow+"]' class='inputBox inputForTable dependentsForm'></td>"
 	dependentRow+="<td><input id='familyName["+nextRow+"]' class='inputBox inputForTable dependentsForm'></td>"
-	dependentRow+="<td><select id='relationship["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Child'>Child</option><option value='Spouse'>Spouse</option><option value='Other Dependent'>Other Dependent</option></select></td>"
+	dependentRow+="<td><select id='relationship["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Child'>Child</option><option value='Spouse'>Spouse</option><option value='Other'>Other</option></select></td>"
 	dependentRow+="<td><select id='gender["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Male'>Male</option><option value='Female'>Female</option></select></td>"
 	dependentRow+="<td><input id='dob["+nextRow+"]' class='inputBox inputForTable dependentsForm' onchange='utilCalcDependentAge("+ parseInt(nextRow)+")' type='date'></td>"
 	dependentRow+="<td class='dependentsViewOnly'><input id='age["+nextRow+"]' class='inputBox inputForTable dependentsForm' style='width:50px'></td><td>"
@@ -602,6 +602,120 @@ function uiShowReports(){
 	// TODO populate the date fields to reflect current period/last completed period
 };
 
+function uiRefreshTodayReport(){
+	console.log("made it to report")
+	uiShowTodayReportHeader()
+	uiShowTodayReportRows()
+}
+
+function uiShowTodayReportHeader(){
+	$('#todayBodyDiv').html(uiGetTemplate('#reportHeader'))
+	$('#reportDates').html(moment().format(longDate))
+	$('#headerLeft').html("TODAY")
+	$('#headerRight').html('REPORT <i id="todayReportRefreshButton" onClick="uiRefreshTodayReport()" class="fa fa-refresh" aria-hidden="true"></i>')
+	$('#todayBodyDiv').append(uiGetTemplate('#dailyReportHeader'))
+};
+
+function uiShowTodayReportRows(){
+	servicesRendered = dbGetTodaysServices()
+	let servicesFood = servicesRendered
+		.filter(function(item) {return item.serviceValid})
+		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
+	let servicesUSDA = servicesFood
+		.filter(function(item) {
+			return item.isUSDA == "USDA"
+		})
+	let servicesNonUSDA = servicesFood
+		.filter(function(item) {
+			return item.isUSDA == "NonUSDA"
+		})
+	$('#todayBodyDiv').append('<div id="USDAGrid" class="todayReportRowBox" style="grid-row: 5"><div class="todaySectionHeader">USDA</div></div>')
+	$('#todayBodyDiv').append('<div id="NonUSDAGrid" class="todayReportRowBox" style="grid-row: 6"><div class="todaySectionHeader">NonUSDA</div></div>')
+	let totals = []
+	totals.push(uiBuildTodayRows(servicesUSDA, "#USDAGrid"))
+	totals.push(uiBuildTodayRows(servicesNonUSDA, "#NonUSDAGrid"))
+	grandTotals = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+	grandTotals.hh =  totals[0].hh + totals[1].hh
+	grandTotals.ind =  totals[0].ind + totals[1].ind
+	grandTotals.ch =  totals[0].ch + totals[1].ch
+	grandTotals.ad =  totals[0].ad + totals[1].ad
+	grandTotals.sen =  totals[0].sen + totals[1].sen
+	grandTotals.hf =  totals[0].hf + totals[1].hf
+	grandTotals.hi =  totals[0].hi + totals[1].hi
+	grandTotals.nf =  totals[0].nf + totals[1].nf
+	grandTotals.ni =  totals[0].ni + totals[1].ni
+	$('#todayBodyDiv').append('<div id="grandTotalGrid" class="todayReportRowBox" style="grid-row: 7"></div>')
+	uiShowTodayTotals(grandTotals, "#grandTotalGrid")
+};
+
+function uiBuildTodayRows(services, grid) {
+	console.log(services)
+	let serviceTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+	$.each(services, function(i,item){
+		console.log(item.clientServedId)
+		serviceTotal.hh++
+		serviceTotal.ind = serviceTotal.ind + parseInt(item.totalIndividualsServed)
+		serviceTotal.ch = serviceTotal.ch + parseInt(item.totalChildrenServed)
+		serviceTotal.ad = serviceTotal.ad + parseInt(item.totalAdultsServed)
+		serviceTotal.sen = serviceTotal.sen + parseInt(item.totalSeniorsServed)
+		$(grid).append('<div class="todayItem">'+item.clientServedId+'</div>')
+		$(grid).append('<div class="todayItem">'+item.clientGivenName+'</div>')
+		$(grid).append('<div class="todayItem">'+item.clientFamilyName+'</div>')
+		$(grid).append('<div class="todayItem">'+item.clientZipcode+'</div>')
+		$(grid).append('<div class="todayItem">1</div>')
+		$(grid).append('<div class="todayItem">'+item.totalIndividualsServed+'</div>')
+		$(grid).append('<div class="todayItem">'+item.totalChildrenServed+'</div>')
+		$(grid).append('<div class="todayItem">'+item.totalAdultsServed+'</div>')
+		$(grid).append('<div class="todayItem">'+item.totalSeniorsServed+'</div>')
+		if (item.homeless == "YES") {
+			if (item.totalIndividualsServed == 1) {
+				serviceTotal.hi = serviceTotal.hi + 1
+				$(grid).append('<div class="todayItem">-</div>')
+				$(grid).append('<div class="todayItem">1</div>')
+			} else {
+				serviceTotal.hf = serviceTotal.hf + 1
+				$(grid).append('<div class="todayItem">1</div>')
+				$(grid).append('<div class="todayItem">-</div>')
+			}
+		} else {
+			$(grid).append('<div class="todayItem">-</div>')
+			$(grid).append('<div class="todayItem">-</div>')
+		}
+		if (item.clientStatus == "Client") {
+			$(grid).append('<div class="todayItem">-</div>')
+			$(grid).append('<div class="todayItem">-</div>')
+		} else {
+			if (item.totalIndividualsServed == 1) {
+				serviceTotal.ni = serviceTotal.ni + 1
+				$(grid).append('<div class="todayItem">-</div>')
+				$(grid).append('<div class="todayItem">1</div>')
+			} else {
+				serviceTotal.nf = serviceTotal.nf + 1
+				$(grid).append('<div class="todayItem">1</div>')
+				$(grid).append('<div class="todayItem">-</div>')
+			}
+		}
+	})
+	uiShowTodayTotals(serviceTotal, grid)
+	return serviceTotal
+};
+
+function uiShowTodayTotals(serviceTotal, grid){
+	let lable = "USDA TOTALS"
+	if (grid == "#NonUSDAGrid") lable = "NonUSDA TOTALS"
+	if (grid == "#grandTotalGrid") lable = "TODAY'S GRAND TOTALS"
+	$(grid).append('<div class="todayTotalLable">'+lable+'</div>')
+	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.hh +'</div>')
+	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ind +'</div>')
+	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ch +'</div>')
+	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ad +'</div>')
+	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.sen +'</div>')
+	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.hf +'</div>')
+	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.hi +'</div>')
+	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.nf +'</div>')
+	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ni +'</div>')
+};
+
 let uiShowServicesDateTime = function() {
 	if (client.clientId != undefined){
 		$('#serviceDateTime').html(moment().format(longDate))
@@ -896,7 +1010,7 @@ function uiGenSelectHTMLTable(selector, data, col, tableID){
 				} else if (col[j]=="isActive"){
 					tabCell.innerHTML = uiGenSelectHTML(data[i][col[j]],['Active','Inactive'],"isActive",depNum)
 				} else if (col[j]=="relationship"){
-					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['Child','Spouse','Other Dependent'],"relationship",depNum)
+					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['Child','Spouse','Other'],"relationship",depNum)
 				} else if (col[j]=="gender"){
 					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['Female','Male'],"gender",depNum)
 				} else{
@@ -1235,6 +1349,11 @@ function dbGetServicesTypes(){
 	return dbGetData(aws+"/servicetypes").serviceTypes
 }
 
+function dbGetTodaysServices(){
+	dateToday = moment("2018-03-17").format("YYYYMMDD") //"2018-03-17"
+	return dbGetData(aws+"/clients/services/byday/"+dateToday).services
+}
+
 function dbGetUsers(){
 	return dbGetData(aws+"/users").users
 }
@@ -1461,6 +1580,9 @@ function dbPostService(serviceType, itemsServed, serviceId, serviceValid){
 					  servicedDay: servicedDay,
 			 	 clientServedId: client.clientId,
 				   clientStatus: client.isActive,
+				clientGivenName: client.givenName,
+			 clientFamilyName: client.familyName,
+			    clientZipcode: client.zipcode,
 		 servicedByUserName: currentUser.userName,
 			    serviceTypeId: serviceType.serviceTypeId,
 					  serviceName: serviceType.serviceName,
@@ -1494,6 +1616,9 @@ function dbPostService(serviceType, itemsServed, serviceId, serviceValid){
 	}
 	let data = serviceRecord
 	data = JSON.stringify(data)
+
+console.log(data)
+
 	let URL = aws+"/clients/services"
 	result = dbPostData(URL,data)
 	if (result == null) {
@@ -2242,13 +2367,13 @@ function utilCalcFamilyCounts(){
 			++fam.totalSize
 			if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
 		}
-		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age >= 18 && client.dependents[i].isActive == "Active") {
+		if (client.dependents[i].relationship == "Other" && client.dependents[i].age >= 18 && client.dependents[i].isActive == "Active") {
 			++fam.totalOtherDependents
 			++fam.totalAdults
 			++fam.totalSize
 			if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
 		}
-		if (client.dependents[i].relationship == "Other Dependent" && client.dependents[i].age < 18 && client.dependents[i].isActive == "Active") {
+		if (client.dependents[i].relationship == "Other" && client.dependents[i].age < 18 && client.dependents[i].isActive == "Active") {
 			++fam.totalOtherDependents
 			++fam.totalChildren
 			++fam.totalSize
@@ -2340,6 +2465,7 @@ function utilLoginUserShowScreens(){
 	users = dbGetUsers()
 	utilSetCurrentUser()
 	uiSetMenusForUser()
+	uiShowTodayReportRows()
 };
 
 function utilPadEmptyFields(data){
@@ -3134,7 +3260,7 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
 	if (client.lastServed.length == 0 || lastServed.lowestDays == 10000) {
-		console.log("NO LAST SERVED")
+// console.log("NO LAST SERVED")
 		if ((activeServiceType.serviceCategory == "Food_Pantry"
 			&& activeServiceType.serviceButtons == "Primary"
 			&& activeServiceType.isUSDA == "NonUSDA")
@@ -3148,10 +3274,10 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		if (activeServiceType.serviceCategory == "Food_Pantry") {
 			let nonUSDAServiceInterval = utilCalculateFoodInterval("NonUSDA", activeServiceTypes)
 			let USDAServiceInterval = utilCalculateFoodInterval("USDA", activeServiceTypes)
-			console.log(activeServiceType.isUSDA)
-			console.log(lastServed.lowestDays, "<", nonUSDAServiceInterval)
+// console.log(activeServiceType.isUSDA)
+// console.log(lastServed.lowestDays, "<", nonUSDAServiceInterval)
 			if (lastServed.lowestDays < nonUSDAServiceInterval) {
-				console.log(lastServed.daysUSDA, "<", USDAServiceInterval)
+// console.log(lastServed.daysUSDA, "<", USDAServiceInterval)
 				if (activeServiceType.isUSDA == "Emergency") return true
 				if (activeServiceType.isUSDA == "USDA") {
 					return false
@@ -3182,7 +3308,7 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 			}
 		} else if (activeServiceType.serviceCategory == "Clothes_Closet") {
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) {
-				//console.log("FALSE")
+//console.log("FALSE")
 				return false;
 			}
 		} else if (activeServiceType.serviceCategory == "Administration") {
@@ -3192,7 +3318,7 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 			if (inLastServed.length > 0) {
 				let lastServedDate = moment(inLastServed[0].serviceDateTime).startOf('day')
 				if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) {
-					//console.log("FALSE")
+//console.log("FALSE")
 					return false
 				}
 			}
@@ -3216,3 +3342,35 @@ function isLoggedIn(){
 		return true
 	}
 }
+
+
+function fixDepenedentRelationships(){
+  for (var i = 3000; i < 5000; i++) {
+    let clientData = dbGetData(aws+"/clients/"+i).clients
+		if (clientData.length > 0) {
+			clientData = clientData[0]
+			let save = false
+			if (clientData.dependents.length > 0) {
+				//console.log(clientData)
+		    for (var d = 0; d < clientData.dependents.length; d++) {
+		      //if (clientData.dependents[d].relationship == "child") clientData.dependents[d].relationship = "Child"
+		      //if (clientData.dependents[d].relationship == "spouse") clientData.dependents[d].relationship = "Spouse"
+		      if (clientData.dependents[d].relationship == "other") {
+						save = true
+						clientData.dependents[d].relationship = "Other"
+						console.log(clientData.dependents	[d].relationship)
+					}
+					if (clientData.dependents[d].relationship == "Other_Dependent") {
+						save = true
+						clientData.dependents[d].relationship = "Other"
+						console.log(clientData.dependents	[d].relationship)
+					}
+		    }
+				if (save == true) {
+					let URL = aws+"/clients/"
+					result = dbPostData(URL,JSON.stringify(clientData))
+				}
+			}
+		}
+  }
+};

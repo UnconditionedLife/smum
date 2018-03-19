@@ -24,6 +24,17 @@ body {
 	overflow: scroll;
 }
 
+#todayBodyDiv {
+	position: inherit;
+	display: grid;
+	grid-template-columns: 30px 1fr 30px;
+	grid-template-rows: 70px 25px 70px 8px auto auto;
+	padding: 30px 0 30px;
+	width: 100%;
+	background-color: white;
+	overflow: scroll;
+}
+
 .reportHeaderBox{
 	background-color: var(--light-green);
 	width: 100%;
@@ -43,6 +54,65 @@ body {
 	grid-column: 2;
 	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	grid-template-rows: 35px 35px;
+	border: 1px solid var(--green);
+	margin-bottom: 30px;
+}
+
+.todayReportBodyHeaderBox{
+	background-color: white;
+	width: 100%;
+	height: 70px;
+	display: grid;
+	grid-row: 3;
+	grid-column: 2;
+	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	grid-template-rows: 35px 35px;
+	border: 1px solid var(--green);
+	margin-bottom: 30px;
+}
+
+.todaySectionHeader{
+	grid-column: span 13;
+	background-color: var(--light-green);
+	font-weight: bold;
+	text-align: center;
+	line-height: 35px;
+}
+
+.todayItem{
+	line-height: 32px;
+	text-align: center;
+	border-bottom: .5px solid lightgrey;
+}
+
+.todayTotalItem{
+	line-height: 32px;
+	font-weight: bold;
+	text-align: center;
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+}
+
+.todayTotalLable{
+	line-height: 32px;
+	text-align: center;
+	font-weight: bold;
+	grid-column: span 4;
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+}
+
+#todayReportRefreshButton{
+	cursor: pointer;
+}
+
+.todayReportRowBox{
+	background-color: white;
+	width: 100%;
+	display: grid;
+	grid-column: 2;
+	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+	grid-template-rows: 35px;
 	border: 1px solid var(--green);
 	margin-bottom: 30px;
 }
@@ -68,6 +138,14 @@ body {
   font-weight: bold;
 }
 
+#headerClient{
+  grid-column: 1 / span 4;
+  text-align:  center;
+  background-color: var(--light-green);
+	font-size: 14px;
+	font-weight: bold;
+}
+
 #headerUSDATop{
   grid-row: 1 / span 2;
   grid-column: 1;
@@ -76,21 +154,24 @@ body {
 }
 
 #headerClientsServed{
-  grid-row: 1;
-  grid-column: 2 / span 5;
+  grid-column: span 5;
   background-color: var(--light-green);
+	font-size: 14px;
+	font-weight: bold;
 }
 
 #headerHomelessServed{
-  grid-row: 1;
-  grid-column: 7 / span 2;
+  grid-column: span 2;
   background-color: var(--light-green);
+	font-size: 14px;
+	font-weight: bold;
 }
 
 #headerNonClientsServed{
-  grid-row: 1;
-  grid-column: 9 / span 2;
+  grid-column: span 2;
   background-color: var(--light-green);
+	font-size: 14px;
+	font-weight: bold;
 }
 
 .reportHeaderSides{
@@ -102,7 +183,8 @@ body {
 }
 
 .reportHeaderCenter {
-	font-size: 13px;
-  line-height: 24px;
+	font-size: 16px;
+	font-weight: bold;
+  line-height: 23px;
   text-align: center;
 }

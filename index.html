@@ -72,6 +72,9 @@
                <label id="tabLable5" for="tab5">History</label>
                <input id="tab6" class="tabInput" type="radio" name="tabs">
                <label id="tabLable6" for="tab6">Notes</label>
+               <input id="tab7" class="tabInput" type="radio" name="tabs">
+               <label id="tabLable7" for="tab7">Today</label>
+
                <section id="content1"> <!-- Found -->
                   <!-- <div class="topFormButtonsDiv"><input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client"></div> -->
                   <container id="searchContainer"></container>
@@ -121,6 +124,11 @@
                   </div>
                   <container id="notesContainer"></container>
                </section>
+               <section id="content7"> <!-- Today -->
+                  <container id="todayContainer">
+                     <div id="todayBodyDiv"></div>
+                  </container>
+               </section>
                <div id="receiptTab">
                   <span class="verticalText">R E C E I P T</span>
                   <div class="fillerBox"></div>
@@ -143,19 +151,14 @@
          <div class="container" style="background-color:white;">
             <input id="aTab1" class="tabInput" type="radio" name="tabs" checked>
             <label id="atabLable1" for="aTab1" onload="fillDate()">Services</label>
-
             <input id="aTab2" class="tabInput" type="radio" name="tabs">
             <label id="atabLable2" for="aTab2">Service Type</label>
-
             <input id="aTab3" class="tabInput" type="radio" name="tabs">
             <label id="atabLable3" for="aTab3">Reports</label>
-
             <input id="aTab4" class="tabInput" type="radio" name="tabs">
             <label id="atabLable4" for="aTab4">Users</label>
-
             <input id="aTab5" class="tabInput" type="radio" name="tabs">
             <label id="atabLable5" for="aTab5">User</label>
-
             <input id="aTab6" class="tabInput" type="radio" name="tabs">
             <label id="atabLable6" for="aTab6">Settings</label>
 

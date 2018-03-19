@@ -435,15 +435,38 @@
 
 <template id="reportHeader">
   <div class="reportHeaderBox">
-    <div class="reportHeaderSides">DAILY</div>
+    <div id="headerLeft" class="reportHeaderSides">DAILY</div>
     <div class="reportHeaderCenter">
-        <span id="orgName">SANTA MARIA URBAN MINISTRY</span><br />
-        <b></b><span id="reportType">FOOD DISTRIBUTION</span></b><br />
-        <span id="reportDates">MARCH 8, 2018</span>
+        <span id="orgName">S A N T A &nbsp; M A R I A &nbsp; U R B A N &nbsp; M I N I S T R Y</span><br />
+        <span id="reportType">FOOD DISTRIBUTION</span><br />
+        <span id="reportDates"></span>
     </div>
-    <div class="reportHeaderSides">REPORT</div>
+    <div id="headerRight" class="reportHeaderSides">REPORT</div>
   </div>
 </template>
+
+<template id="dailyReportHeader">
+  <div class="todayReportBodyHeaderBox">
+    <div id="headerClient" class="reportBodyHeaderItem">Client</div>
+    <div id="headerClientsServed" class="reportBodyHeaderItem">Clients Served</div>
+    <div id="headerHomelessServed" class="reportBodyHeaderItem">Homeless Served</div>
+    <div id="headerNonClientsServed" class="reportBodyHeaderItem">NonClients Served</div>
+    <div class="reportBodyHeaderItem">ID</div>
+    <div class="reportBodyHeaderItem">Given</div>
+    <div class="reportBodyHeaderItem">Family</div>
+    <div class="reportBodyHeaderItem">ZIP</div>
+    <div class="reportBodyHeaderItem">Households</div>
+    <div class="reportBodyHeaderItem">Individuals</div>
+    <div class="reportBodyHeaderItem">Children</div>
+    <div class="reportBodyHeaderItem">Adults</div>
+    <div class="reportBodyHeaderItem">Seniors</div>
+    <div class="reportBodyHeaderItem">Families</div>
+    <div class="reportBodyHeaderItem">Individuals</div>
+    <div class="reportBodyHeaderItem">Families</div>
+    <div class="reportBodyHeaderItem">Individuals</div>
+  </div>
+</template>
+
 
 <template id="reportBodyHeader">
   <div class="reportBodyHeaderBox">
@@ -460,6 +483,21 @@
     <div class="reportBodyHeaderItem">Individuals</div>
     <div class="reportBodyHeaderItem">Families</div>
     <div class="reportBodyHeaderItem">Individuals</div>
+  </div>
+</template>
+
+<template id="todayReportRow">
+  <div class="reportRowBox">
+    <div id="rowUSDA" class="reportRowItem">USDA<br />NonUSDA</div>
+    <div id="rowClientHousehold" class="reportRowItem"></div>
+    <div id="rowClientIndividual" class="reportRowItem"></div>
+    <div id="rowClientChildren" class="reportRowItem"></div>
+    <div id="rowClientAdults" class="reportRowItem"></div>
+    <div id="rowClientSeniors" class="reportRowItem"></div>
+    <div id="rowHomelessFamilies" class="reportRowItem"></div>
+    <div id="rowHomelessIndividuals" class="reportRowItem"></div>
+    <div id="row  " class="reportRowItem"></div>
+    <div id="" class="reportRowItem"></div>
   </div>
 </template>
 

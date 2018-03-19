@@ -1236,6 +1236,7 @@ checkbox[readonly]{
 	height: 50px;
 	min-width: 180px;
 }
+
 .btn-nav {
 	background-color: transparent;
 	border-color: #63BA59;
@@ -1468,6 +1469,7 @@ label[for*='tab3']:before { content: '\f2bc'; }
 label[for*='tab4']:before { content: '\f0c0'; }
 label[for*='tab5']:before { content: '\f1dc'; }
 label[for*='tab6']:before { content: '\f24a'; }
+label[for*='tab7']:before { content: '\f080'; }
 
 label[for*='aTab1']:before { content: '\f00b'; }
 label[for*='aTab2']:before { content: '\f274'; }
@@ -1504,7 +1506,8 @@ input:checked + label {
 #tab3:checked ~ #content3,
 #tab4:checked ~ #content4,
 #tab5:checked ~ #content5,
-#tab6:checked ~ #content6 {
+#tab6:checked ~ #content6,
+#tab7:checked ~ #content7 {
   display: block;
 }
 
