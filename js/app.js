@@ -58,7 +58,7 @@ navGotoTab("tab1")
 $("#noteEditForm").hide()
 $("#nav3").hide()
 $("#atabLable7").hide()
-uiShowTodayReportHeader()
+uiShowDailyReportHeader(moment().format(date), '#todayBodyDiv', "DAILY")
 document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); dbSearchClients()}
 };
@@ -550,7 +550,7 @@ function uiShowHistoryData(clientHistory){
 		}
 		$("#historyBottom").append(newRow)
 	}
-}
+};
 
 let uiShowLastServed = function() {
 	let nextService = ""
@@ -580,7 +580,7 @@ let uiShowLastServed = function() {
 		}
 		$('#serviceLastVisit').html(visitHeader + nextService)
 	}
-}
+};
 
 function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
@@ -599,25 +599,40 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 
 function uiShowReports(){
 	$('#reportsFormContainer').html(uiGetTemplate('#reportsForm'))
+	$('#reportsDailyDate').val(moment().format(date))
+	$('#reportsWeeklyStartDate').val(moment().startOf('week').format(date))
+	$('#reportsWeeklyEndDate').val(moment().endOf('week').format(date))
+	$('#reportsMonthyMonth').val(moment().format('YYYY-MM'))
 	// TODO populate the date fields to reflect current period/last completed period
 };
 
-function uiRefreshTodayReport(){
+function uiRefreshDailyReport(){
 	console.log("made it to report")
-	uiShowTodayReportHeader()
-	uiShowTodayReportRows()
-}
-
-function uiShowTodayReportHeader(){
-	$('#todayBodyDiv').html(uiGetTemplate('#reportHeader'))
-	$('#reportDates').html(moment().format(longDate))
-	$('#headerLeft').html("TODAY")
-	$('#headerRight').html('REPORT <i id="todayReportRefreshButton" onClick="uiRefreshTodayReport()" class="fa fa-refresh" aria-hidden="true"></i>')
-	$('#todayBodyDiv').append(uiGetTemplate('#dailyReportHeader'))
+	uiShowDailyReportHeader(moment().format(date), '#printBodyDiv', "DAILY")
+	uiShowDailyReportRows(moment().format(date), '#printBodyDiv')
 };
 
-function uiShowTodayReportRows(){
-	servicesRendered = dbGetTodaysServices()
+function uiRefreshTodayReport(){
+	uiShowDailyReportHeader(moment().format(date), '#todayBodyDiv', "TODAY")
+	uiShowDailyReportRows(moment().format(date), '#todayBodyDiv')
+};
+
+function uiShowDailyReportHeader(dayDate, form, title){
+	$(form).html(uiGetTemplate('#reportHeader'))
+	if (form == "#todayBodyDiv") {
+		$("#printBodyDiv").html("")
+		$('#headerRight').html('REPORT <i id="todayReportRefreshButton" onClick="uiRefreshTodayReport()" class="fa fa-refresh" aria-hidden="true"></i>')
+	} else {
+		$("#todayBodyDiv").html("")
+		$('#headerRight').html('REPORT <i id="todayReportRefreshButton" onClick="uiRefreshDailyReport()" class="fa fa-refresh" aria-hidden="true"></i>')
+	}
+	$('#reportDates').html(moment(dayDate).format(longDate))
+	$('#headerLeft').html(title)
+	$(form).append(uiGetTemplate('#dailyReportHeader'))
+};
+
+function uiShowDailyReportRows(dayDate, form){
+	servicesRendered = dbGetDaysServices(dayDate)
 	let servicesFood = servicesRendered
 		.filter(function(item) {return item.serviceValid})
 		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
@@ -629,8 +644,8 @@ function uiShowTodayReportRows(){
 		.filter(function(item) {
 			return item.isUSDA == "NonUSDA"
 		})
-	$('#todayBodyDiv').append('<div id="USDAGrid" class="todayReportRowBox" style="grid-row: 5"><div class="todaySectionHeader">USDA</div></div>')
-	$('#todayBodyDiv').append('<div id="NonUSDAGrid" class="todayReportRowBox" style="grid-row: 6"><div class="todaySectionHeader">NonUSDA</div></div>')
+	$(form).append('<div id="USDAGrid" class="todayReportRowBox" style="grid-row: 5"><div class="todaySectionHeader">USDA</div></div>')
+	$(form).append('<div id="NonUSDAGrid" class="todayReportRowBox" style="grid-row: 6"><div class="todaySectionHeader">NonUSDA</div></div>')
 	let totals = []
 	totals.push(uiBuildTodayRows(servicesUSDA, "#USDAGrid"))
 	totals.push(uiBuildTodayRows(servicesNonUSDA, "#NonUSDAGrid"))
@@ -644,12 +659,118 @@ function uiShowTodayReportRows(){
 	grandTotals.hi =  totals[0].hi + totals[1].hi
 	grandTotals.nf =  totals[0].nf + totals[1].nf
 	grandTotals.ni =  totals[0].ni + totals[1].ni
-	$('#todayBodyDiv').append('<div id="grandTotalGrid" class="todayReportRowBox" style="grid-row: 7"></div>')
+	$(form).append('<div id="grandTotalGrid" class="todayReportRowBox" style="grid-row: 7"></div>')
 	uiShowTodayTotals(grandTotals, "#grandTotalGrid")
 };
 
+function uiShowMonthlyReportHeader(monthYear){
+	$("#printBodyDiv").html(uiGetTemplate('#reportHeader'))
+	$("#todayBodyDiv").html("")
+	$('#reportDates').html(moment(monthYear).format("MMMM YYYY"))
+	$('#headerLeft').html("MONTHLY")
+	$("#printBodyDiv").append(uiGetTemplate('#reportBodyHeader'))
+	$('#headerRight').html('REPORT <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
+};
+
+function utilPrintReport(){
+	//let path = window.location.href + "css/reports.css"     // Returns full URL
+	$("#printBodyDiv").printMe({ "path": ["css/print.css"] });
+}
+
+
+function uiShowMonthlyReportRows(monthYear){
+console.log("IN MONTHLY REPORT FUNCTION")
+	servicesRendered = dbGetMonthServices(monthYear)
+	let servicesFood = servicesRendered
+		.filter(function(item) {return item.serviceValid})
+		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
+	let dayUSDA = ""
+	let servicesUSDA = servicesFood
+		.filter(function(item) {return item.isUSDA == "USDA"})
+		.sort(function(a, b){
+			return parseInt(a.servicedDay) - parseInt(b.servicedDay)
+		})
+	let servicesNonUSDA = servicesFood
+		.filter(function(item) {return item.isUSDA == "NonUSDA"})
+		.sort(function(a, b){
+			return parseInt(a.servicedDay) - parseInt(b.servicedDay)
+		})
+	servicesUSDA = utilCalculateMonthlyRows(servicesUSDA)
+	servicesNonUSDA = utilCalculateMonthlyRows(servicesNonUSDA)
+	//$("#printBodyDiv").append('<div id="NonUSDAGrid" class="todayReportRowBox" style="grid-row: 6"><div class="todaySectionHeader">NonUSDA</div></div>')
+	uiBuildMonthRows(servicesUSDA, servicesNonUSDA, monthYear)
+};
+
+function utilCalculateMonthlyRows(services){
+	console.log("INCALCROWS")
+	let tempS = []
+	$.each(services, function(i, item){
+
+console.log(i)
+
+		let index = -1; // default value, in case no element is found
+		if (tempS.length > 0) {
+		  tempS.some(function (serv, x){
+		    if (serv.servicedDay == item.servicedDay) {
+		      index = x
+		      return true
+		    }
+		  })
+		}
+		if (index > -1)	 {
+			tempS[index].totalHouseholdsServed = parseInt(tempS[index].totalHouseholdsServed) + 1
+			tempS[index].totalIndividualsServed = parseInt(tempS[index].totalIndividualsServed) + parseInt(item.totalIndividualsServed)
+			tempS[index].totalChildrenServed = parseInt(tempS[index].totalChildrenServed) + parseInt(item.totalChildrenServed)
+			tempS[index].totalAdultsServed = parseInt(tempS[index].totalAdultsServed) + parseInt(item.totalAdultsServed)
+			tempS[index].totalSeniorsServed = parseInt(tempS[index].totalSeniorsServed) + parseInt(item.totalSeniorsServed)
+			if (item.homeless == "YES") {
+				if (item.totalIndividualsServed == 1) {
+					tempS[index].totalHomelessInd = parseInt(tempS[index].totalHomelessInd) + 1
+				} else {
+					tempS[index].totalHomelessFamily = parseInt(tempS[index].totalHomelessFamily) + 1
+				}
+			}
+			if (item.clientStatus != "Client") {
+				if (item.totalIndividualsServed == 1) {
+					tempS[index].totalNonClientInd = parseInt(tempS[index].totalNonClientInd) + 1
+				} else {
+					tempS[index].totalNonClientFamily = parseInt(tempS[index].totalNonClientFamily) + 1
+				}
+			}
+		} else {
+			item.totalHouseholdsServed = 1
+			if (item.homeless == "YES") {
+				if (item.totalIndividualsServed == 1) {
+					item.totalHomelessInd = 1
+					item.totalHomelessFamily = 0
+				} else {
+					item.totalHomelessFamily = 1
+					item.totalHomelessInd = 0
+				}
+			} else {
+				item.totalHomelessFamily = 0
+				item.totalHomelessInd = 0
+			}
+			if (item.clientStatus == "Client") {
+				item.totalNonClientFamily = 0
+				item.totalNonClientInd = 0
+			} else {
+				if (item.totalIndividualsServed == 1) {
+					item.totalNonClientFamily = 0
+					item.totalNonClientInd = 1
+				} else {
+					item.totalNonClientFamily = 1
+					item.totalNonClientInd = 0
+				}
+			}
+			tempS.push(item)
+		}
+	})
+	console.log("DONECALCROWS")
+	return tempS
+};
+
 function uiBuildTodayRows(services, grid) {
-	console.log(services)
 	let serviceTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
 	$.each(services, function(i,item){
 		console.log(item.clientServedId)
@@ -698,6 +819,198 @@ function uiBuildTodayRows(services, grid) {
 	})
 	uiShowTodayTotals(serviceTotal, grid)
 	return serviceTotal
+};
+
+function uiBuildMonthRows(u, n, monthYear) {
+console.log("INBUILDROWS")
+	let numDays = moment(monthYear, "YYYY-MM").endOf("month").format("DD")
+	numDays = parseInt(numDays) + 1
+console.log(numDays)
+	let uTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+	let nTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+	let gTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+	let yearMonth = u[0].servicedMonth
+	let gridRow = 0
+	for (let d = 1; d < numDays; d++) {
+		let servicedDay = String(d)
+		console.log(servicedDay)
+		console.log(servicedDay.length)
+		if (servicedDay.length < 2){
+			console.log("padding day number")
+			servicedDay = "0"+servicedDay
+		}
+		servicedDay = yearMonth + servicedDay
+console.log(servicedDay)
+
+		let hasUSDA = false, hasNonUSDA = false
+		let servicedDate = moment(servicedDay, "YYYYMMDD").format("MM/DD/YYYY")
+		let uDay = u.filter(function(item) {return item.servicedDay == servicedDay})
+		let nDay = n.filter(function(item) {return item.servicedDay == servicedDay})
+		let grid = "#monthlyGrid" + d
+		if ((uDay.length == 1)||(nDay.length == 1)){
+			gridRow = 4 + d
+			$("#printBodyDiv").append('<div id="monthlyGrid'+ d +'" class="reportRowBox" style="grid-row: '+ gridRow +'"></div>')
+			let dTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+			// show day USDA
+			if (uDay.length == 1) {
+				uTotal.hh = uTotal.hh + parseInt(uDay[0].totalHouseholdsServed)
+				uTotal.ind = uTotal.ind + parseInt(uDay[0].totalIndividualsServed)
+				uTotal.ch = uTotal.ch + parseInt(uDay[0].totalChildrenServed)
+				uTotal.ad = uTotal.ad + parseInt(uDay[0].totalAdultsServed)
+				uTotal.sen = uTotal.sen + parseInt(uDay[0].totalSeniorsServed)
+				uTotal.hf = uTotal.hf + parseInt(uDay[0].totalHomelessFamily)
+				uTotal.hi = uTotal.hi + parseInt(uDay[0].totalHomelessInd)
+				uTotal.nf = uTotal.nf + parseInt(uDay[0].totalNonClientFamily)
+				uTotal.ni = uTotal.ni + parseInt(uDay[0].totalNonClientInd)
+				// Day total
+				dTotal.hh = parseInt(uDay[0].totalHouseholdsServed)
+				dTotal.ind = parseInt(uDay[0].totalIndividualsServed)
+				dTotal.ch = parseInt(uDay[0].totalChildrenServed)
+				dTotal.ad = parseInt(uDay[0].totalAdultsServed)
+				dTotal.sen = parseInt(uDay[0].totalSeniorsServed)
+				dTotal.hf = parseInt(uDay[0].totalHomelessFamily)
+				dTotal.hi = parseInt(uDay[0].totalHomelessInd)
+				dTotal.nf = parseInt(uDay[0].totalNonClientFamily)
+				dTotal.ni = parseInt(uDay[0].totalNonClientInd)
+			}
+			$(grid).append('<div class="monthItem">USDA</div>')
+			$(grid).append('<div class="monthItem">'+ dTotal.hh +'</div>')
+			$(grid).append('<div class="monthItem">'+ dTotal.ind +'</div>')
+			$(grid).append('<div class="monthItem">'+ dTotal.ch +'</div>')
+			$(grid).append('<div class="monthItem">'+ dTotal.ad +'</div>')
+			$(grid).append('<div class="monthItem">'+ dTotal.sen +'</div>')
+			$(grid).append('<div class="monthItem">'+ dTotal.hf +'</div>')
+			$(grid).append('<div class="monthItem">'+ dTotal.hi +'</div>')
+			$(grid).append('<div class="monthItem">'+ dTotal.nf +'</div>')
+			$(grid).append('<div class="monthItem">'+ dTotal.ni +'</div>')
+			if (nDay.length == 1) {
+				// calculate day NonUSDA totals
+				nTotal.hh = nTotal.hh + parseInt(nDay[0].totalHouseholdsServed)
+				nTotal.ind = nTotal.ind + parseInt(nDay[0].totalIndividualsServed)
+				nTotal.ch = nTotal.ch + parseInt(nDay[0].totalChildrenServed)
+				nTotal.ad = nTotal.ad + parseInt(nDay[0].totalAdultsServed)
+				nTotal.sen = nTotal.sen + parseInt(nDay[0].totalSeniorsServed)
+				nTotal.hf = nTotal.hf + parseInt(nDay[0].totalHomelessFamily)
+				nTotal.hi = nTotal.hi + parseInt(nDay[0].totalHomelessInd)
+				nTotal.nf = nTotal.nf + parseInt(nDay[0].totalNonClientFamily)
+				nTotal.ni = nTotal.ni + parseInt(nDay[0].totalNonClientInd)
+				// calculate Day total
+				dTotal.hh = dTotal.hh + parseInt(nDay[0].totalHouseholdsServed)
+				dTotal.ind = dTotal.ind + parseInt(nDay[0].totalIndividualsServed)
+				dTotal.ch = dTotal.ch + parseInt(nDay[0].totalChildrenServed)
+				dTotal.ad = dTotal.ad + parseInt(nDay[0].totalAdultsServed)
+				dTotal.sen = dTotal.sen + parseInt(nDay[0].totalSeniorsServed)
+				dTotal.hf = dTotal.hf + parseInt(nDay[0].totalHomelessFamily)
+				dTotal.hi = dTotal.hi + parseInt(nDay[0].totalHomelessInd)
+				dTotal.nf = dTotal.nf + parseInt(nDay[0].totalNonClientFamily)
+				dTotal.ni = dTotal.ni + parseInt(nDay[0].totalNonClientInd)
+				$(grid).append('<div class="monthItem">NonUSDA</div>')
+				$(grid).append('<div class="monthItem">'+nDay[0].totalHouseholdsServed+'</div>')
+				$(grid).append('<div class="monthItem">'+nDay[0].totalIndividualsServed+'</div>')
+				$(grid).append('<div class="monthItem">'+nDay[0].totalChildrenServed+'</div>')
+				$(grid).append('<div class="monthItem">'+nDay[0].totalAdultsServed+'</div>')
+				$(grid).append('<div class="monthItem">'+nDay[0].totalSeniorsServed+'</div>')
+				$(grid).append('<div class="monthItem">'+nDay[0].totalHomelessFamily+'</div>')
+				$(grid).append('<div class="monthItem">'+nDay[0].totalHomelessInd+'</div>')
+				$(grid).append('<div class="monthItem">'+nDay[0].totalNonClientFamily+'</div>')
+				$(grid).append('<div class="monthItem">'+nDay[0].totalNonClientInd+'</div>')
+			} else {
+				$(grid).append('<div class="monthItem">NonUSDA</div>')
+				$(grid).append('<div class="monthItem">0</div>')
+				$(grid).append('<div class="monthItem">0</div>')
+				$(grid).append('<div class="monthItem">0</div>')
+				$(grid).append('<div class="monthItem">0</div>')
+				$(grid).append('<div class="monthItem">0</div>')
+				$(grid).append('<div class="monthItem">0</div>')
+				$(grid).append('<div class="monthItem">0</div>')
+				$(grid).append('<div class="monthItem">0</div>')
+				$(grid).append('<div class="monthItem">0</div>')
+			}
+			// show day totals
+			$(grid).append('<div class="monthTotal">'+servicedDate+'</div>')
+			$(grid).append('<div class="monthTotal">'+ dTotal.hh +'</div>')
+			$(grid).append('<div class="monthTotal">'+ dTotal.ind +'</div>')
+			$(grid).append('<div class="monthTotal">'+ dTotal.ch +'</div>')
+			$(grid).append('<div class="monthTotal">'+ dTotal.ad +'</div>')
+			$(grid).append('<div class="monthTotal">'+ dTotal.sen +'</div>')
+			$(grid).append('<div class="monthTotal">'+ dTotal.hf +'</div>')
+			$(grid).append('<div class="monthTotal">'+ dTotal.hi +'</div>')
+			$(grid).append('<div class="monthTotal">'+ dTotal.nf +'</div>')
+			$(grid).append('<div class="monthTotal">'+ dTotal.ni +'</div>')
+			gTotal.hh = gTotal.hh + dTotal.hh
+			gTotal.ind = gTotal.ind + dTotal.ind
+			gTotal.ch = gTotal.ch + dTotal.ch
+			gTotal.ad = gTotal.ad + dTotal.ad
+			gTotal.sen = gTotal.sen + dTotal.sen
+			gTotal.hf = gTotal.hf + dTotal.hf
+			gTotal.hi = gTotal.hi + dTotal.hi
+			gTotal.nf = gTotal.nf + dTotal.nf
+			gTotal.ni = gTotal.ni + dTotal.ni
+		}
+	}
+	gridRow = gridRow + 1
+	$("#printBodyDiv").append('<div id="monthlyGridTotal" class="reportRowBox" style="grid-row: '+ gridRow +'"></div>')
+	grid = "#monthlyGridTotal"
+	$(grid).append('<div class="monthTotal">USDA</div>')
+	$(grid).append('<div class="monthTotal">'+ uTotal.hh +'</div>')
+	$(grid).append('<div class="monthTotal">'+ uTotal.ind +'</div>')
+	$(grid).append('<div class="monthTotal">'+ uTotal.ch +'</div>')
+	$(grid).append('<div class="monthTotal">'+ uTotal.ad +'</div>')
+	$(grid).append('<div class="monthTotal">'+ uTotal.sen +'</div>')
+	$(grid).append('<div class="monthTotal">'+ uTotal.hf +'</div>')
+	$(grid).append('<div class="monthTotal">'+ uTotal.hi +'</div>')
+	$(grid).append('<div class="monthTotal">'+ uTotal.nf +'</div>')
+	$(grid).append('<div class="monthTotal">'+ uTotal.ni +'</div>')
+	$(grid).append('<div class="monthTotal">NonUSDA</div>')
+	$(grid).append('<div class="monthTotal">'+ nTotal.hh +'</div>')
+	$(grid).append('<div class="monthTotal">'+ nTotal.ind +'</div>')
+	$(grid).append('<div class="monthTotal">'+ nTotal.ch +'</div>')
+	$(grid).append('<div class="monthTotal">'+ nTotal.ad +'</div>')
+	$(grid).append('<div class="monthTotal">'+ nTotal.sen +'</div>')
+	$(grid).append('<div class="monthTotal">'+ nTotal.hf +'</div>')
+	$(grid).append('<div class="monthTotal">'+ nTotal.hi +'</div>')
+	$(grid).append('<div class="monthTotal">'+ nTotal.nf +'</div>')
+	$(grid).append('<div class="monthTotal">'+ nTotal.ni +'</div>')
+	$(grid).append('<div class="monthTotal">TOTAL</div>')
+	$(grid).append('<div class="monthTotal">'+ gTotal.hh +'</div>')
+	$(grid).append('<div class="monthTotal">'+ gTotal.ind +'</div>')
+	$(grid).append('<div class="monthTotal">'+ gTotal.ch +'</div>')
+	$(grid).append('<div class="monthTotal">'+ gTotal.ad +'</div>')
+	$(grid).append('<div class="monthTotal">'+ gTotal.sen +'</div>')
+	$(grid).append('<div class="monthTotal">'+ gTotal.hf +'</div>')
+	$(grid).append('<div class="monthTotal">'+ gTotal.hi +'</div>')
+	$(grid).append('<div class="monthTotal">'+ gTotal.nf +'</div>')
+	$(grid).append('<div class="monthTotal">'+ gTotal.ni +'</div>')
+	// if (item.homeless == "YES") {
+	// 	if (item.totalIndividualsServed == 1) {
+	// 		serviceTotal.hi = serviceTotal.hi + 1
+	// 		$(grid).append('<div class="todayItem">-</div>')
+	// 		$(grid).append('<div class="todayItem">1</div>')
+	// 	} else {
+	// 		serviceTotal.hf = serviceTotal.hf + 1
+	// 		$(grid).append('<div class="todayItem">1</div>')
+	// 		$(grid).append('<div class="todayItem">-</div>')
+	// 	}
+	// } else {
+	// 	$(grid).append('<div class="todayItem">-</div>')
+	// 	$(grid).append('<div class="todayItem">-</div>')
+	// }
+	// if (item.clientStatus == "Client") {
+	// 	$(grid).append('<div class="todayItem">-</div>')
+	// 	$(grid).append('<div class="todayItem">-</div>')
+	// } else {
+	// 	if (item.totalIndividualsServed == 1) {
+	// 		serviceTotal.ni = serviceTotal.ni + 1
+	// 		$(grid).append('<div class="todayItem">-</div>')
+	// 		$(grid).append('<div class="todayItem">1</div>')
+	// 	} else {
+	// 		serviceTotal.nf = serviceTotal.nf + 1
+	// 		$(grid).append('<div class="todayItem">1</div>')
+	// 		$(grid).append('<div class="todayItem">-</div>')
+	// 	}
+	// }
+//	uiShowTodayTotals(serviceTotal, grid)
+//	return serviceTotal
 };
 
 function uiShowTodayTotals(serviceTotal, grid){
@@ -1347,20 +1660,21 @@ function dbGetNewClientID(){
 
 function dbGetServicesTypes(){
 	return dbGetData(aws+"/servicetypes").serviceTypes
-}
+};
 
-function dbGetTodaysServices(){
-	dateToday = moment().format("YYYYMMDD") //"2018-03-17"
-	return dbGetData(aws+"/clients/services/byday/"+dateToday).services
-}
+function dbGetDaysServices(dayDate){
+	dayDate = moment(dayDate).format("YYYYMMDD")
+	return dbGetData(aws+"/clients/services/byday/"+dayDate).services
+};
+
+function dbGetMonthServices(dayMonth){
+	dayMonth = moment(dayMonth).format("YYYYMM")
+	return dbGetData(aws+"/clients/services/bymonth/"+dayMonth).services
+};
 
 function dbGetUsers(){
 	return dbGetData(aws+"/users").users
-}
-
-function dbGetUser(){
-
-}
+};
 
 function dbLoadServiceHistory(){
 	let clientHistory = dbGetData(aws+"/clients/services/"+client.clientId).services
@@ -2423,36 +2737,25 @@ function uiClearCurrentClient(){
 // }
 
 function utilGenerateDailyReport(){
-	let header = uiGetTemplate('#reportHeader')
-	let reportBodyHeader = uiGetTemplate('#reportBodyHeader')
+	let dayDate = $('#reportsDailyDate').val()
+	uiShowDailyReportHeader(dayDate, '#printBodyDiv', "DAILY")
+	uiShowDailyReportRows(dayDate, '#printBodyDiv')
 
-
-	let reportTitle = "FOOD DISTRIBUTION"
-	if ($("#reportsDailyType").val() == "ALL") {
-		reportTitle = "SERVICE DISTRIBUTION"
-	}
+	// let reportTitle = "FOOD DISTRIBUTION"
+	// if ($("#reportsDailyType").val() == "ALL") {
+	// 	reportTitle = "SERVICE DISTRIBUTION"
+	// }
+	//$("#reportTitle").html(reportTitle)
 
 	uiShowHidePrint("show")
-  $("#printBodyDiv").append(header)
-	$("#printBodyDiv").append(reportBodyHeader)
-	// TODO get data from services
+};
 
-	let data = [
-		{},
-		{},
-		{},
-		{},
-		{},
-	]
-
-
-
-	$("#reportTitle").html(reportTitle)
-
-	// $("#printBodyDiv").html("<BR> TESTING #2")
-
-	// $("#printBodyDiv").printMe({ "title": reportTitle });
-	// $("#printBodyDiv").printMe({ "path": ["css/reports.css"] });
+function utilGenerateMonthlyReport(){
+	console.log("Report Start")
+	let monthYear = $('#reportsMonthyMonth').val()
+	uiShowMonthlyReportHeader(monthYear)
+	uiShowMonthlyReportRows(monthYear)
+	uiShowHidePrint("show")
 };
 
 function utilLoginUserShowScreens(){
@@ -2465,7 +2768,6 @@ function utilLoginUserShowScreens(){
 	users = dbGetUsers()
 	utilSetCurrentUser()
 	uiSetMenusForUser()
-	uiShowTodayReportRows()
 };
 
 function utilPadEmptyFields(data){
