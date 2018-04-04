@@ -1678,6 +1678,10 @@ function dbGetUsers(){
 
 function dbLoadServiceHistory(){
 	let clientHistory = dbGetData(aws+"/clients/services/"+client.clientId).services
+	console.log(clientHistory)
+	clientHistory = clientHistory.sort(function(a, b){
+		return b.servicedDay - a.servicedDay
+	})
 	uiShowHistoryData(clientHistory)
 }
 
