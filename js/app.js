@@ -11,10 +11,8 @@
 // **********************************************************************************************************
 // *********************************************** GLOBAL VARS **********************************************
 // **********************************************************************************************************
-// TODO cleanup History sort
 // TODO add number of Dependents to Dependents tab ie. Dependents(5) ... do not show () if 0
 // TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
-// TODO have loading of history happen when history tab is clicked
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
 
 let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
@@ -154,7 +152,6 @@ function navGotoTab(tab){
 // *********************************************** UI FUNCTIONS *********************************************
 // **********************************************************************************************************
 
-// *** UI A ***
 function uiAddNewDependentsRow(){
 	let nextRow = '00';
 	if (client.dependents!=null){
@@ -180,14 +177,13 @@ function uiAddNoteButtonRow(){
 	$('#notesContainer').append(buttonRow)
 }
 
-// *** UI B ***
 function uiBuildHistoryBottom(){
 	const headerLabels = ["Served", "Service", "isUSDA", "Homeless", "# Items", "# Adults", "# Children", "# Individuals", "# Seniors", "Serviced By"]
 	$("#historyBottom").html("")
 	for (var i = 0; i < headerLabels.length; i++) {
 		$("#historyBottom").append("<div class='historyHeader'>" + headerLabels[i] + "</div>")
 	}
-	$("#historyBottom").append("<div class='historyLoadButton solidButton' onClick='dbLoadServiceHistory()'>Load History</div>")
+	//$("#historyBottom").append("<div class='historyLoadButton solidButton' onClick='dbLoadServiceHistory()'>Load History</div>")
 };
 
 function uiBuildHistoryTop(){
@@ -210,13 +206,11 @@ function uiBuildHistoryTop(){
 	uiGenSelectHTMLTable('#historyTop', historyArray, columns,'historyTable')
 }
 
-// *** UI C ***
 function uiClearAllErrorBubbles(){
 	$('.errorBubble').remove()
 	$('.errorField').removeClass("errorField")
 };
 
-// *** UI D ***
 function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	//setMainSideDiv()
@@ -226,9 +220,14 @@ function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
 	// headerRow+='<h5 class="siteHeading">'+moment().format(uiDate)+'</h5></td></tr>'
 	const headerRow = '<tr><td class="notesHeader">Created</td><td class="notesHeader">Note</td><td class="notesHeader">Created By</td><td class="notesHeader">Important</td></tr>'
 	$('.notes').append(headerRow)
-}
+};
 
-// *** UI G ***
+function uiEditHistoryRecord(serviceTypeId, rowNum){
+	console.log("MADE IT")
+	console.log(serviceTypeId)
+	console.log(rowNum)
+};
+
 function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 // console.log(errText, " ", id)
@@ -298,13 +297,11 @@ function uiLoginFormToggleValidation(todo){
 	}
 };
 
-// *** UI O ***
 function uiOutlineTableRow(table, row){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', 'var(--blue) 1px dashed').siblings().css('outline', 'none')
 };
 
-// *** UI R ***
 function uiResetDependentsTable() {
 	// TODO write reset code
 };
@@ -335,7 +332,6 @@ function uiResetUserForm () {
 	}
 };
 
-// *** UI S ***
 function uiShowCurrentClientButtons(){
 	$("#clientLeftSlider").show()
 	$("#clientRightSlider").show()
@@ -367,7 +363,6 @@ function uiShowExistingNotes(){
 	}
 };
 
-// *** UI T ***
 function uiToggleNoteForm(todo, id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	if (id.length > 1) {
@@ -410,7 +405,7 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).removeClass("imageGrayOut")
 	}
 };
-// *** UI U ***
+
 function uiUpdateCurrentClient(index) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiOutlineTableRow('clientTable', index + 1)
@@ -424,8 +419,6 @@ function uiUpdateCurrentClient(index) {
 function uiUpdateAdminHeader() {
 	$("#adminTitle").html($("#serviceName").val())
 };
-
-
 
 function uiSaveButton(form, action){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -532,24 +525,49 @@ function uiShowHistory(){
 
 function uiShowHistoryData(clientHistory){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+
+	// if (currentUser.userRole == "Admin"){
+	// 	$("#nav3").show()
+	// 	$("#atabLable7").hide()
+	// } else if (currentUser.userRole == "TechAdmin"){
+
 	uiBuildHistoryBottom()
 	$(".historyLoadButton").hide()
 	const rowFields = ["servicedDateTime", "serviceName", "isUSDA", "homeless", "itemsServed", "totalAdultsServed", "totalChildrenServed", "totalIndividualsServed", "totalSeniorsServed", "servicedByUserName"]
 	for (var i = 0; i < clientHistory.length; i++) {
+		console.log(clientHistory)
 		let rowClass = "", newRow = ""
 		if (!Number.isInteger(i / 2)) {
-			rowClass = " class='historyDarkRow'"
+			rowClass = " historyDarkRow"
 		}
 		for (var f = 0; f < rowFields.length; f++) {
 			if (rowFields[f] == "servicedDateTime") {
 				let serviceDateTime =  moment(clientHistory[i][rowFields[f]]).format(uiDateTimeShort)
-				newRow += "<div" + rowClass + ">" + serviceDateTime + "</div>"
+				if (currentUser.userRole == "Admin" || currentUser.userRole == "TechAdmin"){
+					newRow += "<div class='rowNum" + i + " historyRow editable" + rowClass + "' onclick='uiEditHistoryRecord(\""+clientHistory[i].serviceTypeId+"\", \""+ i +"\")'>" + serviceDateTime + "</div>"
+				} else {
+					newRow += "<div class='rowNum" + i + " historyRow" + rowClass + ">" + serviceDateTime + "</div>"
+				}
 			} else {
-				newRow += "<div" + rowClass + ">" + clientHistory[i][rowFields[f]] + "</div>"
+				if (currentUser.userRole == "Admin" || currentUser.userRole == "TechAdmin"){
+					newRow += "<div class='rowNum" + i + " historyRow editable" + rowClass + "' onclick='uiEditHistoryRecord(\""+clientHistory[i].serviceTypeId+"\", \""+ i +"\")'>" + clientHistory[i][rowFields[f]] + "</div>"
+				} else {
+					newRow += "<div class='rowNum" + i + " historyRow" + rowClass + "'>" + clientHistory[i][rowFields[f]] + "</div>"
+				}
 			}
 		}
 		$("#historyBottom").append(newRow)
 	}
+	// show higlighting on hover
+	$(".historyRow").hover(
+	  function() {
+			let num = this.classList.item(0)
+	    $("."+num).addClass("highlight");
+	  }, function() {
+			let num = this.classList.item(0)
+			$("."+num).removeClass("highlight");
+	  }
+	);
 };
 
 let uiShowLastServed = function() {
@@ -634,7 +652,7 @@ function uiShowDailyReportHeader(dayDate, form, title){
 function uiShowDailyReportRows(dayDate, form){
 	servicesRendered = dbGetDaysServices(dayDate)
 	let servicesFood = servicesRendered
-		.filter(function(item) {return item.serviceValid})
+		.filter(function(item) {return item.serviceValid == 'true'})
 		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
 	let servicesUSDA = servicesFood
 		.filter(function(item) {
@@ -682,7 +700,7 @@ function uiShowMonthlyReportRows(monthYear){
 console.log("IN MONTHLY REPORT FUNCTION")
 	servicesRendered = dbGetMonthServices(monthYear)
 	let servicesFood = servicesRendered
-		.filter(function(item) {return item.serviceValid})
+		.filter(function(item) {return item.serviceValid == 'true'})
 		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
 	let dayUSDA = ""
 	let servicesUSDA = servicesFood
@@ -1678,10 +1696,8 @@ function dbGetUsers(){
 
 function dbLoadServiceHistory(){
 	let clientHistory = dbGetData(aws+"/clients/services/"+client.clientId).services
-	console.log(clientHistory)
-	clientHistory = clientHistory.sort(function(a, b){
-		return b.servicedDay - a.servicedDay
-	})
+	clientHistory = clientHistory.sort(function(a, b){return b.servicedDay - a.servicedDay})
+		.filter(function(item){return item.serviceValid == "true"})
 	uiShowHistoryData(clientHistory)
 }
 

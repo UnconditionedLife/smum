@@ -38,7 +38,7 @@ header{
 }
 
 nav{
-  grid-column: 2 / span 2;
+  grid-row: 2 / span 2;
 }
 header,footer{
   background-color:grey;
@@ -646,7 +646,7 @@ outline: -webkit-focus-ring-color auto 5px;
 }
 
 .historyHeader {
-	background-color: var(--light-green);
+	background: linear-gradient(#C4E6C4,white);
 	line-height: 38px;
 	text-align: center;
 	font-weight: bold;
@@ -1072,6 +1072,14 @@ checkbox[readonly]{
 
 .errorField {
 	box-shadow: 0 0 5px var(--red)
+}
+
+.editable {
+	cursor: pointer;
+}
+
+.highlight {
+	background: #A7D8A1;
 }
 
 
