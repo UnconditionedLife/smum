@@ -14,6 +14,7 @@
 // TODO add number of Dependents to Dependents tab ie. Dependents(5) ... do not show () if 0
 // TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
+// TODO add printing function to Day & Daily report
 
 let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 let rowNum = 1
@@ -222,11 +223,86 @@ function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
 	$('.notes').append(headerRow)
 };
 
-function uiEditHistoryRecord(serviceTypeId, rowNum){
-	console.log("MADE IT")
-	console.log(serviceTypeId)
-	console.log(rowNum)
+function uiShowEditHistoryPopup(serviceId, rowNum){
+	if ($("#editPopup.rowNum"+rowNum).length > 0) return
+	// clear old popup just in case
+	$("#editPopup").remove()
+	$(".greyout").removeClass('greyout')
+	// add new highligh and popup
+	$(".rowNum" + rowNum).addClass('greyout')
+	let popup = "<div id='editPopup' class='historyPopup rowNum" + rowNum + "'>&#8679; &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"edit\", \"" + serviceId + "\", \""+ rowNum +"\")'>EDIT</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"delete\", \"" + serviceId + "\", \""+ rowNum +"\")'>DELETE</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"cancel\", \"" + serviceId + "\", \""+ rowNum +"\")'>CANCEL</span> &nbsp; &nbsp; &#8679;</div>"
+	$(".rowNum" + rowNum).last().after(popup)
 };
+
+function uiEditHistory(todo, serviceId, rowNum){
+	if (todo == "cancel"){
+		$("#editPopup").remove()
+		$(".greyout").removeClass('greyout')
+		if ($(".historyEditField").length > 0){
+			let temp = $("#editServedHidden").val()
+			$(".rowNum" + rowNum).first().html(temp)
+			temp = $("#editServiceHidden").val()
+			$(".rowNum" + rowNum + ":eq(1)").html(temp)
+			temp = $("#editisUSDAHidden").val()
+			$(".rowNum" + rowNum + ":eq(2)").html(temp)
+		}
+	} else if (todo == "delete") {
+		utilBeep()
+		let popup = "<div id='editPopup' class='historyPopup'>&#8680; &nbsp; &nbsp; <span style='color:white'>ARE YOU SURE?</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"confirmedDelete\", \"" + serviceId + "\", \""+ rowNum +"\")'>YES</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"cancel\", \"" + serviceId + "\", \""+ rowNum +"\")'>CANCEL</span> &nbsp; &nbsp; &#8678;</div>"
+		$("#editPopup").html(popup)
+	} else if (todo == "confirmedDelete") {
+		console.log("GONNA DELETE")
+		console.log("Delete: " + serviceId)
+		let service = utilRemoveService(serviceId)
+		if (service != ""){
+			let lastServed = utilUpdateLastServed(service)
+			if (lastServed == "failed") {
+				console.log("Saving client / lastServed failed.")
+				return
+			}
+		} else {
+			console.log("Saving delete failed.")
+			return
+		}
+		$(".rowNum" + rowNum).hide("slow")
+		uiEditHistory("cancel", serviceId, rowNum)
+	} else if (todo == "edit") {
+		console.log("GONNA EDIT")
+		console.log(rowNum)
+		let dt = $(".rowNum" + rowNum).first().html()
+		temp = moment(dt, uiDateTime).format(dateTime)
+		$(".rowNum" + rowNum).first().html("<input id='editServedHidden' class='historyEditField' type='hidden' value='" + dt + "'><input id='editServed' class='historyEditField' type='datetime-local' value='" + temp + "'>")
+		temp = $(".rowNum" + rowNum + ":eq(1)").html()
+		$(".rowNum" + rowNum + ":eq(1)").html("<input id='editServiceHidden' class='historyEditField' type='hidden' value='" + temp + "'><input id='editService' class='historyEditField' type='text' value='" + temp + "'>")
+		temp = $(".rowNum" + rowNum + ":eq(2)").html()
+		$(".rowNum" + rowNum + ":eq(2)").html("<input id='editisUSDAHidden' class='historyEditField' type='hidden' value='" + temp + "'><input id='editisUSDA' class='historyEditField' type='text' value='" + temp + "'>")
+		let popup = "&#8679; &nbsp; &nbsp; <span style='color:white'>EDIT FIELDS ABOVE</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"save\", \"" + serviceId + "\", \""+ rowNum +"\")'>SAVE</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"cancel\", \"" + serviceId + "\", \""+ rowNum +"\")'>CANCEL</span> &nbsp; &nbsp; &#8679;"
+		$("#editPopup").html(popup)
+	} else if (todo == "save") {
+		console.log("GONNA SAVE")
+		console.log("Save: " + serviceId)
+		let service = utilUdateService(serviceId)
+		if (service != ""){
+			let lastServed = utilUpdateLastServed(service)
+			if (lastServed == "failed") {
+				console.log("Saving client / lastServed failed.")
+				return
+			} else {
+				let servicedDateTime = $("#editServed").val()
+				servicedDateTime = moment(servicedDateTime).format(uiDateTimeShort)
+				let serviceName = $("#editService").val()
+				let isUSDA = $("#editisUSDA").val()
+				$(".rowNum" + rowNum).first().html(servicedDateTime)
+				$(".rowNum" + rowNum + ":eq(1)").html(serviceName)
+				$(".rowNum" + rowNum + ":eq(2)").html(isUSDA)
+				uiEditHistory("cancel", serviceId, rowNum)
+			}
+		} else {
+			console.log("Updating service failed.")
+		}
+	}
+}
+
 
 function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
@@ -525,17 +601,11 @@ function uiShowHistory(){
 
 function uiShowHistoryData(clientHistory){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-
-	// if (currentUser.userRole == "Admin"){
-	// 	$("#nav3").show()
-	// 	$("#atabLable7").hide()
-	// } else if (currentUser.userRole == "TechAdmin"){
-
 	uiBuildHistoryBottom()
-	$(".historyLoadButton").hide()
+	// $(".historyLoadButton").hide()
 	const rowFields = ["servicedDateTime", "serviceName", "isUSDA", "homeless", "itemsServed", "totalAdultsServed", "totalChildrenServed", "totalIndividualsServed", "totalSeniorsServed", "servicedByUserName"]
 	for (var i = 0; i < clientHistory.length; i++) {
-		console.log(clientHistory)
+//console.log(clientHistory)
 		let rowClass = "", newRow = ""
 		if (!Number.isInteger(i / 2)) {
 			rowClass = " historyDarkRow"
@@ -544,13 +614,13 @@ function uiShowHistoryData(clientHistory){
 			if (rowFields[f] == "servicedDateTime") {
 				let serviceDateTime =  moment(clientHistory[i][rowFields[f]]).format(uiDateTimeShort)
 				if (currentUser.userRole == "Admin" || currentUser.userRole == "TechAdmin"){
-					newRow += "<div class='rowNum" + i + " historyRow editable" + rowClass + "' onclick='uiEditHistoryRecord(\""+clientHistory[i].serviceTypeId+"\", \""+ i +"\")'>" + serviceDateTime + "</div>"
+					newRow += "<div class='rowNum" + i + " historyRow editable" + rowClass + "' onclick='uiShowEditHistoryPopup(\""+clientHistory[i].serviceId+"\", \""+ i +"\")'>" + serviceDateTime + "</div>"
 				} else {
 					newRow += "<div class='rowNum" + i + " historyRow" + rowClass + ">" + serviceDateTime + "</div>"
 				}
 			} else {
 				if (currentUser.userRole == "Admin" || currentUser.userRole == "TechAdmin"){
-					newRow += "<div class='rowNum" + i + " historyRow editable" + rowClass + "' onclick='uiEditHistoryRecord(\""+clientHistory[i].serviceTypeId+"\", \""+ i +"\")'>" + clientHistory[i][rowFields[f]] + "</div>"
+					newRow += "<div class='rowNum" + i + " historyRow editable" + rowClass + "' onclick='uiShowEditHistoryPopup(\""+clientHistory[i].serviceId+"\", \""+ i +"\")'>" + clientHistory[i][rowFields[f]] + "</div>"
 				} else {
 					newRow += "<div class='rowNum" + i + " historyRow" + rowClass + "'>" + clientHistory[i][rowFields[f]] + "</div>"
 				}
@@ -558,7 +628,7 @@ function uiShowHistoryData(clientHistory){
 		}
 		$("#historyBottom").append(newRow)
 	}
-	// show higlighting on hover
+	// show higlighting on hovering
 	$(".historyRow").hover(
 	  function() {
 			let num = this.classList.item(0)
@@ -654,10 +724,16 @@ function uiShowDailyReportRows(dayDate, form){
 	let servicesFood = servicesRendered
 		.filter(function(item) {return item.serviceValid == 'true'})
 		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
+		.sort(function(a, b) {return a.createdDateTime - b.createdDateTime})
+
+
+for (var i = 0; i < servicesFood.length; i++) {
+	console.log(servicesFood[i])
+}
+
+
 	let servicesUSDA = servicesFood
-		.filter(function(item) {
-			return item.isUSDA == "USDA"
-		})
+		.filter(function(item) {return item.isUSDA == "USDA"})
 	let servicesNonUSDA = servicesFood
 		.filter(function(item) {
 			return item.isUSDA == "NonUSDA"
@@ -1593,9 +1669,7 @@ function dbGetData(uUrl){
 		},
 		statusCode: {
 			401: function() {
-
 console.log("Error: 401")
-
 				cogLogoutUser()
 				$('#nav5').html('Login')
 				$('#nav4').html('')
@@ -1649,7 +1723,7 @@ console.log("Error: 0")
 	}).always(function (data, textStatus, jqXHR) {
     // TODO most likely remove .always
 	})
-	//console.log(ans)
+// console.log(JSON.stringify(ans))
 	return ans
 };
 
@@ -1695,10 +1769,18 @@ function dbGetUsers(){
 };
 
 function dbLoadServiceHistory(){
-	let clientHistory = dbGetData(aws+"/clients/services/"+client.clientId).services
+	let clientHistory = dbGetClientServiceHistory()
 	clientHistory = clientHistory.sort(function(a, b){return b.servicedDay - a.servicedDay})
 		.filter(function(item){return item.serviceValid == "true"})
 	uiShowHistoryData(clientHistory)
+}
+
+function dbGetClientServiceHistory(){
+	return dbGetData(aws+"/clients/services/"+client.clientId).services
+}
+
+function dbGetService(serviceId){
+	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
 }
 
 function dbPostData(uUrl,dataU){
@@ -1816,6 +1898,7 @@ function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 	}
 	if (notPushed) newLastServed.push(newRecord)
 	client.lastServed = newLastServed
+	// TODO move to seperate function and merge with similar functions
 	let data = utilPadEmptyFields(client)
 	data = JSON.stringify(data)
 //console.log(data)
@@ -1856,17 +1939,11 @@ function dbSaveUser(context){
 			$("#" + fields[i] + ".userForm").val(utilNow())
 		}
 	}
-
 console.log("IN SAVE USER")
-
 console.log("BEFORE FORM VALIDATION")
 	let hasErrors = utilValidateForm("userForm", context)
-
 console.log(hasErrors)
-
 	if (hasErrors) return
-
-
 	// store user in Users Table
 	let userData = utilFormToJSON(".userForm")
 	userData.notes = []
@@ -2793,7 +2870,9 @@ function utilLoginUserShowScreens(){
 function utilPadEmptyFields(data){
 	$.each(data, function(key,value){
 		if (value == "" || (key == "zipSuffix" && value == 0)) {
-			data[key] = "*EMPTY*"
+			if (key != "notes" && key != "dependents") {
+				data[key] = "*EMPTY*"
+			}
 		}
 	})
 	return data
@@ -2806,6 +2885,106 @@ function utilRemoveEmptyPlaceholders(){
 			client[key] = ""
 		}
 	})
+};
+
+function utilRemoveService(serviceId){
+	let service = dbGetService(serviceId)[0]
+	service.serviceValid = false
+	let data = JSON.stringify(service)
+	let URL = aws+"/clients/services"
+	result = dbPostData(URL,data)
+	if (result == null) {return service}
+	return
+};
+
+function utilUdateService(serviceId){
+	let service = dbGetService(serviceId)[0]
+	let servicedDateTime = $("#editServed").val()
+	let serviceName = $("#editService").val()
+	let isUSDA = $("#editisUSDA").val()
+	if (servicedDateTime == "" || serviceName == "" || isUSDA == ""){
+		utilBeep()
+		return
+	}
+	console.log(isUSDA)
+	let serviceType = serviceTypes.filter(function(item){
+		return item.serviceName == serviceName
+	})
+	console.log(serviceType)
+	console.log(serviceType[0].isUSDA)
+	if (serviceType.length == 0) {
+		utilBeep()
+		console.log("Bad Service Name.")
+		return
+	} else if (serviceType[0].isUSDA != isUSDA){
+		utilBeep()
+		console.log("IsUSDA does not match ServiceType.")
+		return
+	}
+	serviceType = serviceType[0]
+	console.log(serviceName)
+	console.log(serviceType)
+	service.serviceTypeId = serviceType.serviceTypeId
+	service.servicedDateTime = servicedDateTime
+	service.serviceName = serviceName
+	service.isUSDA = isUSDA
+	service.servicedDay = moment(servicedDateTime).format("YYYYMMDD")
+	service.servicedMonth = moment(servicedDateTime).format("YYYYMM")
+	if (service.clientFamilyName == "") {service.clientFamilyName = client.familyName}
+	if (service.clientGivenName == "") {service.clientGivenName = client.givenName}
+	if (service.clientZipcode == "") {service.clientZipcode = client.zipcode}
+	service.updatedDateTime == utilNow()
+
+	console.log(service)
+	utilRemoveService(service.serviceId)
+
+	let data = JSON.stringify(service)
+	let URL = aws+"/clients/services"
+	result = dbPostData(URL,data)
+	if (result == null) {return service}
+	return
+};
+
+function utilUpdateLastServed(service){
+	// find what lastserved records do not match
+	let h = dbGetClientServiceHistory()
+	h = h.filter(function(item){return item.serviceValid == "true"})
+			.sort(function(a, b){return b.servicedDay - a.servicedDay})
+	let ls = client.lastServed
+	//let missing = []
+	for (var i = 0; i < ls.length; i++) {
+		// TODO update family ID  ===  familyIdCheckedDate
+		let found = h.filter(function(item){
+			return item.serviceTypeId == ls[i].serviceTypeId
+		})
+		console.log(found.length)
+		if (found.length > 0){
+			// let mdata = {index: i, serviceTypeId: ls[i].serviceTypeId}
+			// missing.push(mdata)
+			if (found[0].servicedDateTime != ls[i].serviceDateTime || found[0].serviceCategory != ls[i].serviceCategory || found[0].isUSDA != ls[i].isUSDA) {
+				let lsItem = {serviceTypeId: found[0].serviceTypeId, serviceDateTime: found[0].servicedDateTime, serviceCategory: found[0].serviceCategory, isUSDA: found[0].isUSDA}
+				ls.splice(i, 1, lsItem)
+			}
+		} else {
+			if (ls[i].serviceTypeId != "cjcryvin100003i8dv6e72m6j") { // ignore adminsitration may not have been stored in services
+				ls.splice(i, 1)
+			}
+		}
+	}
+	// TODO move to seperate function and merge with similar functions
+	client.lastServed = ls
+	console.log(client)
+	let data = utilPadEmptyFields(client)
+	data = JSON.stringify(data)
+	console.log(data)
+	let URL = aws+"/clients/"
+	result = dbPostData(URL,data)
+	if (result == null) {
+		utilBloop() // TODO move bloop to successful POST ()
+		return "success"
+	} else {
+		return "failed"
+	}
 };
 
 function utilSetLastServedFood(){
