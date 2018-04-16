@@ -17,6 +17,7 @@
       <script src="js/aws-cognito-sdk.min.js"></script>
       <script src="js/amazon-cognito-identity.min.js"></script>
       <script src="https://use.fontawesome.com/4bcfc4269b.js"></script>
+      <script src="js/epos-2.7.0.js"></script>
    </head>
    <body>
       <nav class="navbar">
@@ -491,10 +492,14 @@
    <div id="printOverlay" class="popupOverlay" onclick="uiShowHidePrint('hide')">
       <div id="printBodyDiv"></div>
    </div>
+   <div class="main-container" style="margin:auto; width:100%; visibility:hidden"></div>
 
-   <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
-   <script src="js/jquery-ui.min.js"></script>
-   <script src="js/jquery-printme.min.js"></script>
+   <!--- <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.js"></script> --->
+   <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+   crossorigin="anonymous"></script>
+   <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+   <script type="text/javascript" src="js/jquery-printme.min.js"></script>
 
 
    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>

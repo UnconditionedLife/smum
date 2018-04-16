@@ -16,9 +16,8 @@
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
 // TODO add printing function to Day & Daily report
 
-let aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
-let rowNum = 1
-let MAX_ID_DIGITS = 5
+const aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
+const MAX_ID_DIGITS = 5
 const uiDate = 'MM/DD/YYYY'
 const uiDateTime = 'MM/DD/YYYY H:mma'
 const uiDateTimeShort = 'MM/DD/YY H:mma'
@@ -26,6 +25,7 @@ const longDate = "MMMM Do, YYYY  |  LT"
 const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
 const seniorAge = 60 // TODO set in Admin/Settings
+let rowNum = 1
 let clientData = null // current client search results
 let servicesRendered = [] // tally of services as they are clicked
 let client = {} // current client
@@ -2632,11 +2632,27 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 		dbSaveService(serviceTypeId, serviceItem[0].serviceId, serviceValid)
 		// TODO Need to revert old Last Served from current client ?????
 		uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
-		if (serviceButtons == "Primary") $("#image-"+serviceTypeId).removeClass("imageGrayOut")
+		if (serviceButtons == "Primary") {
+			$("#image-"+serviceTypeId).removeClass("imageGrayOut")
+		}
 	} else {
-console.log("IN ADD SERVICE");
 		let serviceValid = true
 		dbSaveService(serviceTypeId, "", serviceValid)
+		if (serviceCategory == 'Food_Pantry') {
+			console.log("IN PRINT AREA");
+			//TODO Create function utilGetServiceTypeByID
+			let service = serviceTypes.filter(function( obj ) {
+					return obj.serviceTypeId == serviceTypeId
+				})[0]
+			printFoodReceipt(service.isUSDA)
+			setTimeout(function(){ // give time for food receipt to print
+				printReminderReceipt()
+			}, 1250);
+		} else if (serviceCategory == 'Clothes_Closet') {
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				printClothesReceipt()
+			}, 2500);
+		}
 		uiShowLastServed()
 		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
 	}
@@ -3844,7 +3860,6 @@ function isLoggedIn(){
 	}
 }
 
-
 function fixDepenedentRelationships(){
   for (var i = 3000; i < 5000; i++) {
     let clientData = dbGetData(aws+"/clients/"+i).clients
@@ -3874,4 +3889,204 @@ function fixDepenedentRelationships(){
 			}
 		}
   }
+};
+
+// **********************************************************************************************************
+// PRINTER FUNCTIONS
+// **********************************************************************************************************
+
+var ePosDev = new epson.ePOSDevice();
+var img = document.getElementById('smum');
+var printer = null;
+connect()
+
+function connect() {
+ 	var ipAddress = '192.168.1.177';
+ 	var port = '8008';
+ 	ePosDev.connect(ipAddress, port, callback_connect);
+};
+
+function callback_connect(resultConnect){
+	console.log("in function")
+ 	var deviceId = 'local_printer';
+ 	var options = {'crypto' : false, 'buffer' : false};
+ 	if ((resultConnect == 'OK') || (resultConnect == 'SSL_CONNECT_OK')) {
+	 	//Retrieves the Printer object
+	 	ePosDev.createDevice(deviceId, ePosDev.DEVICE_TYPE_PRINTER, options,
+	 	callback_createDevice);
+ 	}	else {
+	 	//Displays error messages
+	 	console.log("Error in callback_connect");
+ }
+};
+
+function callback_createDevice(deviceObj, errorCode){
+ if (deviceObj === null) {
+	 //Displays an error message if the system fails to retrieve the Printer object
+	 console.log("error in callback_createDevice 1");
+	 return;
+ }
+ printer = deviceObj;
+ //Registers the print complete event
+ printer.onreceive = function(response){
+	 if (response.success) {
+		 console.log("success in callback_createDevice");
+	 }
+	 else {
+		 console.log("error in callback_createDevice 1");
+	 }
+ };
+}
+
+function addImage(name,src, width, height){
+	var newCanvas = $('<canvas>',{'id':name,'width':width,'height':height});
+	var mainDiv = $('.main-container');
+	var img = $('<img>',{'id':name+'img','src':src,'width':width,'height':height});
+	mainDiv.append(newCanvas);
+	mainDiv.append(img);
+	console.log(mainDiv)
+}
+
+function drawCanvas(name,width,height){
+	var canvas = document.getElementById(name);
+	var context = canvas.getContext('2d');
+	var img = document.getElementById(name+'img');
+	img.setAttribute('crossOrigin', 'Anonymous');
+	context.drawImage(img, 0,0,width-200,height-50);
+}
+
+function print_canvas(name){
+	var ADDRESS = 'http://192.168.1.177/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
+	var epos = new epson.CanvasPrint(ADDRESS);
+	epos.cut = false;
+	epos.align = epos.ALIGN_CENTER;
+	var canvas = document.getElementById(name);
+	epos.print(canvas);
+};
+
+function addHeader(){
+	if (document.getElementById('smumimg')==null){
+		addImage('smum','images/receipt-logo.png','500','146');
+	}
+	setTimeout(function f(){
+		drawCanvas('smum',500,145);
+  	print_canvas('smum');
+  	printer.addTextAlign(printer.ALIGN_CENTER);
+  	printer.addTextSmooth(true);
+  	// printer.addText('-------------------------------\n');
+  	printer.addText('778 S. Almaden Avenue\n');
+  	printer.addText('San Jose, CA 95110\n');
+  	printer.addText('(408) 292-3314\n');
+  }, 250);
+};
+
+function printClothesReceipt(){
+	addHeader();
+	setTimeout(function f(){
+		printer.addTextSize(1, 2);
+		printer.addFeedLine(2);
+		printer.addText('* CLOTHES CLOSET PROGRAM *\n');
+		printer.addTextSize(1, 1);
+		printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
+  	printer.addFeedLine(1);
+		printer.addTextSize(2, 2);
+		printer.addText(client.givenName + ' ' + client.familyName + '\n');
+		printer.addTextSize(2, 1);
+		printer.addFeedLine(1);
+		printer.addTextStyle(true,false,false,printer.COLOR_1);
+  	printer.addText(' ' + client.clientId + ' \n');
+  	printer.addTextStyle(false,false,false,printer.COLOR_1);
+		printer.addTextSize(1, 1);
+  	printer.addFeedLine(1);
+		const numAdults = client.family.totalAdults
+		const numChildren = client.family.totalChildren
+		const numArticles = (numAdults + numChildren) * 3
+  	printer.addText('ADULTS | ADULTOS\t\t' + numAdults +	'\n');
+  	printer.addText('CHILDREN | NINOS\t\t' + numChildren +	'\n');
+  	printer.addFeedLine(1);
+  	printer.addText('LIMIT OF 3 ITEMS PER PERSON\n');
+  	printer.addText('LIMITE 3 ARTICULOS POR PERSONA\n');
+  	printer.addFeedLine(1);
+  	printer.addText('TOTAL ARTICLES | ARTICULOS\n');
+		printer.addText('**************************************\n')
+  	printer.addTextStyle(true,false,false,printer.COLOR_1);
+		printer.addTextSize(2, 2);
+  	printer.addText(' ' + numArticles + ' \n');
+		printer.addTextSize(1, 1);
+  	printer.addTextStyle(false,false,false,printer.COLOR_1);
+  	printer.addText('**************************************\n');
+    printer.addFeedLine(1);
+  	printer.addText('MAXIMUM TIME 10 MINUTES\n');
+  	printer.addText('TIEMPO MAXIMO 10 MINUTOS\n');
+    printer.addFeedLine(2);
+  	printer.addText('TIME IN___________   TIME OUT___________\n');
+    printer.addFeedLine(3);
+    printer.addCut(printer.CUT_FEED);
+		printer.send();
+	}, 500);
+};
+
+function printFoodReceipt(isUSDA){
+	addHeader();
+	setTimeout(function f(){
+			printer.addTextSize(1, 2);
+			printer.addFeedLine(2);
+    	printer.addText('* EMERGENCY FOOD PANTRY PROGRAM *\n');
+			printer.addTextSize(1, 1);
+    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
+			printer.addFeedLine(1);
+			printer.addTextSize(2, 2);
+			printer.addText(client.givenName + ' ' + client.familyName + '\n');
+			printer.addFeedLine(1);
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 1);
+    	printer.addText(' ' + client.clientId + ' \n');
+			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addFeedLine(1);
+    	printer.addText('FAMILY | FAMILIA:\t\t' + client.family.totalSize + '\n');
+    	printer.addFeedLine(1);
+    	printer.addText('**************************************\n')
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 2);
+    	printer.addText(' ' + isUSDA + ' \n');
+			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addText('**************************************\n');
+    	printer.addFeedLine(2);
+    	printer.addCut(printer.CUT_FEED);
+    	printer.send();
+	}, 500);
+};
+
+function printReminderReceipt(){
+	addHeader();
+	setTimeout(function f(){
+			printer.addTextSize(1, 2);
+			printer.addFeedLine(2);
+    	printer.addText('* NEXT VISIT REMINDER *\n');
+			printer.addTextSize(1, 1);
+    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
+			printer.addFeedLine(1);
+			printer.addTextSize(2, 2);
+			printer.addText(client.givenName + ' ' + client.familyName + '\n');
+			printer.addFeedLine(1);
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 1);
+    	printer.addText(' ' + client.clientId + ' \n');
+			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addFeedLine(1);
+    	printer.addText('NEXT VISIT | PRÓXIMA VISITA\n');
+    	printer.addText('**************************************\n')
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(1, 2);
+    	printer.addText(' ' + moment().add(14, 'd').format("MMMM Do, YYYY") + ' \n');
+			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addText('**************************************\n');
+    	printer.addFeedLine(2);
+    	printer.addCut(printer.CUT_FEED);
+    	printer.send();
+	}, 500);
 };
