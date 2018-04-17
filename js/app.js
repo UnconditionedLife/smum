@@ -517,7 +517,6 @@ function uiSaveButton(form, action){
 function uiSetMenusForUser(){
 	// TODO remove TechAmin from dropdown for admins that are not Tech
 	if (currentUser.isActive == "Active") {
-		console.log(currentUser.userRole)
 		if (currentUser.userRole == "Admin"){
 			$("#nav3").show()
 			$("#atabLable7").hide()
@@ -725,13 +724,6 @@ function uiShowDailyReportRows(dayDate, form){
 		.filter(function(item) {return item.serviceValid == 'true'})
 		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
 		.sort(function(a, b) {return a.createdDateTime - b.createdDateTime})
-
-
-for (var i = 0; i < servicesFood.length; i++) {
-	console.log(servicesFood[i])
-}
-
-
 	let servicesUSDA = servicesFood
 		.filter(function(item) {return item.isUSDA == "USDA"})
 	let servicesNonUSDA = servicesFood
@@ -799,9 +791,6 @@ function utilCalculateMonthlyRows(services){
 	console.log("INCALCROWS")
 	let tempS = []
 	$.each(services, function(i, item){
-
-console.log(i)
-
 		let index = -1; // default value, in case no element is found
 		if (tempS.length > 0) {
 		  tempS.some(function (serv, x){
@@ -867,7 +856,6 @@ console.log(i)
 function uiBuildTodayRows(services, grid) {
 	let serviceTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
 	$.each(services, function(i,item){
-		console.log(item.clientServedId)
 		serviceTotal.hh++
 		serviceTotal.ind = serviceTotal.ind + parseInt(item.totalIndividualsServed)
 		serviceTotal.ch = serviceTotal.ch + parseInt(item.totalChildrenServed)
@@ -3901,13 +3889,12 @@ var printer = null;
 connect()
 
 function connect() {
- 	var ipAddress = '192.168.1.177';
+ 	var ipAddress = '192.168.1.3';
  	var port = '8008';
  	ePosDev.connect(ipAddress, port, callback_connect);
 };
 
 function callback_connect(resultConnect){
-	console.log("in function")
  	var deviceId = 'local_printer';
  	var options = {'crypto' : false, 'buffer' : false};
  	if ((resultConnect == 'OK') || (resultConnect == 'SSL_CONNECT_OK')) {
@@ -3956,7 +3943,7 @@ function drawCanvas(name,width,height){
 }
 
 function print_canvas(name){
-	var ADDRESS = 'http://192.168.1.177/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
+	var ADDRESS = 'http://192.168.1.3/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
 	var epos = new epson.CanvasPrint(ADDRESS);
 	epos.cut = false;
 	epos.align = epos.ALIGN_CENTER;
@@ -3981,6 +3968,10 @@ function addHeader(){
 };
 
 function printClothesReceipt(){
+	if (printer == null) {
+		console.log("Printer Not Connected")
+		return
+	}
 	addHeader();
 	setTimeout(function f(){
 		printer.addTextSize(1, 2);
@@ -4027,6 +4018,10 @@ function printClothesReceipt(){
 };
 
 function printFoodReceipt(isUSDA){
+	if (printer == null) {
+		console.log("Printer Not Connected")
+		return
+	}
 	addHeader();
 	setTimeout(function f(){
 			printer.addTextSize(1, 2);
@@ -4060,6 +4055,10 @@ function printFoodReceipt(isUSDA){
 };
 
 function printReminderReceipt(){
+	if (printer == null) {
+		console.log("Printer Not Connected")
+		return
+	}
 	addHeader();
 	setTimeout(function f(){
 			printer.addTextSize(1, 2);
