@@ -32,18 +32,18 @@ if (foodSmall == undefined) {
 
 function loadDependents(){
   $("#dependentsLoaded").html("Starting Load...")
-  $.getJSON( "data/Feb18-dependents.json", function( depData ) { //data/Mar-3-18-dependents-v2.json
+  $.getJSON( "data/Mar-9-18-dependents.json", function( depData ) { //data/Mar-3-18-dependents-v2.json
     $.each( depData, function( i, item ) {
-      existingDep = dependentData.filter(function( obj ) {
-        return obj.DepID == item.DepID
-      })
-      console.log(existingDep.length)
-      if (existingDep.length == 0 ) {
+      // existingDep = dependentData.filter(function( obj ) {
+      //   return obj.DepID == item.DepID
+      // })
+      // console.log(existingDep.length)
+      // if (existingDep.length == 0 ) {
         dependentData.push(item)
-      } else {
-        console.log(existingDep[0].DOB, " : ", item.DOB)
-        console.log(existingDep[0].GivenName, " : ", item.GivenName)
-      }
+      // } else {
+      //   console.log(existingDep[0].DOB, " : ", item.DOB)
+      //   console.log(existingDep[0].GivenName, " : ", item.GivenName)
+      // }
     })
   })
   console.log("DONE DEPS")
@@ -86,77 +86,61 @@ function loadDependents(){
 }
 
 function loadServices(){
-  $.getJSON( "data/services_no_food.json", function( servData ) {
+  $.getJSON( "data/Mar-9-18-services.json", function( servData ) {
     $.each( servData, function( i, item ) {
-      // populate empty fields
-      if (item.ServiceName == "") {
-        if (item.ServicesService == "") {
-          item.ServiceName = "Unknown"
-          item.ServicesService = "Unknown"
-        } else {
-          item.ServiceName = item.ServicesService
+      let tempClient = importedClients.filter(function( obj ) {
+        return obj.clientId == item.HouseholdID
+      })
+      if (tempClient.length > 0) {
+        console.log(item.HouseholdID)
+        console.log(tempClient[0])
+        tempService = {}
+        tempService.serviceId = cuid()
+        tempService.serviceValid = true
+        tempService.servicedDateTime = moment(item.DateofService, uiDate).format(dateTime)
+        if (tempService.servicedDateTime == "") tempService.servicedDateTime = moment(item.DateCreation_d, uiDate).format(dateTime)
+        tempService.servicedMonth = moment(tempService.servicedDateTime).format("YYYYMM")
+        tempService.servicedDay = moment(tempService.servicedDateTime).format("YYYYMMDD")
+        tempService.clientServedId = "" + item.HouseholdID
+        tempService.clientStatus = tempClient[0].isActive
+        tempService.servicedByUserName = "Imported"
+        if (item.ServiceID == 3) {
+          tempService.serviceTypeId = "cjdfdjqse00003i8v5757q4q4"
+        } else if (item.ServiceID == 5) {
+          tempService.serviceTypeId = "7d2d8e12f846a868055e6f4b569ed5a4fbe0eda9"
+        } else if (item.ServiceID == 6) {
+          tempService.serviceTypeId = "cjem7yi0z05183iacs4mjuev6"
+        } else if (item.ServiceID == 8) {
+          if (tempClient[0].gender == "Male") {
+            tempService.serviceTypeId = "a14a6d3e55dd070911f6917f8ec42a225117ba44"
+          } else {
+            tempService.serviceTypeId = "cj7v6jrg400013k7paa8m81p2"
+          }
+        } else if (item.ServiceID == 12) {
+          tempService.serviceTypeId = "c5cf41b232afc23a6564f8278dc9982ce16a9148"
         }
+        tempServiceType = utilGetServiceTypeByID(tempService.serviceTypeId)
+        tempService.serviceName = tempServiceType.serviceName
+        tempService.serviceCategory = tempServiceType.serviceCategory
+        tempService.serviceButtons = tempServiceType.serviceButtons
+        tempService.isUSDA = tempServiceType.isUSDA
+        tempService.itemsServed = "" + item.Number_items
+        tempService.homeless = tempClient[0].homeless
+        tempService.emergencyFood = "NO"
+        tempService.totalAdultsServed = "*EMPTY*"
+        tempService.totalChildrenServed = "*EMPTY*"
+        tempService.totalSeniorsServed = "*EMPTY*"
+        tempService.totalIndividualsServed = "" + item.LINumberBenefitted
+        tempService.fulfillment = {}
+        tempService.fulfillment.pending = false
+        tempService.fulfillment.dateTime = tempService.servicedDateTime
+        tempService.fulfillment.voucherNumber = "NA"
+        tempService.fulfillment.byUserName = "Imported"
+        tempService.fulfillment.itemCount = "" + item.Number_items
+
+        console.log(tempService.serviceName)
+        serviceData.push(tempService)
       }
-      if (item.ServicesService == "") {
-        item.ServicesService = item.ServiceName
-      }
-
-      if (typeof item.ServiceName == "string") {
-        // cleanup Hygiene Kit Names
-        if (item.ServiceName.toLowerCase() == "hygiene kit") item.ServiceName = "Hygiene Kit"
-        if (item.ServiceName == "3/19/13") item.ServiceName = "Hygiene Kit"
-        // cleanup Clothes Names
-        if (item.ServiceName.toLowerCase() == "clothes") item.ServiceName = "Clothes"
-        // cleanup Sleeping Bag Names
-        if (item.ServiceName.toLowerCase() == "sleeping bag") item.ServiceName = "Sleeping Bag"
-
-        if (item.ServiceName == "Clothes" && item.ServicesService == "Christmas Chickens" && moment(item.DateofService, "M/D/YY").format("M") == 12) {
-          item.ServiceName = "Christmas Chickens"
-        }
-        if (item.ServiceName == "Clothes" && item.ServicesService == "Christmas Turkeys" && moment(item.DateofService, "M/D/YY").format("M") == 12) {
-          item.ServiceName = "Christmas Turkeys"
-        }
-        if (item.ServiceName == "Clothes" && item.ServicesService == "Thanksgiving Chickens" && moment(item.DateofService, "M/D/YY").format("M") == 11) {
-          item.ServiceName = "Thanksgiving Chickens"
-        }
-        if (item.ServiceName == "Clothes" && item.ServicesService == "Thanksgiving Turkeys" && moment(item.DateofService, "M/D/YY").format("M") == 11) {
-          item.ServiceName = "Thanksgiving Turkeys"
-        }
-        if (item.ServiceName == "Clothes" && item.ServicesService == "School Supplies" && moment(item.DateofService, "M/D/YY").format("M") == 8) {
-          item.ServiceName = "School Supplies"
-        }
-
-
-      } else {
-        // cleanup Christmas Gifts Names
-        if (item.ServiceName == 1) item.ServiceName = "Christmas Gifts"
-        // cleanup Hygiene Kit Names
-        if (item.ServiceName == 8 && item.ServicesService == "Hygiene Kit" ) item.ServiceName = "Hygiene Kit"
-        if (item.ServiceName == 8 && item.ServicesService == "Sleeping Bag" ) item.ServiceName = "Sleeping Bag"
-        // cleanup Clothes Names
-        if (item.ServiceName == 12) item.ServiceName = "Clothes"
-      }
-
-      if (typeof item.ServicesService == "string") {
-        // cleanup Hygiene Kit Names
-        if (item.ServicesService.toLowerCase() == "hygiene kit") item.ServicesService = "Hygiene Kit"
-        // cleanup Clothes Names
-        if (item.ServicesService.toLowerCase() == "clothes") item.ServicesService = "Clothes"
-        // cleanup Sleeping Bag Names
-        if (item.ServicesService.toLowerCase() == "sleeping bag") item.ServicesService = "Sleeping Bag"
-
-      } else {
-
-      }
-
-
-
-
-
-
-      // save into new object
-      console.log(item.ServiceName+" : "+item.ServicesService)
-      serviceData.push(item)
     })
   })
   setTimeout(function(){
@@ -169,7 +153,9 @@ function removeEmptyClientRecords(){
   $("#cleanCount").html("Started Removing...")
   let clientCopy = [];
   $.getJSON( "data/clients.json", function( data ) {
+    console.log(data.length)
     $.each( data, function( i, item ) {
+      console.log(item.HouseholdID)
       if (item.HouseholdID == "") {
         console.log("missing ID")
       } else {
@@ -185,12 +171,6 @@ function removeEmptyClientRecords(){
         	}
           if (item.City == "") item.City = "San Jose"
           if (typeof item.Street == "Number") item.Street = String(item.Street)
-
-          // if (item.Street != "") {
-          //   let street = item.Street.split('\u000b')
-          //   item.Street = street.join("'")
-          //   console.log(item.Street)
-          // }
           if (item.Comments != "") {
             console.log(item.Comments)
             let comments = item.Comments.split('\"')
@@ -258,7 +238,11 @@ function importClients(start, end){
     record.familyName = item.FamilyName
     record.givenName = item.GivenName
     record.gender = getGender(item.GivenName)
-    record.dob = moment(item.DOB, uiDate).format(date)
+    if (item.DOB != "") {
+      record.dob = moment(item.DOB, uiDate).format(date)
+    } else {
+      record.dob = "*EMPTY*"
+    }
     // if (moment().isBefore(record.dob))
     if (item.Street == "") {
       record.street = "*EMPTY*"
@@ -285,6 +269,7 @@ function importClients(start, end){
     }
     record.email = "*EMPTY*"
     record.firstSeenDate = moment(item.FirstSeen, uiDate).format(date)
+    if (record.firstSeenDate == "Invalid date") record.firstSeenDate = moment(record.createdDateTime).format(date)
     if (item["Ethnic Group"] == ""){
       record.ethnicGroup = "*EMPTY*"
     } else {
@@ -297,7 +282,7 @@ function importClients(start, end){
       record.homeless = "YES"
     }
     if (item.FamilyIDChecked == "") {
-      record.familyIdCheckedDate = "2000-01-01"
+      record.familyIdCheckedDate = moment(record.createdDateTime).format(date)
     } else {
       record.familyIdCheckedDate = moment(item.FamilyIDChecked, uiDate).format(date)
     }
@@ -336,7 +321,7 @@ function importClients(start, end){
 //    console.log(item.Comments)
     comments = item.Comments
     if (comments != "") {
-      let notes = comments.split("\u000b")
+      let notes = comments.split("\n")
 
 //if (record.clientId == 21) console.log(notes)
 
@@ -349,14 +334,22 @@ function importClients(start, end){
         const matchAlfonso = /alfonso/i
         let note = notes[i]
         notesTemp.noteText = note
-
-
        	let dateArray = note.match(matchingDate)
         if (dateArray != null) {
-          notesTemp.createdDateTime = moment(dateArray[0], uiDate).format(dateTime)
+          let tempDate = dateArray[0]
+          tempDate = tempDate.replace(/-/g, "/")
+          console.log(tempDate)
+          tempDate = cleanDate(tempDate)
+          console.log(tempDate)
+          notesTemp.createdDateTime = moment(tempDate, uiDate).format(dateTime)
 //console.log(note + ": \n" + notesTemp.createdDateTime)
         } else {
           notesTemp.createdDateTime = moment(item.DateCreation_d, uiDate).format(dateTime)
+        }
+
+        if (notesTemp.createdDateTime == "Invalid date"){
+          console.log("Invalid date")
+          console.log("ID: ",item.HouseholdID )
         }
         notesTemp.updatedDateTime = moment().format(dateTime)
         let alfonsoArray = note.match(matchAlfonso)
@@ -411,7 +404,15 @@ function importDependents(start,end){
 //      console.log(dependents[d].CreationDate_d)
       depRecord.createdDateTime = moment(dependents[d].CreationDate_d, "MM/DD/YY").format(dateTime)
       depRecord.updatedDateTime = moment().format(dateTime)
+      if (dependents[d].GivenName == "") {
+        console.log("Missing Given Name: " + dependents[d].HouseholdID)
+        dependents[d].GivenName = "*EMPTY*"
+      }
       depRecord.givenName = dependents[d].GivenName
+      if (dependents[d].FamilyName == "") {
+        console.log("Missing Family Name: " + dependents[d].HouseholdID)
+        dependents[d].FamilyName = "*EMPTY*"
+      }
       depRecord.familyName = dependents[d].FamilyName
       if (dependents[d].DOB != "" && dependents[d].DOB != "*EMPTY*") {
 console.log(dependents[d].HouseholdID + " | " + dependents[d].DOB)
@@ -459,7 +460,7 @@ function importFoodLastServed(start,end){
         }
       }
     }
-    if (latestUSDA != "1900/01/01") {
+    if (latestUSDA != "1900-01-01") {
       let recordUSDA = {}
       recordUSDA.serviceDateTime = latestUSDA
       recordUSDA.isUSDA = "USDA"
@@ -468,7 +469,7 @@ function importFoodLastServed(start,end){
       importedClients[i].lastServed.push(recordUSDA)
       lastServedCount++
     }
-    if (latestNonUSDA != "1900/01/01") {
+    if (latestNonUSDA != "1900-01-01") {
       let recordNonUSDA = {}
       recordNonUSDA.serviceDateTime = latestNonUSDA
       recordNonUSDA.isUSDA = "NonUSDA"
@@ -476,6 +477,11 @@ function importFoodLastServed(start,end){
       recordNonUSDA.serviceTypeId = "c2e6fbfcd32adcfdyht56a14c166d0b304da3aa32"
       importedClients[i].lastServed.push(recordNonUSDA)
       lastServedCount++
+    }
+    let clientString = JSON.stringify(client)
+    if (clientString.includes("Invalid date")) {
+      console.log("INVALID DATE")
+      console.log(client)
     }
 //    console.log("USDA: "+ latestUSDA)
 //    console.log("NonUSDA: "+ latestNonUSDA)
@@ -498,9 +504,7 @@ console.log(end)
   let clientsUploaded = 0
   $.each( importedClients.slice(start,end), function( i, client ) {
     let URL = aws+"/clients/"
-
     console.log("ID#:" + client.clientId + " i#:"+ i)
-
   	result = dbPostData(URL,JSON.stringify(client))
     if (result != null) {
       console.log(JSON.stringify(client))
@@ -512,100 +516,86 @@ console.log(end)
  //TODO  familyIdCheckedDate  **** ADD TO SERVICES ??? REMOVE AS FIELD ??? treat as servicetype  ****
 };
 
-function importServices(){
+function loadFoodServices(){
   // Check if HouseholdID is in clientId
 
-  // Get unique ServicesService & serviceName
-  uniqueServicesService = []
-  uniqueServiceName = []
-  for (var i = 0; i < serviceData.length; i++) {
-    let ss = serviceData[i].ServicesService
-    let sn = serviceData[i].ServiceName
-    if (!uniqueServicesService.includes(ss+":"+sn)) {
-      uniqueServicesService.push(ss+":"+sn)
+
+  $.each( foodSmall, function( i, item ) {
+    if (moment(item.DateCreation_d, uiDate).isAfter("2016-12-31")) {
+      console.log(item.DateCreation_d, "|", item.DateServed)
+      let tempClient = importedClients.filter(function( obj ) {
+         return obj.clientId == item.HouseholdID
+      })
+      if (tempClient.length > 0) {
+        console.log(item.HouseholdID)
+        console.log(tempClient[0])
+        tempService = {}
+        tempService.serviceId = cuid()
+        tempService.serviceValid = true
+        tempService.servicedDateTime = moment(item.DateServed, uiDate).format(dateTime)
+        if (tempService.servicedDateTime == "") tempService.servicedDateTime = moment(item.DateCreation_d, uiDate).format(dateTime)
+        tempService.servicedMonth = moment(tempService.servicedDateTime).format("YYYYMM")
+        tempService.servicedDay = moment(tempService.servicedDateTime).format("YYYYMMDD")
+        tempService.clientServedId = "" + item.HouseholdID
+        tempService.clientStatus = tempClient[0].isActive
+        tempService.servicedByUserName = "Imported"
+        if (item.USDA == "USDA") {
+          tempService.serviceTypeId = "cj86davnj00013k7zi3715rf4"
+        } else if (item.USDA == "Non-USDA") {
+          tempService.serviceTypeId = "c2e6fbfcd32adcfdyht56a14c166d0b304da3aa32"
+        }
+        tempServiceType = utilGetServiceTypeByID(tempService.serviceTypeId)
+        tempService.serviceName = tempServiceType.serviceName
+        tempService.serviceCategory = tempServiceType.serviceCategory
+        tempService.serviceButtons = tempServiceType.serviceButtons
+        tempService.isUSDA = tempServiceType.isUSDA
+        tempService.itemsServed = "1"
+        tempService.homeless = tempClient[0].homeless
+        tempService.emergencyFood = "NO"
+        tempService.totalAdultsServed = "" + item.Adults_served
+        if (tempService.totalAdultsServed == "") tempService.totalAdultsServed = "0"
+        tempService.totalChildrenServed = "" + item.Children_served
+        if (tempService.totalChildrenServed == "") tempService.totalChildrenServed = "0"
+        tempService.totalSeniorsServed = "0"
+        tempService.totalIndividualsServed = "" + item.Individuals_served
+        if (tempService.totalIndividualsServed == "") tempService.totalIndividualsServed = "0"
+        tempService.fulfillment = {}
+        tempService.fulfillment.pending = false
+        tempService.fulfillment.dateTime = tempService.servicedDateTime
+        tempService.fulfillment.voucherNumber = "NA"
+        tempService.fulfillment.byUserName = "Imported"
+        tempService.fulfillment.itemCount = "1"
+
+        console.log(tempService.serviceName)
+        serviceData.push(tempService)
+      }
     }
-    if (!uniqueServiceName.includes(sn)) {
-      uniqueServiceName.push(sn)
-    }
-  }
-
-  // "serviceId"
-  // "servicedDateTime"
-  // "clientServedId"
-  // "servicedByUserName"
-  // "serviceTypeId"
-  // "serviceName" : {"S": "$inputRoot.serviceName"},
-  // "serviceCategory" : {"S": "$inputRoot.serviceCategory"},
-  // "serviceButtons" : {"S": "$inputRoot.serviceButtons"},
-  // "isUSDA" : {"S": "$inputRoot.isUSDA"},
-  //         "itemsServed" : {"S": "$inputRoot.itemsServed"},
-  //         "homeless" : {"S": "$inputRoot.homeless"},
-  //         "emergencyFood" : {"S": "$inputRoot.emergencyFood"},
-  //         "totalAdultsServed": {"S": "$inputRoot.totalAdultsServed"},
-  //         "totalChildrenServed": {"S": "$inputRoot.totalChildrenServed"},
-  //         "totalIndividualsServed": {"S": "$inputRoot.totalIndividualsServed"},
-  //         "totalSeniorsServed": {"S": "$inputRoot.totalSeniorsServed"},
-  //         "fulfillment" : {
-  //             "M": {
-  //                 "pending": {"BOOL": "$inputRoot.fulfillment.pending"},
-  //                 "dateTime": {"S": "$inputRoot.fulfillment.dateTime"},
-  //                 "voucherNumber": {"S": "$inputRoot.fulfillment.voucherNumber"},
-  //                 "byUserName": {"S": "$inputRoot.fulfillment.byUserName"},
-  //                 "itemCount": {"S": "$inputRoot.fulfillment.itemCount"}
-  //             }
-
-
-
-  console.log(uniqueServicesService)
-/*
-  "Christmas Gifts:Christmas Distribution", "Christmas Gifts:Christmas Gifts",
-  "Hygiene Kit:Christmas Gift Card",
-  "Clothes:Clothes", "Clothes:clothes", "Clothes:12", "Clothes:", "Clothes:CLOTHES", ":clothes",
-  "Thanksgiving Turkeys:Thanksgiving Turkeys",
-
-  "Sleeping bag:Sleeping Bag",
-  "School Supplies:School Supplies",
-  "Christmas Gifts:1",
-  "Christmas Gifts:Christmas Toys",
-  "Sleeping bag:8",
-  "Thanksgiving Chickens:Christmas Chickens", ":Thanksgiving Chicken",
-  ":",
-  "Christmas Gifts:12",
-  "Clothes:School Supplies",
-  "Christmas Chickens:Christmas Gift Card for Homeless",
-  "Clothes:Thanksgiving Chicken",
-  "Thanksgiving Gift Card for Homeless:Thanksgiving Gift Card for Homeless",
-  "Christmas Chickens:Thanksgiving Chicken",
-  "Christmas Turkeys:Christmas Turkeys",
-  "Thanksgiving Chickens:", "Thanksgiving Chickens:Thanksgiving Chickens",
-  "Christmas Gifts:",
-  "Thanksgiving Chickens:Christmas Turkeys",
-  "Christmas Chickens:",
-  ":Clothes",
-  "Sleeping bag:Sleeping bag",
-  "Thanksgiving Chickens:Thanksgiving Turkeys",
-  ":DMV Voucher",
-  "Christmas Chickens:Christmas Turkeys",
-  "Christmas Chickens:Clothes",
-  "Thanksgiving Chickens:Thanksgiving Gift Card for Homeless",
-  "Clothes:Christmas Turkeys",
-  "Clothes:Thanksgiving Turkeys",
-*/
-
-  console.log(uniqueServiceName)
-
-  // create record of service
-
-  // "Backpack type": "",
-  // "DateofService": "2/7/18",
-  // "LINumberBenefitted": 1,
-  // "ServiceName": "Clothes",
-  // "ServicesService": "Clothes",
-  // "HouseholdID": 149
+  })
+  setTimeout(function(){
+      console.log(serviceData)
+      $("#servicesFoodCount").html("["+ serviceData.length+"]")
+  }, 1000);
 };
 
 function uploadServicesToDynamoDB(){
+  let start = $("#servicesUploadStart").val()
+  let end = $("#servicesUploadEnd").val()
 
+console.log(start)
+console.log(end)
+
+  let servicesUploaded = 0
+  $.each( serviceData.slice(start,end), function( i, service ) {
+    let URL = aws+"/clients/services/"
+    console.log("ID#:" + service.clientServedId + " i#:"+ i)
+    result = dbPostData(URL,JSON.stringify(service))
+    if (result != null) {
+      console.log(JSON.stringify(service))
+    } else {
+      servicesUploaded++
+    }
+  })
+  $("#servicesUploaded").html("["+ servicesUploaded + "]")
 };
 
 function getGender(givenName) {
@@ -733,4 +723,4 @@ function changeAllClients(){
       result = dbPostData(URL,data)
     }
   }
-}
+};

@@ -4066,6 +4066,8 @@ function printFoodReceipt(isUSDA){
 			printer.addTextSize(1, 1);
     	printer.addTextStyle(false,false,false,printer.COLOR_1);
     	printer.addFeedLine(1);
+			printer.addText('ADULTS | ADULTOS\t\t' + client.family.totalAdults +	'\n');
+			printer.addText('CHILDREN | NINOS\t\t' + client.family.totalChildren +	'\n');
     	printer.addText('FAMILY | FAMILIA:\t\t' + client.family.totalSize + '\n');
     	printer.addFeedLine(1);
     	printer.addText('**************************************\n')
