@@ -1769,10 +1769,15 @@ function dbGetDaysServices(dayDate){
 	return dbGetData(aws+"/clients/services/byday/"+dayDate).services
 };
 
-function dbGetMonthServices(dayMonth){
-	dayMonth = moment(dayMonth).format("YYYYMM")
-	return dbGetData(aws+"/clients/services/bymonth/"+dayMonth).services
-};
+
+// TODO remove old monhtly report code
+// TODO remove servicedMonth Index in DynamoDB
+// TODO remove bymonth from API
+// TODO update service record in API to not have month property
+// function dbGetMonthServices(dayMonth){
+// 	dayMonth = moment(dayMonth).format("YYYYMM")
+// 	return dbGetData(aws+"/clients/services/bymonth/"+dayMonth).services
+// };
 
 function dbGetUsers(){
 	return dbGetData(aws+"/users").users
