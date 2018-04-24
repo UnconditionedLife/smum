@@ -596,7 +596,6 @@ function uiShowHidePassword(){
 }
 
 function uiShowHistory(){
-	//TODO disabled for testing
 	uiBuildHistoryTop()
 	uiBuildHistoryBottom()
 }
@@ -714,7 +713,7 @@ function uiShowDailyReportHeader(dayDate, form, title){
 		$('#headerRight').html('REPORT <i id="todayReportRefreshButton" onClick="uiRefreshTodayReport()" class="fa fa-refresh" aria-hidden="true"></i>')
 	} else {
 		$("#todayBodyDiv").html("")
-		$('#headerRight').html('REPORT <i id="todayReportRefreshButton" onClick="uiRefreshDailyReport()" class="fa fa-refresh" aria-hidden="true"></i>')
+		$('#headerRight').html('REPORT <i id="todayReportRefreshButton" onClick="uiRefreshDailyReport()" class="fa fa-refresh" aria-hidden="true"></i> <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
 	}
 	$('#reportDates').html(moment(dayDate).format(longDate))
 	$('#headerLeft').html(title)
