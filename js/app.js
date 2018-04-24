@@ -766,7 +766,28 @@ function utilPrintReport(){
 
 function uiShowMonthlyReportRows(monthYear){
 console.log("IN MONTHLY REPORT FUNCTION")
-	servicesRendered = dbGetMonthServices(monthYear)
+	const currentMonth = moment().format("YYYY-MM")
+	let daysInMonth = moment(monthYear, "YYYY-MM").daysInMonth()
+	if (monthYear == currentMonth) {
+		daysInMonth = moment().format("D")
+	}
+	let servicesRendered = []
+	daysInMonth = parseInt(daysInMonth) + 1
+	for (var i = 0; i < daysInMonth; i++) {
+		let day = i
+		if (day.length == 1) {
+			day = "0" + day
+		}
+		let dayDate = monthYear + "-" + day
+
+		console.log(day)
+		console.log(dayDate)
+		dayOfServices = dbGetDaysServices(dayDate)
+		console.log(dayOfServices.length)
+		servicesRendered = servicesRendered.concat(dayOfServices)
+		console.log(servicesRendered.length)
+	}
+	// servicesRendered = dbGetMonthServices(monthYear)
 	let servicesFood = servicesRendered
 		.filter(function(item) {return item.serviceValid == 'true'})
 		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
@@ -783,7 +804,6 @@ console.log("IN MONTHLY REPORT FUNCTION")
 		})
 	servicesUSDA = utilCalculateMonthlyRows(servicesUSDA)
 	servicesNonUSDA = utilCalculateMonthlyRows(servicesNonUSDA)
-	//$("#printBodyDiv").append('<div id="NonUSDAGrid" class="todayReportRowBox" style="grid-row: 6"><div class="todaySectionHeader">NonUSDA</div></div>')
 	uiBuildMonthRows(servicesUSDA, servicesNonUSDA, monthYear)
 };
 
@@ -3889,7 +3909,7 @@ var printer = null;
 connect()
 
 function connect() {
- 	var ipAddress = '192.168.1.3';
+ 	var ipAddress = '192.168.1.170';
  	var port = '8008';
  	ePosDev.connect(ipAddress, port, callback_connect);
 };
@@ -3943,7 +3963,7 @@ function drawCanvas(name,width,height){
 }
 
 function print_canvas(name){
-	var ADDRESS = 'http://192.168.1.3/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
+	var ADDRESS = 'http://192.168.1.170/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
 	var epos = new epson.CanvasPrint(ADDRESS);
 	epos.cut = false;
 	epos.align = epos.ALIGN_CENTER;
