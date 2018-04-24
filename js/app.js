@@ -379,7 +379,10 @@ function uiOutlineTableRow(table, row){
 };
 
 function uiResetDependentsTable() {
-	// TODO write reset code
+	// clear changes in feilds
+	uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","age","isActive"],'dependentsTable')
+	// set display to view
+	uiToggleDependentsViewEdit('view')
 };
 
 function uiResetChangePasswordForm(){
