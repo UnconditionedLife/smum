@@ -636,7 +636,7 @@ outline: -webkit-focus-ring-color auto 5px;
 	margin-top: 20px;
 	width: 100%;
 	display: grid;
-	grid-template-columns: 1.5fr 1.5fr repeat(8, 1fr);
+	grid-template-columns: 1.5fr 1.5fr 1.5fr repeat(7, 1fr);
 	grid-template-rows: repeat(2, 32px);
 	grid-gap: 2px;
 	padding: 2px;
@@ -690,8 +690,19 @@ outline: -webkit-focus-ring-color auto 5px;
 }
 
 .historyEditField{
-	height:30px; 
+	height:30px;
 	padding-left:5px;
+	font-size: 12px;
+	font-weight: normal;
+	font-family: 'Open Sans', sans-serif;
+}
+
+.historyEditFieldSmall{
+	height:30px;
+	padding-left:5px;
+	font-size: 12px;
+	font-weight: normal;
+	width: 40px;
 }
 
 .historyLoadButton {
@@ -747,6 +758,31 @@ outline: -webkit-focus-ring-color auto 5px;
 	/* border-style: none;
 	border-color: Transparent;
 	overflow: auto; */
+}
+
+.zipBadge{
+	display: inline-flex;
+	font-size: 16px;
+	line-height: 19px;
+	background-color: var(--green);
+	color: white;
+	border-radius: 13px;
+	padding: 4px 5px 3px 9px;
+	margin: 3px 3px 3px 3px;
+}
+
+.zipX{
+	height: 18px;
+	width: 18px;
+	font-size: 12px;
+	line-height: 18px;
+	background-color: white;
+	color: var(--green);
+	border-radius: 10px;
+	margin-left: 5px;
+	text-align:  center;
+	font-weight: bold;
+	cursor: pointer;
 }
 
 .ui-button{/*Sets height for all navbar buttons*/

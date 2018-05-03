@@ -24,6 +24,15 @@ const uiDateTimeShort = 'MM/DD/YY H:mma'
 const longDate = "MMMM Do, YYYY  |  LT"
 const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
+
+let settings = {
+	sounds: "YES",
+	seniorAge: 60,
+	serviceZipcodes: [95110, 95112, 95117, 95125, 95126, 95128, 95131, 95132, 95134, 95192],
+	serviceCategories: [],
+	clientStatus: ["Client", "NonClient", "Inactive"]
+}
+
 const seniorAge = 60 // TODO set in Admin/Settings
 let rowNum = 1
 let clientData = null // current client search results
@@ -178,8 +187,44 @@ function uiAddNoteButtonRow(){
 	$('#notesContainer').append(buttonRow)
 }
 
+function uiAddCategory(){
+	// addes a category to the list of Categories
+	const category = $("#serviceCategory").val()
+	const badge = "<div id='cat" + category + "' class='zipBadge'>" + category + "<div id='catX"+ category +"' class='zipX' onclick='uiRemoveCategory(" + category + ")'>X</div></div>"
+	$("#categoriesContainer").append(badge)
+	let catList = $("#serviceCategoriesList").val()
+	console.log(catList)
+	if (catList == ""){
+		catList = [category]
+	} else {
+		catList = JSON.parse(catList)
+		catList.push(category)
+	}
+	$("#serviceCategoriesList").val(JSON.stringify(catList))
+	$("#serviceCategory").val("")
+	console.log(catList)
+}
+
+function uiAddZipCode(){
+	// addes a zipcode to the list of zipcodes SM services
+	const zipCode = $("#serviceAreaZipcode").val()
+	const badge = "<div id='zip" + zipCode + "' class='zipBadge'>" + zipCode + "<div id='zipX"+ zipCode +"' class='zipX' onclick='uiRemoveZipCode(" + zipCode + ")'>X</div></div>"
+	$("#zipCodeContainer").append(badge)
+	let zipList = $("#serviceAreaZipCodeList").val()
+	console.log(zipList)
+	if (zipList == ""){
+		zipList = [zipCode]
+	} else {
+		zipList = JSON.parse(zipList)
+		zipList.push(zipCode)
+	}
+	$("#serviceAreaZipCodeList").val(JSON.stringify(zipList))
+	$("#serviceAreaZipcode").val("")
+	console.log(zipList)
+}
+
 function uiBuildHistoryBottom(){
-	const headerLabels = ["Served", "Service", "isUSDA", "Homeless", "# Items", "# Adults", "# Children", "# Individuals", "# Seniors", "Serviced By"]
+	const headerLabels = ["Served", "Service", "Client", "Homeless", "# Items", "# Adults", "# Children", "# Individuals", "# Seniors", "Serviced By"]
 	$("#historyBottom").html("")
 	for (var i = 0; i < headerLabels.length; i++) {
 		$("#historyBottom").append("<div class='historyHeader'>" + headerLabels[i] + "</div>")
@@ -239,12 +284,11 @@ function uiEditHistory(todo, serviceId, rowNum){
 		$("#editPopup").remove()
 		$(".greyout").removeClass('greyout')
 		if ($(".historyEditField").length > 0){
-			let temp = $("#editServedHidden").val()
-			$(".rowNum" + rowNum).first().html(temp)
-			temp = $("#editServiceHidden").val()
-			$(".rowNum" + rowNum + ":eq(1)").html(temp)
-			temp = $("#editisUSDAHidden").val()
-			$(".rowNum" + rowNum + ":eq(2)").html(temp)
+			let temp = ""
+			for (var i = 0; i < 9; i++) {
+				temp = $("#histEditHidden" + i).val()
+				$(".rowNum" + rowNum + ":eq("+ i +")").html(temp)
+			}
 		}
 	} else if (todo == "delete") {
 		utilBeep()
@@ -253,9 +297,9 @@ function uiEditHistory(todo, serviceId, rowNum){
 	} else if (todo == "confirmedDelete") {
 		console.log("GONNA DELETE")
 		console.log("Delete: " + serviceId)
-		let service = utilRemoveService(serviceId)
+		const service = utilRemoveService(serviceId)
 		if (service != ""){
-			let lastServed = utilUpdateLastServed(service)
+			const lastServed = utilUpdateLastServed(service)
 			if (lastServed == "failed") {
 				console.log("Saving client / lastServed failed.")
 				return
@@ -269,32 +313,73 @@ function uiEditHistory(todo, serviceId, rowNum){
 	} else if (todo == "edit") {
 		console.log("GONNA EDIT")
 		console.log(rowNum)
-		let dt = $(".rowNum" + rowNum).first().html()
-		temp = moment(dt, uiDateTime).format(dateTime)
-		$(".rowNum" + rowNum).first().html("<input id='editServedHidden' class='historyEditField' type='hidden' value='" + dt + "'><input id='editServed' class='historyEditField' type='datetime-local' value='" + temp + "'>")
-		temp = $(".rowNum" + rowNum + ":eq(1)").html()
-		$(".rowNum" + rowNum + ":eq(1)").html("<input id='editServiceHidden' class='historyEditField' type='hidden' value='" + temp + "'><input id='editService' class='historyEditField' type='text' value='" + temp + "'>")
-		temp = $(".rowNum" + rowNum + ":eq(2)").html()
-		$(".rowNum" + rowNum + ":eq(2)").html("<input id='editisUSDAHidden' class='historyEditField' type='hidden' value='" + temp + "'><input id='editisUSDA' class='historyEditField' type='text' value='" + temp + "'>")
+		let temp = ""
+		for (var i = 0; i < 9; i++) {
+			temp = $(".rowNum" + rowNum + ":eq(" + i + ")").html()
+			// datetime
+			if (i == 0) {
+				temp = moment(temp, uiDateTime).format(dateTime)
+				$(".rowNum" + rowNum + ":eq(" + i + ")").html("<input id='histEditHidden" + i + "' type='hidden' value='" + temp + "'><input id='histEdit" + i + "' class='historyEditField' type='datetime-local' value='" + temp + "'>")
+			}
+			// selects
+			if (i > 0 && i < 4){
+				console.log("SELECTS")
+				let selectOptions
+				if (i == 1) {
+					selectOptions =  serviceTypes
+						.filter(obj => obj.serviceButtons == "Primary")
+						.map(obj => obj.serviceName)
+				}
+				if (i == 2){
+					selectOptions =  ["Client", "NonClient", "Inactive"]
+				}
+				if (i == 3){
+					selectOptions =  ["NO", "YES"]
+				}
+				console.log(selectOptions.length)
+				let html = "<input id='histEditHidden" + i + "' type='hidden' value='" + temp + "'><select id='histEdit" + i + "' class='historyEditField'>"
+				for (var b = 0; b < selectOptions.length; b++) {
+					let selected = "selected='selected'"
+					let isSelected = ""
+					if (temp == selectOptions[b]) {isSelected = selected}
+					html = html + "<option value='" + selectOptions[b] + "' " + isSelected + ">" + selectOptions[b] + "</option>"
+				}
+				$(".rowNum" + rowNum + ":eq(" + i + ")").html(html + "</select>")
+			}
+			// text fields
+			if (i > 3){
+				$(".rowNum" + rowNum + ":eq(" + i + ")").html("<input id='histEditHidden" + i + "' type='hidden' value='" + temp + "'><input id='histEdit" + i + "' class='historyEditFieldSmall' type='text' value='" + temp + "'>")
+			}
+		}
 		let popup = "&#8679; &nbsp; &nbsp; <span style='color:white'>EDIT FIELDS ABOVE</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"save\", \"" + serviceId + "\", \""+ rowNum +"\")'>SAVE</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"cancel\", \"" + serviceId + "\", \""+ rowNum +"\")'>CANCEL</span> &nbsp; &nbsp; &#8679;"
 		$("#editPopup").html(popup)
+		// Save edited service record
 	} else if (todo == "save") {
 		console.log("GONNA SAVE")
 		console.log("Save: " + serviceId)
-		let service = utilUdateService(serviceId)
+		let service = utilUpdateService(serviceId)
+		console.log(service)
 		if (service != ""){
 			let lastServed = utilUpdateLastServed(service)
 			if (lastServed == "failed") {
 				console.log("Saving client / lastServed failed.")
 				return
 			} else {
-				let servicedDateTime = $("#editServed").val()
-				servicedDateTime = moment(servicedDateTime).format(uiDateTimeShort)
-				let serviceName = $("#editService").val()
-				let isUSDA = $("#editisUSDA").val()
-				$(".rowNum" + rowNum).first().html(servicedDateTime)
-				$(".rowNum" + rowNum + ":eq(1)").html(serviceName)
-				$(".rowNum" + rowNum + ":eq(2)").html(isUSDA)
+				for (var i = 0; i < 9; i++) {
+					let temp = 	$("#histEdit" + i).val()
+					if (i == 0){temp = moment(temp).format(uiDateTimeShort)}
+					$(".rowNum" + rowNum + ":eq(" + i + ")").html(temp)
+				}
+
+				// let servicedDateTime = $("#histEdit0").val()
+				// servicedDateTime = moment(servicedDateTime).format(uiDateTimeShort)
+				// let serviceName = $("#histEdit1").val()
+				// let clientStatus = $("#histEdit2").val()
+				// let homeless = $("#histEdit3").val()
+				// $(".rowNum" + rowNum + ":eq(0)").html(servicedDateTime)
+				// $(".rowNum" + rowNum + ":eq(1)").html(serviceName)
+				// $(".rowNum" + rowNum + ":eq(2)").html(isUSDA)
+				// $(".rowNum" + rowNum + ":eq(3)").html(homeless)
 				uiEditHistory("cancel", serviceId, rowNum)
 			}
 		} else {
@@ -376,6 +461,16 @@ function uiLoginFormToggleValidation(todo){
 function uiOutlineTableRow(table, row){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', 'var(--blue) 1px dashed').siblings().css('outline', 'none')
+};
+
+function uiRemoveCategory(category){
+	// remove ziocode from ui and settings object
+	$("#zip"+category).hide("slow")
+};
+
+function uiRemoveZipCode(zipCode){
+	// remove ziocode from ui and settings object
+	$("#zip"+zipCode).hide("slow")
 };
 
 function uiResetDependentsTable() {
@@ -604,7 +699,7 @@ function uiShowHistoryData(clientHistory){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	uiBuildHistoryBottom()
 	// $(".historyLoadButton").hide()
-	const rowFields = ["servicedDateTime", "serviceName", "isUSDA", "homeless", "itemsServed", "totalAdultsServed", "totalChildrenServed", "totalIndividualsServed", "totalSeniorsServed", "servicedByUserName"]
+	const rowFields = ["servicedDateTime", "serviceName", "clientStatus", "homeless", "itemsServed", "totalAdultsServed", "totalChildrenServed", "totalIndividualsServed", "totalSeniorsServed", "servicedByUserName"]
 	for (var i = 0; i < clientHistory.length; i++) {
 //console.log(clientHistory)
 		let rowClass = "", newRow = ""
@@ -725,7 +820,7 @@ function uiShowDailyReportRows(dayDate, form){
 	let servicesFood = servicesRendered
 		.filter(function(item) {return item.serviceValid == 'true'})
 		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
-		.sort(function(a, b) {return a.createdDateTime - b.createdDateTime})
+		.sort(function(a, b) {return moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime))}) // .sort(function(a, b) {return a.createdDateTime - b.createdDateTime})
 	let servicesUSDA = servicesFood
 		.filter(function(item) {return item.isUSDA == "USDA"})
 	let servicesNonUSDA = servicesFood
@@ -1785,8 +1880,9 @@ function dbGetUsers(){
 
 function dbLoadServiceHistory(){
 	let clientHistory = dbGetClientServiceHistory()
-	clientHistory = clientHistory.sort(function(a, b){return b.servicedDay - a.servicedDay})
-		.filter(function(item){return item.serviceValid == "true"})
+	clientHistory = clientHistory
+		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+		.filter(item => item.serviceValid == "true")
 	uiShowHistoryData(clientHistory)
 }
 
@@ -1800,7 +1896,7 @@ function dbGetService(serviceId){
 
 function dbPostData(uUrl,dataU){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-//console.log("IN POST DATA")
+	console.log("POSTING DATA")
 	cogCheckSession()
 	if (authorization.idToken == 'undefined') {
 		utilBeep()
@@ -1823,17 +1919,14 @@ function dbPostData(uUrl,dataU){
 	    contentType:'application/json',
 
 	    success: function(message){
+				console.log("POST SUCCESSFUL")
 				console.log(message)
-			//	console.log(message.__type)
 				if (typeof message.message !== 'undefined') {
 					ans = message.message
 					utilBeep()
-
 				} else if (message.__type != undefined) {
 					ans = message.__type
-
 					console.log("ERROR")
-
 					utilBeep()
 					// ***** TODO need proper error messaging
 				} else {
@@ -1941,7 +2034,7 @@ function dbSaveService(serviceTypeId, serviceId, serviceValid){
 		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, itemsServed, serviceType.isUSDA)
 	}
 	dbPostService(serviceType, itemsServed, serviceId, serviceValid)
-	utilAddServiceToReceipt()
+	//utilAddServiceToReceipt()
 };
 
 function dbSaveUser(context){
@@ -2183,25 +2276,25 @@ console.log("ServiceForm Val: ", hasErrors)
 }
 
 function dbSearchClients(){
-	a =  $('#searchField').val()
+	let str =  $('#searchField').val()
 	$('#searchField').val('')
-	if (a === '') {
+	if (str === '') {
 		utilBeep()
 		return
 	}
 	if (currentNavTab !== "clients") navGotoSec("nav1")
 	clientData = null
-	const regex = /[-/.]/g
- 	const slashCount = (a.match(regex) || []).length
+	const regex = /[/.]/g
+ 	const slashCount = (str.match(regex) || []).length
 	if (slashCount == 2){
-		a = utilCleanUpDate(a)
-		a = moment(a, uiDate).format(date)
-		clientData = dbGetData(aws+"/clients/dob/"+a).clients
-	} else if (!isNaN(a)&&a.length<MAX_ID_DIGITS){
-		clientData = dbGetData(aws+"/clients/"+a).clients
-	} else if (a.includes(" ")){
-		a = utilChangeWordCase(a)
-		let split = a.split(" ")
+		str = utilCleanUpDate(str)
+		str = moment(str, uiDate).format(date)
+		clientData = dbGetData(aws+"/clients/dob/"+str).clients
+	} else if (!isNaN(str)&&str.length<MAX_ID_DIGITS){
+		clientData = dbGetData(aws+"/clients/"+str).clients
+	} else if (str.includes(" ")){
+		str = utilChangeWordCase(str)
+		let split = str.split(" ")
 //*** TODO deal with more than two words ***
 		let d1 = dbGetData(aws+"/clients/givenname/"+split[0]).clients
 		let d2 = dbGetData(aws+"/clients/familyname/"+split[0]).clients
@@ -2209,9 +2302,9 @@ function dbSearchClients(){
 		let d4 = dbGetData(aws+"/clients/familyname/"+split[1]).clients
 		clientData = utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
 	} else if (clientData==null||clientData.length==0){
-		a = utilChangeWordCase(a)
-		let d2 = dbGetData(aws+"/clients/givenname/"+a).clients
-		let d1 = dbGetData(aws+"/clients/familyname/"+a).clients
+		str = utilChangeWordCase(str)
+		let d2 = dbGetData(aws+"/clients/givenname/"+str).clients
+		let d1 = dbGetData(aws+"/clients/familyname/"+str).clients
 		if (d1.length>0&&d2.length<1){
 			clientData = utilRemoveDupClients(d1.concat(d2))
 		}	else if (d2.length>0){
@@ -2636,8 +2729,6 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	let serviceType = utilGetServiceTypeByID(serviceTypeId)
 	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
-		// TODO Create ability to UNDO the adding of a service.
-		// TODO remove service from services rendered array
 		const serviceItem = servicesRendered
 			.filter(function( obj ) {
 			return obj.serviceTypeId == serviceTypeId
@@ -2655,7 +2746,6 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 		dbSaveService(serviceTypeId, "", serviceValid)
 		if (serviceCategory == 'Food_Pantry') {
 			console.log("IN PRINT AREA");
-			//TODO Create function utilGetServiceTypeByID
 			let service = serviceTypes.filter(function( obj ) {
 					return obj.serviceTypeId == serviceTypeId
 				})[0]
@@ -2673,21 +2763,21 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	}
 };
 
-function utilAddServiceToReceipt(){
-	$("#receiptBody").html("")
-	for (var i = 0; i < servicesRendered.length; i++) {
-		let header = "<p><strong>" + servicesRendered[i].serviceCategory + ":</strong> " + servicesRendered[i].serviceName + "<br>"
-		let body = "<strong>Items Served:</strong> " + servicesRendered[i].itemsServed
-		if (servicesRendered[i].serviceCategory == "Clothes_Closet") {
-			body = body + "<br><strong>Adults Served:</strong> " + client.family.totalAdults + "<br><strong>Children Served:</strong>  " + client.family.totalChildren
-		}
-		if (servicesRendered[i].serviceCategory == "Food_Pantry") {
-			body = body + "<br><strong>Family Size:</strong> " + client.family.totalSize
-		}
-		$("#receiptBody").append(header + body)
-	}
-
-};
+// function utilAddServiceToReceipt(){
+// 	$("#receiptBody").html("")
+// 	for (var i = 0; i < servicesRendered.length; i++) {
+// 		let header = "<p><strong>" + servicesRendered[i].serviceCategory + ":</strong> " + servicesRendered[i].serviceName + "<br>"
+// 		let body = "<strong>Items Served:</strong> " + servicesRendered[i].itemsServed
+// 		if (servicesRendered[i].serviceCategory == "Clothes_Closet") {
+// 			body = body + "<br><strong>Adults Served:</strong> " + client.family.totalAdults + "<br><strong>Children Served:</strong>  " + client.family.totalChildren
+// 		}
+// 		if (servicesRendered[i].serviceCategory == "Food_Pantry") {
+// 			body = body + "<br><strong>Family Size:</strong> " + client.family.totalSize
+// 		}
+// 		$("#receiptBody").append(header + body)
+// 	}
+//
+// };
 
 function utilCognitoPhoneFormat(telephone){
 	let cogFormat= /^\+[1][0-9]{10}$/g
@@ -2919,99 +3009,133 @@ function utilRemoveEmptyPlaceholders(){
 };
 
 function utilRemoveService(serviceId){
+	console.log(serviceId)
 	let service = dbGetService(serviceId)[0]
 	service.serviceValid = false
-	let data = JSON.stringify(service)
-	let URL = aws+"/clients/services"
-	result = dbPostData(URL,data)
+	const data = JSON.stringify(service)
+	const URL = aws+"/clients/services"
+	const result = dbPostData(URL,data)
 	if (result == null) {return service}
 	return
 };
 
-function utilUdateService(serviceId){
-	let service = dbGetService(serviceId)[0]
-	let servicedDateTime = $("#editServed").val()
-	let serviceName = $("#editService").val()
-	let isUSDA = $("#editisUSDA").val()
-	if (servicedDateTime == "" || serviceName == "" || isUSDA == ""){
+function utilRemoveSettingsZipcode(zipCode){
+	// update settings object
+	console.log("update settings object")
+	settings.zipcodes
+}
+
+function utilUpdateService(serviceId){
+	let service = dbGetService(serviceId)
+	// to handle duplicate ID's -- old data (code should no longer create duplicates)
+	service = service
+		.filter(item => item.serviceValid == "true")
+		.sort((a, b) => moment.utc(b.updatedDateTime).diff(moment.utc(a.updatedDateTime)))
+	console.log(service)
+	console.log(service.length)
+	//disable duplicate ID's that are active
+	if (service.length > 1) {
+		for (var i = 1; i < service.length; i++) {
+			utilRemoveService(service[i].serviceId)
+		}
+	}
+	// get values from UI
+	const servicedDateTime = $("#histEdit0").val()
+	const serviceName = $("#histEdit1").val()
+	const clientStatus = $("#histEdit2").val()
+	const homeless = $("#histEdit3").val()
+	if (servicedDateTime == ""){
 		utilBeep()
 		return
 	}
-	console.log(isUSDA)
-	let serviceType = serviceTypes.filter(function(item){
-		return item.serviceName == serviceName
-	})
-	console.log(serviceType)
-	console.log(serviceType[0].isUSDA)
-	if (serviceType.length == 0) {
-		utilBeep()
-		console.log("Bad Service Name.")
-		return
-	} else if (serviceType[0].isUSDA != isUSDA){
-		utilBeep()
-		console.log("IsUSDA does not match ServiceType.")
-		return
-	}
-	serviceType = serviceType[0]
-	console.log(serviceName)
-	console.log(serviceType)
+	service = service[0]
+	let serviceType = serviceTypes.filter(item => item.serviceName == serviceName)[0]
 	service.serviceTypeId = serviceType.serviceTypeId
 	service.servicedDateTime = servicedDateTime
+	service.serviceCategory = serviceType.serviceCategory
 	service.serviceName = serviceName
-	service.isUSDA = isUSDA
+	service.isUSDA = serviceType.isUSDA
+	service.homeless = homeless
 	service.servicedDay = moment(servicedDateTime).format("YYYYMMDD")
 	service.servicedMonth = moment(servicedDateTime).format("YYYYMM")
 	if (service.clientFamilyName == "") {service.clientFamilyName = client.familyName}
 	if (service.clientGivenName == "") {service.clientGivenName = client.givenName}
 	if (service.clientZipcode == "") {service.clientZipcode = client.zipcode}
-	service.updatedDateTime == utilNow()
-
-	console.log(service)
-	utilRemoveService(service.serviceId)
-
-	let data = JSON.stringify(service)
-	let URL = aws+"/clients/services"
+	service.updatedDateTime = utilNow()
+	service.itemsServed = $("#histEdit4").val()
+	service.totalAdultsServed = $("#histEdit5").val()
+	service.totalChildrenServed = $("#histEdit6").val()
+	service.totalIndividualsServed = $("#histEdit7").val()
+	service.totalSeniorsServed = $("#histEdit8").val()
+	service.servicedByUserName = session.user.username
+	// make new service ID so ID is unique
+	service.serviceId = cuid()
+	let noEmpties = true
+	$.each(service, function(key,value){
+		if (service[key] == "") {noEmpties = false}
+	})
+	// TODO add error handling for history edits
+	if (!noEmpties) return
+	const data = JSON.stringify(service)
+	const URL = aws+"/clients/services"
 	result = dbPostData(URL,data)
-	if (result == null) {return service}
+	if (result == null) {
+		// disable old service record
+		utilRemoveService(serviceId)
+		return service
+	}
 	return
 };
 
 function utilUpdateLastServed(service){
-	// find what lastserved records do not match
-	let h = dbGetClientServiceHistory()
-	h = h.filter(function(item){return item.serviceValid == "true"})
-			.sort(function(a, b){return b.servicedDay - a.servicedDay})
-	let ls = client.lastServed
-	//let missing = []
-	for (var i = 0; i < ls.length; i++) {
-		// TODO update family ID  ===  familyIdCheckedDate
-		let found = h.filter(function(item){
-			return item.serviceTypeId == ls[i].serviceTypeId
-		})
-		console.log(found.length)
-		if (found.length > 0){
-			// let mdata = {index: i, serviceTypeId: ls[i].serviceTypeId}
-			// missing.push(mdata)
-			if (found[0].servicedDateTime != ls[i].serviceDateTime || found[0].serviceCategory != ls[i].serviceCategory || found[0].isUSDA != ls[i].isUSDA) {
-				let lsItem = {serviceTypeId: found[0].serviceTypeId, serviceDateTime: found[0].servicedDateTime, serviceCategory: found[0].serviceCategory, isUSDA: found[0].isUSDA}
-				ls.splice(i, 1, lsItem)
-			}
-		} else {
-			if (ls[i].serviceTypeId != "cjcryvin100003i8dv6e72m6j") { // ignore adminsitration may not have been stored in services
-				ls.splice(i, 1)
-			}
+	// get the service history
+	const history = dbGetClientServiceHistory()
+	h = history
+		.filter(item => item.serviceValid == "true")
+		.filter(item => item.serviceButtons == "Primary")
+		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+	let topHist = []
+	for (var a = 0; a < h.length; a++) {
+		if (topHist.findIndex(item => item.serviceTypeId == h[a].serviceTypeId) < 0) {
+			let lsItem = {serviceTypeId: h[a].serviceTypeId, serviceDateTime: h[a].servicedDateTime, serviceCategory: h[a].serviceCategory, isUSDA: h[a].isUSDA}
+			topHist.push(lsItem)
 		}
 	}
+	// update lastServed
+	// let ls = client.lastServed
+	// if (ls.length < 1) {
+		client.lastServed = topHist
+	// } else {
+	// 	for (var i = 0; i < topHist.length; i++) {
+	// 		let index = ls.findIndex(item => item.serviceTypeId == topHist[i].serviceTypeId)
+	// 		if (index < 0) {
+	// 			ls.push(topHist[i])
+	// 		} else {
+	// 			// update record if different otherwise leave as is
+	// 			console.log(topHist[i])
+	// 			let hItem = {serviceTypeId: topHist[i].serviceTypeId, serviceDateTime: topHist[i].serviceDateTime, serviceCategory: topHist[i].serviceCategory, isUSDA: topHist[i].isUSDA}
+	// 			let lsItem = ls[index]
+	// 			if (hItem.serviceDateTime != lsItem.serviceDateTime || hItem.serviceCategory != hItem.serviceCategory || hItem.isUSDA != lsItem.isUSDA) {
+	// 				console.log("NOT MATCHING")
+	// 				console.log(hItem)
+	// 				console.log(lsItem)
+	// 				ls[index] = hItem
+	// 			}
+	// 		}
+	// 	}
+	// }
 	// TODO move to seperate function and merge with similar functions
-	client.lastServed = ls
+	//client.lastServed = ls
 	console.log(client)
 	let data = utilPadEmptyFields(client)
 	data = JSON.stringify(data)
 	console.log(data)
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,data)
+	console.log(result)
 	if (result == null) {
 		utilBloop() // TODO move bloop to successful POST ()
+		// TODO REFRESH CLIENT DATA
 		return "success"
 	} else {
 		return "failed"
@@ -3041,6 +3165,7 @@ function utilCalcLastServedDays() {
 	// get Last Served Date from client object & calculate number of days
 	let lastServed = {daysUSDA:"10000", daysNonUSDA:"10000", lowestDays:"10000"}
 	if (client.lastServed[0] == undefined) return lastServed
+	console.log(client.lastServed)
 	let lastServedFood = client.lastServed.filter(function( obj ) {
 		return obj.serviceCategory == "Food_Pantry"
 	})
