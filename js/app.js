@@ -515,36 +515,55 @@ function uiShowCurrentClientButtons(){
 	$("#newNoteButton").show()
 };
 
-function uiShowExistingNotes(){
+function uiShowExistingNotes(state){
 	$('.notes').html("")
-	// TODO this sort does not seem to be working - verify and fix
-	client.notes.sort(function(x, y){
-    return moment(x.createdDateTime).isBefore(y.createdDateTime)
-	})
-	let important = ""
+	client.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
+	let important = "", hasImportantNote = false, topNote = ""
 	for (let i = 0; i < client.notes.length; i++){
 		important = ""
     let obj = client.notes[i];
 		if (obj.isImportant == "true" || obj.isImportant == true) {
 			important = "IMPORTANT"
-			hasImportantNote = "true"
+			hasImportantNote = true
+			if (topNote == "") {
+				topNote = obj
+			}
 		}
 		// TODO need to provide link at TR level if the current user == the user who created the note
-    uiShowNote(moment(obj.createdDateTime).format(uiDateTimeShort), obj.noteText, obj.noteByUserName, important)
+    uiShowNote(i, moment(obj.createdDateTime).format(uiDateTimeShort), obj.noteText, obj.noteByUserName, important)
   }
-	if (hasImportantNote == "true") {
+	// has important note highlight tab and show msgOverlay
+	if (hasImportantNote) {
 		$("#tabLable6").css("color", "var(--red)")
+		if (state == "loading"){
+			uiShowHideClientMessage("show")
+		}
+		$("#clientMessageBody").html("<span style='font-size: 12px; float: right'>" + moment(topNote.createdDateTime).format(longDate) + "</span><br><br><span style='font-weight: bold'>" + topNote.noteText  + "</span><br><br><span style='float:right; font-size: 12px'>By: " + topNote.noteByUserName + "</span>")
 	}
 };
 
-function uiToggleNoteForm(todo, id){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	if (id.length > 1) {
-		// TODO check if note has been saved if it's an existing note.
+function uiShowHideClientMessage(todo){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	if (todo === 'show'){
+		$('#msgOverlay').show().css('display', 'flex')
+
+	} else {
+		$('#msgOverlay').hide()
 	}
+}
+
+function uiToggleNoteForm(todo, index){
 	if (todo == "show"){
 		$("#newNoteButton").hide()
 		$("#noteEditForm").show()
+		if (index !== ""){
+			$("#noteTextArea").val(client.notes[index].noteText)
+			if (client.notes[index].isImportant == "true") {
+				$("#noteIsImportant").prop("checked", true)
+			} else {
+				$("#noteIsImportant").prop("checked", false)
+			}
+		}
 	} else {
 		$("#newNoteButton").show()
 		$("#noteEditForm").hide()
@@ -1265,7 +1284,7 @@ function uiShowClientEdit(isEdit){
 		uiToggleClientViewEdit('view')
 	}
 	uiShowDependents(isEdit)
-	uiShowExistingNotes()
+	uiShowExistingNotes("loading")
 	// dbLoadNotes(client.clientId)
 };
 
@@ -1298,14 +1317,13 @@ function uiShowUserForm(){
 	uiPopulateForm(adminUser, 'userForm')
 };
 
-function uiShowNote(dateTime, text, user, important){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
+function uiShowNote(index, dateTime, text, user, important){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 5)) return
 	let clickableRow = ""
-	let noteId = 1 // TODO need to keep orginal note index for recall/edit
-	if (important == "IMPORTANT") {
-		clickableRow = ' class=\"notesRow\" onClick=\"uiToggleNoteForm(\'show\',\'' + noteId + '\')\"'
-	}
-	$('.notes').append('<tr' + clickableRow + '><td class="notesData">'+dateTime+'</td><td class="notesData">'+text+'</td><td class="notesData">'+user+'</td><td class="notesDataImportant">'+important+'</td></tr>')
+	// if (session.user.username == user) {
+	// 	clickableRow = "class=\'notesRow\' onClick=\'uiToggleNoteForm(\"show\"," + index + ")\'"
+	// }
+	$('.notes').append('<tr><td class="notesData">'+dateTime+'</td><td class="notesData">'+text+'</td><td class="notesData">'+user+'</td><td class="notesDataImportant">'+important+'</td><td class="notesData"><i class="fa fa-times-circle" onClick="utilDeleteNote(' + index +')"></i></td></tr>')
 }
 
 function uiShowNewClientForm(){
@@ -2159,20 +2177,15 @@ function dbSaveNote(){
 	let isImportant = false
 	if ($("#noteIsImportant").is(":checked")) isImportant = true
 	tmp.isImportant = isImportant
-console.log(JSON.stringify(tmp))
 	client.notes.push(tmp)
-console.log(JSON.stringify(client.notes))
 // TODO SAVE CLIENT ... NEED TO USE UPDATE TO ONLY UPDATE SOME FIELDS
-	//data = client
-	let data = utilPadEmptyFields(client)
-	let URL = aws+"/clients/"
-	result = dbPostData(URL,JSON.stringify(data))
+	const result = dbSaveCurrentClient()
 	if (result == null) {
 		utilCalcFamilyCounts()
 		utilCalcClientAge("db")
 		uiToggleDependentsViewEdit("view")
 		uiToggleNoteForm("hide", "")
-		uiShowExistingNotes()
+		uiShowExistingNotes("updating")
 	}
 };
 
@@ -2207,6 +2220,7 @@ function dbSaveClientForm(context){
 		}
 	}
 	uiSaveButton('client', 'Saving...')
+	//TODO centralize all client saves
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
 	$("body").css("cursor", "default");
@@ -2219,7 +2233,13 @@ function dbSaveClientForm(context){
 		$('#searchField').val(clientId)
 		dbSearchClients()
 	}
-}
+};
+
+function dbSaveCurrentClient(){
+	const data = utilPadEmptyFields(client)
+	const URL = aws+"/clients/"
+	return dbPostData(URL,JSON.stringify(data))
+};
 
 function dbSaveDependentsTable(){
 	// TODO validate dependents and field level
@@ -3265,6 +3285,20 @@ function utilCleanUpDate(a) {
 	}
 	const date = dateArr[0] +"/"+ dateArr[1] +"/"+ dateArr[2]
 	return date
+};
+
+function utilDeleteNote(index){
+	console.log("IN DELETE NOTE " + index)
+	let notes = client.notes
+	let tempNotes = notes
+	notes.splice(index, 1)
+	client.notes = notes
+	const result = dbSaveCurrentClient()
+	if (result == null) {
+		uiShowExistingNotes("refresh")
+	} else {
+		client.notes = tempNotes
+	}
 }
 
 function utilErrorHandler(errMessage, status, error, type) {
