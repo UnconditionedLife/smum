@@ -3715,6 +3715,12 @@ console.log("FAIL: dateAfter2000")
 				break
 			case "lookup":
 				console.log("IN LOOKUP")
+				console.log(id)
+				if (id == "zipcode"){
+					const clientStatus = $("#isActive").val()
+					console.log(clientStatus)
+					if (clientStatus == "NonClient") break
+				}
 				if (hasError == false) {
 					let found = false
 					for (var i = 0; i < lookupList.length; i++) {
@@ -3727,7 +3733,12 @@ console.log("FAIL: dateAfter2000")
 					if (found == false) {
 console.log("FAIL: lookup")
 						hasError = true
-						uiGenerateErrorBubble("Not valid entry!", id, classes)
+						if (id == "zipcode"){
+							uiGenerateErrorBubble("Not in service area!", id, classes)
+						} else {
+							uiGenerateErrorBubble("Not valid entry!", id, classes)
+						}
+
 					}
 				}
 				break
@@ -3854,7 +3865,7 @@ function utilValidateConfig(form, id){
 												"IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
 												"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
 												"SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
-				 						  zipcode: [ 'required', 'zipcode' ],
+				 						  zipcode: [ 'required', 'zipcode', {lookup: settings.serviceZipcodes} ],
 										zipSuffix: [ 'zipsuffix' ],
 				 					  telephone: [ 'phoneNumber' ],
 				 		  			 		email: [ 'email' ],
