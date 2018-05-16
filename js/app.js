@@ -173,6 +173,7 @@ function uiAddNewDependentsRow(){
 	dependentRow+="<td><input id='familyName["+nextRow+"]' class='inputBox inputForTable dependentsForm'></td>"
 	dependentRow+="<td><select id='relationship["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Child'>Child</option><option value='Spouse'>Spouse</option><option value='Other'>Other</option></select></td>"
 	dependentRow+="<td><select id='gender["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Male'>Male</option><option value='Female'>Female</option></select></td>"
+	dependentRow+="<td><select id='grade["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value=''> </option><option value='K'>K</option><option value='1'>1st</option><option value='2'>2nd</option><option value='3'>3rd</option><option value='4'>4th</option><option value='5'>5th</option><option value='6'>6th</option><option value='7'>7th</option><option value='8'>8th</option><option value='9'>9th</option><option value='10'>10th</option><option value='11'>11th</option><option value='12'>12th</option></select></td>"
 	dependentRow+="<td><input id='dob["+nextRow+"]' class='inputBox inputForTable dependentsForm' onchange='utilCalcDependentAge("+ parseInt(nextRow)+")' type='date'></td>"
 	dependentRow+="<td class='dependentsViewOnly'><input id='age["+nextRow+"]' class='inputBox inputForTable dependentsForm' style='width:50px'></td><td>"
 	dependentRow+="<select id='isActive["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></td>"
@@ -475,7 +476,7 @@ function uiRemoveZipCode(zipCode){
 
 function uiResetDependentsTable() {
 	// clear changes in feilds
-	uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","age","isActive"],'dependentsTable')
+	uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName","relationship","gender","dob","age","grade","isActive"],'dependentsTable')
 	// set display to view
 	uiToggleDependentsViewEdit('view')
 };
@@ -788,13 +789,18 @@ let uiShowLastServed = function() {
 function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 		let primaryButtons = ""
-		for (let i=0; i<btnPrimary.length; i++){
-			let x = btnPrimary[i]
-			let btnClass = "btnPrimary"
-			if ((activeServiceTypes[x].serviceCategory == "Administration") || (activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
-			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'";
-			let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
-			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
+		if (btnPrimary == "-1") { // depedents grades requirement
+			let btnClass = "btnAlert"
+			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
+		} else {
+			for (let i=0; i<btnPrimary.length; i++){
+				let x = btnPrimary[i]
+				let btnClass = "btnPrimary"
+				if ((activeServiceTypes[x].serviceCategory == "Administration") || (activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
+				let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'";
+				let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
+				primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
+			}
 		}
 		$('#servicePrimaryButtons').html(primaryButtons)
 	//}
@@ -1291,7 +1297,7 @@ function uiShowClientEdit(isEdit){
 function uiShowDependents(isEdit){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	if (client.dependents!=null){
-		uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender',"dob","age","isActive"],'dependentsTable')
+		uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName",'relationship','gender', "dob","age", "grade","isActive"],'dependentsTable')
 	}
 	// if (isEdit){
 	// 	let plusButton = '<a href="#" onclick="uiAddTableRow()" style="font-size:18px;width:150px;margin-bottom:8px;margin-top:10px;display: inline-block;" class="btn btn-block btn-primary btn-success">+</a>'
@@ -1543,6 +1549,8 @@ function uiGenSelectHTMLTable(selector, data, col, tableID){
 					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['Child','Spouse','Other'],"relationship",depNum)
 				} else if (col[j]=="gender"){
 					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['Female','Male'],"gender",depNum)
+				} else if (col[j]=="grade"){
+					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['', 'k','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'],"grade",depNum)
 				} else{
 					tabCell.innerHTML="<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm' value='"+data[i][col[j]]+"'>";
 				}
@@ -2244,6 +2252,8 @@ function dbSaveCurrentClient(){
 function dbSaveDependentsTable(){
 	// TODO validate dependents and field level
 	// TODO validate dependents and form level
+	// TODO validate dependents age vs adult / child
+	// TODO validate dependents grade vs age (< 18)
 	let dependents = [] // client.dependents
 	data = utilFormToJSON('.dependentsForm')
 	let numKey = Object.keys(data).length
@@ -2251,6 +2261,7 @@ function dbSaveDependentsTable(){
 		let key = Object.keys(data)[i]
 		let keyName = key.slice(0, key.indexOf("["))
 		let keyNum = key.slice(key.indexOf("[")+1,-1)
+		// updatedDateTime & createdDateTime are not in form
 		if (dependents[keyNum] == undefined) dependents[keyNum] = {updatedDateTime: utilNow()}
 		if (client.dependents[keyNum] != undefined) {
 			if (client.dependents[keyNum].createdDateTime != undefined) {
@@ -2260,12 +2271,21 @@ function dbSaveDependentsTable(){
 			dependents[keyNum].createdDateTime = utilNow()
 		}
 		dependents[keyNum][keyName] = data[Object.keys(data)[i]]
+		if (keyName == "grade") { // makes sure the gradeDateTime is updated
+			if (dependents[keyNum][keyName] != client.dependents[keyNum][keyName]) {
+				if (dependents[keyNum][keyName] == "") {
+					dependents[keyNum].gradeDateTime = ""
+				} else {
+					dependents[keyNum].gradeDateTime = utilNow()
+				}
+			} else {
+				dependents[keyNum].gradeDateTime = client.dependents[keyNum].gradeDateTime
+			}
+		}
 	}
 	client.dependents = dependents
 	data = client
-console.log(data)
 	data = utilPadEmptyFields(data)
-console.log(data)
 	let URL = aws+"/clients/"
 	result = dbPostData(URL,JSON.stringify(data))
 	if (result == null) {
@@ -2865,6 +2885,16 @@ function utilCalcActiveServicesButtons(array, activeServiceTypes, targetServices
 			}
 		}
 	}
+	// used to prempt service if a dependent child's grade is not set
+	if (client.dependents.length > 0) {
+		for (var i = 0; i < client.dependents.length; i++) {
+			if (client.dependents[i].age < 18 && (client.dependents[i].grade == undefined || client.dependents[i].grade == "")) {
+				console.log("NO GRADES SET")
+				btnPrimary = "-1"
+				btnSecondary = ""
+			}
+		}
+	}
 	if (array == "primary") return btnPrimary
 	if (array == "secondary") return btnSecondary
 }
@@ -2965,8 +2995,6 @@ function uiClearCurrentClient(){
 		$("#tabLable6").css("color", "#bbb")
 };
 
-
-
 // function utilCalcLastIdCheckDays() {
 // 	// get Id Checked Date from client object & calculate number of days
 // 	// let familyIdCheckedDate = moment(client.familyIdCheckedDate, dbDate)
@@ -3010,6 +3038,12 @@ function utilLoginUserShowScreens(){
 
 function utilPadEmptyFields(data){
 	$.each(data, function(key,value){
+		if (key == "dependents") {
+			for (var i = 0; i < value.length; i++) {
+				if (value[i].grade == "") {data[key][i].grade = "*EMPTY*"}
+				if (value[i].gradeDateTime == "") {data[key][i].gradeDateTime = "*EMPTY*"}
+			}
+		}
 		if (value == "" || (key == "zipSuffix" && value == 0)) {
 			if (key != "notes" && key != "dependents") {
 				data[key] = "*EMPTY*"
@@ -3022,6 +3056,12 @@ function utilPadEmptyFields(data){
 function utilRemoveEmptyPlaceholders(){
 	// TODO make this operate on other forms / data
 	$.each(client, function(key,value){
+		if (key == "dependents") {
+			for (var i = 0; i < value.length; i++) {
+				if (value[i].grade == "*EMPTY*") {client[key][i].grade = ""}
+				if (value[i].gradeDateTime == "*EMPTY*") {client[key][i].gradeDateTime = ""}
+			}
+		}
 		if (value == "*EMPTY*" || (key == "zipSuffix" && value == 0)) {
 			client[key] = ""
 		}
@@ -3334,7 +3374,7 @@ function utilErrorHandler(errMessage, status, error, type) {
 function utilFormToJSON(form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let vals = {}
-	console.log($(form))
+// console.log($(form))
 	let formElements = $(form)
 	for (let i = 0; i < formElements.length; i++) {
 		let key = formElements[i].id
@@ -3378,6 +3418,7 @@ function utilKeyToLabel(x){
 										street: "Street Address",
 							relationship: "Relationship",
 										gender: "Gender",
+										 grade: "Grade",
 								  isActive: "Status",
 							 serviceName: "Name",
 				serviceDescription: "Description",
@@ -3959,7 +4000,6 @@ function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {
 };
 
 function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
 	if (client.lastServed.length == 0 || lastServed.lowestDays == 10000) {
 // console.log("NO LAST SERVED")
@@ -4045,37 +4085,6 @@ function isLoggedIn(){
 	}
 }
 
-function fixDepenedentRelationships(){
-  for (var i = 3000; i < 5000; i++) {
-    let clientData = dbGetData(aws+"/clients/"+i).clients
-		if (clientData.length > 0) {
-			clientData = clientData[0]
-			let save = false
-			if (clientData.dependents.length > 0) {
-				//console.log(clientData)
-		    for (var d = 0; d < clientData.dependents.length; d++) {
-		      //if (clientData.dependents[d].relationship == "child") clientData.dependents[d].relationship = "Child"
-		      //if (clientData.dependents[d].relationship == "spouse") clientData.dependents[d].relationship = "Spouse"
-		      if (clientData.dependents[d].relationship == "other") {
-						save = true
-						clientData.dependents[d].relationship = "Other"
-						console.log(clientData.dependents	[d].relationship)
-					}
-					if (clientData.dependents[d].relationship == "Other_Dependent") {
-						save = true
-						clientData.dependents[d].relationship = "Other"
-						console.log(clientData.dependents	[d].relationship)
-					}
-		    }
-				if (save == true) {
-					let URL = aws+"/clients/"
-					result = dbPostData(URL,JSON.stringify(clientData))
-				}
-			}
-		}
-  }
-};
-
 // **********************************************************************************************************
 // PRINTER FUNCTIONS
 // **********************************************************************************************************
@@ -4086,7 +4095,7 @@ var printer = null;
 connect()
 
 function connect() {
- 	var ipAddress = '192.168.1.170';
+ 	var ipAddress = '192.168.1.137';
  	var port = '8008';
  	ePosDev.connect(ipAddress, port, callback_connect);
 };
@@ -4140,7 +4149,7 @@ function drawCanvas(name,width,height){
 }
 
 function print_canvas(name){
-	var ADDRESS = 'http://192.168.1.170/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
+	var ADDRESS = 'http://192.168.1.137/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
 	var epos = new epson.CanvasPrint(ADDRESS);
 	epos.cut = false;
 	epos.align = epos.ALIGN_CENTER;
