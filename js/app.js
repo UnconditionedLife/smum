@@ -389,7 +389,6 @@ function uiEditHistory(todo, serviceId, rowNum){
 	}
 }
 
-
 function uiGenerateErrorBubble(errText, id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 // console.log(errText, " ", id)
