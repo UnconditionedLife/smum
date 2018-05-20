@@ -3965,8 +3965,8 @@ function utilValidateConfig(form, id){
 						   target_child: [ 'required', {lookup: ["Unselected", "YES", "NO"]} ],
 				 target_childMinAge: [ 'integer' ], // TODO required if terget child is "YES"
 			 	 target_childMaxAge: [ 'integer' ], // TODO required if terget child is "YES"
-			 target_childMinGrade: [ 'integer' ], // TODO required if terget child is "YES"
-			 target_childMaxGrade: [ 'integer' ], // TODO required if terget child is "YES"
+			 target_childMinGrade: [ {lookup: ["Unselected", "K", "1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if terget child is "YES"
+			 target_childMaxGrade: [ {lookup: ["Unselected", "K", "1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if terget child is "YES"
 			     fulfillment_type: [ 'required', {lookup: ["Fulfill", "Notify", "Voucher"]} ],
    fulfillment_fromDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ],
 	   fulfillment_toDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ]
