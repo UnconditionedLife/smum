@@ -173,8 +173,8 @@ function uiAddNewDependentsRow(){
 	dependentRow+="<td><input id='familyName["+nextRow+"]' class='inputBox inputForTable dependentsForm'></td>"
 	dependentRow+="<td><select id='relationship["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Child'>Child</option><option value='Spouse'>Spouse</option><option value='Other'>Other</option></select></td>"
 	dependentRow+="<td><select id='gender["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Male'>Male</option><option value='Female'>Female</option></select></td>"
-	dependentRow+="<td><select id='grade["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='N/A'>N/A</option><option value='Pre-K'>Pre-K</option><option value='K'>K</option><option value='1'>1st</option><option value='2'>2nd</option><option value='3'>3rd</option><option value='4'>4th</option><option value='5'>5th</option><option value='6'>6th</option><option value='7'>7th</option><option value='8'>8th</option><option value='9'>9th</option><option value='10'>10th</option><option value='11'>11th</option><option value='12'>12th</option></select></td>"
-	dependentRow+="<td><input id='dob["+nextRow+"]' class='inputBox inputForTable dependentsForm' onchange='utilCalcDependentAge("+ parseInt(nextRow)+")' type='date'></td>"
+	dependentRow+="<td><input id='dob["+nextRow+"]' class='inputBox inputForTable dependentsForm' onchange='utilCalcDependentAge("+ parseInt(nextRow) + ")' type='date'></td>"
+	dependentRow+="<td><select id='grade["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='NA'>NA</option><option value='Pre-K'>Pre-K</option><option value='K'>K</option><option value='1'>1st</option><option value='2'>2nd</option><option value='3'>3rd</option><option value='4'>4th</option><option value='5'>5th</option><option value='6'>6th</option><option value='7'>7th</option><option value='8'>8th</option><option value='9'>9th</option><option value='10'>10th</option><option value='11'>11th</option><option value='12'>12th</option></select></td>"
 	dependentRow+="<td class='dependentsViewOnly'><input id='age["+nextRow+"]' class='inputBox inputForTable dependentsForm' style='width:50px'></td><td>"
 	dependentRow+="<select id='isActive["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></td>"
 	dependentRow+="</tr>"
@@ -1549,7 +1549,7 @@ function uiGenSelectHTMLTable(selector, data, col, tableID){
 				} else if (col[j]=="gender"){
 					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['Female','Male'],"gender",depNum)
 				} else if (col[j]=="grade"){
-					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['', 'k','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'],"grade",depNum)
+					tabCell.innerHTML =uiGenSelectHTML(data[i][col[j]],['NA', 'Pre-K', 'K','1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'],"grade",depNum)
 				} else{
 					tabCell.innerHTML="<input id='"+col[j]+"["+depNum+"]' class='inputBox inputForTable dependentsForm' value='"+data[i][col[j]]+"'>";
 				}
@@ -1929,7 +1929,7 @@ function dbPostData(uUrl,dataU){
 		return
 	}
 //console.log("PAST SessionCheck")
-//console.log(JSON.stringify(dataU))
+console.log(JSON.stringify(dataU))
 	let urlNew = uUrl;
 //console.log(urlNew)
 	let uData = dataU;
@@ -1944,7 +1944,7 @@ function dbPostData(uUrl,dataU){
 	    contentType:'application/json',
 
 	    success: function(message){
-				console.log("POST SUCCESSFUL")
+				//console.log("SUCCESSFUL")
 				console.log(message)
 				if (typeof message.message !== 'undefined') {
 					ans = message.message
@@ -2271,14 +2271,22 @@ function dbSaveDependentsTable(){
 		}
 		dependents[keyNum][keyName] = data[Object.keys(data)[i]]
 		if (keyName == "grade") { // makes sure the gradeDateTime is updated
-			if (dependents[keyNum][keyName] != client.dependents[keyNum][keyName]) {
-				if (dependents[keyNum][keyName] == "") {
-					dependents[keyNum].gradeDateTime = ""
+			if (client.dependents[keyNum] == undefined) { // new dependent
+				if (dependents[keyNum][keyName] == "NA") {
+					dependents[keyNum].gradeDateTime = "NA"
 				} else {
 					dependents[keyNum].gradeDateTime = utilNow()
 				}
 			} else {
-				dependents[keyNum].gradeDateTime = client.dependents[keyNum].gradeDateTime
+				if (dependents[keyNum][keyName] != client.dependents[keyNum][keyName]) {
+					if (dependents[keyNum][keyName] == "NA") {
+						dependents[keyNum].gradeDateTime = "NA"
+					} else {
+						dependents[keyNum].gradeDateTime = utilNow()
+					}
+				} else {
+					dependents[keyNum].gradeDateTime = client.dependents[keyNum].gradeDateTime
+				}
 			}
 		}
 	}
