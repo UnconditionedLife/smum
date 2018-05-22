@@ -1376,21 +1376,23 @@ function uiShowSecondaryServiceButtons(activeServiceTypes){
 function uiShowServicesButtons(){
 	// return if client object is empty
 	if ($.isEmptyObject(client)) return
-
-//	let lastIdCheck = utilCalcLastIdCheckDays()
-// TODO IF lastidcheck is current service then may not need idCheck field
-
-	let lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
-console.log(lastServed)
-	let activeServiceTypes = utilCalcActiveServiceTypes() // checks active date ranges of each serviceTypes
-	let targetServices = utilCalcTargetServices(activeServiceTypes); // changes setting to specific variables matching client
-console.log(targetServices)
-	let btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
-console.log(btnPrimary)
-	let btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
+	// TODO IF lastidcheck is current service then may not need idCheck field
+	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
+// console.log(lastServed)
+	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
+// console.log(activeServiceTypes)
+	const targetServices = utilCalcTargetServices(activeServiceTypes); // reduces serviceTypes by matching client target values
+// console.log(targetServices)
+	// sorts serviceTypes into Primary button array
+	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
+// console.log(btnPrimary)
+	// sorts serviceTypes into Secondary button array
+	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
 	uiShowServicesDateTime()
 	uiShowLastServed()
+	// Displays buttons in Primary button array
 	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
+	// Displays buttons in Secondary button array
 	uiShowSecondaryServiceButtons(activeServiceTypes)
 }
 
@@ -2936,7 +2938,7 @@ function utilCalcActiveServiceTypes(){
 			}
 		}
 	}
-	return activeServiceTypes;
+	return activeServiceTypes
 }
 
 function utilCalcFamilyCounts(){
@@ -3232,7 +3234,6 @@ function utilCalcLastServedDays() {
 	// get Last Served Date from client object & calculate number of days
 	let lastServed = {daysUSDA:"10000", daysNonUSDA:"10000", lowestDays:"10000"}
 	if (client.lastServed[0] == undefined) return lastServed
-	console.log(client.lastServed)
 	let lastServedFood = client.lastServed.filter(function( obj ) {
 		return obj.serviceCategory == "Food_Pantry"
 	})
