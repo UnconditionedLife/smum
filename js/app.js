@@ -2899,29 +2899,35 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 				// 	console.log("pushing age")
 				//
 				// }
+				console.log(attributes)
 				if (attributes.length>0){
-					for (let i = 0; i < client.dependents.length; i++) {
-						console.log(client.dependents[i].grade)
+					display = false;
+					for (let j = 0; j < client.dependents.length; j++) {
+						for (let k = 0; k < attributes.length; k++){
+							let attribute = attributes[k]
+							console.log(attribute)
+							console.log(client.dependents[j].grade)
 
-						for (let attribute in attributes){
-							if (attribute == "grade"&& (client.dependents[i].grade == undefined || client.dependents[i].grade == "")){
-								let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(client.dependents[i].grade),client.dependents[i].gradeDateTime)
+							if (attribute == "grade"&& !(client.dependents[j].grade == undefined || client.dependents[j].grade == "")){
+								console.log('in if statement')
+								console.log(utilGradeToNumber(client.dependents[j].grade))
+								console.log(client.dependents[j].gradeDateTime)
+								let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(client.dependents[j].grade),client.dependents[j].gradeDateTime)
+
 								let nextYearGrade =currentGrade+1
-								if (nextYearGrade>=utilGradeToNumber(targetServices[i]['target.childMinGrade']) && nextYearGrade<=utilGradeToNumber(targetServices[i]['target.childMaxGrade'])){
+								console.log(nextYearGrade)
+								console.log(targetServices[i]['dependents_gradeMin'])
+								console.log(targetServices[i]['dependents_gradeMax'])
+								if (nextYearGrade>=utilGradeToNumber(targetServices[i]['dependents_gradeMin']) && nextYearGrade<=utilGradeToNumber(targetServices[i]['dependents_gradeMax'])){
 									display  = true;
-									break
+									console.log('displaying button');
 								}
 							}
-							// if (attribute == "age"){
-							// 	if (client.dependents[i].age>=targetServices[i]['target.childMinAge'] && client.dependents[i].age<=targetServices[i]['target.childMaxAge'] ){
-							// 		display = true;
-							// 		break
-							// 	}
-							// }
 						}
 					}
 			  }
-			} else if (targetServices[i][prop] != client[prop]) {
+			}
+			if (targetServices[i][prop] != client[prop] && prop.includes("family")==false && prop.includes("dependents")==false) {
 				display = false
 			}
 		}
@@ -3049,7 +3055,7 @@ function uiClearCurrentClient(){
 };
 
 function utilCalcCurrentGrade(numericGrade,date){
-	const today = moment('2018-09-10');
+	const today = moment();
 	let dateEntered = moment(date);
 	const wasSecondSemester = (dateEntered.dayOfYear()<128);
 	const wasFirstSemester = !wasSecondSemester;
