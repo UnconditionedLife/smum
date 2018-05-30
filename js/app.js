@@ -2894,11 +2894,11 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 					attributes.push("grade")
 					console.log("pushing grade")
 				}
-				if ((targetServices[i]['target.childMinAge']!=0 || targetServices[i]['target.childMaxAge']!=0) && targetServices[i]['target.childMaxAge']>0){
-					attrubutes.push("age")
-					console.log("pushing age")
-
-				}
+				// if ((targetServices[i]['target.childMinAge']!=0 || targetServices[i]['target.childMaxAge']!=0) && targetServices[i]['target.childMaxAge']>0){
+				// 	attrubutes.push("age")
+				// 	console.log("pushing age")
+				//
+				// }
 				if (attributes.length>0){
 					for (let i = 0; i < client.dependents.length; i++) {
 						console.log(client.dependents[i].grade)
@@ -2912,12 +2912,12 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 									break
 								}
 							}
-							if (attribute == "age"){
-								if (client.dependents[i].age>=targetServices[i]['target.childMinAge'] && client.dependents[i].age<=targetServices[i]['target.childMaxAge'] ){
-									display = true;
-									break
-								}
-							}
+							// if (attribute == "age"){
+							// 	if (client.dependents[i].age>=targetServices[i]['target.childMinAge'] && client.dependents[i].age<=targetServices[i]['target.childMaxAge'] ){
+							// 		display = true;
+							// 		break
+							// 	}
+							// }
 						}
 					}
 			  }
@@ -3048,10 +3048,19 @@ function uiClearCurrentClient(){
 		$("#tabLable6").css("color", "#bbb")
 };
 
-function utilCalcCurrentGrade(numericGrade,dateEntered){
-	const today = moment();
-	let days = today.diff(dateEntered);
-	let years  = days/365;
+function utilCalcCurrentGrade(numericGrade,date){
+	const today = moment('2018-09-10');
+	let dateEntered = moment(date);
+	const wasSecondSemester = (dateEntered.dayOfYear()<128);
+	const wasFirstSemester = !wasSecondSemester;
+  if (wasSecondSemester){
+		dateEntered = moment().year(dateEntered.subtract(1,'year').year()).month('07').date('01');
+	}
+	else {
+		dateEntered = moment().year(dateEntered.year()).month('07').date('01');
+	}
+	let years = today.diff(dateEntered,'year');
+	console.log(years);
 	let currentGrade = numericGrade+years;
 	return currentGrade;
 }
