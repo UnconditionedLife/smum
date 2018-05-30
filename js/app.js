@@ -25,7 +25,7 @@ const longDate = "MMMM Do, YYYY  |  LT"
 const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
 
-let settings = {
+const settings = {
 	sounds: "YES",
 	seniorAge: 60,
 	serviceZipcodes: [95110, 95112, 95117, 95125, 95126, 95128, 95131, 95132, 95134, 95192],
@@ -1360,11 +1360,11 @@ function uiShowNewClientForm(){
 	navGotoTab("tab3")
 }
 
-function uiShowSecondaryServiceButtons(activeServiceTypes){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTypes){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	if (emergencyFood) return
 	$('#serviceSecondaryButtons').html("")
-	for (let i=0; i<btnSecondary.length; i++){
+	for (let i=0; i < btnSecondary.length; i++){
 		let x = btnSecondary[i];
 		let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'"
 		let service = '<div id="btn-' + activeServiceTypes[x].serviceTypeId +'\" class="btnSecondary" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "</div>"
@@ -1378,14 +1378,18 @@ function uiShowServicesButtons(){
 	if ($.isEmptyObject(client)) return
 	// TODO IF lastidcheck is current service then may not need idCheck field
 	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
-// console.log(lastServed)
+console.log(lastServed)
 	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
-// console.log(activeServiceTypes)
-	const targetServices = utilCalcTargetServices(activeServiceTypes); // reduces serviceTypes by matching client target values
-// console.log(targetServices)
+console.log(activeServiceTypes)
+	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
+	// dependents_gradeMax: "12"
+	// dependents_gradeMin: "K"
+  // family_totalChildren:"Greater Than 0"
+
+console.log(targetServices)
 	// sorts serviceTypes into Primary button array
 	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
-// console.log(btnPrimary)
+console.log(btnPrimary)
 	// sorts serviceTypes into Secondary button array
 	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
 	uiShowServicesDateTime()
@@ -1393,7 +1397,7 @@ function uiShowServicesButtons(){
 	// Displays buttons in Primary button array
 	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
 	// Displays buttons in Secondary button array
-	uiShowSecondaryServiceButtons(activeServiceTypes)
+	uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTypes)
 }
 
 function uiShowServiceTypeForm(){
@@ -2868,7 +2872,7 @@ function utilBloop(){
 	sound.play()
 };
 
-function utilCalcActiveServicesButtons(array, activeServiceTypes, targetServices, lastServed) {
+function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServices, lastServed) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	btnPrimary = [];
 	btnSecondary = [];
@@ -2876,15 +2880,55 @@ function utilCalcActiveServicesButtons(array, activeServiceTypes, targetServices
 		let display = true;
 		// check for not a valid service based on interval between services
 		if (!utilValidateServiceInterval(activeServiceTypes[i], activeServiceTypes, lastServed)) continue;
-		// loop through each property in each activeServiceType
+		// loop through each property in each targetServices
 		for (let prop in targetServices[i]) {
-			if (targetServices[i][prop] != client[prop]) {
+			console.log(prop)
+			if (prop=="family_totalChildren") {
+				if (targetServices[i][prop] == "Greater Than 0") {
+					// dependents_gradeMax
+					console.log("FAMILY TOTAL CHILDREN")
+				}
+				// move to grade and age target detection to helper function
+				let attributes = []
+				if (targetServices[i]['dependents_gradeMin']!="Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
+					attributes.push("grade")
+					console.log("pushing grade")
+				}
+				if ((targetServices[i]['target.childMinAge']!=0 || targetServices[i]['target.childMaxAge']!=0) && targetServices[i]['target.childMaxAge']>0){
+					attrubutes.push("age")
+					console.log("pushing age")
+
+				}
+				if (attributes.length>0){
+					for (let i = 0; i < client.dependents.length; i++) {
+						console.log(client.dependents[i].grade)
+
+						for (let attribute in attributes){
+							if (attribute == "grade"&& (client.dependents[i].grade == undefined || client.dependents[i].grade == "")){
+								let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(client.dependents[i].grade),client.dependents[i].gradeDateTime)
+								let nextYearGrade =currentGrade+1
+								if (nextYearGrade>=utilGradeToNumber(targetServices[i]['target.childMinGrade']) && nextYearGrade<=utilGradeToNumber(targetServices[i]['target.childMaxGrade'])){
+									display  = true;
+									break
+								}
+							}
+							if (attribute == "age"){
+								if (client.dependents[i].age>=targetServices[i]['target.childMinAge'] && client.dependents[i].age<=targetServices[i]['target.childMaxAge'] ){
+									display = true;
+									break
+								}
+							}
+						}
+					}
+			  }
+			} else if (targetServices[i][prop] != client[prop]) {
 				display = false
 			}
 		}
+
 		if (display) {
-			if (activeServiceTypes[i].serviceButtons == "Primary") {
-				if (activeServiceTypes[i].serviceCategory == "Food_Pantry") {
+			if (targetServices[i].serviceButtons == "Primary") {
+				if (targetServices[i].serviceCategory == "Food_Pantry") {
 					btnPrimary.unshift(i)
 				} else {
 					btnPrimary.push(i)
@@ -2894,7 +2938,7 @@ function utilCalcActiveServicesButtons(array, activeServiceTypes, targetServices
 			}
 		}
 	}
-	// used to prempt service if a dependent child's grade is not set
+	// used to prompt service if a dependent child's grade is not set
 	if (client.dependents.length > 0) {
 		for (var i = 0; i < client.dependents.length; i++) {
 			if (client.dependents[i].age < 18 && (client.dependents[i].grade == undefined || client.dependents[i].grade == "")) {
@@ -2904,8 +2948,8 @@ function utilCalcActiveServicesButtons(array, activeServiceTypes, targetServices
 			}
 		}
 	}
-	if (array == "primary") return btnPrimary
-	if (array == "secondary") return btnSecondary
+	if (buttons == "primary") return btnPrimary
+	if (buttons == "secondary") return btnSecondary
 }
 
 function utilCalcActiveServiceTypes(){
@@ -3004,6 +3048,13 @@ function uiClearCurrentClient(){
 		$("#tabLable6").css("color", "#bbb")
 };
 
+function utilCalcCurrentGrade(numericGrade,dateEntered){
+	const today = moment();
+	let days = today.diff(dateEntered);
+	let years  = days/365;
+	let currentGrade = numericGrade+years;
+	return currentGrade;
+}
 // function utilCalcLastIdCheckDays() {
 // 	// get Id Checked Date from client object & calculate number of days
 // 	// let familyIdCheckedDate = moment(client.familyIdCheckedDate, dbDate)
@@ -3024,7 +3075,15 @@ function utilGenerateDailyReport(){
 
 	uiShowHidePrint("show")
 };
-
+function utilGradeToNumber(grade){
+	if (grade=="Pre-K"){
+		return -1;
+	}
+	if (grade == "K"){
+		return 0;
+	}
+	return parseInt(grade);
+}
 function utilGenerateMonthlyReport(){
 	console.log("Report Start")
 	let monthYear = $('#reportsMonthyMonth').val()
@@ -3268,32 +3327,29 @@ function utilCalcTargetServices(activeServiceTypes) {
 			targets[i].family_totalSize = 2;
 			targets[i].family_totalChildren = 0;
 		} else if (activeServiceTypes[i].target.family == "With Children") {
-			targets[i].family_totalChildren = "Greater Than 0";
-			// TODO Target children
+			targets[i].family_totalChildren = "0";
 		}
 		// target gender male/female
 		if (activeServiceTypes[i].target.gender !== "Unselected") targets[i].gender = activeServiceTypes[i].target.gender;
 		// target children
 		if (activeServiceTypes[i].target.child == "YES") {
-			targets[i].family_totalChildren = "Greater Than 0";
-			// TODO Target children's ages
-			// if ((activeServiceTypes[i].target.childMinAge > 0) || (activeServiceTypes[i].target.childMaxAge > 0)) {
-			// 	targets[i].childMinAge = activeServiceTypes[i].target.childMinAge;
-			// }
-			// if (activeServiceTypes[i].target.childMaxAge > 0) {
-			// 	targets[i].childMaxAge = activeServiceTypes[i].target.childMaxAge;
-			// }
-			// if (activeServiceTypes[i].target.childMinGrade > 0) {
-			// 	targets[i].childMinGrade = activeServiceTypes[i].target.childMinGrade;
-			// }
-			// if (activeServiceTypes[i].target.childMaxGrade > 0) {
-			// 	targets[i].childMaxGrade = activeServiceTypes[i].target.childMaxGrade;
-			// }
-		} else if (activeServiceTypes[i].target.child == "NO") {
-			targets[i].family.totalChildren = 0;
+			targets[i].family_totalChildren = "Greater Than 0"
+			// target age
+			if (activeServiceTypes[i].target.childMaxAge > 0) {
+				targets[i].dependents_ageMin = activeServiceTypes[i].target.childMinAge
+				targets[i].dependents_ageMax = activeServiceTypes[i].target.childMaxAge
+			}
+			//target grade
+			if (activeServiceTypes[i].target.childMinGrade !== "Unselected") {
+				targets[i].dependents_gradeMin = activeServiceTypes[i].target.childMinGrade;
+			}
+			if (activeServiceTypes[i].target.childMaxGrade !== "Unselected") {
+				targets[i].dependents_gradeMax = activeServiceTypes[i].target.childMaxGrade;
+			}
+		} else if (activeServiceTypes[i].target.child == "NO"){
+			targets[i].family_totalChildren = "0";
 		}
 	}
-//	console.log("Target Attributes: " + JSON.stringify(targets));
 	return targets;
 }
 
@@ -3974,8 +4030,8 @@ function utilValidateConfig(form, id){
 						   target_child: [ 'required', {lookup: ["Unselected", "YES", "NO"]} ],
 				 target_childMinAge: [ 'integer' ], // TODO required if terget child is "YES"
 			 	 target_childMaxAge: [ 'integer' ], // TODO required if terget child is "YES"
-			 target_childMinGrade: [ {lookup: ["Unselected", "K", "1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if terget child is "YES"
-			 target_childMaxGrade: [ {lookup: ["Unselected", "K", "1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if terget child is "YES"
+			 target_childMinGrade: [ {lookup: ["Unselected","Pre-K","K","1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if target child is "YES"
+			 target_childMaxGrade: [ {lookup: ["Unselected","Pre-K","K","1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if target child is "YES"
 			     fulfillment_type: [ 'required', {lookup: ["Fulfill", "Notify", "Voucher"]} ],
    fulfillment_fromDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ],
 	   fulfillment_toDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ]
