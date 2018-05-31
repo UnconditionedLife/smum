@@ -2054,17 +2054,35 @@ function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 function dbSaveService(serviceTypeId, serviceId, serviceValid){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	let serviceType = {}
+	let servedCounts = {
+		adults: client.family.totalAdults,
+		children: client.family.totalChildren,
+		individuals: client.family.totalSize,
+		seniors: client.family.totalSeniors
+	}
 	serviceType = utilGetServiceTypeByID(serviceTypeId)
+	let targetService = utilCalcTargetServices([serviceType])
 	let numItems = serviceType.numberItems
 	if (serviceType.itemsPer == "Person") {
 		itemsServed = numItems * client.family.totalSize
-	} else {
+		if (serviceType.target.child == "YES" && serviceType.serviceCategory=="Back_To_School"){
+			let numChildren = utilCalcValidAgeGrade("grade", targetService[0]).length
+			servedCounts = {
+				adults: 0,
+				children:numChildren, //output of function
+				individuals: numChildren,//output of function
+				seniors: 0
+			}
+			itemsServed = numItems*servedCounts.children
+		}
+	}
+	else {
 		itemsServed = numItems
 	}
 	if (serviceType.serviceButtons == "Primary"){
 		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, itemsServed, serviceType.isUSDA)
 	}
-	dbPostService(serviceType, itemsServed, serviceId, serviceValid)
+	dbPostService(serviceType, itemsServed, serviceId, servedCounts, serviceValid)
 	//utilAddServiceToReceipt()
 };
 
@@ -2111,8 +2129,8 @@ console.log(hasErrors)
 	}
 };
 
-function dbPostService(serviceType, itemsServed, serviceId, serviceValid){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
+function dbPostService(serviceType, itemsServed, serviceId, servedCounts, serviceValid){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 5)) return
 	// TODO add senior cutoff age to the Settings
 	// TODO add Service area Zipcodes to the Settings
 	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
@@ -2142,10 +2160,10 @@ function dbPostService(serviceType, itemsServed, serviceId, serviceValid){
 				    itemsServed: itemsServed,
 				       homeless: client.homeless,
 				  emergencyFood: emergencyFood,
-		  totalAdultsServed: client.family.totalAdults,
-		totalChildrenServed: client.family.totalChildren,
-		 totalSeniorsServed: client.family.totalSeniors,
- totalIndividualsServed: client.family.totalSize,
+		  totalAdultsServed: servedCounts.adults,
+		totalChildrenServed: servedCounts.children,
+		 totalSeniorsServed: servedCounts.seniors,
+ totalIndividualsServed: servedCounts.individuals,
 					fulfillment: {
 						        pending: false,
 									 dateTime: moment().format(dateTime),
@@ -2876,6 +2894,7 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	btnPrimary = [];
 	btnSecondary = [];
+  let validDependents = []
 	for (let i = 0; i < activeServiceTypes.length; i++) {
 		let display = true;
 		// check for not a valid service based on interval between services
@@ -2884,57 +2903,33 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 		for (let prop in targetServices[i]) {
 			console.log(prop)
 			if (prop=="family_totalChildren") {
-				if (targetServices[i][prop] == "Greater Than 0") {
-					// dependents_gradeMax
-					console.log("FAMILY TOTAL CHILDREN")
-				}
-				// move to grade and age target detection to helper function
-				let attributes = []
-				if (targetServices[i]['dependents_gradeMin']!="Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
-					attributes.push("grade")
-					console.log("pushing grade")
-				}
-				// if ((targetServices[i]['target.childMinAge']!=0 || targetServices[i]['target.childMaxAge']!=0) && targetServices[i]['target.childMaxAge']>0){
-				// 	attrubutes.push("age")
-				// 	console.log("pushing age")
-				//
+				// if (targetServices[i][prop] == "Greater Than 0") {
+				// 	// dependents_gradeMax
+				// 	console.log("FAMILY TOTAL CHILDREN")
 				// }
-				console.log(attributes)
-				if (attributes.length>0){
-					display = false;
-					for (let j = 0; j < client.dependents.length; j++) {
-						for (let k = 0; k < attributes.length; k++){
-							let attribute = attributes[k]
-							console.log(attribute)
-							console.log(client.dependents[j].grade)
+				// move to grade and age target detection to helper function
 
-							if (attribute == "grade"&& !(client.dependents[j].grade == undefined || client.dependents[j].grade == "")){
-								console.log('in if statement')
-								console.log(utilGradeToNumber(client.dependents[j].grade))
-								console.log(client.dependents[j].gradeDateTime)
-								let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(client.dependents[j].grade),client.dependents[j].gradeDateTime)
-
-								let nextYearGrade =currentGrade+1
-								console.log(nextYearGrade)
-								console.log(targetServices[i]['dependents_gradeMin'])
-								console.log(targetServices[i]['dependents_gradeMax'])
-								if (nextYearGrade>=utilGradeToNumber(targetServices[i]['dependents_gradeMin']) && nextYearGrade<=utilGradeToNumber(targetServices[i]['dependents_gradeMax'])){
-									display  = true;
-									console.log('displaying button');
-								}
-							}
-						}
-					}
-			  }
+				if (targetServices[i]['dependents_gradeMin']!="Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
+					validDependents = utilCalcValidAgeGrade("grade",targetServices[i])
+				}
+				//TODO change service types to store non age entries as -1
+				else if (targetServices[i]['target.childMaxAge']>0){
+					validDependents = utilCalcValidAgeGrade("age",targetServices[i])
+				}
+				if (validDependents.length==0){
+					display = false
+				}
 			}
 			if (targetServices[i][prop] != client[prop] && prop.includes("family")==false && prop.includes("dependents")==false) {
 				display = false
 			}
+
 		}
 
 		if (display) {
-			if (targetServices[i].serviceButtons == "Primary") {
-				if (targetServices[i].serviceCategory == "Food_Pantry") {
+			console.log(activeServiceTypes[i].serviceButtons)
+			if (activeServiceTypes[i].serviceButtons == "Primary") {
+				if (activeServiceTypes[i].serviceCategory == "Food_Pantry") {
 					btnPrimary.unshift(i)
 				} else {
 					btnPrimary.push(i)
@@ -2944,6 +2939,7 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 			}
 		}
 	}
+	console.log(btnPrimary)
 	// used to prompt service if a dependent child's grade is not set
 	if (client.dependents.length > 0) {
 		for (var i = 0; i < client.dependents.length; i++) {
@@ -2957,7 +2953,30 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 	if (buttons == "primary") return btnPrimary
 	if (buttons == "secondary") return btnSecondary
 }
+function utilCalcValidAgeGrade(gradeOrAge,targetService){
+	display = false;
+	let dependents = []
+	for (let j = 0; j < client.dependents.length; j++) {
+		if (gradeOrAge=="grade" &&
+		!(client.dependents[j].grade == undefined || client.dependents[j].grade == "") && client.dependents[j].isActive=="Active"){
+			let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(client.dependents[j].grade),client.dependents[j].gradeDateTime)
+			let nextYear =currentGrade+1
+			if (nextYear>=utilGradeToNumber(targetService['dependents_gradeMin'])
+			&& nextYear<=utilGradeToNumber(targetService['dependents_gradeMax'])){
+				dependents.push(client.dependents[j])
+			}
+		}
 
+		if (gradeOrAge=="age" && client.dependents[j].isActive=="Active"){
+			let age = client.depedents[j].age
+			if (age>=targetService['dependents_ageMin']
+			&& age<=targetService['dependents_ageMax']){
+				dependents.push(client.dependents[j])
+			}
+		}
+  }
+	return dependents
+}
 function utilCalcActiveServiceTypes(){
 	// build Active Service Types array of Service Types which cover today's date
 	let activeServiceTypes = []
@@ -4143,8 +4162,20 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 					return false
 				}
 			}
+		} else if (activeServiceType.serviceCategory == "Back_To_School"){
+			inLastServed = client.lastServed.filter(function( obj ) {
+				return obj.serviceCategory == "Back_To_School"
+			})
+			if (inLastServed.length > 0) {
+				let lastServedDate = moment(inLastServed[0].serviceDateTime).startOf('day')
+				if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) {
+//console.log("FALSE")
+					return false
+				}
+			}
 		}
-	} else {
+	}
+	else {
 		if (lastServed.lowestDays < activeServiceType.serviceInterval) {
 			return false;
 		}
