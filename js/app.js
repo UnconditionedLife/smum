@@ -3918,12 +3918,12 @@ console.log("FAIL: lookup")
 						uiGenerateErrorBubble("Special characters are not allowed!", id, classes)
 					}
 				}
-				if (hasError == false) {
-					if (value.match(/\d/g)) {
-						hasError = true
-						uiGenerateErrorBubble("Numbers are not allowed!", id, classes)
-					}
-				}
+				// if (hasError == false) {
+				// 	if (value.match(/\d/g)) {
+				// 		hasError = true
+				// 		uiGenerateErrorBubble("Numbers are not allowed!", id, classes)
+				// 	}
+				// }
 				break
 			}
 	//	rules[i]
