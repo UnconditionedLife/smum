@@ -2079,10 +2079,11 @@ function dbSaveService(serviceTypeId, serviceId, serviceValid){
 	else {
 		itemsServed = numItems
 	}
-	if (serviceType.serviceButtons == "Primary"){
+
+	const result = dbPostService(serviceType, itemsServed, serviceId, servedCounts, serviceValid)
+	if (serviceType.serviceButtons == "Primary" && result == null){
 		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, itemsServed, serviceType.isUSDA)
 	}
-	dbPostService(serviceType, itemsServed, serviceId, servedCounts, serviceValid)
 	//utilAddServiceToReceipt()
 };
 
@@ -2140,6 +2141,14 @@ function dbPostService(serviceType, itemsServed, serviceId, servedCounts, servic
 	 		servicedDay = moment().format("YYYYMMDD")
 	if (serviceId == "") serviceId = cuid()
 	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
+	// define fulfillment vars for non-vouchers
+	let pending = false, fulfillmentDateTime = moment().format(dateTime), byUserName = session.user.username, itemCount = itemsServed
+	if (serviceType.fulfillment.type == "Voucher") {
+		pending = true
+		fulfillmentDateTime = "pending"
+		byUserName = "pending"
+		itemCount = "pending"
+	}
 	let serviceRecord = {
 							serviceId: serviceId,
 					 serviceValid: serviceValid,
@@ -2164,15 +2173,15 @@ function dbPostService(serviceType, itemsServed, serviceId, servedCounts, servic
 		totalChildrenServed: servedCounts.children,
 		 totalSeniorsServed: servedCounts.seniors,
  totalIndividualsServed: servedCounts.individuals,
-					fulfillment: {
-						        pending: false,
-									 dateTime: moment().format(dateTime),
+					  fulfillment: {
+						        pending: pending,
+									 dateTime: fulfillmentDateTime,
 							voucherNumber: "XXXXX",
-						     byUserName: session.user.username,
-						      itemCount: itemsServed
-					}
+						     byUserName: byUserName,
+						      itemCount: itemCount
+					  }
 	}
-	// store for use durring session
+	// store for use during session
 	if (serviceValid) {
 		servicesRendered.push(serviceRecord)
 	} else {
@@ -2192,6 +2201,7 @@ console.log(data)
 	if (result == null) {
 		utilBloop() // TODO move bloop to successful POST ()
 	}
+	return result
 }
 
 function dbSaveNote(){
