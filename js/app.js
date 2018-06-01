@@ -788,7 +788,7 @@ let uiShowLastServed = function() {
 function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 		let primaryButtons = ""
-		if (btnPrimary == "-1") { // depedents grades requirement
+		if (btnPrimary == "-1") { // dependents grades requirement
 			let btnClass = "btnAlert"
 			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
 		} else {
@@ -2953,30 +2953,7 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 	if (buttons == "primary") return btnPrimary
 	if (buttons == "secondary") return btnSecondary
 }
-function utilCalcValidAgeGrade(gradeOrAge,targetService){
-	display = false;
-	let dependents = []
-	for (let j = 0; j < client.dependents.length; j++) {
-		if (gradeOrAge=="grade" &&
-		!(client.dependents[j].grade == undefined || client.dependents[j].grade == "") && client.dependents[j].isActive=="Active"){
-			let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(client.dependents[j].grade),client.dependents[j].gradeDateTime)
-			let nextYear =currentGrade+1
-			if (nextYear>=utilGradeToNumber(targetService['dependents_gradeMin'])
-			&& nextYear<=utilGradeToNumber(targetService['dependents_gradeMax'])){
-				dependents.push(client.dependents[j])
-			}
-		}
 
-		if (gradeOrAge=="age" && client.dependents[j].isActive=="Active"){
-			let age = client.depedents[j].age
-			if (age>=targetService['dependents_ageMin']
-			&& age<=targetService['dependents_ageMax']){
-				dependents.push(client.dependents[j])
-			}
-		}
-  }
-	return dependents
-}
 function utilCalcActiveServiceTypes(){
 	// build Active Service Types array of Service Types which cover today's date
 	let activeServiceTypes = []
@@ -3076,7 +3053,7 @@ function uiClearCurrentClient(){
 function utilCalcCurrentGrade(numericGrade,date){
 	const today = moment();
 	let dateEntered = moment(date);
-	const wasSecondSemester = (dateEntered.dayOfYear()<128);
+	const wasSecondSemester = (dateEntered.dayOfYear()<125);
 	const wasFirstSemester = !wasSecondSemester;
   if (wasSecondSemester){
 		dateEntered = moment().year(dateEntered.subtract(1,'year').year()).month('07').date('01');
@@ -3095,6 +3072,30 @@ function utilCalcCurrentGrade(numericGrade,date){
 // 	let lastIdCheck = moment().diff(client.familyIdCheckedDate, 'days')
 // 	return lastIdCheck
 // }
+function utilCalcValidAgeGrade(gradeOrAge,targetService){
+	display = false;
+	let dependents = []
+	for (let j = 0; j < client.dependents.length; j++) {
+		if (gradeOrAge=="grade" &&
+		!(client.dependents[j].grade == undefined || client.dependents[j].grade == "") && client.dependents[j].isActive=="Active"){
+			let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(client.dependents[j].grade),client.dependents[j].gradeDateTime)
+			let nextYear =currentGrade+1
+			if (nextYear>=utilGradeToNumber(targetService['dependents_gradeMin'])
+			&& nextYear<=utilGradeToNumber(targetService['dependents_gradeMax'])){
+				dependents.push(client.dependents[j])
+			}
+		}
+
+		if (gradeOrAge=="age" && client.dependents[j].isActive=="Active"){
+			let age = client.dependents[j].age
+			if (age>=targetService['dependents_ageMin']
+			&& age<=targetService['dependents_ageMax']){
+				dependents.push(client.dependents[j])
+			}
+		}
+  }
+	return dependents
+}
 
 function utilGenerateDailyReport(){
 	let dayDate = $('#reportsDailyDate').val()
@@ -4371,7 +4372,42 @@ function printFoodReceipt(isUSDA){
     	printer.send();
 	}, 500);
 };
-
+function printFirstStartReceipt(dependents, serviceType){
+	if (printer == null) {
+		console.log("Printer Not Connected")
+		return
+	}
+	addHeader();
+	setTimeout(function f(){
+			printer.addTextSize(1, 2);
+			printer.addFeedLine(2);
+    	printer.addText('* FIRST STEP 2018 *\n');
+			printer.addTextSize(1, 1);
+    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
+			printer.addFeedLine(1);
+			printer.addTextSize(2, 2);
+			printer.addText(client.givenName + ' ' + client.familyName + '\n');
+			printer.addFeedLine(1);
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 1);
+    	printer.addText(' ' + client.clientId + ' \n');
+			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addFeedLine(1);
+			printer.addText('CHILDREN * NINOS (GENDER) GRADE');
+    	printer.addFeedLine(1);
+    	printer.addText('**************************************\n')
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 2);
+    	printer.addText(' ' + isUSDA + ' \n');
+			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addText('**************************************\n');
+    	printer.addFeedLine(2);
+    	printer.addCut(printer.CUT_FEED);
+    	printer.send();
+	}, 500);
+};
 function printReminderReceipt(){
 	if (printer == null) {
 		console.log("Printer Not Connected")
