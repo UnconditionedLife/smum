@@ -2814,6 +2814,7 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 		}
 	} else {
 		let serviceValid = true
+
 		dbSaveService(serviceTypeId, "", serviceValid)
 		if (serviceCategory == 'Food_Pantry') {
 			console.log("IN PRINT AREA");
@@ -2827,6 +2828,15 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 		} else if (serviceCategory == 'Clothes_Closet') {
 			setTimeout(function(){ // give time for food receipt & reminder to print
 				printClothesReceipt()
+			}, 2500);
+		}
+		else if (serviceCategory == 'Back_To_School') {
+			let targetService = utilCalcTargetServices([serviceType])
+			let dependents = utilCalcValidAgeGrade("grade",targetService[0])
+			console.log(dependents)
+			console.log(targetService)
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				printFirstStepReceipt(targetService[0],dependents)
 			}, 2500);
 		}
 		uiShowLastServed()
@@ -3065,6 +3075,32 @@ function utilCalcCurrentGrade(numericGrade,date){
 	console.log(years);
 	let currentGrade = numericGrade+years;
 	return currentGrade;
+}
+
+function utilCalcGradeGrouping(dependent){
+	let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(dependent.grade))
+	let nextYear = currentGrade+1
+	if (nextYear==0){
+		return "K"
+	}
+	else if  (nextYear>=1 && nextYear<=2){
+		return "1-2"
+	}
+	else if (nextYear>=3&&nextYear<=5){
+		return "3-5"
+	}
+	else if (nextYear>=6&&nextYear<=8){
+		return "6-8"
+	}
+	else if (nextYear==9){
+		return "9"
+	}
+	else if (nextYear>=10 && nextYear<=12){
+		return "10-12"
+	}
+	else{
+		return "Unable to Calculate Grade Level"
+	}
 }
 // function utilCalcLastIdCheckDays() {
 // 	// get Id Checked Date from client object & calculate number of days
@@ -4097,7 +4133,12 @@ function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {
 	}
 	return foodServiceInterval
 };
+function utilSortDependentsByGrade(dependents){
+	console.log(dependents.sort((a,b) => utilCalcCurrentGrade(utilGradeToNumber(a.grade))-utilCalcCurrentGrade(utilGradeToNumber(b.grade))))
+	//.sort((a, b) => moment.utc(b.updatedDateTime).diff(moment.utc(a.updatedDateTime)))
 
+	return dependents.sort((a,b) => utilCalcCurrentGrade(utilGradeToNumber(a.grade))-utilCalcCurrentGrade(utilGradeToNumber(b.grade)))
+}
 function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
 	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
 	if (client.lastServed.length == 0 || lastServed.lowestDays == 10000) {
@@ -4372,7 +4413,7 @@ function printFoodReceipt(isUSDA){
     	printer.send();
 	}, 500);
 };
-function printFirstStartReceipt(dependents, serviceType){
+function printFirstStepReceipt(dependents, serviceType){
 	if (printer == null) {
 		console.log("Printer Not Connected")
 		return
@@ -4381,7 +4422,7 @@ function printFirstStartReceipt(dependents, serviceType){
 	setTimeout(function f(){
 			printer.addTextSize(1, 2);
 			printer.addFeedLine(2);
-    	printer.addText('* FIRST STEP 2018 *\n');
+    	printer.addText('* '+serviceType.serviceName.toUpperCase()+' *\n');
 			printer.addTextSize(1, 1);
     	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
 			printer.addFeedLine(1);
@@ -4396,11 +4437,22 @@ function printFirstStartReceipt(dependents, serviceType){
     	printer.addFeedLine(1);
 			printer.addText('CHILDREN * NINOS (GENDER) GRADE');
     	printer.addFeedLine(1);
+			let sortedDependents = utilSortDependentsByGrade(dependents)
+			for (let i=0; i<sortedDependents.length; i++){
+				let currentDependent = sortedDependents[i]
+				printer.addText(currentDependent.givenName.toUpperCase()+' '+currentDependent.familyName.toUpperCase()
+				+'\t'+ currentDependent.gender.toUpperCase() + '\t' + utilCalcGradeGrouping(currentDependent)+'\n')
+			}
+			printer.addFeedLine(1)
     	printer.addText('**************************************\n')
+			printer.addTextAlign(printer.ALIGN_CENTER)
+			printer.addText('PRESENT THIS FOR PICKUP\n')
+			printer.addText('HAY PRESENTAR PARA RECLAMAR\n')
     	printer.addTextStyle(true,false,false,printer.COLOR_1);
 			printer.addTextSize(2, 2);
-    	printer.addText(' ' + isUSDA + ' \n');
+    	printer.addText(' ' + serviceType.fulfillment.fromDateTime.format("MMMM Do, YYYY")+ ' \n');
 			printer.addTextSize(1, 1);
+			printer.addText(''+serviceType.fulfillment.fromDateTime.format("h:mm a")+" - "+serviceType.fulfillment.toDateTime.format("h:mm a")+' \n');
     	printer.addTextStyle(false,false,false,printer.COLOR_1);
     	printer.addText('**************************************\n');
     	printer.addFeedLine(2);
