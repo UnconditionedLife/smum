@@ -222,7 +222,7 @@ function uiAddZipCode(){
 	$("#serviceAreaZipCodeList").val(JSON.stringify(zipList))
 	$("#serviceAreaZipcode").val("")
 	console.log(zipList)
-}
+};
 
 function uiBuildHistoryBottom(){
 	const headerLabels = ["Served", "Service", "Client", "Homeless", "# Items", "# Adults", "# Children", "# Individuals", "# Seniors", "Serviced By"]
@@ -251,11 +251,33 @@ function uiBuildHistoryTop(){
 //console.log(JSON.stringify(clientArray))
 //console.log(JSON.stringify(clientArray[0].lastServed))
 	uiGenSelectHTMLTable('#historyTop', historyArray, columns,'historyTable')
-}
+};
 
 function uiClearAllErrorBubbles(){
 	$('.errorBubble').remove()
 	$('.errorField').removeClass("errorField")
+};
+
+function uiClearCurrentClient(){
+	let blank = "<div class='bannerDiv'><span class='bannerText'>SEARCH FOR CLIENT</span></div>"
+	$("#searchContainer").html(blank)
+	$("#clientFormContainer").html(blank)
+		$("#clientLeftSlider").hide()
+		$("#clientRightSlider").hide()
+	$("#servicePrimaryButtons").html(blank)
+		$("#serviceDateTime").html("")
+		$("#serviceLastVisit").html("")
+		$("#serviceSecondaryButtons").html("")
+	$("#dependentsFormContainer").html(blank)
+		$("#dependentdLeftSlider").hide()
+		$("#dependentdRightSlider").hide()
+		$(".dependentsEditOnly").hide()
+	$("#historyTop").html(blank)
+		$("#historyBottom").html("")
+	$("#notesContainer").html(blank)
+		$("#newNoteButton").hide()
+		$("#noteEditForm").hide()
+		$("#tabLable6").css("color", "#bbb")
 };
 
 function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
@@ -300,11 +322,8 @@ function uiEditHistory(todo, serviceId, rowNum){
 		console.log("Delete: " + serviceId)
 		const service = utilRemoveService(serviceId)
 		if (service != ""){
-			const lastServed = utilUpdateLastServed(service)
-			if (lastServed == "failed") {
-				console.log("Saving client / lastServed failed.")
-				return
-			}
+			const result = utilUpdateLastServed(service)
+			if (result == "failed") return
 		} else {
 			console.log("Saving delete failed.")
 			return
@@ -787,22 +806,21 @@ let uiShowLastServed = function() {
 
 function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-		let primaryButtons = ""
-		if (btnPrimary == "-1") { // dependents grades requirement
-			let btnClass = "btnAlert"
-			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
-		} else {
-			for (let i=0; i<btnPrimary.length; i++){
-				let x = btnPrimary[i]
-				let btnClass = "btnPrimary"
-				if ((activeServiceTypes[x].serviceCategory == "Administration") || (activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
-				let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'";
-				let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
-				primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
-			}
+	let primaryButtons = ""
+	if (btnPrimary == "-1") { // dependents grades requirement
+		let btnClass = "btnAlert"
+		primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
+	} else {
+		for (let i=0; i<btnPrimary.length; i++){
+			let x = btnPrimary[i]
+			let btnClass = "btnPrimary"
+			if ((activeServiceTypes[x].serviceCategory == "Administration") || (activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
+			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'";
+			let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
+			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
 		}
-		$('#servicePrimaryButtons').html(primaryButtons)
-	//}
+	}
+	$('#servicePrimaryButtons').html(primaryButtons)
 };
 
 function uiShowReports(){
@@ -923,12 +941,12 @@ console.log("IN MONTHLY REPORT FUNCTION")
 		.sort(function(a, b){
 			return parseInt(a.servicedDay) - parseInt(b.servicedDay)
 		})
-	servicesUSDA = utilCalculateMonthlyRows(servicesUSDA)
-	servicesNonUSDA = utilCalculateMonthlyRows(servicesNonUSDA)
+	servicesUSDA = utilCalcMonthlyRows(servicesUSDA)
+	servicesNonUSDA = utilCalcMonthlyRows(servicesNonUSDA)
 	uiBuildMonthRows(servicesUSDA, servicesNonUSDA, monthYear)
 };
 
-function utilCalculateMonthlyRows(services){
+function utilCalcMonthlyRows(services){
 	console.log("INCALCROWS")
 	let tempS = []
 	$.each(services, function(i, item){
@@ -1376,7 +1394,9 @@ function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTy
 function uiShowServicesButtons(){
 	// return if client object is empty
 	if ($.isEmptyObject(client)) return
-	// TODO IF lastidcheck is current service then may not need idCheck field
+	uiShowServicesDateTime()
+	uiShowLastServed()
+	// TODO IF lastidcheck is current service then we may not need idCheck field
 	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
 console.log(lastServed)
 	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
@@ -1392,19 +1412,17 @@ console.log(targetServices)
 console.log(btnPrimary)
 	// sorts serviceTypes into Secondary button array
 	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
-	uiShowServicesDateTime()
-	uiShowLastServed()
 	// Displays buttons in Primary button array
 	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
 	// Displays buttons in Secondary button array
 	uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTypes)
-}
+};
 
 function uiShowServiceTypeForm(){
 	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
 	uiPopulateForm(serviceType, 'serviceTypeForm')
 	uiToggleIsUSDA()
-}
+};
 
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -1925,99 +1943,70 @@ function dbGetService(serviceId){
 	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
 }
 
-function dbPostData(uUrl,dataU){
+function dbPostData(URL,data){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	console.log("POSTING DATA")
 	cogCheckSession()
 	if (authorization.idToken == 'undefined') {
 		utilBeep()
-		consol.log("need to log in")
 		return
 	}
-//console.log("PAST SessionCheck")
-console.log(JSON.stringify(dataU))
-	let urlNew = uUrl;
-//console.log(urlNew)
-	let uData = dataU;
-	let ans = null;
+	console.log(data)
+	let ans = "failed";
 	$.ajax({
-	    type: "POST",
-	    url: urlNew,
-			headers: {"Authorization": authorization.idToken},
-	    async: false,
-	    dataType: "json",
-	    data: uData,
-	    contentType:'application/json',
-
-	    success: function(message){
-				//console.log("SUCCESSFUL")
-				console.log(message)
-				if (typeof message.message !== 'undefined') {
-					ans = message.message
-					utilBeep()
-				} else if (message.__type != undefined) {
-					ans = message.__type
-					console.log("ERROR")
-					utilBeep()
-					// ***** TODO need proper error messaging
-				} else {
-					if (uUrl.includes('/servicetypes')) {
-						serviceTypes = dbGetServicesTypes()
-						uiShowServiceTypes()
-						uiSetServiceTypeHeader()
-						uiPopulateForm(serviceTypes, 'serviceTypes')
-						uiSaveButton('serviceType', 'SAVED!!')
-					} else if (uUrl.includes('/clients')) {
-						// TODO REMOVE BELOW FOR UPLOAD ONLY
-						// TODO DO WE NEED THE LINE BELOW
-						// let clientTableRow = utilUpdateClientsData()
-						if (clientData != null) {
-							uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
-							if (clientData.length == 1) clientTableRow = 1
-							uiOutlineTableRow('clientTable', clientTableRow)
-							uiSetClientsHeader("numberAndName")
-						}
-						uiSaveButton('client', 'SAVED!!')
-					}
+    type: "POST",
+    url: URL,
+		headers: {"Authorization": authorization.idToken},
+    async: false,
+    dataType: "json",
+    data: data,
+    contentType:'application/json',
+    success: function(message){
+			if (typeof message.message !== 'undefined') {
+				console.log(message.message)
+				utilBeep()
+			} else if (message.__type != undefined) {
+				console.log(message.__type)
+				console.log("ERROR")
+				utilBeep()
+				// TODO need proper error messaging
+			} else {
+				utilBloop()
+				ans = "success"
+				console.log("SUCCESS")
+				if (URL.includes('/servicetypes')) {
+					serviceTypes = dbGetServicesTypes()
+					uiShowServiceTypes()
+					uiSetServiceTypeHeader()
+					uiPopulateForm(serviceTypes, 'serviceTypes')
+					uiSaveButton('serviceType', 'SAVED!!')
 				}
+			}
 		},
 		error: function(json){
 				console.log("ERROR")
 	    	console.log(json)
-				ans = json
-				if (uUrl.includes('/servicetypes')) {
+				// TODO move this to funtion and make sure all save buttons are covered
+				if (URL.includes('/servicetypes')) {
 					uiSaveButton('serviceType', 'ERROR!!')
-				} else if (uUrl.includes('/clients')) {
+				} else if (URL.includes('/clients')) {
 					uiSaveButton('client', 'ERROR!!')
-				} else if (uUrl.includes('/users')) {
+				} else if (URL.includes('/users')) {
 					console.log("show error in button")
 				}
 		}
-	});
+	})
 	return ans
-}
+};
 
 function uiResetClientForm(){
-
-// console.log("CLEAR CLIENT FORM")
-console.log(client)
-
 	if (client == {}) {
-		// TODO get this to blank out a new client form
 		uiShowNewClientForm()
 	} else {
-		// let index = clientData.filter(function( obj ) {
-		// 	return obj.clientId == client.clientId
-		// })
 		uiPopulateForm(client, 'clientForm')
-		console.log("BEFORE TOGGLE VIEW")
 		uiRemoveFormErrorBubbles('clientForm')
 		uiToggleClientViewEdit('view')
-		//uiUpdateCurrentClient(index)
 	}
-
-	// $("#clientFormContainer").html("")
-}
+};
 
 function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
@@ -2037,54 +2026,35 @@ function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 	}
 	if (notPushed) newLastServed.push(newRecord)
 	client.lastServed = newLastServed
-	// TODO move to seperate function and merge with similar functions
-	let data = utilPadEmptyFields(client)
-	data = JSON.stringify(data)
-//console.log(data)
-	let URL = aws+"/clients/"
-	result = dbPostData(URL,data)
-	if (result == null) {
-		utilBloop() // TODO move bloop to successful POST ()
-		console.log(result)
-	} else {
-		console.log("Failed to Save")
-	}
-}
+	return dbSaveCurrentClient()
+};
 
-function dbSaveService(serviceTypeId, serviceId, serviceValid){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
-	let serviceType = {}
+function utilCalcServiceFamilyCounts(serviceTypeId){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	const serviceType = utilGetServiceTypeByID(serviceTypeId)
 	let servedCounts = {
-		adults: client.family.totalAdults,
-		children: client.family.totalChildren,
-		individuals: client.family.totalSize,
-		seniors: client.family.totalSeniors
+		adults: String(client.family.totalAdults),
+		children: String(client.family.totalChildren),
+		individuals: String(client.family.totalSize),
+		seniors: String(client.family.totalSeniors),
+		itemsServed: String(serviceType.numberItems)
 	}
-	serviceType = utilGetServiceTypeByID(serviceTypeId)
 	let targetService = utilCalcTargetServices([serviceType])
-	let numItems = serviceType.numberItems
 	if (serviceType.itemsPer == "Person") {
-		itemsServed = numItems * client.family.totalSize
+		servedCounts.itemsServed = String(servedCounts.itemsServed * client.family.totalSize)
 		if (serviceType.target.child == "YES" && serviceType.serviceCategory=="Back_To_School"){
-			let numChildren = utilCalcValidAgeGrade("grade", targetService[0]).length
+			const numChildren = utilCalcValidAgeGrade("grade", targetService[0]).length
+			console.log(numChildren)
 			servedCounts = {
 				adults: 0,
-				children:numChildren, //output of function
-				individuals: numChildren,//output of function
-				seniors: 0
+				children: numChildren,
+				individuals: numChildren,
+				seniors: 0,
+				itemsServed: serviceType.numberItems * numChildren,
 			}
-			itemsServed = numItems*servedCounts.children
 		}
 	}
-	else {
-		itemsServed = numItems
-	}
-
-	const result = dbPostService(serviceType, itemsServed, serviceId, servedCounts, serviceValid)
-	if (serviceType.serviceButtons == "Primary" && result == null){
-		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, itemsServed, serviceType.isUSDA)
-	}
-	//utilAddServiceToReceipt()
+	return servedCounts
 };
 
 function dbSaveUser(context){
@@ -2130,8 +2100,8 @@ console.log(hasErrors)
 	}
 };
 
-function dbPostService(serviceType, itemsServed, serviceId, servedCounts, serviceValid){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 5)) return
+function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	// TODO add senior cutoff age to the Settings
 	// TODO add Service area Zipcodes to the Settings
 	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
@@ -2142,13 +2112,18 @@ function dbPostService(serviceType, itemsServed, serviceId, servedCounts, servic
 	if (serviceId == "") serviceId = cuid()
 	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
 	// define fulfillment vars for non-vouchers
-	let pending = false, fulfillmentDateTime = moment().format(dateTime), byUserName = session.user.username, itemCount = itemsServed
+	let pending = false, fulfillmentDateTime = moment().format(dateTime)
+	let byUserName = session.user.username
+	let itemCount = servedCounts.itemsServed
 	if (serviceType.fulfillment.type == "Voucher") {
 		pending = true
 		fulfillmentDateTime = "pending"
 		byUserName = "pending"
 		itemCount = "pending"
 	}
+
+console.log(servedCounts.itemsServed)
+
 	let serviceRecord = {
 							serviceId: serviceId,
 					 serviceValid: serviceValid,
@@ -2166,7 +2141,7 @@ function dbPostService(serviceType, itemsServed, serviceId, servedCounts, servic
 				serviceCategory: serviceType.serviceCategory,
 				 serviceButtons: serviceType.serviceButtons,
 				         isUSDA: serviceType.isUSDA,
-				    itemsServed: itemsServed,
+				    itemsServed: servedCounts.itemsServed,
 				       homeless: client.homeless,
 				  emergencyFood: emergencyFood,
 		  totalAdultsServed: servedCounts.adults,
@@ -2185,24 +2160,11 @@ function dbPostService(serviceType, itemsServed, serviceId, servedCounts, servic
 	if (serviceValid) {
 		servicesRendered.push(serviceRecord)
 	} else {
-		const temp = servicesRendered
-			.filter(function(item) {
-    	return item.serviceId !== serviceId
-		})
+		const temp = servicesRendered.filter(item => item.serviceId !== serviceId)
 		servicesRendered = temp
 	}
-	let data = serviceRecord
-	data = JSON.stringify(data)
-
-console.log(data)
-
-	let URL = aws+"/clients/services"
-	result = dbPostData(URL,data)
-	if (result == null) {
-		utilBloop() // TODO move bloop to successful POST ()
-	}
-	return result
-}
+	return serviceRecord
+};
 
 function dbSaveNote(){
 	hasError = utilValidateField("noteTextArea", "noteForm")
@@ -2221,8 +2183,8 @@ function dbSaveNote(){
 	client.notes.push(tmp)
 // TODO SAVE CLIENT ... NEED TO USE UPDATE TO ONLY UPDATE SOME FIELDS
 	const result = dbSaveCurrentClient()
-	if (result == null) {
-		utilCalcFamilyCounts()
+	if (result == "success") {
+		utilCalcClientFamilyCounts()
 		utilCalcClientAge("db")
 		uiToggleDependentsViewEdit("view")
 		uiToggleNoteForm("hide", "")
@@ -2237,7 +2199,6 @@ function dbSaveClientForm(context){
 	$("#updatedDateTime.clientForm").val(utilNow())
 	let data = ""
 	if (client.clientId == undefined) {
-		$("body").css("cursor", "progress");
 		let clientId = dbGetNewClientID()
 		$("#clientId.clientForm").val(clientId)
 		data = utilFormToJSON('.clientForm')
@@ -2260,26 +2221,37 @@ function dbSaveClientForm(context){
 			data.notes = []
 		}
 	}
-	uiSaveButton('client', 'Saving...')
-	//TODO centralize all client saves
-	let URL = aws+"/clients/"
-	result = dbPostData(URL,JSON.stringify(data))
-	$("body").css("cursor", "default");
-	if (result == null && client.clientId != undefined) {
-		utilCalcClientAge("db")
-		utilCalcFamilyCounts()
-		uiToggleClientViewEdit("view")
-	} else if (result == null) {
-		clientId = $('#clientId.clientForm').val()
-		$('#searchField').val(clientId)
-		dbSearchClients()
-	}
+	return dbSaveCurrentClient(data)
 };
 
 function dbSaveCurrentClient(){
+	uiSaveButton('client', 'Saving...')
+	$("body").css("cursor", "progress")
 	const data = utilPadEmptyFields(client)
 	const URL = aws+"/clients/"
-	return dbPostData(URL,JSON.stringify(data))
+	const result = dbPostData(URL,JSON.stringify(data))
+	console.log(result)
+	if (result == "success") {
+	 if (client.clientId != undefined) {
+	 	utilCalcClientAge("db")
+			utilCalcClientFamilyCounts()
+			uiToggleClientViewEdit("view")
+		} else {
+			clientId = $('#clientId.clientForm').val()
+			$('#searchField').val(clientId)
+			dbSearchClients()
+		}
+		if (clientData != null) {
+			console.log("REDO CLIENT DATA")
+			uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
+			if (clientData.length == 1) clientTableRow = 1
+			uiOutlineTableRow('clientTable', clientTableRow)
+			uiSetClientsHeader("numberAndName")
+		}
+	}
+	$("body").css("cursor", "default");
+	uiSaveButton('client', 'SAVED!!')
+	return result
 };
 
 function dbSaveDependentsTable(){
@@ -2325,16 +2297,19 @@ function dbSaveDependentsTable(){
 		}
 	}
 	client.dependents = dependents
-	data = client
-	data = utilPadEmptyFields(data)
-	let URL = aws+"/clients/"
-	result = dbPostData(URL,JSON.stringify(data))
-	if (result == null) {
-		utilCalcFamilyCounts()
+	const result = dbSaveCurrentClient()
+	if (result == "success") {
+		utilCalcClientFamilyCounts()
 		utilCalcClientAge("db")
 		uiToggleDependentsViewEdit("view")
 	}
-}
+};
+
+function dbSaveServiceRecord(service){
+	const data = service // utilPadEmptyFields(service)
+	const URL = aws+"/clients/services"
+	return dbPostData(URL,JSON.stringify(data))
+};
 
 function dbSaveServiceTypeForm(context){
 	uiClearAllErrorBubbles()
@@ -2809,25 +2784,32 @@ console.log('made it past config')
 function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	let serviceType = utilGetServiceTypeByID(serviceTypeId)
+	let serviceId = "" // new service
+	let serviceValid = true
+	// graydout button so undo service
 	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
 		const serviceItem = servicesRendered
 			.filter(function( obj ) {
 			return obj.serviceTypeId == serviceTypeId
 		})
-		console.log(serviceItem[0].serviceId)
-		let serviceValid = false
-		dbSaveService(serviceTypeId, serviceItem[0].serviceId, serviceValid)
-		// TODO Need to revert old Last Served from current client ?????
+		const serviceValid = false
+		serviceId = serviceItem[0].serviceId
+	}
+	// save service record
+	const servedCounts = utilCalcServiceFamilyCounts(serviceTypeId)
+	const serviceRecord = utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid)
+	const result = dbSaveServiceRecord(serviceRecord)
+	if (serviceType.serviceButtons == "Primary" && result == "success"){
+		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
+	}
+	if (serviceId != "" && result == "success") {
+		// ungrayout button
 		uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
 		if (serviceButtons == "Primary") {
 			$("#image-"+serviceTypeId).removeClass("imageGrayOut")
 		}
-	} else {
-		let serviceValid = true
-
-		dbSaveService(serviceTypeId, "", serviceValid)
+	} else if (serviceId == "" && result == "success") {
 		if (serviceCategory == 'Food_Pantry') {
-			console.log("IN PRINT AREA");
 			let service = serviceTypes.filter(function( obj ) {
 					return obj.serviceTypeId == serviceTypeId
 				})[0]
@@ -2839,14 +2821,11 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 			setTimeout(function(){ // give time for food receipt & reminder to print
 				printClothesReceipt()
 			}, 2500);
-		}
-		else if (serviceCategory == 'Back_To_School') {
-			let targetService = utilCalcTargetServices([serviceType])
-			let dependents = utilCalcValidAgeGrade("grade",targetService[0])
-			console.log(dependents)
-			console.log(targetService)
+		} else if (serviceCategory == 'Back_To_School') {
+			const targetService = utilCalcTargetServices([serviceType])
+			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
 			setTimeout(function(){ // give time for food receipt & reminder to print
-				printFirstStepReceipt(targetService[0],dependents)
+				printFirstStepReceipt(targetService[0], dependents)
 			}, 2500);
 		}
 		uiShowLastServed()
@@ -2897,6 +2876,7 @@ function utilGetFoodInterval(isUSDA){
 }
 
 function utilBeep(){
+	console.log("BAD BEEP")
 	let sound = document.getElementById("beep")
 	sound.volume= .1
 	sound.loop = false
@@ -2904,6 +2884,7 @@ function utilBeep(){
 };
 
 function utilBloop(){
+	console.log("GOOD BLOOP")
 	let sound = document.getElementById("bloop")
 	sound.volume= .1
 	sound.loop = false
@@ -3007,7 +2988,7 @@ function utilCalcActiveServiceTypes(){
 	return activeServiceTypes
 }
 
-function utilCalcFamilyCounts(){
+function utilCalcClientFamilyCounts(){
 	// age TODO Move this to correct Function
 	if (client.dependents == undefined) client.dependents = []
 	for (var i = 0; i < client.dependents.length; i++) {
@@ -3048,28 +3029,6 @@ function utilCalcFamilyCounts(){
 	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
 };
 
-function uiClearCurrentClient(){
-	let blank = "<div class='bannerDiv'><span class='bannerText'>SEARCH FOR CLIENT</span></div>"
-	$("#searchContainer").html(blank)
-	$("#clientFormContainer").html(blank)
-		$("#clientLeftSlider").hide()
-		$("#clientRightSlider").hide()
-	$("#servicePrimaryButtons").html(blank)
-		$("#serviceDateTime").html("")
-		$("#serviceLastVisit").html("")
-		$("#serviceSecondaryButtons").html("")
-	$("#dependentsFormContainer").html(blank)
-		$("#dependentdLeftSlider").hide()
-		$("#dependentdRightSlider").hide()
-		$(".dependentsEditOnly").hide()
-	$("#historyTop").html(blank)
-		$("#historyBottom").html("")
-	$("#notesContainer").html(blank)
-		$("#newNoteButton").hide()
-		$("#noteEditForm").hide()
-		$("#tabLable6").css("color", "#bbb")
-};
-
 function utilCalcCurrentGrade(numericGrade,date){
 	const today = moment();
 	let dateEntered = moment(date);
@@ -3082,7 +3041,6 @@ function utilCalcCurrentGrade(numericGrade,date){
 		dateEntered = moment().year(dateEntered.year()).month('07').date('01');
 	}
 	let years = today.diff(dateEntered,'year');
-	console.log(years);
 	let currentGrade = numericGrade+years;
 	return currentGrade;
 }
@@ -3193,8 +3151,8 @@ function utilPadEmptyFields(data){
 				if (value[i].gradeDateTime == "") {data[key][i].gradeDateTime = "*EMPTY*"}
 			}
 		}
-		if (value == "" || (key == "zipSuffix" && value == 0)) {
-			if (key != "notes" && key != "dependents") {
+		if (value === "" || (key == "zipSuffix" && value === 0)) {
+			if (key != "notes" && key != "dependents" && key != "fulfillment" && key != "serviceValid") {
 				data[key] = "*EMPTY*"
 			}
 		}
@@ -3221,10 +3179,8 @@ function utilRemoveService(serviceId){
 	console.log(serviceId)
 	let service = dbGetService(serviceId)[0]
 	service.serviceValid = false
-	const data = JSON.stringify(service)
-	const URL = aws+"/clients/services"
-	const result = dbPostData(URL,data)
-	if (result == null) {return service}
+	const result = dbSaveServiceRecord(service)
+	if (result == "success") {return service}
 	return
 };
 
@@ -3299,7 +3255,7 @@ function utilUpdateService(serviceId){
 function utilUpdateLastServed(service){
 	// get the service history
 	const history = dbGetClientServiceHistory()
-	h = history
+	let h = history
 		.filter(item => item.serviceValid == "true")
 		.filter(item => item.serviceButtons == "Primary")
 		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
@@ -3310,45 +3266,8 @@ function utilUpdateLastServed(service){
 			topHist.push(lsItem)
 		}
 	}
-	// update lastServed
-	// let ls = client.lastServed
-	// if (ls.length < 1) {
-		client.lastServed = topHist
-	// } else {
-	// 	for (var i = 0; i < topHist.length; i++) {
-	// 		let index = ls.findIndex(item => item.serviceTypeId == topHist[i].serviceTypeId)
-	// 		if (index < 0) {
-	// 			ls.push(topHist[i])
-	// 		} else {
-	// 			// update record if different otherwise leave as is
-	// 			console.log(topHist[i])
-	// 			let hItem = {serviceTypeId: topHist[i].serviceTypeId, serviceDateTime: topHist[i].serviceDateTime, serviceCategory: topHist[i].serviceCategory, isUSDA: topHist[i].isUSDA}
-	// 			let lsItem = ls[index]
-	// 			if (hItem.serviceDateTime != lsItem.serviceDateTime || hItem.serviceCategory != hItem.serviceCategory || hItem.isUSDA != lsItem.isUSDA) {
-	// 				console.log("NOT MATCHING")
-	// 				console.log(hItem)
-	// 				console.log(lsItem)
-	// 				ls[index] = hItem
-	// 			}
-	// 		}
-	// 	}
-	// }
-	// TODO move to seperate function and merge with similar functions
-	//client.lastServed = ls
-	console.log(client)
-	let data = utilPadEmptyFields(client)
-	data = JSON.stringify(data)
-	console.log(data)
-	let URL = aws+"/clients/"
-	result = dbPostData(URL,data)
-	console.log(result)
-	if (result == null) {
-		utilBloop() // TODO move bloop to successful POST ()
-		// TODO REFRESH CLIENT DATA
-		return "success"
-	} else {
-		return "failed"
-	}
+	client.lastServed = topHist
+	return dbSaveCurrentClient()
 };
 
 function utilSetLastServedFood(){
@@ -3593,7 +3512,7 @@ function utilRemoveDupClients(clients) {
 		}
 	}
 	return undupClients
-}
+};
 
 function utilCalcClientAge(source){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -3608,7 +3527,7 @@ function utilCalcClientAge(source){
 		$("#clientAge").val(age)
 		client.age = age
 	}
-}
+};
 
 function utilCalcDependentAge(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -3621,7 +3540,18 @@ function utilCalcDependentAge(index){
 			client.dependents.age = newAge
 		}
 	}
-}
+};
+
+function utilCalcFoodInterval(isUSDA, activeServiceTypes) {
+	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+	let foodServiceInterval = ""
+	for (var i = 0; i < activeServiceTypes.length; i++) {
+		if (activeServiceTypes[i].serviceCategory == "Food_Pantry" && activeServiceTypes[i].serviceButtons == "Primary" && activeServiceTypes[i].isUSDA == isUSDA) {
+			foodServiceInterval = activeServiceTypes[i].serviceInterval
+		}
+	}
+	return foodServiceInterval
+};
 
 function utilCalcUserAge(source){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -3647,7 +3577,7 @@ function utilSetCurrentClient(index){
 	client = clientData[index]
 	utilRemoveEmptyPlaceholders()
 	utilCalcClientAge("db")
-	utilCalcFamilyCounts() // calculate fields counts and ages
+	utilCalcClientFamilyCounts() // calculate fields counts and ages
 	// emergencyFood = false // **** TODO what is this for?
 	uiShowHistory()
 	uiUpdateCurrentClient(index)
@@ -3661,7 +3591,7 @@ function utilSetCurrentServiceType(index){
 	uiSetAdminHeader(serviceType.serviceName)
 	uiShowServiceTypeForm()
 	navGotoTab("aTab2")
-}
+};
 
 function utilSetCurrentAdminUser(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -3675,37 +3605,32 @@ function utilSetCurrentAdminUser(index){
 };
 
 function utilSetCurrentUser(){
-//console.log(users)
-//console.log(user.username)
-	let foundUser = users.filter(function( obj ) {
-		return obj.userName == user.username
-	})
-	currentUser = foundUser[0]
+	currentUser = users.filter(obj => obj.userName == user.username)[0]
 };
 
 function utilToday() {
 	return moment().format(date)
 }
-
-function utilUpdateClientsData(){
-	// calculate what row a result is on the results table
-	let row = null
-	let data = utilFormToJSON('.clientForm')
-	$.each(data, function(key,value){
-		client[key] = value
-	});
-//console.log(data.length)
-	for (var i = 0; i < data.length; i++) {
-		if (client.clientId == data[i].clientId){
-			row = i+1
-			$.each(client, function(key,value){
-				data[i][key] = value
-			});
-		}
-	}
-//console.log(row)
-	return row
-}
+// TODO confirm that utilUpdateClientsData function is not used
+// function utilUpdateClientsData(){
+// 	// calculate what row a result is on in the results table
+// 	let row //= null
+// 	console.log(row)
+// 	let data = utilFormToJSON('.clientForm')
+// 	$.each(data, function(key,value){
+// 		client[key] = value
+// 	});
+// //console.log(data.length)
+// 	for (var i = 0; i < data.length; i++) {
+// 		if (client.clientId == data[i].clientId){
+// 			row = i+1
+// 			$.each(client, function(key,value){
+// 				data[i][key] = value
+// 			});
+// 		}
+// 	}
+// 	return row
+// };
 
 function utilValidateArguments(func, arguments, count){
 	if (arguments.length != count){
@@ -4133,23 +4058,12 @@ function utilValidateConfig(form, id){
 	if (form == "noteForm") return noteForm[id]
 };
 
-function utilCalculateFoodInterval(isUSDA, activeServiceTypes) {
-	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	let foodServiceInterval = ""
-	for (var i = 0; i < activeServiceTypes.length; i++) {
-		if (activeServiceTypes[i].serviceCategory == "Food_Pantry" && activeServiceTypes[i].serviceButtons == "Primary" && activeServiceTypes[i].isUSDA == isUSDA) {
-			foodServiceInterval = activeServiceTypes[i].serviceInterval
-		}
-	}
-	return foodServiceInterval
-};
 function utilSortDependentsByGrade(dependents){
-	console.log(dependents.sort((a,b) => utilCalcCurrentGrade(utilGradeToNumber(a.grade))-utilCalcCurrentGrade(utilGradeToNumber(b.grade))))
-	//.sort((a, b) => moment.utc(b.updatedDateTime).diff(moment.utc(a.updatedDateTime)))
-
 	return dependents.sort((a,b) => utilCalcCurrentGrade(utilGradeToNumber(a.grade))-utilCalcCurrentGrade(utilGradeToNumber(b.grade)))
-}
+};
+
 function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
+	console.log("In Interval Function")
 	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
 	if (client.lastServed.length == 0 || lastServed.lowestDays == 10000) {
 // console.log("NO LAST SERVED")
@@ -4160,12 +4074,15 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 			&& activeServiceType.serviceButtons == "Primary"
 			&& activeServiceType.isUSDA == "Emergency")) {
 			return false;
-		} else {return true}
+		}
 	}
 	if (activeServiceType.serviceButtons == "Primary") {
+
+console.log(activeServiceType.serviceCategory)
+
 		if (activeServiceType.serviceCategory == "Food_Pantry") {
-			let nonUSDAServiceInterval = utilCalculateFoodInterval("NonUSDA", activeServiceTypes)
-			let USDAServiceInterval = utilCalculateFoodInterval("USDA", activeServiceTypes)
+			let nonUSDAServiceInterval = utilCalcFoodInterval("NonUSDA", activeServiceTypes)
+			let USDAServiceInterval = utilCalcFoodInterval("USDA", activeServiceTypes)
 // console.log(activeServiceType.isUSDA)
 // console.log(lastServed.lowestDays, "<", nonUSDAServiceInterval)
 			if (lastServed.lowestDays < nonUSDAServiceInterval) {
@@ -4204,6 +4121,9 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 				return false;
 			}
 		} else if (activeServiceType.serviceCategory == "Administration") {
+
+console.log("CHECKING ADMIN INTERVAL")
+
 			inLastServed = client.lastServed.filter(function( obj ) {
 				return obj.serviceCategory == "Administration"
 			})
@@ -4215,13 +4135,16 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 				}
 			}
 		} else if (activeServiceType.serviceCategory == "Back_To_School"){
-			inLastServed = client.lastServed.filter(function( obj ) {
+
+console.log("CHECKING BACK TO SCHOOL INTERVAL")
+
+			const inLastServed = client.lastServed.filter(function( obj ) {
 				return obj.serviceCategory == "Back_To_School"
 			})
 			if (inLastServed.length > 0) {
-				let lastServedDate = moment(inLastServed[0].serviceDateTime).startOf('day')
+				const lastServedDate = moment(inLastServed[0].serviceDateTime).startOf('day')
 				if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) {
-//console.log("FALSE")
+console.log("FALSE")
 					return false
 				}
 			}
@@ -4290,8 +4213,8 @@ function callback_createDevice(deviceObj, errorCode){
 	 else {
 		 console.log("error in callback_createDevice 1");
 	 }
- };
-}
+ }
+};
 
 function addImage(name,src, width, height){
 	var newCanvas = $('<canvas>',{'id':name,'width':width,'height':height});
@@ -4428,11 +4351,12 @@ function printFirstStepReceipt(dependents, serviceType){
 		console.log("Printer Not Connected")
 		return
 	}
+	console.log(serviceType)
 	addHeader();
 	setTimeout(function f(){
 			printer.addTextSize(1, 2);
 			printer.addFeedLine(2);
-    	printer.addText('* '+serviceType.serviceName.toUpperCase()+' *\n');
+    	printer.addText('* ' + serviceType.serviceName.toUpperCase() + ' *\n');
 			printer.addTextSize(1, 1);
     	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
 			printer.addFeedLine(1);
