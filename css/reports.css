@@ -71,6 +71,19 @@ body {
 	margin-bottom: 30px;
 }
 
+.firstStepBodyHeaderBox{
+	background-color: white;
+	width: 100%;
+	height: 70px;
+	display: grid;
+	grid-row: 3;
+	grid-column: 2;
+	grid-template-columns: 1fr 4fr 4fr 2fr;
+	grid-template-rows: 35px 35px;
+	border: 1px solid var(--green);
+	margin-bottom: 30px;
+}
+
 .todaySectionHeader{
 	grid-column: span 13;
 	background-color: var(--light-green);
@@ -126,12 +139,23 @@ body {
 	width: 100%;
 	height: 105px;
 	display: grid;
-	/* grid-row: 5; */
 	grid-column: 2;
 	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	grid-template-rows: 35px 35px 35px;
 	border: 1px solid var(--green);
 	margin-bottom: 8px;
+}
+
+.reportFirstStepRowBox {
+	background-color: white;
+	width: 100%;
+	height: 35px;
+	display: grid;
+	grid-column: 2;
+	grid-template-columns: 1fr 4fr 4fr 2fr;
+	grid-template-rows: 35px;
+	border: 1px solid var(--green);
+	margin-bottom: 2px;
 }
 
 .monthItem{

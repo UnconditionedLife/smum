@@ -826,9 +826,8 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 function uiShowReports(){
 	$('#reportsFormContainer').html(uiGetTemplate('#reportsForm'))
 	$('#reportsDailyDate').val(moment().format(date))
-	$('#reportsWeeklyStartDate').val(moment().startOf('week').format(date))
-	$('#reportsWeeklyEndDate').val(moment().endOf('week').format(date))
-	$('#reportsMonthyMonth').val(moment().format('YYYY-MM'))
+	$('#reportsMonthlyMonth').val(moment().format('YYYY-MM'))
+	$('#reportFirstStepYear').val(moment().format('YYYY'))
 	// TODO populate the date fields to reflect current period/last completed period
 };
 
@@ -852,7 +851,7 @@ function uiShowDailyReportHeader(dayDate, form, title){
 		$("#todayBodyDiv").html("")
 		$('#headerRight').html('REPORT <i id="todayReportRefreshButton" onClick="uiRefreshDailyReport()" class="fa fa-refresh" aria-hidden="true"></i> <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
 	}
-	$('#reportDates').html(moment(dayDate).format(longDate))
+	$('#reportDates').html(moment().format(longDate))
 	$('#headerLeft').html(title)
 	$(form).append(uiGetTemplate('#dailyReportHeader'))
 };
@@ -888,6 +887,17 @@ function uiShowDailyReportRows(dayDate, form){
 	uiShowTodayTotals(grandTotals, "#grandTotalGrid")
 };
 
+function uiShowFirstStepReportHeader(year){
+	$('#printBodyDiv').html(uiGetTemplate('#reportHeader'))
+	console.log($('#reportType').html())
+	$('#reportType').html("BACKPACK DISTRIBUTION")
+	$('#todayBodyDiv').html("")
+	$('#reportDates').html(moment().format(longDate))
+	$('#headerLeft').html("FIRST STEP")
+	$('#printBodyDiv').append(uiGetTemplate('#reportFirstStepHeader'))
+	$('#headerRight').html('REPORT <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
+};
+
 function uiShowMonthlyReportHeader(monthYear){
 	$("#printBodyDiv").html(uiGetTemplate('#reportHeader'))
 	$("#todayBodyDiv").html("")
@@ -900,54 +910,52 @@ function uiShowMonthlyReportHeader(monthYear){
 function utilPrintReport(){
 	//let path = window.location.href + "css/reports.css"     // Returns full URL
 	$("#printBodyDiv").printMe({ "path": ["css/print.css"] });
-}
+};
 
+function uiShowFirstStepReportRows(year){
+	let servicesVouchers = dbGetData(aws+"/clients/services/byservicetype/cjhf5lvps00003iccv6kmntei").services
+	// TODO // catch error from dbGetData
+	let validServicesVouchers = servicesVouchers
+		.filter(item => item.serviceValid == 'true')
+		.sort(function(a, b){
+ 			let nameA= a.clientFamilyName.toLowerCase() + a.clientGivenName.toLowerCase()
+			let nameB= b.clientFamilyName.toLowerCase() + b.clientGivenName.toLowerCase()
+ 			if (nameA < nameB) return -1
+ 			if (nameA > nameB) return 1
+ 		return 0; //default return value (no sorting)
+		})
+	uiBuildFirstStepRows(validServicesVouchers)
+};
 
 function uiShowMonthlyReportRows(monthYear){
-console.log("IN MONTHLY REPORT FUNCTION")
 	const currentMonth = moment().format("YYYY-MM")
 	let daysInMonth = moment(monthYear, "YYYY-MM").daysInMonth()
-	if (monthYear == currentMonth) {
-		daysInMonth = moment().format("D")
-	}
+	if (monthYear == currentMonth) daysInMonth = moment().format("D")
 	let servicesRendered = []
 	daysInMonth = parseInt(daysInMonth) + 1
-	for (var i = 0; i < daysInMonth; i++) {
-		let day = i
-		if (day.length == 1) {
-			day = "0" + day
-		}
+	for (var i = 1; i < daysInMonth; i++) {
+		let day = String(i)
+		if (day.length == 1) day = "0" + day
 		let dayDate = monthYear + "-" + day
-
-		console.log(day)
-		console.log(dayDate)
 		dayOfServices = dbGetDaysServices(dayDate)
-		console.log(dayOfServices.length)
 		servicesRendered = servicesRendered.concat(dayOfServices)
-		console.log(servicesRendered.length)
 	}
-	// servicesRendered = dbGetMonthServices(monthYear)
 	let servicesFood = servicesRendered
-		.filter(function(item) {return item.serviceValid == 'true'})
-		.filter(function(item) {return item.serviceCategory == "Food_Pantry"})
+		.filter(item => item.serviceValid == 'true')
+		.filter(item => item.serviceCategory == "Food_Pantry")
 	let dayUSDA = ""
 	let servicesUSDA = servicesFood
-		.filter(function(item) {return item.isUSDA == "USDA"})
-		.sort(function(a, b){
-			return parseInt(a.servicedDay) - parseInt(b.servicedDay)
-		})
+		.filter(item => item.isUSDA == "USDA")
+		.sort((a, b) => parseInt(a.servicedDay) - parseInt(b.servicedDay))
 	let servicesNonUSDA = servicesFood
-		.filter(function(item) {return item.isUSDA == "NonUSDA"})
-		.sort(function(a, b){
-			return parseInt(a.servicedDay) - parseInt(b.servicedDay)
-		})
+		.filter(item => item.isUSDA == "NonUSDA")
+		.sort((a, b) => parseInt(a.servicedDay) - parseInt(b.servicedDay))
 	servicesUSDA = utilCalcMonthlyRows(servicesUSDA)
 	servicesNonUSDA = utilCalcMonthlyRows(servicesNonUSDA)
 	uiBuildMonthRows(servicesUSDA, servicesNonUSDA, monthYear)
 };
 
 function utilCalcMonthlyRows(services){
-	console.log("INCALCROWS")
 	let tempS = []
 	$.each(services, function(i, item){
 		let index = -1; // default value, in case no element is found
@@ -1008,7 +1016,6 @@ function utilCalcMonthlyRows(services){
 			tempS.push(item)
 		}
 	})
-	console.log("DONECALCROWS")
 	return tempS
 };
 
@@ -1062,11 +1069,27 @@ function uiBuildTodayRows(services, grid) {
 	return serviceTotal
 };
 
+function uiBuildFirstStepRows(servicesVouchers) {
+	console.log(servicesVouchers)
+	let gridRow = 0
+	for (let r = 0; r < servicesVouchers.length; r++) {
+		// TODO Create Pagination
+		let grid = "#firstStepGrid" + r
+		gridRow = 5 + r  //counts for header rows
+		$("#printBodyDiv").append('<div id="firstStepGrid'+ r +'" class="reportFirstStepRowBox" style="grid-row: '+ gridRow +'"></div>')
+		let sv = servicesVouchers[r]
+		console.log(sv)
+		$(grid).append('<div class="monthItem">' + sv.clientServedId +'</div>')
+		$(grid).append('<div class="monthItem">' + sv.clientFamilyName + ", " + sv.clientGivenName + '</div>')
+		$(grid).append('<div class="monthItem"></div>')
+		$(grid).append('<div class="monthItem">' + sv.itemsServed +'</div>')
+	}
+	console.log($('#printBodyDiv').html())
+};
+
 function uiBuildMonthRows(u, n, monthYear) {
-console.log("INBUILDROWS")
 	let numDays = moment(monthYear, "YYYY-MM").endOf("month").format("DD")
 	numDays = parseInt(numDays) + 1
-console.log(numDays)
 	let uTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
 	let nTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
 	let gTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
@@ -1074,15 +1097,8 @@ console.log(numDays)
 	let gridRow = 0
 	for (let d = 1; d < numDays; d++) {
 		let servicedDay = String(d)
-		console.log(servicedDay)
-		console.log(servicedDay.length)
-		if (servicedDay.length < 2){
-			console.log("padding day number")
-			servicedDay = "0"+servicedDay
-		}
+		if (servicedDay.length < 2) servicedDay = "0"+servicedDay
 		servicedDay = yearMonth + servicedDay
-console.log(servicedDay)
-
 		let hasUSDA = false, hasNonUSDA = false
 		let servicedDate = moment(servicedDay, "YYYYMMDD").format("MM/DD/YYYY")
 		let uDay = u.filter(function(item) {return item.servicedDay == servicedDay})
@@ -1222,36 +1238,6 @@ console.log(servicedDay)
 	$(grid).append('<div class="monthTotal">'+ gTotal.hi +'</div>')
 	$(grid).append('<div class="monthTotal">'+ gTotal.nf +'</div>')
 	$(grid).append('<div class="monthTotal">'+ gTotal.ni +'</div>')
-	// if (item.homeless == "YES") {
-	// 	if (item.totalIndividualsServed == 1) {
-	// 		serviceTotal.hi = serviceTotal.hi + 1
-	// 		$(grid).append('<div class="todayItem">-</div>')
-	// 		$(grid).append('<div class="todayItem">1</div>')
-	// 	} else {
-	// 		serviceTotal.hf = serviceTotal.hf + 1
-	// 		$(grid).append('<div class="todayItem">1</div>')
-	// 		$(grid).append('<div class="todayItem">-</div>')
-	// 	}
-	// } else {
-	// 	$(grid).append('<div class="todayItem">-</div>')
-	// 	$(grid).append('<div class="todayItem">-</div>')
-	// }
-	// if (item.clientStatus == "Client") {
-	// 	$(grid).append('<div class="todayItem">-</div>')
-	// 	$(grid).append('<div class="todayItem">-</div>')
-	// } else {
-	// 	if (item.totalIndividualsServed == 1) {
-	// 		serviceTotal.ni = serviceTotal.ni + 1
-	// 		$(grid).append('<div class="todayItem">-</div>')
-	// 		$(grid).append('<div class="todayItem">1</div>')
-	// 	} else {
-	// 		serviceTotal.nf = serviceTotal.nf + 1
-	// 		$(grid).append('<div class="todayItem">1</div>')
-	// 		$(grid).append('<div class="todayItem">-</div>')
-	// 	}
-	// }
-//	uiShowTodayTotals(serviceTotal, grid)
-//	return serviceTotal
 };
 
 function uiShowTodayTotals(serviceTotal, grid){
@@ -1376,7 +1362,7 @@ function uiShowNewClientForm(){
 	$("[id='family.totalSeniors']").val(0)
 	$("[id='family.totalSize']").val(0)
 	navGotoTab("tab3")
-}
+};
 
 function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTypes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
@@ -1386,35 +1372,20 @@ function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTy
 		let x = btnSecondary[i];
 		let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'"
 		let service = '<div id="btn-' + activeServiceTypes[x].serviceTypeId +'\" class="btnSecondary" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "</div>"
-		// + '\"\, 'Items: '+client.family.totalSize+"'"+', '+(i+100)+')">'+activeServiceTypes[x].serviceName+"</a></div>"
 		$('#serviceSecondaryButtons').append(service)
 	}
-}
+};
 
 function uiShowServicesButtons(){
-	// return if client object is empty
 	if ($.isEmptyObject(client)) return
 	uiShowServicesDateTime()
 	uiShowLastServed()
-	// TODO IF lastidcheck is current service then we may not need idCheck field
 	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
-console.log(lastServed)
 	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
-console.log(activeServiceTypes)
 	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
-	// dependents_gradeMax: "12"
-	// dependents_gradeMin: "K"
-  // family_totalChildren:"Greater Than 0"
-
-console.log(targetServices)
-	// sorts serviceTypes into Primary button array
 	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
-console.log(btnPrimary)
-	// sorts serviceTypes into Secondary button array
 	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
-	// Displays buttons in Primary button array
 	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
-	// Displays buttons in Secondary button array
 	uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTypes)
 };
 
@@ -1504,17 +1475,17 @@ function uiSetAdminHeader(title){
 
 function uiShowServiceTypes(){
 	uiGenSelectHTMLTable('#serviceTypesContainer',serviceTypes,["serviceName","serviceDescription","isActive"],'serviceTypesTable')
-}
+};
 
 function uiShowUsers(){
 	uiGenSelectHTMLTable('#userListContainer', users, ["userName","givenName","familyName", "userRole", "isValid"],'usersTable')
-}
+};
 
 function uiShowSettings(){
 	$('#settingsFormContainer').html(uiGetTemplate('#settingsForm'))
 	// TODO build Table, API, object for settings
 	// uiPopulateForm(globalSettings, 'settingsForm')
-}
+};
 
 function uiGenSelectHTML(val,options,col,id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
@@ -1528,7 +1499,7 @@ function uiGenSelectHTML(val,options,col,id){
 	}
 	html+="</select>"
 	return html
-}
+};
 
 function uiGenSelectHTMLTable(selector, data, col, tableID){
 //console.log("IN TABLE GEN " + tableID)
@@ -1633,10 +1604,6 @@ function uiToggleClientViewEdit(side){
 
 function uiToggleUserNewEdit(type){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-
-console.log("IN TOGGLE FIELDS")
-console.log(type)
-
 	$(".profileOnly").hide()
 	if (type == 'new') $('.newUserOnly').show()
 	if (type == 'existing') $('.newUserOnly').hide()
@@ -1661,7 +1628,7 @@ function uiToggleDependentsViewEdit(side){
 		$('.dependentsViewOnly').hide('slow')
 		$('.dependentsEditOnly').show('slow')
 	}
-}
+};
 
 function uiToggleAgeGrade(){
 	if ($('[id="target.child"]').val() == 'YES') {
@@ -1669,7 +1636,7 @@ function uiToggleAgeGrade(){
 	} else {
 		$('.childDiv').hide('slow')
 	}
-}
+};
 
 function uiToggleFulfillDates(){
 	if ($('[id="fulfillment.type"]').val() == 'Voucher') {
@@ -1677,7 +1644,7 @@ function uiToggleFulfillDates(){
 	} else {
 		$('.fulfillDiv').hide('slow')
 	}
-}
+};
 
 function uiToggleClientAddress(){
 	if ($('#homeless.clientForm').val() == 'NO') {
@@ -1685,20 +1652,16 @@ function uiToggleClientAddress(){
 	} else {
 		$('.addressDiv').hide('slow')
 	}
-}
+};
 
 function uiToggleIsUSDA() {
-
-console.log("ToggleUSDA")
-
 	if ($("#serviceCategory").val() == "Food_Pantry"){
 		$('.USDADiv').show('slow')
 	} else {
 		$("#isUSDA").val("NA")
 		$('.USDADiv').hide('slow')
 	}
-
-}
+};
 
 function uiGetTemplate(template){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -1707,95 +1670,24 @@ function uiGetTemplate(template){
 	let clone = document.importNode(temp.content, true);
 	//document.querySelector('.main-div').appendChild(clone);
 	return clone
-}
+};
 
 function uiFillUserData(){
-	console.log(session)
-
 	$('#userTitle').html(session.user.username);
-}
+};
 
 function uiFillDate(){
 	$('.contentTitle').html(moment().format("dddd, MMM DD YYYY"));
-}
+};
 
 function uiResetServiceTypeForm(){
-	console.log('in reset')
 	uiPopulateForm(serviceType, 'serviceTypeForm')
-}
-
+};
 
 
 // **********************************************************************************************************
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
-function dbDeleteData(uUrl){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-
-console.log(uUrl)
-
-let ans = null
-
-	$.ajax({
-    type: "DELETE",
-    url: uUrl,
-		headers: {"Authorization": authorization.idToken},
-    async: false,
-    // dataType: "json",
-		// contentType:'application/json',
-    success: function(json){
-console.log("SUCCESSFUL DELETE")
-			if (json!==undefined) {
-				// console.log(json.count)
-				// console.log(urlNew)
-			}
-    	ans = json
-		},
-		statusCode: {
-			401: function() {
-
-console.log("Error: 401")
-
-				cogLogoutUser()
-				$('#nav5').html('Login')
-				$('#nav4').html('')
-				$(loginError).html("Sorry, your session has expired.")
-				console.log("Unauthorized")
-			},
-			0: function() {
-console.log("Error: 0")
-				console.log("Status code: 0")
-				cogLogoutUser()
-				$('#nav5').html('Login')
-				$('#nav4').html('')
-				$(loginError).html("Sorry, your session has expired.")
-				console.log("Unauthorized")
-			}
-		},
-		error: function(jqXHR, status, error){
-
-
-		}
-	}).done(function(data, textStatus, jqXHR) {
-
-console.log("DELETE DONE")
-		//console.log(data)
-  }).fail(function (jqXHR, textStatus, errorThrown) {
-    console.log("status", jqXHR.status)
-		if (jqXHR.status == 0) {
-
-		}
-		console.log("errorThrown", errorThrown)
-		// if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
-		// 	console.log("ACCESS ERROR") // force logon
-		// }
-	}).always(function (data, textStatus, jqXHR) {
-    // TODO most likely remove .always
-	})
-	//console.log(ans)
-	return ans
-
-};
 
 function dbGetData(uUrl){
 	//console.log("IN GET")
@@ -1893,10 +1785,6 @@ function dbGetNewClientID(){
 			newId++
 		}
 	}
-	// setTimeout(function(){
-	// 	uiShowHideError("hide", "", "")
-	// }, 2000);
-
 	request = {}
 	newId = newId.toString()
 	request['lastId']=newId
@@ -1913,9 +1801,6 @@ function dbGetDaysServices(dayDate){
 	return dbGetData(aws+"/clients/services/byday/"+dayDate).services
 };
 
-
-// TODO remove old monhtly report code
-// TODO remove servicedMonth Index in DynamoDB
 // TODO remove bymonth from API
 // TODO update service record in API to not have month property
 // function dbGetMonthServices(dayMonth){
@@ -2077,7 +1962,7 @@ console.log(hasErrors)
 	userData.notes = []
 	let URL = aws+"/users/"
 	result = dbPostData(URL, JSON.stringify(userData))
-	if (result == null) {
+	if (result == "success") {
 		utilBloop() // TODO move bloop to successful POST ()
 		// TODO add sounds settings in Admin Settings (ON / OFF)
 		users = dbGetUsers()
@@ -2367,6 +2252,7 @@ function dbSearchClients(){
 			clientData = utilRemoveDupClients(d2.concat(d1))
 		}
 	}
+	uiShowHideClientMessage('hide')   // close ClientMessage overlay in case it's open
 	if (clientData==null||clientData.length==0){
 	 	utilBeep()
 	 	uiSetClientsHeader("0 Clients Found")
@@ -2833,28 +2719,9 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	}
 };
 
-// function utilAddServiceToReceipt(){
-// 	$("#receiptBody").html("")
-// 	for (var i = 0; i < servicesRendered.length; i++) {
-// 		let header = "<p><strong>" + servicesRendered[i].serviceCategory + ":</strong> " + servicesRendered[i].serviceName + "<br>"
-// 		let body = "<strong>Items Served:</strong> " + servicesRendered[i].itemsServed
-// 		if (servicesRendered[i].serviceCategory == "Clothes_Closet") {
-// 			body = body + "<br><strong>Adults Served:</strong> " + client.family.totalAdults + "<br><strong>Children Served:</strong>  " + client.family.totalChildren
-// 		}
-// 		if (servicesRendered[i].serviceCategory == "Food_Pantry") {
-// 			body = body + "<br><strong>Family Size:</strong> " + client.family.totalSize
-// 		}
-// 		$("#receiptBody").append(header + body)
-// 	}
-//
-// };
-
 function utilCognitoPhoneFormat(telephone){
-	let cogFormat= /^\+[1][0-9]{10}$/g
-	let cleanTel = telephone.replace(/[.( )-]/g, '')
-
-console.log(cleanTel)
-
+	const cogFormat= /^\+[1][0-9]{10}$/g // possible future use
+	const cleanTel = telephone.replace(/[.( )-]/g, '')
 	return cleanTel
 };
 
@@ -2902,13 +2769,12 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 		if (!utilValidateServiceInterval(activeServiceTypes[i], activeServiceTypes, lastServed)) continue;
 		// loop through each property in each targetServices
 		for (let prop in targetServices[i]) {
-			console.log(prop)
 			if (prop=="family_totalChildren") {
 				// if (targetServices[i][prop] == "Greater Than 0") {
 				// 	// dependents_gradeMax
 				// 	console.log("FAMILY TOTAL CHILDREN")
 				// }
-				// move to grade and age target detection to helper function
+				// TODO move to grade and age target detection to helper function
 
 				if (targetServices[i]['dependents_gradeMin']!="Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
 					validDependents = utilCalcValidAgeGrade("grade",targetServices[i])
@@ -2924,11 +2790,8 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 			if (targetServices[i][prop] != client[prop] && prop.includes("family")==false && prop.includes("dependents")==false) {
 				display = false
 			}
-
 		}
-
 		if (display) {
-			console.log(activeServiceTypes[i].serviceButtons)
 			if (activeServiceTypes[i].serviceButtons == "Primary") {
 				if (activeServiceTypes[i].serviceCategory == "Food_Pantry") {
 					btnPrimary.unshift(i)
@@ -2940,12 +2803,10 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 			}
 		}
 	}
-	console.log(btnPrimary)
 	// used to prompt service if a dependent child's grade is not set
 	if (client.dependents.length > 0) {
 		for (var i = 0; i < client.dependents.length; i++) {
 			if (client.dependents[i].age < 18 && (client.dependents[i].grade == undefined || client.dependents[i].grade == "")) {
-				console.log("NO GRADES SET")
 				btnPrimary = "-1"
 				btnSecondary = ""
 			}
@@ -2989,7 +2850,7 @@ function utilCalcActiveServiceTypes(){
 }
 
 function utilCalcClientFamilyCounts(){
-	// age TODO Move this to correct Function
+	// age TODO Move this to other Function
 	if (client.dependents == undefined) client.dependents = []
 	for (var i = 0; i < client.dependents.length; i++) {
 		utilCalcDependentAge(i)
@@ -3000,25 +2861,29 @@ function utilCalcClientFamilyCounts(){
 	if (client.age >= seniorAge) ++fam.totalSeniors
 	for (let i = 0; i < client.dependents.length; i++) {
 		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
-		if (client.dependents[i].relationship == "Spouse" && client.dependents[i].isActive == "Active") {
-			++fam.totalAdults
-			++fam.totalSize
-			if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
-		}
-		if (client.dependents[i].relationship == "Other" && client.dependents[i].age >= 18 && client.dependents[i].isActive == "Active") {
-			++fam.totalOtherDependents
-			++fam.totalAdults
-			++fam.totalSize
-			if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
-		}
-		if (client.dependents[i].relationship == "Other" && client.dependents[i].age < 18 && client.dependents[i].isActive == "Active") {
-			++fam.totalOtherDependents
-			++fam.totalChildren
-			++fam.totalSize
-		}
-		if (client.dependents[i].relationship == "Child" && client.dependents[i].isActive == "Active") {
-			++fam.totalChildren
-			++fam.totalSize
+		if (client.dependents[i].isActive == "Active") {
+			if (client.dependents[i].relationship == "Spouse") {
+				++fam.totalAdults
+				++fam.totalSize
+				if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
+			}
+			if (client.dependents[i].relationship == "Other") {
+				if (client.dependents[i].age >= 18) {
+					++fam.totalOtherDependents
+					++fam.totalAdults
+					++fam.totalSize
+					if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
+				}
+				if (client.dependents[i].age < 18) {
+					++fam.totalOtherDependents
+					++fam.totalChildren
+					++fam.totalSize
+				}
+			}
+			if (client.dependents[i].relationship == "Child") {
+				++fam.totalChildren
+				++fam.totalSize
+			}
 		}
 	}
 	client.family.totalAdults = fam.totalAdults
@@ -3099,33 +2964,32 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 		}
   }
 	return dependents
-}
+};
 
 function utilGenerateDailyReport(){
 	let dayDate = $('#reportsDailyDate').val()
+	console.log(dayDate)
 	uiShowDailyReportHeader(dayDate, '#printBodyDiv', "DAILY")
 	uiShowDailyReportRows(dayDate, '#printBodyDiv')
-
-	// let reportTitle = "FOOD DISTRIBUTION"
-	// if ($("#reportsDailyType").val() == "ALL") {
-	// 	reportTitle = "SERVICE DISTRIBUTION"
-	// }
-	//$("#reportTitle").html(reportTitle)
-
 	uiShowHidePrint("show")
 };
+
 function utilGradeToNumber(grade){
-	if (grade=="Pre-K"){
-		return -1;
-	}
-	if (grade == "K"){
-		return 0;
-	}
+	if (grade=="Pre-K") return -1
+	if (grade == "K") return 0
 	return parseInt(grade);
-}
-function utilGenerateMonthlyReport(){
+};
+
+function utilGenerateFirstStepReport(){
 	console.log("Report Start")
-	let monthYear = $('#reportsMonthyMonth').val()
+	let year = $('#reportFirstStepYear').val()
+	uiShowFirstStepReportHeader(year)
+	uiShowFirstStepReportRows(year)
+	uiShowHidePrint("show")
+};
+
+function utilGenerateMonthlyReport(){
+	let monthYear = $('#reportsMonthlyMonth').val()
 	uiShowMonthlyReportHeader(monthYear)
 	uiShowMonthlyReportRows(monthYear)
 	uiShowHidePrint("show")
@@ -3244,7 +3108,7 @@ function utilUpdateService(serviceId){
 	const data = JSON.stringify(service)
 	const URL = aws+"/clients/services"
 	result = dbPostData(URL,data)
-	if (result == null) {
+	if (result == "success") {
 		// disable old service record
 		utilRemoveService(serviceId)
 		return service
@@ -3291,11 +3155,9 @@ function utilSetLastServedFood(){
 
 function utilCalcLastServedDays() {
 	// get Last Served Date from client object & calculate number of days
-	let lastServed = {daysUSDA:"10000", daysNonUSDA:"10000", lowestDays:"10000"}
+	let lastServed = {daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000}
 	if (client.lastServed[0] == undefined) return lastServed
-	let lastServedFood = client.lastServed.filter(function( obj ) {
-		return obj.serviceCategory == "Food_Pantry"
-	})
+	let lastServedFood = client.lastServed.filter(obj => obj.serviceCategory == "Food_Pantry")
 	for (var i = 0; i < lastServedFood.length; i++) {
 		if (lastServedFood[i].isUSDA != "Emergency") {
 			let lastServedDay = moment(lastServedFood[i].serviceDateTime).startOf('day')
@@ -3398,7 +3260,7 @@ function utilDeleteNote(index){
 	notes.splice(index, 1)
 	client.notes = notes
 	const result = dbSaveCurrentClient()
-	if (result == null) {
+	if (result == "success") {
 		uiShowExistingNotes("refresh")
 	} else {
 		client.notes = tempNotes
@@ -3610,27 +3472,7 @@ function utilSetCurrentUser(){
 
 function utilToday() {
 	return moment().format(date)
-}
-// TODO confirm that utilUpdateClientsData function is not used
-// function utilUpdateClientsData(){
-// 	// calculate what row a result is on in the results table
-// 	let row //= null
-// 	console.log(row)
-// 	let data = utilFormToJSON('.clientForm')
-// 	$.each(data, function(key,value){
-// 		client[key] = value
-// 	});
-// //console.log(data.length)
-// 	for (var i = 0; i < data.length; i++) {
-// 		if (client.clientId == data[i].clientId){
-// 			row = i+1
-// 			$.each(client, function(key,value){
-// 				data[i][key] = value
-// 			});
-// 		}
-// 	}
-// 	return row
-// };
+};
 
 function utilValidateArguments(func, arguments, count){
 	if (arguments.length != count){
@@ -4063,126 +3905,58 @@ function utilSortDependentsByGrade(dependents){
 };
 
 function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
-	console.log("In Interval Function")
-	// empty lastServed array - bump out Non-USDA & Emergency Food buttons
-	if (client.lastServed.length == 0 || lastServed.lowestDays == 10000) {
-// console.log("NO LAST SERVED")
-		if ((activeServiceType.serviceCategory == "Food_Pantry"
-			&& activeServiceType.serviceButtons == "Primary"
-			&& activeServiceType.isUSDA == "NonUSDA")
-			||(activeServiceType.serviceCategory == "Food_Pantry"
-			&& activeServiceType.serviceButtons == "Primary"
-			&& activeServiceType.isUSDA == "Emergency")) {
-			return false;
-		}
-	}
 	if (activeServiceType.serviceButtons == "Primary") {
-
-console.log(activeServiceType.serviceCategory)
-
-		if (activeServiceType.serviceCategory == "Food_Pantry") {
+		const serviceCategory = activeServiceType.serviceCategory
+		if (serviceCategory == "Food_Pantry") {
 			let nonUSDAServiceInterval = utilCalcFoodInterval("NonUSDA", activeServiceTypes)
 			let USDAServiceInterval = utilCalcFoodInterval("USDA", activeServiceTypes)
-// console.log(activeServiceType.isUSDA)
-// console.log(lastServed.lowestDays, "<", nonUSDAServiceInterval)
+			if (lastServed.daysUSDA >= USDAServiceInterval) {
+				if (activeServiceType.isUSDA == "USDA") return true
+				return false
+			}
+			if (lastServed.lowestDays >= nonUSDAServiceInterval) {
+				if (activeServiceType.isUSDA == "NonUSDA") return true
+				return false
+			}
 			if (lastServed.lowestDays < nonUSDAServiceInterval) {
-// console.log(lastServed.daysUSDA, "<", USDAServiceInterval)
 				if (activeServiceType.isUSDA == "Emergency") return true
-				if (activeServiceType.isUSDA == "USDA") {
-					return false
-				} else if (activeServiceType.isUSDA == "NonUSDA") {
-					return false
-				} else if (activeServiceType.isUSDA == "Emergency") {
-					return true
-				}
-			} else {
-				if (activeServiceType.isUSDA == "Emergency") return false
-				if (lastServed.daysUSDA >= USDAServiceInterval) {
-					if (activeServiceType.isUSDA == "USDA") {
-						return true
-					} else if (activeServiceType.isUSDA == "NonUSDA") {
-						return false
-					}
-				} else {
-					if (activeServiceType.isUSDA == "Emergency") return false
-					if (activeServiceType.isUSDA == "USDA") return false
-					if (lastServed.daysNonUSDA >= activeServiceType.serviceInterval) {
-						if (activeServiceType.isUSDA == "USDA") {
-							return false
-						} else if (activeServiceType.isUSDA == "NonUSDA") {
-							return true
-						}
-					}
-				}
-			}
-		} else if (activeServiceType.serviceCategory == "Clothes_Closet") {
-			if (lastServed.lowestDays < activeServiceType.serviceInterval) {
-//console.log("FALSE")
-				return false;
-			}
-		} else if (activeServiceType.serviceCategory == "Administration") {
-
-console.log("CHECKING ADMIN INTERVAL")
-
-			inLastServed = client.lastServed.filter(function( obj ) {
-				return obj.serviceCategory == "Administration"
-			})
-			if (inLastServed.length > 0) {
-				let lastServedDate = moment(inLastServed[0].serviceDateTime).startOf('day')
-				if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) {
-//console.log("FALSE")
-					return false
-				}
-			}
-		} else if (activeServiceType.serviceCategory == "Back_To_School"){
-
-console.log("CHECKING BACK TO SCHOOL INTERVAL")
-
-			const inLastServed = client.lastServed.filter(function( obj ) {
-				return obj.serviceCategory == "Back_To_School"
-			})
-			if (inLastServed.length > 0) {
-				const lastServedDate = moment(inLastServed[0].serviceDateTime).startOf('day')
-				if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) {
-console.log("FALSE")
-					return false
-				}
+				return false
 			}
 		}
-	}
-	else {
-		if (lastServed.lowestDays < activeServiceType.serviceInterval) {
-			return false;
+		if (serviceCategory == "Clothes_Closet") {
+			if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
 		}
+		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
+		if (inLastServed.length > 0) {
+			inLastServed = inLastServed[0].serviceDateTime
+		} else if (serviceCategory == "Administration") {
+			inLastServed = client.familyIdCheckedDate
+		} else {
+			inLastServed = "2000-01-01"
+		}
+		const lastServedDate = moment(inLastServed).startOf('day')
+		if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return false
+	} else {
+		// secondary buttons
+		if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
 	}
+	// default: show button
 	return true
 };
 
 // **********************************************************************************************************
-// UNUSED OR NEED WORK FUNCTIONS
-// **********************************************************************************************************
-
-function isLoggedIn(){
-	if (authorization.idToken == undefined) {
-		return false
-	} else {
-		return true
-	}
-}
-
-// **********************************************************************************************************
 // PRINTER FUNCTIONS
 // **********************************************************************************************************
-
-var ePosDev = new epson.ePOSDevice();
-var img = document.getElementById('smum');
-var printer = null;
+// global printer vars
+let ePosDev = new epson.ePOSDevice();
+let img = document.getElementById('smum');
+let printer = null;
 connect()
 
 function connect() {
- 	var ipAddress = '192.168.1.137';
- 	var port = '8008';
- 	ePosDev.connect(ipAddress, port, callback_connect);
+ 	var ipAddress = '192.168.1.137'
+ 	var port = '8008'
+ 	ePosDev.connect(ipAddress, port, callback_connect)
 };
 
 function callback_connect(resultConnect){
@@ -4217,29 +3991,29 @@ function callback_createDevice(deviceObj, errorCode){
 };
 
 function addImage(name,src, width, height){
-	var newCanvas = $('<canvas>',{'id':name,'width':width,'height':height});
-	var mainDiv = $('.main-container');
-	var img = $('<img>',{'id':name+'img','src':src,'width':width,'height':height});
-	mainDiv.append(newCanvas);
-	mainDiv.append(img);
+	var newCanvas = $('<canvas>',{'id':name,'width':width,'height':height})
+	var mainDiv = $('.main-container')
+	var img = $('<img>',{'id':name+'img','src':src,'width':width,'height':height})
+	mainDiv.append(newCanvas)
+	mainDiv.append(img)
 	console.log(mainDiv)
-}
+};
 
 function drawCanvas(name,width,height){
 	var canvas = document.getElementById(name);
 	var context = canvas.getContext('2d');
-	var img = document.getElementById(name+'img');
-	img.setAttribute('crossOrigin', 'Anonymous');
-	context.drawImage(img, 0,0,width-200,height-50);
-}
+	var img = document.getElementById(name+'img')
+	img.setAttribute('crossOrigin', 'Anonymous')
+	context.drawImage(img, 0,0,width-200,height-50)
+};
 
 function print_canvas(name){
 	var ADDRESS = 'http://192.168.1.137/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
 	var epos = new epson.CanvasPrint(ADDRESS);
 	epos.cut = false;
 	epos.align = epos.ALIGN_CENTER;
-	var canvas = document.getElementById(name);
-	epos.print(canvas);
+	var canvas = document.getElementById(name)
+	epos.print(canvas)
 };
 
 function addHeader(){
@@ -4255,7 +4029,7 @@ function addHeader(){
   	printer.addText('778 S. Almaden Avenue\n');
   	printer.addText('San Jose, CA 95110\n');
   	printer.addText('(408) 292-3314\n');
-  }, 250);
+  }, 250)
 };
 
 function printClothesReceipt(){

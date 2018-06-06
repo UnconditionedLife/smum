@@ -440,24 +440,7 @@
       <div>
         <input class="solidButton" onclick="utilGenerateDailyReport()" type="button" value="Run">
       </div>
-      <!-- <div class="headingDiv span6">Weekly Report</div>
-      <div class="lableDiv">Include</div>
-      <div>
-         <select id="reportsDailyType" class="inputBox settingsForm">
-            <option value="ALL">ALL SERVICES</option>
-            <option value="FOOD" selected>FOOD ONLY</option>
-         </select>
-      </div>
-      <div class="lableDiv">Week Dates</div>
-      <div>
-        <input id="reportsWeeklyStartDate" type="date" class="inputBox settingsForm">
-      </div>
-      <div>
-        <input id="reportsWeeklyEndDate" type="date" class="inputBox settingsForm">
-      </div>
-      <div>
-        <input class="solidButton" onclick="utilGenerateWeeklyReport()" type="button" value="Run">
-      </div> -->
+      <div class="headingDiv span6"></div>
       <div class="headingDiv span6">Monthly Report</div>
       <div class="lableDiv">Include</div>
       <div>
@@ -468,11 +451,23 @@
       </div>
       <div class="lableDiv">Month</div>
       <div>
-          <input id="reportsMonthyMonth" type="month" class="inputBox settingsForm">
+          <input id="reportsMonthlyMonth" type="month" class="inputBox settingsForm">
       </div>
       <div></div>
       <div>
         <input class="solidButton" onclick="utilGenerateMonthlyReport()" type="button" value="Run">
+      </div>
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6">First Step Registered Families Report</div>
+      <div class="lableDiv">Year</div>
+      <div>
+          <input id="reportFirstStepYear" type="number" class="inputBox settingsForm">
+      </div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div>
+        <input class="solidButton" onclick="utilGenerateFirstStepReport()" type="button" value="Run">
       </div>
       <!-- <div class="headingDiv span6">Services</div>
       <div class="lableDiv">Our Zipcodes</div>
@@ -540,5 +535,18 @@
     <div class="reportBodyHeaderItem">Individuals</div>
     <div class="reportBodyHeaderItem">Families</div>
     <div class="reportBodyHeaderItem">Individuals</div>
+  </div>
+</template>
+
+<template id="reportFirstStepHeader">
+  <div class="firstStepBodyHeaderBox">
+    <div id="firstStepClientId" class="reportBodyHeaderItem">Client #</div>
+    <div id="firstStepClientName" class="reportBodyHeaderItem">Client Name</div>
+    <div id="firstStepClientSignature" class="reportBodyHeaderItem">CLIENT SIGNATURE</div>
+    <div id="firstStepBackpackCount" class="reportBodyHeaderItem">Total # Backpacks</div>
+    <div id="firstStepClientId" class="reportBodyHeaderItem"># De Cliente</div>
+    <div id="firstStepClientName" class="reportBodyHeaderItem">Nombre</div>
+    <div id="firstStepClientSignature" class="reportBodyHeaderItem">FIRMA</div>
+    <div id="firstStepBackpackCount" class="reportBodyHeaderItem">Total De Mochilas</div>
   </div>
 </template>
