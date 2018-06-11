@@ -956,6 +956,9 @@ function uiShowMonthlyReportRows(monthYear){
 };
 
 function utilCalcMonthlyRows(services){
+
+console.log(services)
+
 	let tempS = []
 	$.each(services, function(i, item){
 		let index = -1; // default value, in case no element is found
@@ -1021,6 +1024,9 @@ function utilCalcMonthlyRows(services){
 
 function uiBuildTodayRows(services, grid) {
 	let serviceTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+
+console.log(services)
+
 	$.each(services, function(i,item){
 		serviceTotal.hh++
 		serviceTotal.ind = serviceTotal.ind + parseInt(item.totalIndividualsServed)
@@ -1093,7 +1099,7 @@ function uiBuildMonthRows(u, n, monthYear) {
 	let uTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
 	let nTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
 	let gTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
-	let yearMonth = u[0].servicedMonth
+	let yearMonth = u[0].servicedDay.substring(0,6)
 	let gridRow = 0
 	for (let d = 1; d < numDays; d++) {
 		let servicedDay = String(d)
@@ -1992,7 +1998,7 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
 
 	let emergencyFood = "NO",
-			servicedMonth = moment().format("YYYYMM"),
+			// servicedMonth = moment().format("YYYYMM"),
 	 		servicedDay = moment().format("YYYYMMDD")
 	if (serviceId == "") serviceId = cuid()
 	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
@@ -2013,7 +2019,7 @@ console.log(servedCounts.itemsServed)
 							serviceId: serviceId,
 					 serviceValid: serviceValid,
 			 servicedDateTime: moment().format(dateTime),
-			 		servicedMonth: servicedMonth,
+			 		// servicedMonth: servicedMonth,
 					  servicedDay: servicedDay,
 			 	 clientServedId: client.clientId,
 				   clientStatus: client.isActive,
@@ -2710,9 +2716,16 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 		} else if (serviceCategory == 'Back_To_School') {
 			const targetService = utilCalcTargetServices([serviceType])
 			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
+			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+
+console.log(dependents)
+
 			setTimeout(function(){ // give time for food receipt & reminder to print
-				printFirstStepReceipt(targetService[0], dependents)
-			}, 2500);
+				printFirstStepReceipt(service, dependents)
+			}, 2500)
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				printFirstStepReceipt(service, dependents)
+			}, 3750)
 		}
 		uiShowLastServed()
 		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
@@ -2954,7 +2967,6 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 				dependents.push(client.dependents[j])
 			}
 		}
-
 		if (gradeOrAge=="age" && client.dependents[j].isActive=="Active"){
 			let age = client.dependents[j].age
 			if (age>=targetService['dependents_ageMin']
@@ -2963,6 +2975,7 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 			}
 		}
   }
+	console.log(dependents)
 	return dependents
 };
 
@@ -3086,7 +3099,7 @@ function utilUpdateService(serviceId){
 	service.isUSDA = serviceType.isUSDA
 	service.homeless = homeless
 	service.servicedDay = moment(servicedDateTime).format("YYYYMMDD")
-	service.servicedMonth = moment(servicedDateTime).format("YYYYMM")
+	//service.servicedMonth = moment(servicedDateTime).format("YYYYMM")
 	if (service.clientFamilyName == "") {service.clientFamilyName = client.familyName}
 	if (service.clientGivenName == "") {service.clientGivenName = client.givenName}
 	if (service.clientZipcode == "") {service.clientZipcode = client.zipcode}
@@ -3901,6 +3914,9 @@ function utilValidateConfig(form, id){
 };
 
 function utilSortDependentsByGrade(dependents){
+
+	console.log(dependents)
+
 	return dependents.sort((a,b) => utilCalcCurrentGrade(utilGradeToNumber(a.grade))-utilCalcCurrentGrade(utilGradeToNumber(b.grade)))
 };
 
@@ -4056,7 +4072,7 @@ function printClothesReceipt(){
   	printer.addFeedLine(1);
 		const numAdults = client.family.totalAdults
 		const numChildren = client.family.totalChildren
-		const numArticles = (numAdults + numChildren) * 3
+		const numArticles = (numAdults + numChildren) * 3 // TODO remove hardcoded itemsServed
   	printer.addText('ADULTS | ADULTOS\t\t' + numAdults +	'\n');
   	printer.addText('CHILDREN | NINOS\t\t' + numChildren +	'\n');
   	printer.addFeedLine(1);
@@ -4103,6 +4119,7 @@ function printFoodReceipt(isUSDA){
     	printer.addText(' ' + client.clientId + ' \n');
 			printer.addTextSize(1, 1);
     	printer.addTextStyle(false,false,false,printer.COLOR_1);
+			printer.addText('(' + client.zipcode +	')\n');
     	printer.addFeedLine(1);
 			printer.addText('ADULTS | ADULTOS\t\t' + client.family.totalAdults +	'\n');
 			printer.addText('CHILDREN | NINOS\t\t' + client.family.totalChildren +	'\n');
@@ -4120,17 +4137,35 @@ function printFoodReceipt(isUSDA){
     	printer.send();
 	}, 500);
 };
-function printFirstStepReceipt(dependents, serviceType){
+function utilPadTrimString(str, length) {
+	if (length > str.length) { // pad
+		return str.padEnd(length)
+	}
+	if (length < str.length) { // trim
+		return str.substring(0, length)
+	}
+};
+
+function printFirstStepReceipt(serviceType, dependents){
+	let sortedDependents = utilSortDependentsByGrade(dependents)
+	for (let i=0; i<sortedDependents.length; i++){
+		// TODO make tabbed using padding helper function (count #spaces then pad with extra or trim)
+		let currentDependent = sortedDependents[i]
+		let childName = utilPadTrimString(currentDependent.givenName.toUpperCase()+' '+currentDependent.familyName.toUpperCase(), 25) // pad / trim right to 25
+		let gender =  utilPadTrimString(currentDependent.gender.toUpperCase(), 8) // pad to 8
+		let gradeGroup = utilPadTrimString(utilCalcGradeGrouping(currentDependent), 5) // pad to 5
+		console.log(childName + gender + gradeGroup + '\n')
+	}
 	if (printer == null) {
 		console.log("Printer Not Connected")
 		return
 	}
-	console.log(serviceType)
+	let serviceName = serviceType.serviceName
 	addHeader();
 	setTimeout(function f(){
 			printer.addTextSize(1, 2);
 			printer.addFeedLine(2);
-    	printer.addText('* ' + serviceType.serviceName.toUpperCase() + ' *\n');
+    	printer.addText('* ' + serviceName.toUpperCase() + ' *\n');
 			printer.addTextSize(1, 1);
     	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
 			printer.addFeedLine(1);
@@ -4145,22 +4180,25 @@ function printFirstStepReceipt(dependents, serviceType){
     	printer.addFeedLine(1);
 			printer.addText('CHILDREN * NINOS (GENDER) GRADE');
     	printer.addFeedLine(1);
-			let sortedDependents = utilSortDependentsByGrade(dependents)
-			for (let i=0; i<sortedDependents.length; i++){
-				let currentDependent = sortedDependents[i]
-				printer.addText(currentDependent.givenName.toUpperCase()+' '+currentDependent.familyName.toUpperCase()
-				+'\t'+ currentDependent.gender.toUpperCase() + '\t' + utilCalcGradeGrouping(currentDependent)+'\n')
-			}
+			printer.addTextAlign(printer.ALIGN_LEFT);
+			// let sortedDependents = utilSortDependentsByGrade(dependents)
+			// for (let i=0; i<sortedDependents.length; i++){
+			// 	// TODO make tabbed using padding helper function (count #spaces then pad with extra or trim)
+			// 	let currentDependent = sortedDependents[i]
+			// 	printer.addText(currentDependent.givenName.toUpperCase()+' '+currentDependent.familyName.toUpperCase()
+			// 	+'\t'+ currentDependent.gender.toUpperCase() + '\t' + utilCalcGradeGrouping(currentDependent)+'\n')
+			// }
 			printer.addFeedLine(1)
+			printer.addTextAlign(printer.ALIGN_CENTER);
     	printer.addText('**************************************\n')
-			printer.addTextAlign(printer.ALIGN_CENTER)
 			printer.addText('PRESENT THIS FOR PICKUP\n')
 			printer.addText('HAY PRESENTAR PARA RECLAMAR\n')
     	printer.addTextStyle(true,false,false,printer.COLOR_1);
 			printer.addTextSize(2, 2);
-    	printer.addText(' ' + serviceType.fulfillment.fromDateTime.format("MMMM Do, YYYY")+ ' \n');
+    	printer.addText(' ' + moment(serviceType.fulfillment.fromDateTime).format("MMMM Do, YYYY")+ ' \n');
 			printer.addTextSize(1, 1);
-			printer.addText(''+serviceType.fulfillment.fromDateTime.format("h:mm a")+" - "+serviceType.fulfillment.toDateTime.format("h:mm a")+' \n');
+			printer.addFeedLine(1);
+			printer.addText(' '+ moment(serviceType.fulfillment.fromDateTime).format("h:mm a")+" - " + moment(serviceType.fulfillment.toDateTime).format("h:mm a")+' \n');
     	printer.addTextStyle(false,false,false,printer.COLOR_1);
     	printer.addText('**************************************\n');
     	printer.addFeedLine(2);
