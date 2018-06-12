@@ -430,6 +430,7 @@
          <select id="reportsDailyType" class="inputBox settingsForm">
             <option value="ALL">ALL SERVICES</option>
             <option value="FOOD" selected>FOOD ONLY</option>
+
          </select>
       </div>
       <div class="lableDiv">Date</div>
@@ -444,7 +445,7 @@
       <div class="headingDiv span6">Monthly Report</div>
       <div class="lableDiv">Include</div>
       <div>
-         <select id="reportsDailyType" class="inputBox settingsForm">
+         <select id="reportsMonthlyType" class="inputBox settingsForm">
             <option value="ALL">ALL SERVICES</option>
             <option value="FOOD" selected>FOOD ONLY</option>
          </select>
@@ -486,6 +487,7 @@
    </div>
 </template>
 
+<!-- report templates -->
 <template id="reportHeader">
   <div class="reportHeaderBox">
     <div id="headerLeft" class="reportHeaderSides">DAILY</div>
@@ -500,53 +502,65 @@
 
 <template id="dailyReportHeader">
   <div class="todayReportBodyHeaderBox">
-    <div id="headerClient" class="reportBodyHeaderItem">Client</div>
-    <div id="headerClientsServed" class="reportBodyHeaderItem">Clients Served</div>
-    <div id="headerHomelessServed" class="reportBodyHeaderItem">Homeless Served</div>
-    <div id="headerNonClientsServed" class="reportBodyHeaderItem">NonClients Served</div>
-    <div class="reportBodyHeaderItem">ID</div>
-    <div class="reportBodyHeaderItem">Given</div>
-    <div class="reportBodyHeaderItem">Family</div>
-    <div class="reportBodyHeaderItem">ZIP</div>
-    <div class="reportBodyHeaderItem">Households</div>
-    <div class="reportBodyHeaderItem">Individuals</div>
-    <div class="reportBodyHeaderItem">Children</div>
-    <div class="reportBodyHeaderItem">Adults</div>
-    <div class="reportBodyHeaderItem">Seniors</div>
-    <div class="reportBodyHeaderItem">Families</div>
-    <div class="reportBodyHeaderItem">Individuals</div>
-    <div class="reportBodyHeaderItem">Families</div>
-    <div class="reportBodyHeaderItem">Individuals</div>
+    <div id="headerClient" class="bodyHeaderItem">Client</div>
+    <div id="headerClientsServed" class="bodyHeaderItem">Clients Served</div>
+    <div id="headerHomelessServed" class="bodyHeaderItem">Homeless Served</div>
+    <div id="headerNonClientsServed" class="bodyHeaderItem">NonClients Served</div>
+    <div class="bodyHeaderItem">ID</div>
+    <div class="bodyHeaderItem">Given</div>
+    <div class="bodyHeaderItem">Family</div>
+    <div class="bodyHeaderItem">ZIP</div>
+    <div class="bodyHeaderItem">Households</div>
+    <div class="bodyHeaderItem">Individuals</div>
+    <div class="bodyHeaderItem">Children</div>
+    <div class="bodyHeaderItem">Adults</div>
+    <div class="bodyHeaderItem">Seniors</div>
+    <div class="bodyHeaderItem">Families</div>
+    <div class="bodyHeaderItem">Individuals</div>
+    <div class="bodyHeaderItem">Families</div>
+    <div class="bodyHeaderItem">Individuals</div>
   </div>
 </template>
 
-<template id="reportBodyHeader">
-  <div class="reportBodyHeaderBox">
-    <div id="headerUSDA" class="reportBodyHeaderItem">USDA<br />NonUSDA</div>
-    <div id="headerClientsServed" class="reportBodyHeaderItem">Clients Services</div>
-    <div id="headerHomelessServed" class="reportBodyHeaderItem">Homeless Services</div>
-    <div id="headerNonClientsServed" class="reportBodyHeaderItem">NonClients Services</div>
-    <div class="reportBodyHeaderItem">Households</div>
-    <div class="reportBodyHeaderItem">Individuals</div>
-    <div class="reportBodyHeaderItem">Children</div>
-    <div class="reportBodyHeaderItem">Adults</div>
-    <div class="reportBodyHeaderItem">Seniors</div>
-    <div class="reportBodyHeaderItem">Families</div>
-    <div class="reportBodyHeaderItem">Individuals</div>
-    <div class="reportBodyHeaderItem">Families</div>
-    <div class="reportBodyHeaderItem">Individuals</div>
+<template id="allServicesBodyHeader">
+  <div class="allServicesBodyHeaderBox">
+    <div class="bodyHeaderItem">Category</div>
+    <div class="bodyHeaderItem">Service</div>
+    <div class="bodyHeaderItem">Households</div>
+    <div class="bodyHeaderItem">Individuals</div>
+    <div class="bodyHeaderItem">Items</div>
   </div>
 </template>
+
+<template id="foodBodyHeader">
+  <div class="foodBodyHeaderBox">
+    <div id="headerUSDA" class="bodyHeaderItem">USDA<br />NonUSDA</div>
+    <div id="headerClientsServed" class="bodyHeaderItem">Clients Services</div>
+    <div id="headerHomelessServed" class="bodyHeaderItem">Homeless Services</div>
+    <div id="headerNonClientsServed" class="bodyHeaderItem">NonClients Services</div>
+    <div class="bodyHeaderItem">Households</div>
+    <div class="bodyHeaderItem">Individuals</div>
+    <div class="bodyHeaderItem">Children</div>
+    <div class="bodyHeaderItem">Adults</div>
+    <div class="bodyHeaderItem">Seniors</div>
+    <div class="bodyHeaderItem">Families</div>
+    <div class="bodyHeaderItem">Individuals</div>
+    <div class="bodyHeaderItem">Families</div>
+    <div class="bodyHeaderItem">Individuals</div>
+  </div>
+</template>
+
+
 
 <template id="reportFirstStepHeader">
   <div class="firstStepBodyHeaderBox">
-    <div id="firstStepClientId" class="reportBodyHeaderItem">Client #</div>
-    <div id="firstStepClientName" class="reportBodyHeaderItem">Client Name</div>
-    <div id="firstStepClientSignature" class="reportBodyHeaderItem">CLIENT SIGNATURE</div>
-    <div id="firstStepBackpackCount" class="reportBodyHeaderItem">Total # Backpacks</div>
-    <div id="firstStepClientId" class="reportBodyHeaderItem"># De Cliente</div>
-    <div id="firstStepClientName" class="reportBodyHeaderItem">Nombre</div>
-    <div id="firstStepClientSignature" class="reportBodyHeaderItem">FIRMA</div>
-    <div id="firstStepBackpackCount" class="reportBodyHeaderItem">Total De Mochilas</div>
+    <div id="firstStepClientId" class="bodyHeaderItem">Client #</div>
+    <div id="firstStepClientName" class="bodyHeaderItem">Client Name</div>
+    <div id="firstStepClientSignature" class="bodyHeaderItem">CLIENT SIGNATURE</div>
+    <div id="firstStepBackpackCount" class="bodyHeaderItem">Total # Backpacks</div>
+    <div id="firstStepClientId" class="bodyHeaderItem"># De Cliente</div>
+    <div id="firstStepClientName" class="bodyHeaderItem">Nombre</div>
+    <div id="firstStepClientSignature" class="bodyHeaderItem">FIRMA</div>
+    <div id="firstStepBackpackCount" class="bodyHeaderItem">Total De Mochilas</div>
   </div>
 </template>

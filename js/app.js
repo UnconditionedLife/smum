@@ -174,9 +174,9 @@ function uiAddNewDependentsRow(){
 	dependentRow+="<td><select id='relationship["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Child'>Child</option><option value='Spouse'>Spouse</option><option value='Other'>Other</option></select></td>"
 	dependentRow+="<td><select id='gender["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Male'>Male</option><option value='Female'>Female</option></select></td>"
 	dependentRow+="<td><input id='dob["+nextRow+"]' class='inputBox inputForTable dependentsForm' onchange='utilCalcDependentAge("+ parseInt(nextRow) + ")' type='date'></td>"
+	dependentRow+="<td class='dependentsViewOnly'><input id='age["+nextRow+"]' class='inputBox inputForTable dependentsForm' style='width:50px'></td>"
 	dependentRow+="<td><select id='grade["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='NA'>NA</option><option value='Pre-K'>Pre-K</option><option value='K'>K</option><option value='1'>1st</option><option value='2'>2nd</option><option value='3'>3rd</option><option value='4'>4th</option><option value='5'>5th</option><option value='6'>6th</option><option value='7'>7th</option><option value='8'>8th</option><option value='9'>9th</option><option value='10'>10th</option><option value='11'>11th</option><option value='12'>12th</option></select></td>"
-	dependentRow+="<td class='dependentsViewOnly'><input id='age["+nextRow+"]' class='inputBox inputForTable dependentsForm' style='width:50px'></td><td>"
-	dependentRow+="<select id='isActive["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></td>"
+	dependentRow+="<td><select id='isActive["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></td>"
 	dependentRow+="</tr>"
 	$('#dependentsTable').append(dependentRow)
 	uiToggleDependentsViewEdit('edit');
@@ -234,8 +234,6 @@ function uiBuildHistoryBottom(){
 };
 
 function uiBuildHistoryTop(){
-//console.log("IN Build His Top")
-  //data = dbGetServicesNotes(client.clientId)
   columns = ["createdDateTime", "updatedDateTime", "firstSeenDate", "lastServedFoodDateTime", "familyIdCheckedDate"]
 	utilSetLastServedFood()
 	let historyArray = []
@@ -246,10 +244,6 @@ function uiBuildHistoryTop(){
 	historyFields.lastServedFoodDateTime = client.lastServedFoodDateTime
 	historyFields.familyIdCheckedDate = client.familyIdCheckedDate
 	historyArray.push(historyFields)
-//console.log(client.lastServedFoodDateTime)
-//console.log(historyArray)
-//console.log(JSON.stringify(clientArray))
-//console.log(JSON.stringify(clientArray[0].lastServed))
 	uiGenSelectHTMLTable('#historyTop', historyArray, columns,'historyTable')
 };
 
@@ -750,7 +744,7 @@ function uiShowHistoryData(clientHistory){
 				if (currentUser.userRole == "Admin" || currentUser.userRole == "TechAdmin"){
 					newRow += "<div class='rowNum" + i + " historyRow editable" + rowClass + "' onclick='uiShowEditHistoryPopup(\""+clientHistory[i].serviceId+"\", \""+ i +"\")'>" + serviceDateTime + "</div>"
 				} else {
-					newRow += "<div class='rowNum" + i + " historyRow" + rowClass + ">" + serviceDateTime + "</div>"
+					newRow += "<div class='rowNum" + i + " historyRow" + rowClass + "'>" + serviceDateTime + "</div>"
 				}
 			} else {
 				if (currentUser.userRole == "Admin" || currentUser.userRole == "TechAdmin"){
@@ -887,9 +881,12 @@ function uiShowDailyReportRows(dayDate, form){
 	uiShowTodayTotals(grandTotals, "#grandTotalGrid")
 };
 
-function uiShowFirstStepReportHeader(year){
+function uiLoadReportHeader(){
 	$('#printBodyDiv').html(uiGetTemplate('#reportHeader'))
-	console.log($('#reportType').html())
+}
+
+function uiShowFirstStepReportHeader(year){
+	uiLoadReportHeader()
 	$('#reportType').html("BACKPACK DISTRIBUTION")
 	$('#todayBodyDiv').html("")
 	$('#reportDates').html(moment().format(longDate))
@@ -898,12 +895,16 @@ function uiShowFirstStepReportHeader(year){
 	$('#headerRight').html('REPORT <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
 };
 
-function uiShowMonthlyReportHeader(monthYear){
-	$("#printBodyDiv").html(uiGetTemplate('#reportHeader'))
-	$("#todayBodyDiv").html("")
+function uiShowMonthlyReportHeader(monthYear, reportType){
+	$("#todayBodyDiv").html("") // clear Client Today Tab
 	$('#reportDates').html(moment(monthYear).format("MMMM YYYY"))
 	$('#headerLeft').html("MONTHLY")
-	$("#printBodyDiv").append(uiGetTemplate('#reportBodyHeader'))
+	if (reportType == "ALL") {
+		$('#reportType').html("ALL SERVICES")
+		$("#printBodyDiv").append(uiGetTemplate('#allServicesBodyHeader'))
+	} else {
+		$("#printBodyDiv").append(uiGetTemplate('#foodBodyHeader'))
+	}
 	$('#headerRight').html('REPORT <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
 };
 
@@ -927,7 +928,7 @@ function uiShowFirstStepReportRows(year){
 	uiBuildFirstStepRows(validServicesVouchers)
 };
 
-function uiShowMonthlyReportRows(monthYear){
+function uiShowMonthlyReportRows(monthYear, reportType){
 	const currentMonth = moment().format("YYYY-MM")
 	let daysInMonth = moment(monthYear, "YYYY-MM").daysInMonth()
 	if (monthYear == currentMonth) daysInMonth = moment().format("D")
@@ -940,25 +941,44 @@ function uiShowMonthlyReportRows(monthYear){
 		dayOfServices = dbGetDaysServices(dayDate)
 		servicesRendered = servicesRendered.concat(dayOfServices)
 	}
-	let servicesFood = servicesRendered
+	servicesRendered = servicesRendered
 		.filter(item => item.serviceValid == 'true')
-		.filter(item => item.serviceCategory == "Food_Pantry")
-	let dayUSDA = ""
-	let servicesUSDA = servicesFood
-		.filter(item => item.isUSDA == "USDA")
-		.sort((a, b) => parseInt(a.servicedDay) - parseInt(b.servicedDay))
-	let servicesNonUSDA = servicesFood
-		.filter(item => item.isUSDA == "NonUSDA")
-		.sort((a, b) => parseInt(a.servicedDay) - parseInt(b.servicedDay))
-	servicesUSDA = utilCalcMonthlyRows(servicesUSDA)
-	servicesNonUSDA = utilCalcMonthlyRows(servicesNonUSDA)
-	uiBuildMonthRows(servicesUSDA, servicesNonUSDA, monthYear)
+	// Food Report
+	if (reportType == "FOOD") {
+		let servicesFood = servicesRendered
+			.filter(item => item.serviceCategory == "Food_Pantry")
+			.sort((a, b) => parseInt(a.servicedDay) - parseInt(b.servicedDay))
+		let dayUSDA = ""
+		let servicesUSDA = servicesFood
+			.filter(item => item.isUSDA == "USDA")
+		let servicesNonUSDA = servicesFood
+			.filter(item => item.isUSDA == "NonUSDA")
+		servicesUSDA = utilCalcMonthlyRows(servicesUSDA)
+		servicesNonUSDA = utilCalcMonthlyRows(servicesNonUSDA)
+		uiBuildFoodMonthRows(servicesUSDA, servicesNonUSDA, monthYear)
+	} else {
+		// Other Services Report
+		servicesRendered = servicesRendered
+			.sort(function(a, b){
+				const catA = a.serviceCategory.toLowerCase()
+				const catB = b.serviceCategory.toLowerCase()
+				if (catA == catB) {
+					const servA = a.serviceName.toLowerCase()
+					const servB = b.serviceName.toLowerCase()
+					if (servA < servB) return -1
+					if (servA > servB) return 1
+					return 0; //default return value (no sorting)
+				} else {
+					if (catA < catB) return -1
+					if (catA > catB) return 1
+				}
+			})
+		uiBuildAllServicesMonthRows(servicesRendered)
+	}
 };
 
 function utilCalcMonthlyRows(services){
-
 console.log(services)
-
 	let tempS = []
 	$.each(services, function(i, item){
 		let index = -1; // default value, in case no element is found
@@ -1093,7 +1113,47 @@ function uiBuildFirstStepRows(servicesVouchers) {
 	console.log($('#printBodyDiv').html())
 };
 
-function uiBuildMonthRows(u, n, monthYear) {
+function uiBuildAllServicesMonthRows(services) {
+	let category = "", service = "", counts = {}, grid = "#allServicesGrid", last = services.length - 1
+	$("#printBodyDiv").append('<div id="allServicesGrid" class="allServicesRowBox" style="grid-row: 4"></div>')
+	for (let i = 1; i < services.length; i++) {
+
+		if (services[i].serviceCategory == "Winter_Warming") {
+			console.log(services[i])
+		}
+
+
+		if (category != services[i].serviceCategory) {
+			if (service != "") {
+				$(grid).append('<div class="monthItem"></div><div class="servHeader">' + service + '</div>')
+				$(grid).append('<div class="monthItem">' + counts.hh + '</div>')
+				$(grid).append('<div class="monthItem">' + counts.ind + '</div>')
+				$(grid).append('<div class="monthItem">' + counts.itm + '</div>')
+			}
+			category = services[i].serviceCategory
+			service = services[i].serviceName
+			counts = {hh: 1, ind: parseInt(services[i].totalIndividualsServed), itm: parseInt(services[i].itemsServed)}
+			$(grid).append('<div class="catHeader">'+ category.toUpperCase().replace("_", " ").replace("_", " ") + '</div>') // double replace to deal with terms that have two underscores
+		} else {
+			if (service != services[i].serviceName || last == i){
+				$(grid).append('<div class="monthItem"></div><div class="servHeader">' + service + '</div>')
+				$(grid).append('<div class="monthItem">' + counts.hh + '</div>')
+				$(grid).append('<div class="monthItem">' + counts.ind + '</div>')
+				$(grid).append('<div class="monthItem">' + counts.itm + '</div>')
+				service = services[i].serviceName
+				counts = {hh: 1, ind: parseInt(services[i].totalIndividualsServed), itm: parseInt(services[i].itemsServed)}
+			} else {
+				counts.hh++
+				counts.ind = counts.ind + parseInt(services[i].totalIndividualsServed)
+				counts.itm = counts.itm + parseInt(services[i].itemsServed)
+			}
+		}
+	}
+	$(grid).append('<div class="catHeader">&nbsp;</div>')
+	$(grid).append('<div class="monthItem">&nbsp;</div><div class="monthItem"></div><div class="monthItem"></div><div class="monthItem"></div><div class="monthItem"></div>')
+};
+
+function uiBuildFoodMonthRows(u, n, monthYear) {
 	let numDays = moment(monthYear, "YYYY-MM").endOf("month").format("DD")
 	numDays = parseInt(numDays) + 1
 	let uTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
@@ -1112,7 +1172,7 @@ function uiBuildMonthRows(u, n, monthYear) {
 		let grid = "#monthlyGrid" + d
 		if ((uDay.length == 1)||(nDay.length == 1)){
 			gridRow = 4 + d
-			$("#printBodyDiv").append('<div id="monthlyGrid'+ d +'" class="reportRowBox" style="grid-row: '+ gridRow +'"></div>')
+			$("#printBodyDiv").append('<div id="monthlyGrid'+ d +'" class="foodRowBox" style="grid-row: '+ gridRow +'"></div>')
 			let dTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
 			// show day USDA
 			if (uDay.length == 1) {
@@ -1212,7 +1272,7 @@ function uiBuildMonthRows(u, n, monthYear) {
 		}
 	}
 	gridRow = gridRow + 1
-	$("#printBodyDiv").append('<div id="monthlyGridTotal" class="reportRowBox" style="grid-row: '+ gridRow +'"></div>')
+	$("#printBodyDiv").append('<div id="monthlyGridTotal" class="foodRowBox" style="grid-row: '+ gridRow +'"></div>')
 	grid = "#monthlyGridTotal"
 	$(grid).append('<div class="monthTotal">USDA</div>')
 	$(grid).append('<div class="monthTotal">'+ uTotal.hh +'</div>')
@@ -1836,8 +1896,8 @@ function dbGetService(serviceId){
 
 function dbPostData(URL,data){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-	cogCheckSession()
-	if (authorization.idToken == 'undefined') {
+	const sessionStatus = cogCheckSession()
+	if (authorization.idToken == 'undefined' || sessionStatus == "FAILED") {
 		utilBeep()
 		return
 	}
@@ -1917,7 +1977,7 @@ function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 	}
 	if (notPushed) newLastServed.push(newRecord)
 	client.lastServed = newLastServed
-	return dbSaveCurrentClient()
+	return dbSaveCurrentClient(client)
 };
 
 function utilCalcServiceFamilyCounts(serviceTypeId){
@@ -2073,7 +2133,7 @@ function dbSaveNote(){
 	tmp.isImportant = isImportant
 	client.notes.push(tmp)
 // TODO SAVE CLIENT ... NEED TO USE UPDATE TO ONLY UPDATE SOME FIELDS
-	const result = dbSaveCurrentClient()
+	const result = dbSaveCurrentClient(client)
 	if (result == "success") {
 		utilCalcClientFamilyCounts()
 		utilCalcClientAge("db")
@@ -2085,10 +2145,10 @@ function dbSaveNote(){
 
 function dbSaveClientForm(context){
 	uiClearAllErrorBubbles()
-	let hasErrors = utilValidateForm("clientForm", context)
+	const hasErrors = utilValidateForm("clientForm", context)
 	if (hasErrors) return
 	$("#updatedDateTime.clientForm").val(utilNow())
-	let data = ""
+	let data = {}
 	if (client.clientId == undefined) {
 		let clientId = dbGetNewClientID()
 		$("#clientId.clientForm").val(clientId)
@@ -2105,20 +2165,20 @@ function dbSaveClientForm(context){
 		for (var i = 0; i < data.dependents.length; i++) {
 			delete data.dependents[i].age
 		}
-		if (data.lastServed == undefined||data.lastServed == "") {
+		if (data.lastServed == undefined || data.lastServed == "") {
 			data.lastServed = []
 		}
-		if (data.notes == undefined||data.notes == "") {
+		if (data.notes == undefined || data.notes == "") {
 			data.notes = []
 		}
 	}
-	return dbSaveCurrentClient(data)
+	dbSaveCurrentClient(data)
 };
 
-function dbSaveCurrentClient(){
+function dbSaveCurrentClient(data){
 	uiSaveButton('client', 'Saving...')
 	$("body").css("cursor", "progress")
-	const data = utilPadEmptyFields(client)
+	data = utilPadEmptyFields(data)
 	const URL = aws+"/clients/"
 	const result = dbPostData(URL,JSON.stringify(data))
 	console.log(result)
@@ -2188,7 +2248,7 @@ function dbSaveDependentsTable(){
 		}
 	}
 	client.dependents = dependents
-	const result = dbSaveCurrentClient()
+	const result = dbSaveCurrentClient(client)
 	if (result == "success") {
 		utilCalcClientFamilyCounts()
 		utilCalcClientAge("db")
@@ -2299,7 +2359,7 @@ function cogCheckSession() {
 			$('#nav5').html('Login')
 			$('#nav4').html('')
 			$(loginError).html("Sorry, your session has expired.")
-			return
+			return "FAILED"
 		}
 		return session
 	})
@@ -3002,10 +3062,12 @@ function utilGenerateFirstStepReport(){
 };
 
 function utilGenerateMonthlyReport(){
-	let monthYear = $('#reportsMonthlyMonth').val()
-	uiShowMonthlyReportHeader(monthYear)
-	uiShowMonthlyReportRows(monthYear)
+	const monthYear = $('#reportsMonthlyMonth').val()
+	const reportType = $('#reportsMonthlyType').val()
+	uiLoadReportHeader()
 	uiShowHidePrint("show")
+	uiShowMonthlyReportHeader(monthYear, reportType)
+	uiShowMonthlyReportRows(monthYear, reportType)
 };
 
 function utilLoginUserShowScreens(){
@@ -3144,7 +3206,7 @@ function utilUpdateLastServed(service){
 		}
 	}
 	client.lastServed = topHist
-	return dbSaveCurrentClient()
+	return dbSaveCurrentClient(client)
 };
 
 function utilSetLastServedFood(){
@@ -3272,7 +3334,7 @@ function utilDeleteNote(index){
 	let tempNotes = notes
 	notes.splice(index, 1)
 	client.notes = notes
-	const result = dbSaveCurrentClient()
+	const result = dbSaveCurrentClient(client)
 	if (result == "success") {
 		uiShowExistingNotes("refresh")
 	} else {
