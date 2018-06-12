@@ -16,7 +16,7 @@ body {
 	position: inherit;
 	display: grid;
 	grid-template-columns: 30px 1fr 30px;
-	grid-template-rows: 70px 25px 70px 8px;
+	grid-template-rows: 70px 25px 70px 8px auto;
 	padding: 30px 0 30px;
 	width: 90vw;
 	height: 80vh;
@@ -185,7 +185,7 @@ body {
 .monthItem{
 	line-height: 32px;
 	text-align: center;
-	border-bottom: .5px solid lightgrey;
+	border: .5px solid lightgrey;
 }
 
 .catHeader{
@@ -202,7 +202,7 @@ body {
 .servHeader{
 	line-height: 32px;
 	text-align: left;
-	border-bottom: .5px solid lightgrey;
+	border: .5px solid lightgrey;
 	font-size: 14px;
 	font-weight: bold;
 	padding-left: 10px;
@@ -223,6 +223,16 @@ body {
   line-height:  35px;
   text-align:  center;
   font-weight: bold;
+}
+
+.firstStepHeaderItem{
+  border: 1px solid var(--green);
+	background-color: var(--light-green);
+  font-size: 14px;
+  line-height: 35px;
+  text-align: center;
+  font-weight: bold;
+	grid-row: span 2;
 }
 
 #headerClient{

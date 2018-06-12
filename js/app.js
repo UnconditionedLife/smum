@@ -822,7 +822,6 @@ function uiShowReports(){
 	$('#reportsDailyDate').val(moment().format(date))
 	$('#reportsMonthlyMonth').val(moment().format('YYYY-MM'))
 	$('#reportFirstStepYear').val(moment().format('YYYY'))
-	// TODO populate the date fields to reflect current period/last completed period
 };
 
 function uiRefreshDailyReport(){
@@ -903,6 +902,7 @@ function uiShowMonthlyReportHeader(monthYear, reportType){
 		$('#reportType').html("ALL SERVICES")
 		$("#printBodyDiv").append(uiGetTemplate('#allServicesBodyHeader'))
 	} else {
+		$('#reportType').html("FOOD DISTRIBUTION")
 		$("#printBodyDiv").append(uiGetTemplate('#foodBodyHeader'))
 	}
 	$('#headerRight').html('REPORT <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
@@ -1096,33 +1096,23 @@ console.log(services)
 };
 
 function uiBuildFirstStepRows(servicesVouchers) {
-	console.log(servicesVouchers)
-	let gridRow = 0
+	const grid = "#firstStepGrid"
+	$("#printBodyDiv").append('<div id="firstStepGrid" class="reportFirstStepRowBox" style="grid-row: 5"></div>')
 	for (let r = 0; r < servicesVouchers.length; r++) {
 		// TODO Create Pagination
-		let grid = "#firstStepGrid" + r
-		gridRow = 5 + r  //counts for header rows
-		$("#printBodyDiv").append('<div id="firstStepGrid'+ r +'" class="reportFirstStepRowBox" style="grid-row: '+ gridRow +'"></div>')
-		let sv = servicesVouchers[r]
+		const sv = servicesVouchers[r]
 		console.log(sv)
 		$(grid).append('<div class="monthItem">' + sv.clientServedId +'</div>')
 		$(grid).append('<div class="monthItem">' + sv.clientFamilyName + ", " + sv.clientGivenName + '</div>')
 		$(grid).append('<div class="monthItem"></div>')
 		$(grid).append('<div class="monthItem">' + sv.itemsServed +'</div>')
 	}
-	console.log($('#printBodyDiv').html())
 };
 
 function uiBuildAllServicesMonthRows(services) {
 	let category = "", service = "", counts = {}, grid = "#allServicesGrid", last = services.length - 1
 	$("#printBodyDiv").append('<div id="allServicesGrid" class="allServicesRowBox" style="grid-row: 4"></div>')
 	for (let i = 1; i < services.length; i++) {
-
-		if (services[i].serviceCategory == "Winter_Warming") {
-			console.log(services[i])
-		}
-
-
 		if (category != services[i].serviceCategory) {
 			if (service != "") {
 				$(grid).append('<div class="monthItem"></div><div class="servHeader">' + service + '</div>')
@@ -3571,10 +3561,8 @@ function utilValidateArguments(func, arguments, count){
 
 function utilValidateField(id, classes){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-//console.log("IN FIELD VAL")
 	let hasError = false
 	let formClass = ""
-//console.log(classes)
 	if (classes.indexOf("clientForm") > -1){
 		formClass = "clientForm"
 	} else if (classes.indexOf("userForm") > -1) {
@@ -3587,17 +3575,12 @@ function utilValidateField(id, classes){
 		formClass = "noteForm"
 	}
 	let ruleId = id.replace(".", "_")
-//console.log(formClass, ruleId)
 	let rules = utilValidateConfig(formClass, ruleId)
-//console.log(rules)
 	let lookupList = []
-console.log(rules)
 	for (var i = 0; i < rules.length; i++) {
 		let rule = rules[i]
 		let ruleType = $.type(rules[i])
-//console.log(rule.lookup)
 		if (ruleType === "object") {
-// console.log(JSON.stringify(rule))
 			if (rule.lookup !== undefined) {
 				lookupList = rule.lookup
 				rule = "lookup"
@@ -3608,12 +3591,10 @@ console.log(rules)
 			}
 		}
 		let value = $('[id="' + id + '"]').val()
-//console.log(rule+":"+value)
 		switch (rule) {
 			case "required":
 				if (value == "" || value == " " || value == undefined) {
 					hasError = true
-console.log("FAIL: required")
 					uiGenerateErrorBubble("Cannot be blank!", id, classes)
 				}
 				break
@@ -3621,7 +3602,6 @@ console.log("FAIL: required")
 				if (hasError == false) {
 					if (value != "" && value != " " && value != undefined) {
 						if (!moment(value).isValid()){
-console.log("FAIL: date")
 							hasError = true
 							uiGenerateErrorBubble("Not a valid date!", id, classes)
 						}
@@ -3633,7 +3613,6 @@ console.log("FAIL: date")
 					if (value != "" && value != " " && value != undefined) {
 						if (moment(value).isValid()){
 							if (!moment().isAfter(value)) {
-console.log("FAIL: dateNowBefore")
 								hasError = true
 								uiGenerateErrorBubble("Date must be before now!", id, classes)
 							}
@@ -3646,7 +3625,6 @@ console.log("FAIL: dateNowBefore")
 					if (value != "" && value != " " && value != undefined) {
 						if (moment(value).isValid()){
 							if (!moment().isBefore(value)) {
-console.log("FAIL: dateAfterNow")
 								hasError = true
 								uiGenerateErrorBubble("Date must be after now!", id, classes)
 							}
@@ -3659,7 +3637,6 @@ console.log("FAIL: dateAfterNow")
 					if (value != "" && value != " " && value != undefined) {
 						if (moment(value).isValid()){
 							if (!moment(value).isAfter('1999-12-31')) {
-console.log("FAIL: dateAfter2000")
 								hasError = true
 								uiGenerateErrorBubble("Date is not after 1999!", id, classes)
 							}
@@ -3742,24 +3719,18 @@ console.log("FAIL: dateAfter2000")
 				}
 				break
 			case "lookup":
-				console.log("IN LOOKUP")
-				console.log(id)
 				if (id == "zipcode"){
 					const clientStatus = $("#isActive").val()
-					console.log(clientStatus)
 					if (clientStatus == "NonClient") break
 				}
 				if (hasError == false) {
 					let found = false
 					for (var i = 0; i < lookupList.length; i++) {
-						console.log("|"+lookupList[i]+"|")
-						console.log("|"+value+"|")
 						if (lookupList[i] == value) {
 							found = true
 						}
 					}
 					if (found == false) {
-console.log("FAIL: lookup")
 						hasError = true
 						if (id == "zipcode"){
 							uiGenerateErrorBubble("Not in service area!", id, classes)
@@ -3771,7 +3742,6 @@ console.log("FAIL: lookup")
 				}
 				break
 			case "matching":
-				console.log("IN MATCHING")
 				if (hasError == false) {
 					if ($("#" + matchField).val() != value ) {
 						hasError = true
@@ -3791,7 +3761,6 @@ console.log("FAIL: lookup")
 				break
 			case "name":
 				if (hasError == false) {
-//console.log("CHECK NAME LENGTH")
 					if (value.length < 2) {
 						hasError = true
 						uiGenerateErrorBubble("Must be longer than one letter!", id, classes)
@@ -3799,7 +3768,6 @@ console.log("FAIL: lookup")
 				}
 				// /^[\w.\-]+$/
 				if (hasError == false) {
-//console.log("CHECK FOR NON ALPHA CHARS")
 					let specialChars = /[^-éáó úñ\w]/g // /\W/g  //not word or underscore
 					if (value.match(specialChars)) {
 						hasError = true
@@ -3814,27 +3782,18 @@ console.log("FAIL: lookup")
 				// }
 				break
 			}
-	//	rules[i]
-//console.log(hasError)
 		}
 	if (!hasError){
-// console.log("WIPE ERROR")
 	 	$('[id="err-' + id + '"]').remove()
 	 	$('[id="' + id + '"]').removeClass("errorField")
 	}
-// console.log("FIELD ERR: ", hasError)
 	return hasError
 };
 
 function utilValidateForm(form, context){
-console.log("IN FORM VAL")
 	let formElements = $("."+form)
-console.log(formElements)
 	let hasErrors = false
 	for (let i = 0; i < formElements.length; i++) {
-
-console.log(formElements[i].id)
-
 		let id = formElements[i].id,
 				valType = formElements[i].type,
 				classes = formElements[i].class,
@@ -3842,32 +3801,22 @@ console.log(formElements[i].id)
 		if (form == "userForm" && context != "userProfile" && (id != "password" && id != "userName")) {
 			hasError = utilValidateField(id,form+" "+"inputBox")
 		}
-
-		console.log(form, context, id)
-
-
-
 		if (form == "clientForm") {
 			if (context == "newClient"){
 				if (id != "clientId") {
-					console.log("NEW CLIENT PASSED TEST")
 					hasError = utilValidateField(id, form +" "+ "inputBox")
 				}
 			} else {
-				console.log("EXIST CLIENT PASSED TEST")
 				hasError = utilValidateField(id,form+" "+"inputBox")
 			}
 		}
 		if (form == "serviceTypeForm") {
 			hasError = utilValidateField(id, form + " " + "inputBox")
 		}
-
-		console.log("ERRORS: ", hasError)
 		if (hasError) {
 			hasErrors = true
 		}
 	}
-	console.log("ERRORS: ", hasErrors)
 	if (hasErrors == true) utilBeep()
 	return hasErrors
 };
@@ -3976,9 +3925,6 @@ function utilValidateConfig(form, id){
 };
 
 function utilSortDependentsByGrade(dependents){
-
-	console.log(dependents)
-
 	return dependents.sort((a,b) => utilCalcCurrentGrade(utilGradeToNumber(a.grade))-utilCalcCurrentGrade(utilGradeToNumber(b.grade)))
 };
 
