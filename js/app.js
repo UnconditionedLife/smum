@@ -818,7 +818,6 @@ function uiShowReports(){
 };
 
 function uiRefreshDailyReport(){
-	console.log("made it to report")
 	uiShowDailyReportHeader(moment().format(date), '#printBodyDiv', "DAILY")
 	uiShowDailyReportRows(moment().format(date), '#printBodyDiv')
 };
@@ -848,10 +847,8 @@ function uiShowDailyReportRows(dayDate, form){
 		.filter(item => item.serviceValid == 'true')
 		.filter(item => item.serviceCategory == "Food_Pantry")
 		.sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
-	let servicesUSDA = servicesFood
-		.filter(item => item.isUSDA == "USDA")
-	let servicesNonUSDA = servicesFood
-		.filter(item => item.isUSDA == "NonUSDA")
+	let servicesUSDA = servicesFood.filter(item => item.isUSDA == "USDA")
+	let servicesNonUSDA = servicesFood.filter(item => item.isUSDA == "NonUSDA")
 	$(form).append('<div id="USDAGrid" class="todayReportRowBox" style="grid-row: 5"><div class="todaySectionHeader">USDA</div></div>')
 	$(form).append('<div id="NonUSDAGrid" class="todayReportRowBox" style="grid-row: 6"><div class="todaySectionHeader">NonUSDA</div></div>')
 	let totals = []
@@ -1035,9 +1032,6 @@ console.log(services)
 
 function uiBuildTodayRows(services, grid) {
 	let serviceTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
-
-console.log(services)
-
 	$.each(services, function(i,item){
 		serviceTotal.hh++
 		serviceTotal.ind = serviceTotal.ind + parseInt(item.totalIndividualsServed)
@@ -1060,8 +1054,9 @@ console.log(services)
 				$(grid).append('<div class="todayItem">1</div>')
 			} else {
 				serviceTotal.hf = serviceTotal.hf + 1
+				serviceTotal.hi = serviceTotal.hi + parseInt(item.totalIndividualsServed)
 				$(grid).append('<div class="todayItem">1</div>')
-				$(grid).append('<div class="todayItem">-</div>')
+				$(grid).append('<div class="todayItem">'+item.totalIndividualsServed+'</div>')
 			}
 		} else {
 			$(grid).append('<div class="todayItem">-</div>')
@@ -1077,8 +1072,9 @@ console.log(services)
 				$(grid).append('<div class="todayItem">1</div>')
 			} else {
 				serviceTotal.nf = serviceTotal.nf + 1
+				serviceTotal.ni = serviceTotal.ni + parseInt(item.totalIndividualsServed)
 				$(grid).append('<div class="todayItem">1</div>')
-				$(grid).append('<div class="todayItem">-</div>')
+				$(grid).append('<div class="todayItem">'+item.totalIndividualsServed+'</div>')
 			}
 		}
 	})
