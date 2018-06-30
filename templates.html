@@ -424,66 +424,57 @@
 <template id="reportsForm">
    <div class="adminReportsFormDiv">
       <div class="headingDiv span6"><span style="font-size: 20px; line-height: 30px;">Distribution Reports</span></div>
-      <div class="headingDiv span6">Daily Report</div>
-      <div class="lableDiv">Include</div>
+      <div class="headingDiv span6">Daily Reports</div>
+      <div class="lableDiv">Report</div>
       <div>
          <select id="reportsDailyType" class="inputBox settingsForm">
-            <option value="ALL">ALL SERVICES</option>
-            <option value="FOOD" selected>FOOD ONLY</option>
-
+            <option value="ALL">All Services</option>
+            <option value="FOOD" selected>Food Only</option>
          </select>
       </div>
       <div class="lableDiv">Date</div>
-      <div>
-          <input id="reportsDailyDate" type="date" class="inputBox settingsForm">
-      </div>
+      <div><input id="reportsDailyDate" type="date" class="inputBox settingsForm"></div>
       <div></div>
-      <div>
-        <input class="solidButton" onclick="utilGenerateDailyReport()" type="button" value="Run">
-      </div>
+      <div><input class="solidButton" onclick="utilGenerateDailyReport()" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
-      <div class="headingDiv span6">Monthly Report</div>
-      <div class="lableDiv">Include</div>
+      <div class="headingDiv span6">Monthly Reports</div>
+      <div class="lableDiv">Report</div>
       <div>
          <select id="reportsMonthlyType" class="inputBox settingsForm">
-            <option value="ALL">ALL SERVICES</option>
-            <option value="FOOD" selected>FOOD ONLY</option>
+            <option value="ALL">All Services</option>
+            <option value="FOOD" selected>Food Only</option>
          </select>
       </div>
       <div class="lableDiv">Month</div>
-      <div>
-          <input id="reportsMonthlyMonth" type="month" class="inputBox settingsForm">
-      </div>
+      <div><input id="reportsMonthlyMonth" type="month" class="inputBox settingsForm"></div>
       <div></div>
-      <div>
-        <input class="solidButton" onclick="utilGenerateMonthlyReport()" type="button" value="Run">
-      </div>
+      <div><input class="solidButton" onclick="utilGenerateMonthlyReport()" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
-      <div class="headingDiv span6">First Step Registered Families Report</div>
+      <div class="headingDiv span6">First Step Reports</div>
+      <div class="lableDiv">Report</div>
+      <div>
+         <select id="reportFirstStepType" class="inputBox settingsForm">
+            <option value="Distribution" selected>Distribution</option>
+            <option value="Counts">Counts</option>
+         </select>
+      </div>
       <div class="lableDiv">Year</div>
+      <div><input id="reportFirstStepYear" type="number" class="inputBox settingsForm"></div>
+      <div></div>
+      <div><input class="solidButton" onclick="utilGenerateFirstStepReport()" type="button" value="Run"></div>
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6"><span style="font-size: 20px; line-height: 30px;">Family Reports</span></div>
+      <div class="headingDiv span6">Clients Reports</div>
+      <div class="lableDiv">Report</div>
       <div>
-          <input id="reportFirstStepYear" type="number" class="inputBox settingsForm">
+         <select id="reportFamilyType" class="inputBox settingsForm">
+            <option value="Children">With Children</option>
+         </select>
       </div>
       <div></div>
+      <div><input class="solidButton" onclick="utilGenerateFamiliesReport()" type="button" value="Run"></div>
       <div></div>
       <div></div>
-      <div>
-        <input class="solidButton" onclick="utilGenerateFirstStepReport()" type="button" value="Run">
-      </div>
-      <!-- <div class="headingDiv span6">Services</div>
-      <div class="lableDiv">Our Zipcodes</div>
-      <div class="span5"><input id="serviceAreaZipcodes" type="text" class="inputBox settingsForm"></div>
-      <div class="lableDiv">Categories</div>
-      <div class="span5"><input id="serviceCategories" type="text" class="inputBox settingsForm"></div>
-      <div class="headingDiv span6">Clients</div>
-      <div class="lableDiv">Senior Age</div>
-      <div class=""><input id="seniorAgeCutoff" type="number" class="inputBox settingsForm"></div>
-      <div class="lableDiv">??</div>
-      <div class=""><input id="confirmPassword" type="password" class="inputBox settingsForm"></div>
-      <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-         <input class="solidButton" onclick="cogUserChangePassword()" type="button" value="Change">
-         <input class="openButton" onclick="uiResetChangePasswordForm()" type="button" value="Cancel">
-      </div> -->
    </div>
 </template>
 
@@ -492,9 +483,10 @@
   <div class="reportHeaderBox">
     <div id="headerLeft" class="reportHeaderSides">DAILY</div>
     <div class="reportHeaderCenter">
-        <span id="orgName">SANTA MARIA URBAN MINISTRY</span><br />
-        <span id="reportType"></span><br />
-        <span id="reportDates"></span>
+        <!-- <div id="orgName">SANTA MARIA URBAN MINISTRY</div> -->
+        <div id="orgName">SANTA MARIA URBAN MINISTRY</div>
+        <div id="reportName">REPORT NAME</div>
+        <div id="reportDates">REPORT DATE</div>
     </div>
     <div id="headerRight" class="reportHeaderSides">REPORT</div>
   </div>
@@ -550,15 +542,34 @@
   </div>
 </template>
 
-<template id="reportFirstStepHeader">
-  <div class="firstStepBodyHeaderBox">
-    <div id="firstStepClientId" class="firstStepHeaderItem">Client #<br># De Cliente</div>
-    <div id="firstStepClientName" class="firstStepHeaderItem">Client Name<br>Nombre</div>
-    <div id="firstStepClientSignature" class="firstStepHeaderItem">CLIENT SIGNATURE<br>FIRMA</div>
-    <div id="firstStepBackpackCount" class="firstStepHeaderItem">Total # Backpacks<br>Total De Mochilas</div>
-    <!-- <div id="firstStepClientId" class="bodyHeaderItem"># De Cliente</div>
-    <div id="firstStepClientName" class="bodyHeaderItem">Nombre</div>
-    <div id="firstStepClientSignature" class="bodyHeaderItem">FIRMA</div>
-    <div id="firstStepBackpackCount" class="bodyHeaderItem">Total De Mochilas</div> -->
+<template id="reportFirstStepDistroHeader">
+  <div class="firstStepBodyHeaderBox firstStepDistro">
+    <div class="hdrCell stacked2Line">Client #<br># De Cliente</div>
+    <div class="hdrCell stacked2Line">Client Name<br>Nombre</div>
+    <div class="hdrCell stacked2Line">CLIENT SIGNATURE<br>FIRMA</div>
+    <div class="hdrCell stacked2Line">Total # Backpacks<br>Total De Mochilas</div>
+  </div>
+</template>
+
+<template id="reportFirstStepCountsHeader">
+  <div class="firstStepBodyHeaderBox firstStepCount">
+    <div class="hdrCell stacked">Grade Group</div>
+    <div class="hdrCell stacked">Gender</div>
+    <div class="hdrCell stacked">Count</div>
+    <div class="hdrCell stacked">Delivered</div>
+  </div>
+</template>
+
+<template id="reportFamiliesChildrenHeader">
+  <div class="familiesBodyHeaderBox">
+    <div class="hdrCell stacked">Client #</div>
+    <div class="hdrCell">Client Name</div>
+    <div class="hdrCell">Telephone</div>
+    <div class="hdrCell">Zipcode</div>
+    <div class="hdrCell">Last Visit</div>
+    <div class="hdrCell secondary">Child Name</div>
+    <div class="hdrCell secondary">Age</div>
+    <div class="hdrCell secondary">Gender</div>
+    <div class="hdrCell secondary">Grade</div>
   </div>
 </template>

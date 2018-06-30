@@ -3,6 +3,7 @@
 	--blue: #00747E;
 	--green: #4A8F43;
 	--light-green: #C4E6C4;
+	--lightest-green: #E5F4E5;
 	--grey-green: #F2F3F0;
 	--brown: #570D10;
 	--red: #BE0D10;
@@ -84,17 +85,41 @@ body {
 	margin-bottom: 30px;
 }
 
-.firstStepBodyHeaderBox{
+.firstStepBodyHeaderBox {
 	background-color: white;
 	width: 100%;
 	height: 70px;
 	display: grid;
 	grid-row: 3;
 	grid-column: 2;
-	grid-template-columns: 1fr 4fr 4fr 2fr;
 	grid-template-rows: 35px 35px;
 	border: 1px solid var(--green);
 	margin-bottom: 30px;
+}
+
+.familiesBodyHeaderBox  {
+	background-color: white;
+	width: 100%;
+	height: 70px;
+	display: grid;
+	grid-row: 3;
+	grid-column: 2;
+	grid-template-columns: 1fr 3fr 2fr 2fr 2fr;
+	grid-template-rows: 35px 35px;
+	border: 1px solid var(--green);
+	margin-bottom: 30px;
+}
+
+.grandTotal {
+	border-top: 2px solid var(--green) !important;
+	background-color: var(--light-green) !important;
+	font-weight: bold !important;
+}
+
+.blankRow4 {
+	grid-column: span 4;
+	border-width: 0;
+	line-height: 32px;
 }
 
 .todaySectionHeader{
@@ -170,22 +195,37 @@ body {
 	margin-bottom: 8px;
 }
 
-.reportFirstStepRowBox {
+.firstStepRowBox {
 	background-color: white;
 	width: 100%;
 	height: 35px;
 	display: grid;
 	grid-column: 2;
-	grid-template-columns: 1fr 4fr 4fr 2fr;
 	grid-template-rows: 35px;
-	border: 1px solid var(--green);
+	/* border: 1px solid var(--green); */
 	margin-bottom: 2px;
+}
+
+.firstStepDistro {
+	grid-template-columns: 1fr 4fr 4fr 2fr;
+}
+
+.firstStepCount {
+	grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
 .monthItem{
 	line-height: 32px;
 	text-align: center;
 	border: .5px solid lightgrey;
+}
+
+.gradeGroup{
+	line-height: 64px;
+	text-align: center;
+	border: .5px solid lightgrey;
+	grid-row: span 2;
+	font-weight: bold;
 }
 
 .catHeader{
@@ -225,7 +265,7 @@ body {
   font-weight: bold;
 }
 
-.firstStepHeaderItem{
+.firstStepDistroHeaderItem{
   border: 1px solid var(--green);
 	background-color: var(--light-green);
   font-size: 14px;
@@ -233,6 +273,38 @@ body {
   text-align: center;
   font-weight: bold;
 	grid-row: span 2;
+}
+
+.firstStepCountHeaderItem{
+  border: 1px solid var(--green);
+	background-color: var(--light-green);
+  font-size: 14px;
+  line-height: 70px;
+  text-align: center;
+  font-weight: bold;
+	grid-row: span 2;
+}
+
+.hdrCell {
+	border: 1px solid var(--green);
+	background-color: var(--light-green);
+	font-size: 14px;
+	line-height: 34px;
+	text-align: center;
+	font-weight: bold;
+}
+
+.stacked {
+  line-height: 68px;
+	grid-row: span 2;
+}
+
+.stacked2Line {
+	grid-row: span 2;
+}
+
+.secondary {
+	background-color: var(--lightest-green);
 }
 
 #headerClient{

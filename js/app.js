@@ -870,15 +870,38 @@ function uiShowDailyReportRows(dayDate, form){
 
 function uiLoadReportHeader(){
 	$('#printBodyDiv').html(uiGetTemplate('#reportHeader'))
-}
+};
 
-function uiShowFirstStepReportHeader(year){
+function uiShowFamilyReportHeader(reportType) {
 	uiLoadReportHeader()
-	$('#reportType').html("BACKPACK DISTRIBUTION")
-	$('#todayBodyDiv').html("")
+	let reportName = "FAMILIES WITH CHILDREN"
+	let template = "#reportFamiliesChildrenHeader"
+	if (reportType == "Homeless") {
+		reportName = "HOMELESS FAMILIES"
+		template = "#reportFamiliesHomelessHeader"
+	}
+	// TODO unify (function) element value assignment across all reports
+	$('#reportName').html(reportName)
+	$('#todayBodyDiv').html("") // clear Client Today Tab
+	$('#reportDates').html(moment().format(longDate))
+	$('#headerLeft').html("FAMILIES")
+	$('#printBodyDiv').append(uiGetTemplate(template))
+	$('#headerRight').html('REPORT <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
+};
+
+function uiShowFirstStepReportHeader(year, reportType){
+	uiLoadReportHeader()
+	let reportName = "BACKPACK DISTRIBUTION"
+	let template = "#reportFirstStepDistroHeader"
+	if (reportType == "Counts") {
+		reportName = "BACKPACK GROUP COUNTS"
+		template = "#reportFirstStepCountsHeader"
+	}
+	$('#reportName').html(reportName)
+	$('#todayBodyDiv').html("") // clear Client Today Tab
 	$('#reportDates').html(moment().format(longDate))
 	$('#headerLeft').html("FIRST STEP")
-	$('#printBodyDiv').append(uiGetTemplate('#reportFirstStepHeader'))
+	$('#printBodyDiv').append(uiGetTemplate(template))
 	$('#headerRight').html('REPORT <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
 };
 
@@ -887,10 +910,10 @@ function uiShowMonthlyReportHeader(monthYear, reportType){
 	$('#reportDates').html(moment(monthYear).format("MMMM YYYY"))
 	$('#headerLeft').html("MONTHLY")
 	if (reportType == "ALL") {
-		$('#reportType').html("ALL SERVICES")
+		$('#reportName').html("ALL SERVICES")
 		$("#printBodyDiv").append(uiGetTemplate('#allServicesBodyHeader'))
 	} else {
-		$('#reportType').html("FOOD DISTRIBUTION")
+		$('#reportName').html("FOOD DISTRIBUTION")
 		$("#printBodyDiv").append(uiGetTemplate('#foodBodyHeader'))
 	}
 	$('#headerRight').html('REPORT <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
@@ -901,19 +924,61 @@ function utilPrintReport(){
 	$("#printBodyDiv").printMe({ "path": ["css/print.css"] });
 };
 
-function uiShowFirstStepReportRows(year){
+function uiShowFirstStepReportRows(year, reportType){
 	let servicesVouchers = dbGetData(aws+"/clients/services/byservicetype/cjhf5lvps00003iccv6kmntei").services
+	let validServicesVouchers = servicesVouchers.filter(item => item.serviceValid == 'true')
 	// TODO // catch error from dbGetData
-	let validServicesVouchers = servicesVouchers
-		.filter(item => item.serviceValid == 'true')
-		.sort(function(a, b){
- 			let nameA= a.clientFamilyName.toLowerCase() + a.clientGivenName.toLowerCase()
-			let nameB= b.clientFamilyName.toLowerCase() + b.clientGivenName.toLowerCase()
- 			if (nameA < nameB) return -1
- 			if (nameA > nameB) return 1
- 		return 0; //default return value (no sorting)
+	if (reportType == "Distribution") {
+		validServicesVouchers = validServicesVouchers
+			.sort(function(a, b){
+				let nameA= a.clientFamilyName.toLowerCase() + a.clientGivenName.toLowerCase()
+				let nameB= b.clientFamilyName.toLowerCase() + b.clientGivenName.toLowerCase()
+				if (nameA < nameB) return -1
+				if (nameA > nameB) return 1
+			return 0; //default return value (no sorting)
+			})
+		uiBuildFirstStepDistroRows(validServicesVouchers)
+	} else {
+		let count = [
+		 	{gg: "K", b: 0, g: 0, bd: 0, gd: 0},
+			{gg: "1-2", b: 0, g: 0, bd: 0, gd: 0},
+			{gg: "3-5", b: 0, g: 0, bd: 0, gd: 0},
+			{gg: "6-8", b: 0, g: 0,  bd: 0, gd: 0},
+			{gg: "9", b: 0, g: 0,  bd: 0, gd: 0},
+			{gg: "10-12", b: 0, g: 0, bd: 0, gd: 0},
+			{gg: "ALL GROUPS", b: 0, g: 0, bd: 0, gd: 0},
+		]
+		$.each(validServicesVouchers, function(i, service){
+			const c = dbGetData(aws+"/clients/" + service.clientServedId).clients
+			const d = c[0].dependents
+			$.each(d, function(di, dependent){
+				const gradeGroup = utilCalcGradeGrouping(dependent)
+				if (gradeGroup == "Unable to Calculate Grade Level") {
+					return
+				}
+				if (gradeGroup == "K") gg = 0
+				if (gradeGroup == "1-2") gg = 1
+				if (gradeGroup == "3-5") gg = 2
+				if (gradeGroup == "6-8") gg = 3
+				if (gradeGroup == "9") gg = 4
+				if (gradeGroup == "10-12") gg = 5
+				let gender = "g"
+				if (dependent.gender == "Male") {
+					gender = "b"
+				}
+				count[gg][gender]++ // add one to count
+				count[6][gender]++ // add one to count
+
+				console.log(service.fulfillment.pending)
+				if (service.fulfillment.pending !== "true") {
+					let deliv = gender + "d"
+					count[gg][deliv]++ // add one to count
+					count[6][deliv]++
+				}
+			})
 		})
-	uiBuildFirstStepRows(validServicesVouchers)
+		uiBuildFirstStepCountRows(count)
+	}
 };
 
 function uiShowMonthlyReportRows(monthYear, reportType){
@@ -1082,18 +1147,52 @@ function uiBuildTodayRows(services, grid) {
 	return serviceTotal
 };
 
-function uiBuildFirstStepRows(servicesVouchers) {
+function uiBuildFirstStepCountRows(count) {
 	const grid = "#firstStepGrid"
-	$("#printBodyDiv").append('<div id="firstStepGrid" class="reportFirstStepRowBox" style="grid-row: 5"></div>')
+	$("#printBodyDiv").append('<div id="firstStepGrid" class="firstStepRowBox firstStepCount" style="grid-row: 5"></div>')
+	for (let c = 0; c < count.length; c++) {
+		const gg = count[c]
+		console.log(gg)
+		let style = ""
+		if (c == count.length -1) {
+			style = ' style="border-top: 1px solid var(--green);"'
+		}
+		$(grid).append('<div class="gradeGroup"' + style + '>' + gg.gg +'</div>')
+		$(grid).append('<div class="monthItem"' + style + '>Boys</div>')
+		$(grid).append('<div class="monthItem"' + style + '>' + gg.b +'</div>')
+		$(grid).append('<div class="monthItem"' + style + '>' + gg.bd +'</div>')
+		$(grid).append('<div class="monthItem">Girls</div>')
+		$(grid).append('<div class="monthItem">' + gg.g +'</div>')
+		$(grid).append('<div class="monthItem">' + gg.gd +'</div>')
+	}
+	let total = count[6].b + count[6].g
+	let deliv = count[6].bd + count[6].gd
+	$(grid).append('<div class="monthItem grandTotal">GRAND TOTAL</div>')
+	$(grid).append('<div class="monthItem grandTotal">BOYS & GIRLS</div>')
+	$(grid).append('<div class="monthItem grandTotal">' + total +'</div>')
+	$(grid).append('<div class="monthItem grandTotal">' + deliv +'</div>')
+	$(grid).append('<div class="blankRow4">&nbsp;</div>')
+};
+
+function uiBuildFirstStepDistroRows(servicesVouchers) {
+	// TODO Create Pagination
+	let total = 0
+	const grid = "#firstStepGrid"
+	$("#printBodyDiv").append('<div id="firstStepGrid" class="firstStepRowBox firstStepDistro" style="grid-row: 5"></div>')
 	for (let r = 0; r < servicesVouchers.length; r++) {
-		// TODO Create Pagination
 		const sv = servicesVouchers[r]
+		total = total + parseInt(sv.itemsServed)
 		console.log(sv)
 		$(grid).append('<div class="monthItem">' + sv.clientServedId +'</div>')
 		$(grid).append('<div class="monthItem">' + sv.clientFamilyName + ", " + sv.clientGivenName + '</div>')
 		$(grid).append('<div class="monthItem"></div>')
 		$(grid).append('<div class="monthItem">' + sv.itemsServed +'</div>')
 	}
+	$(grid).append('<div class="monthItem grandTotal">Total</div>')
+	$(grid).append('<div class="monthItem grandTotal">&nbsp;</div>')
+	$(grid).append('<div class="monthItem grandTotal">&nbsp;</div>')
+	$(grid).append('<div class="monthItem grandTotal">' + total + '</div>')
+	$(grid).append('<div class="blankRow4">&nbsp;</div>')
 };
 
 function uiBuildAllServicesMonthRows(services) {
@@ -3020,23 +3119,23 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 
 function utilGenerateDailyReport(){
 	let dayDate = $('#reportsDailyDate').val()
-	console.log(dayDate)
 	uiShowDailyReportHeader(dayDate, '#printBodyDiv', "DAILY")
 	uiShowDailyReportRows(dayDate, '#printBodyDiv')
 	uiShowHidePrint("show")
 };
 
-function utilGradeToNumber(grade){
-	if (grade=="Pre-K") return -1
-	if (grade == "K") return 0
-	return parseInt(grade);
+function utilGenerateFamiliesReport(){
+	const reportType = $('#reportFamilyType').val()
+	uiShowFamilyReportHeader(reportType)
+	// uiShowFamilyReportRows(reportType)
+	uiShowHidePrint("show")
 };
 
 function utilGenerateFirstStepReport(){
-	console.log("Report Start")
-	let year = $('#reportFirstStepYear').val()
-	uiShowFirstStepReportHeader(year)
-	uiShowFirstStepReportRows(year)
+	const reportType = $('#reportFirstStepType').val()
+	const year = $('#reportFirstStepYear').val()
+	uiShowFirstStepReportHeader(year, reportType)
+	uiShowFirstStepReportRows(year, reportType)
 	uiShowHidePrint("show")
 };
 
@@ -3047,6 +3146,12 @@ function utilGenerateMonthlyReport(){
 	uiShowHidePrint("show")
 	uiShowMonthlyReportHeader(monthYear, reportType)
 	uiShowMonthlyReportRows(monthYear, reportType)
+};
+
+function utilGradeToNumber(grade){
+	if (grade=="Pre-K") return -1
+	if (grade == "K") return 0
+	return parseInt(grade);
 };
 
 function utilLoginUserShowScreens(){
