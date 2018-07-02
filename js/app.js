@@ -4014,6 +4014,7 @@ function utilValidateConfig(form, id){
 						  target_family: [ 'required', {lookup: ["Unselected", "Single_Individual", "Couple", "Family_with_Children"]} ],
 						  target_gender: [ 'required', {lookup: ["Unselected", "Female", "Male"]} ],
 						   target_child: [ 'required', {lookup: ["Unselected", "YES", "NO"]} ],
+						 target_service: [ 'required' ],
 				 target_childMinAge: [ 'integer' ], // TODO required if terget child is "YES"
 			 	 target_childMaxAge: [ 'integer' ], // TODO required if terget child is "YES"
 			 target_childMinGrade: [ {lookup: ["Unselected","Pre-K","K","1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if target child is "YES"
