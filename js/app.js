@@ -1521,25 +1521,6 @@ function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTy
 	}
 };
 
-function uiShowServicesButtons(){
-	if ($.isEmptyObject(client)) return
-	uiShowServicesDateTime()
-	uiShowLastServed()
-	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
-	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
-	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
-	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
-	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
-	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
-	uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTypes)
-};
-
-function uiShowServiceTypeForm(){
-	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
-	uiPopulateForm(serviceType, 'serviceTypeForm')
-	uiToggleIsUSDA()
-};
-
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 //console.log("IN POPULATE")
@@ -1588,6 +1569,18 @@ function uiPopulateForm(data, form){
 	return
 };
 
+function uiPopulateTargetServiceSelect(){
+	voucherServices = serviceTypes
+		.filter(item => item.fulfillment.type == "Voucher")
+	let el = '.inputBox[id="target.service"].serviceTypeForm'
+	$.each(voucherServices, function (i, item) {
+    $(el).append($('<option>', {
+      value: item.serviceTypeId,
+      text : item.serviceName
+    }))
+	})
+};
+
 function uiRemoveFormErrorBubbles(form) {
 	$('[id^="err-"]').remove()
 	$('.' + form).removeClass("errorField")
@@ -1616,6 +1609,26 @@ function uiSetServiceTypeHeader(){
 function uiSetAdminHeader(title){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	$("#adminTitle").html(title)
+};
+
+function uiShowServicesButtons(){
+	if ($.isEmptyObject(client)) return
+	uiShowServicesDateTime()
+	uiShowLastServed()
+	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
+	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
+	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
+	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
+	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
+	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
+	uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTypes)
+};
+
+function uiShowServiceTypeForm(){
+	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
+	uiPopulateTargetServiceSelect()
+	uiPopulateForm(serviceType, 'serviceTypeForm')
+	uiToggleIsUSDA()
 };
 
 function uiShowServiceTypes(){
@@ -1938,7 +1951,14 @@ function dbGetNewClientID(){
 }
 
 function dbGetServicesTypes(){
-	return dbGetData(aws+"/servicetypes").serviceTypes
+	serviceTypes = dbGetData(aws+"/servicetypes").serviceTypes
+		.sort(function(a, b){
+			let nameA= a.serviceName.toLowerCase()
+			let nameB= b.serviceName.toLowerCase()
+			if (nameA < nameB) return -1
+			if (nameA > nameB) return 1
+		return 0; //default return value (no sorting)
+		})
 };
 
 function dbGetDaysServices(dayDate){
@@ -2004,7 +2024,7 @@ function dbPostData(URL,data){
 				ans = "success"
 				console.log("SUCCESS")
 				if (URL.includes('/servicetypes')) {
-					serviceTypes = dbGetServicesTypes()
+					dbGetServicesTypes()
 					uiShowServiceTypes()
 					uiSetServiceTypeHeader()
 					uiPopulateForm(serviceTypes, 'serviceTypes')
@@ -3160,7 +3180,7 @@ function utilLoginUserShowScreens(){
 	uiShowHideLogin('hide')
 	navGotoSec('nav1')
 	cogGetUserAttributes()
-	serviceTypes = dbGetServicesTypes()
+	dbGetServicesTypes()
 	users = dbGetUsers()
 	utilSetCurrentUser()
 	uiSetMenusForUser()
