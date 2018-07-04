@@ -1191,7 +1191,7 @@ function uiBuildFirstStepDistroRows(servicesVouchers) {
 		const sv = servicesVouchers[r]
 		total = total + parseInt(sv.itemsServed)
 		$(grid).append('<div class="monthItem">' + sv.clientServedId +'</div>')
-		$(grid).append('<div class="monthItem">' + sv.clientFamilyName + ", " + sv.clientGivenName + '</div>')
+		$(grid).append('<div class="monthItem" style="text-align: left; padding-left: 12px;"><b>' + sv.clientFamilyName + "</b>, " + sv.clientGivenName + '</div>')
 		$(grid).append('<div class="monthItem"></div>')
 		$(grid).append('<div class="monthItem">' + sv.itemsServed +'</div>')
 	}
@@ -1606,21 +1606,12 @@ function uiSetAdminHeader(title){
 };
 
 function uiShowServicesButtons(){
-
-console.log("AT SHOW!")
-
 	if ($.isEmptyObject(client)) return
 	uiShowServicesDateTime()
 	uiShowLastServed()
 	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
 	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
-
-console.log(activeServiceTypes)
-
 	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
-
-console.log(targetServices)
-
 	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
 	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
 	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
@@ -2815,10 +2806,15 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 };
 
 function utilCalcLastBackToSchoolSignup(serviceType){
-	return dbGetClientServiceHistory()
+	let history = dbGetClientServiceHistory()
 		.filter(item => item.serviceValid == "true")
-		.filter(item => item.serviceTypeId == serviceType.target.service)
 		.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
+	if (serviceType.target.service == "Unselected") {
+		history = history.filter(item => item.serviceTypeId == serviceType.serviceTypeId)
+	} else {
+		history = history.filter(item => item.serviceCategory == serviceType.serviceCategory)
+	}
+	return history
 }
 
 function utilCalcServiceFamilyCounts(serviceTypeId){
@@ -2913,22 +2909,13 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 			}
 			if (prop == "service") { // targeting a voucher service
 				let servicesVouchers = utilCalcLastBackToSchoolSignup(activeServiceTypes[i])
-
-console.log(servicesVouchers)
-
 				if (servicesVouchers.length !== 1) {
-
-console.log("DISPLAY FALSE")
-
 					display = false
 				}
 			} else if (targetServices[i][prop] != client[prop] && prop.includes("family")==false && prop.includes("dependents")==false) {
 				display = false
 			}
 		}
-
-console.log(display	)
-
 		if (display) {
 			if (activeServiceTypes[i].serviceButtons == "Primary") {
 				if (activeServiceTypes[i].serviceCategory == "Food_Pantry") {
@@ -3102,7 +3089,6 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 			}
 		}
   }
-	console.log(dependents)
 	return dependents
 };
 
@@ -4044,19 +4030,23 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
 		}
 		if (serviceCategory == "Back_To_School") {
-
-console.log(activeServiceType)
-console.log(client.lastServed)
-
+			const backToSchool = utilCalcLastBackToSchoolSignup(activeServiceType)
+			let backToSchoolDays = 10000
+			if (backToSchool.length == 1) {
+				backToSchoolDays = moment().diff(backToSchool[0].servicedDateTime, 'days')
+			}
 			if (activeServiceType.target.service == "Unselected") {
-				if (lastServed.backToSchool < activeServiceType.serviceInterval) {
+				if (backToSchoolDays < activeServiceType.serviceInterval) {
 					return false
 				}
-			 } else {
-			 	return true
+		  } else {
+				if (backToSchoolDays == 10000) {
+			  	return false
+				} else {
+					return true
+				}
 			}
 		}
-
 		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
 		if (inLastServed.length > 0) {
 			inLastServed = inLastServed[0].serviceDateTime
@@ -4065,20 +4055,13 @@ console.log(client.lastServed)
 		} else {
 			inLastServed = "2000-01-01"
 		}
-console.log("OTHER SERVICE")
-console.log(inLastServed)
 		const lastServedDate = moment(inLastServed).startOf('day')
-console.log(moment().startOf('day').diff(lastServedDate, 'days'))
-console.log(activeServiceType.serviceInterval)
-
 		if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return false
 	} else {
 		// secondary buttons
 		if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
 	}
 	// default: show button
-
-console.log("TRUE")
 	return true
 };
 
