@@ -241,7 +241,13 @@
       <div class="childDiv"><input id="target.childMinAge" type="number" class="inputBox serviceTypeForm"></div>
       <div class="lableDiv childDiv">Max Age</div>
       <div class="childDiv"><input id="target.childMaxAge" type="number" class="inputBox serviceTypeForm"></div>
-      <div class="span2"></div>
+      <!-- <div class="span2 childDiv"></div> -->
+      <div class="lableDiv">Service</div>
+      <div>
+         <select id="target.service" class="inputBox serviceTypeForm" onchange="uiToggleAgeGrade()">
+            <option value="Unselected">Unselected</option>
+         </select>
+      </div>
       <div class="lableDiv childDiv">Min Grade</div>
       <div class="childDiv">
       	<select id="target.childMinGrade" class="inputBox serviceTypeForm">
@@ -278,12 +284,6 @@
             <option value='10'>10th</option>
             <option value='11'>11th</option>
             <option value='12'>12th</option>
-         </select>
-      </div>
-      <div class="lableDiv">Service</div>
-      <div>
-         <select id="target.service" class="inputBox serviceTypeForm" onchange="uiToggleAgeGrade()">
-            <option value="Unselected">Unselected</option>
          </select>
       </div>
       <div class="headingDiv span6">Fullfillment</div>

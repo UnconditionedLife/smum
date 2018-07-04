@@ -479,15 +479,24 @@ function uiRemoveZipCode(zipCode){
 	$("#zip"+zipCode).hide("slow")
 };
 
+function uiResetChangePasswordForm(){
+	$(".passwordForm").val("")
+};
+
+function uiResetClientForm(){
+	if (client == {}) {
+		uiShowNewClientForm()
+	} else {
+		uiPopulateForm(client, 'clientForm')
+		uiRemoveFormErrorBubbles('clientForm')
+		uiToggleClientViewEdit('view')
+	}
+};
+
 function uiResetDependentsTable() {
 	// clear changes in feilds
 	uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName","relationship","gender","dob","age","grade","isActive"],'dependentsTable')
-	// set display to view
-	uiToggleDependentsViewEdit('view')
-};
-
-function uiResetChangePasswordForm(){
-	$(".passwordForm").val("")
+	uiToggleDependentsViewEdit('view') // set display to view
 };
 
 function uiResetNotesTab(){
@@ -497,7 +506,7 @@ function uiResetNotesTab(){
 	$("#noteIsImportant").prop("checked", false)
 };
 
-function uiResetUserForm () {
+function uiResetUserForm() {
 	if ($("#userSaveAdmin").css("display") != "none"){
 		let view = "new"
 		if ($("#userPasswordDiv").css("display") == "none") {
@@ -682,10 +691,7 @@ function uiShowHideError(todo, title, message){
 
 function uiShowHidePrint(todo){
 	if (todo == 'show'){
-		console.log($('#printOverlay'))
 		$('#printOverlay').show().css('display', 'flex')
-		console.log($('#printOverlay').children())
-		console.log($("#printBodyDiv"))
 	} else {
 		$('#printOverlay').hide()
 	}
@@ -926,10 +932,12 @@ function utilPrintReport(){
 
 function uiShowFirstStepReportRows(year, reportType){
 	let servicesVouchers = dbGetData(aws+"/clients/services/byservicetype/cjhf5lvps00003iccv6kmntei").services
-	let validServicesVouchers = servicesVouchers.filter(item => item.serviceValid == 'true')
+				.filter(item => item.serviceValid == 'true')
+	let servicesFulfillment = dbGetData(aws+"/clients/services/byservicetype/cjj4ieeo200013gcthq3kojls").services
+				.filter(item => item.serviceValid == 'true')
 	// TODO // catch error from dbGetData
 	if (reportType == "Distribution") {
-		validServicesVouchers = validServicesVouchers
+		servicesVouchers = servicesVouchers
 			.sort(function(a, b){
 				let nameA= a.clientFamilyName.toLowerCase() + a.clientGivenName.toLowerCase()
 				let nameB= b.clientFamilyName.toLowerCase() + b.clientGivenName.toLowerCase()
@@ -937,7 +945,7 @@ function uiShowFirstStepReportRows(year, reportType){
 				if (nameA > nameB) return 1
 			return 0; //default return value (no sorting)
 			})
-		uiBuildFirstStepDistroRows(validServicesVouchers)
+		uiBuildFirstStepDistroRows(servicesVouchers)
 	} else {
 		let count = [
 		 	{gg: "K", b: 0, g: 0, bd: 0, gd: 0},
@@ -948,7 +956,7 @@ function uiShowFirstStepReportRows(year, reportType){
 			{gg: "10-12", b: 0, g: 0, bd: 0, gd: 0},
 			{gg: "ALL GROUPS", b: 0, g: 0, bd: 0, gd: 0},
 		]
-		$.each(validServicesVouchers, function(i, service){
+		$.each(servicesVouchers, function(i, service){
 			const c = dbGetData(aws+"/clients/" + service.clientServedId).clients
 			const d = c[0].dependents
 			$.each(d, function(di, dependent){
@@ -968,9 +976,10 @@ function uiShowFirstStepReportRows(year, reportType){
 				}
 				count[gg][gender]++ // add one to count
 				count[6][gender]++ // add one to count
-
-				console.log(service.fulfillment.pending)
-				if (service.fulfillment.pending !== "true") {
+				let fulfillment = servicesFulfillment // filter out other clients & other years
+							.filter(item => item.clientServedId == service.clientServedId)
+							.filter(item => moment(item.servicedDateTime).year() == moment(service.servicedDateTime).year())
+				if (fulfillment.length > 0) {
 					let deliv = gender + "d"
 					count[gg][deliv]++ // add one to count
 					count[6][deliv]++
@@ -1152,15 +1161,14 @@ function uiBuildFirstStepCountRows(count) {
 	$("#printBodyDiv").append('<div id="firstStepGrid" class="firstStepRowBox firstStepCount" style="grid-row: 5"></div>')
 	for (let c = 0; c < count.length; c++) {
 		const gg = count[c]
-		console.log(gg)
 		let style = ""
 		if (c == count.length -1) {
 			style = ' style="border-top: 1px solid var(--green);"'
 		}
 		$(grid).append('<div class="gradeGroup"' + style + '>' + gg.gg +'</div>')
-		$(grid).append('<div class="monthItem"' + style + '>Boys</div>')
-		$(grid).append('<div class="monthItem"' + style + '>' + gg.b +'</div>')
-		$(grid).append('<div class="monthItem"' + style + '>' + gg.bd +'</div>')
+		$(grid).append('<div class="monthItem secondary"' + style + '>Boys</div>')
+		$(grid).append('<div class="monthItem secondary"' + style + '>' + gg.b +'</div>')
+		$(grid).append('<div class="monthItem secondary"' + style + '>' + gg.bd +'</div>')
 		$(grid).append('<div class="monthItem">Girls</div>')
 		$(grid).append('<div class="monthItem">' + gg.g +'</div>')
 		$(grid).append('<div class="monthItem">' + gg.gd +'</div>')
@@ -1182,7 +1190,6 @@ function uiBuildFirstStepDistroRows(servicesVouchers) {
 	for (let r = 0; r < servicesVouchers.length; r++) {
 		const sv = servicesVouchers[r]
 		total = total + parseInt(sv.itemsServed)
-		console.log(sv)
 		$(grid).append('<div class="monthItem">' + sv.clientServedId +'</div>')
 		$(grid).append('<div class="monthItem">' + sv.clientFamilyName + ", " + sv.clientGivenName + '</div>')
 		$(grid).append('<div class="monthItem"></div>')
@@ -1523,7 +1530,6 @@ function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTy
 
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-//console.log("IN POPULATE")
 	$.each(data, function(key,value){
 		if (typeof(data[key])=='object') {
 			let obj = data[key]
@@ -1534,8 +1540,6 @@ function uiPopulateForm(data, form){
 					$(el).prop('selected', true);
 				} else {
 					$(el).val(value2)
-
-					//console.log("ASSIGN : " + value2)
 				}
 			});
 		} else {
@@ -1544,16 +1548,7 @@ function uiPopulateForm(data, form){
 				el = el + ' option[value="'+ value +'"]'
 				$(el).prop('selected', true);
 			} else {
-				// console.log("UPDATE TEXT FEILD " + key +":"+value)
-				// console.log($(el).attr("value"))
-				//$(el).attr("value", value)
 				$(el).val(value)
-				// console.log($(el).attr("value"))
-				// console.log($(el).val())
-
-				//console.log("WAS : " + $(el).val())
-				//console.log("ASSIGN : " + value)
-
 			}
 		}
 	});
@@ -1588,7 +1583,6 @@ function uiRemoveFormErrorBubbles(form) {
 
 function uiSetClientsHeader(title){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-//console.log(title)
 	if (title == "numberAndName") {
 		let clientNumber = "<div class='clientNumber'>" + client.clientId + "</div>"
 		let clientName = "<div class='clientName'>" + client.givenName + ' ' + client.familyName + "</div>"
@@ -1612,12 +1606,21 @@ function uiSetAdminHeader(title){
 };
 
 function uiShowServicesButtons(){
+
+console.log("AT SHOW!")
+
 	if ($.isEmptyObject(client)) return
 	uiShowServicesDateTime()
 	uiShowLastServed()
-	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA & NonUSDA
+	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
 	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
+
+console.log(activeServiceTypes)
+
 	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
+
+console.log(targetServices)
+
 	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
 	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
 	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
@@ -1660,7 +1663,6 @@ function uiGenSelectHTML(val,options,col,id){
 };
 
 function uiGenSelectHTMLTable(selector, data, col, tableID){
-//console.log("IN TABLE GEN " + tableID)
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	//if (data == undefined) return
 	// TODO FIX ONE OF the calls to this function -- value two is "undefined"
@@ -1711,8 +1713,6 @@ function uiGenSelectHTMLTable(selector, data, col, tableID){
         tabCell.innerHTML = moment(data[i][col[j]]).format('MMM DD, YYYY')
 			} else if (col[j]=="lastServedFoodDateTime"){
 				tabCell.className = "historyTopText"
-//console.log("IN LAST SERVED DISPLAY")
-				//let lastServed = utilCalcLastServedDays()
 				let displayLastServed = "Never Served"
 				if (client.lastServedFoodDateTime != "1900-01-01") {
 					displayLastServed = moment(client.lastServedFoodDateTime).format('MMM DD, YYYY | h:mm a')
@@ -1847,14 +1847,15 @@ function uiResetServiceTypeForm(){
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
 
+function dbGetClientServiceHistory(){
+	return dbGetData(aws+"/clients/services/"+client.clientId).services
+};
+
 function dbGetData(uUrl){
-	//console.log("IN GET")
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	cogCheckSession()
 	let urlNew = uUrl;
 	let ans = null;
-// console.log('idToken + ' + authorization.idToken)
-//console.log(urlNew)
 // TODO /// move Ajax calls to [.done .fail . always syntax]
 	$.ajax({
     type: "GET",
@@ -1864,9 +1865,7 @@ function dbGetData(uUrl){
     dataType: "json",
 		contentType:'application/json',
     success: function(json){
-//console.log("SUCCESS")
 			if (json!==undefined) {
-				// console.log(json.count)
 				// console.log(urlNew)
 			}
     	ans = json
@@ -1931,6 +1930,14 @@ console.log("Error: 0")
 	return ans
 };
 
+function dbGetDaysServices(dayDate){
+	dayDate = moment(dayDate).format("YYYYMMDD")
+	return dbGetData(aws+"/clients/services/byday/"+dayDate).services
+};
+
+// TODO remove bymonth from API
+// TODO update service record in API to not have month property
+
 function dbGetNewClientID(){
 	lastIdJson = dbGetData(aws+"/clients/lastid")
 	newId = lastIdJson.lastId
@@ -1948,9 +1955,13 @@ function dbGetNewClientID(){
 	request['lastId']=newId
 	dbPostData(aws+"/clients/lastid",JSON.stringify(request))
 	return newId
-}
+};
 
-function dbGetServicesTypes(){
+function dbGetService(serviceId){
+	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
+};
+
+function dbGetServiceTypes(){
 	serviceTypes = dbGetData(aws+"/servicetypes").serviceTypes
 		.sort(function(a, b){
 			let nameA= a.serviceName.toLowerCase()
@@ -1960,18 +1971,6 @@ function dbGetServicesTypes(){
 		return 0; //default return value (no sorting)
 		})
 };
-
-function dbGetDaysServices(dayDate){
-	dayDate = moment(dayDate).format("YYYYMMDD")
-	return dbGetData(aws+"/clients/services/byday/"+dayDate).services
-};
-
-// TODO remove bymonth from API
-// TODO update service record in API to not have month property
-// function dbGetMonthServices(dayMonth){
-// 	dayMonth = moment(dayMonth).format("YYYYMM")
-// 	return dbGetData(aws+"/clients/services/bymonth/"+dayMonth).services
-// };
 
 function dbGetUsers(){
 	return dbGetData(aws+"/users").users
@@ -1983,15 +1982,7 @@ function dbLoadServiceHistory(){
 		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
 		.filter(item => item.serviceValid == "true")
 	uiShowHistoryData(clientHistory)
-}
-
-function dbGetClientServiceHistory(){
-	return dbGetData(aws+"/clients/services/"+client.clientId).services
-}
-
-function dbGetService(serviceId){
-	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
-}
+};
 
 function dbPostData(URL,data){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
@@ -2000,7 +1991,6 @@ function dbPostData(URL,data){
 		utilBeep()
 		return
 	}
-	console.log(data)
 	let ans = "failed";
 	$.ajax({
     type: "POST",
@@ -2024,7 +2014,7 @@ function dbPostData(URL,data){
 				ans = "success"
 				console.log("SUCCESS")
 				if (URL.includes('/servicetypes')) {
-					dbGetServicesTypes()
+					dbGetServiceTypes()
 					uiShowServiceTypes()
 					uiSetServiceTypeHeader()
 					uiPopulateForm(serviceTypes, 'serviceTypes')
@@ -2048,16 +2038,6 @@ function dbPostData(URL,data){
 	return ans
 };
 
-function uiResetClientForm(){
-	if (client == {}) {
-		uiShowNewClientForm()
-	} else {
-		uiPopulateForm(client, 'clientForm')
-		uiRemoveFormErrorBubbles('clientForm')
-		uiToggleClientViewEdit('view')
-	}
-};
-
 function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	let serviceDateTime = moment().format(dateTime)
@@ -2079,34 +2059,6 @@ function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 	return dbSaveCurrentClient(client)
 };
 
-function utilCalcServiceFamilyCounts(serviceTypeId){
-	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
-	const serviceType = utilGetServiceTypeByID(serviceTypeId)
-	let servedCounts = {
-		adults: String(client.family.totalAdults),
-		children: String(client.family.totalChildren),
-		individuals: String(client.family.totalSize),
-		seniors: String(client.family.totalSeniors),
-		itemsServed: String(serviceType.numberItems)
-	}
-	let targetService = utilCalcTargetServices([serviceType])
-	if (serviceType.itemsPer == "Person") {
-		servedCounts.itemsServed = String(servedCounts.itemsServed * client.family.totalSize)
-		if (serviceType.target.child == "YES" && serviceType.serviceCategory=="Back_To_School"){
-			const numChildren = utilCalcValidAgeGrade("grade", targetService[0]).length
-			console.log(numChildren)
-			servedCounts = {
-				adults: 0,
-				children: numChildren,
-				individuals: numChildren,
-				seniors: 0,
-				itemsServed: serviceType.numberItems * numChildren,
-			}
-		}
-	}
-	return servedCounts
-};
-
 function dbSaveUser(context){
 	// TODO Add uiResetUserForm functionality
 	// update dates if they are empty before validation
@@ -2117,10 +2069,7 @@ function dbSaveUser(context){
 			$("#" + fields[i] + ".userForm").val(utilNow())
 		}
 	}
-console.log("IN SAVE USER")
-console.log("BEFORE FORM VALIDATION")
 	let hasErrors = utilValidateForm("userForm", context)
-console.log(hasErrors)
 	if (hasErrors) return
 	// store user in Users Table
 	let userData = utilFormToJSON(".userForm")
@@ -2171,14 +2120,10 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 		byUserName = "pending"
 		itemCount = "pending"
 	}
-
-console.log(servedCounts.itemsServed)
-
 	let serviceRecord = {
 							serviceId: serviceId,
 					 serviceValid: serviceValid,
 			 servicedDateTime: moment().format(dateTime),
-			 		// servicedMonth: servicedMonth,
 					  servicedDay: servicedDay,
 			 	 clientServedId: client.clientId,
 				   clientStatus: client.isActive,
@@ -2280,7 +2225,6 @@ function dbSaveCurrentClient(data){
 	data = utilPadEmptyFields(data)
 	const URL = aws+"/clients/"
 	const result = dbPostData(URL,JSON.stringify(data))
-	console.log(result)
 	if (result == "success") {
 	 if (client.clientId != undefined) {
 	 	utilCalcClientAge("db")
@@ -2370,11 +2314,7 @@ function dbSaveServiceTypeForm(context){
 			$("#" + fields[i] + ".serviceTypeForm").val(utilNow())
 		}
 	}
-	let hasErrors = utilValidateForm("serviceTypeForm", "serviceTypeForm")
-
-console.log("ServiceForm Val: ", hasErrors)
-
-	if (hasErrors) return
+	if (utilValidateForm("serviceTypeForm", "serviceTypeForm")) return
 	let data = utilFormToJSON('.serviceTypeForm')
 	let URL = aws+"/servicetypes"
 	uiSaveButton('serviceType', 'Saving...')
@@ -2453,7 +2393,6 @@ function cogLogoutUser(){
 function cogCheckSession() {
 	cognitoUser.getSession(function(err, session) {
 		if (err) {
-			console.log(err)
 			cogLogoutUser()
 			$('#nav5').html('Login')
 			$('#nav4').html('')
@@ -2493,8 +2432,7 @@ function cogUserChangePassword(){
 	  });
 	} else {
 		utilBeep()
-		console.log(newPassword, confirmPassword)
-		console.log("PASSWORDS DONT MATCH")
+		console.log("PASSWORDS DON'T MATCH")
 		uiShowHideError("show", "Passwords don't match!!", "Please enter the new password correctly in both fields.")
 		// TODO show error
 	}
@@ -2544,7 +2482,6 @@ function cogResendValidationCode(){
 
 
 function cogForgotPassword(){
-console.log("IN FORGOT PASSWORD")
 	let userName = $("#loginUserName").val()
 	if (userName == "") {
 		$("#loginError").html("Username is required above!")
@@ -2561,7 +2498,6 @@ console.log("IN FORGOT PASSWORD")
 			console.log('sent to: ' + result.CodeDeliveryDetails.Destination)
 			$("#loginError").html("Validation Code sent to: " + result.CodeDeliveryDetails.Destination)
 			uiLoginFormToggleValidation("newPassword")
-			//console.log(callback.inputVerificationCode(data))
     },
     onFailure: function(err) {
 			console.log("|"+err+"|")
@@ -2577,7 +2513,6 @@ console.log("IN FORGOT PASSWORD")
 };
 
 function cogUserConfirmPassword() {
-	console.log("IN CONFIRM PASSWORD")
 	let validationCode = $('#loginCode').val(),
 		newPassword = $('#loginNewPassword').val(),
 		userName = $('#loginUserName').val(),
@@ -2719,24 +2654,22 @@ function cogUserSignUp(userName, password, email, telephone){
 	attributeList.push(attributeEmail);
 	attributeList.push(attributePhoneNumber);
 	userPool.signUp(userName, password, attributeList, null, function(err, result){
-			if (err) {
-				if (err == "UsernameExistsException: User already exists") {
-					uiGenerateErrorBubble("User Username already exists!", "userName", "inputBox userForm")
-					return
-				} else {
-					alert(err);
-					return;
-				}
+		if (err) {
+			if (err == "UsernameExistsException: User already exists") {
+				uiGenerateErrorBubble("User Username already exists!", "userName", "inputBox userForm")
+				return
 			} else {
-				utilBloop()
+				alert(err);
+				return;
 			}
-			cognitoUser = result.user;
-			console.log('user name is ' + cognitoUser.getUsername());
+		} else {
+			utilBloop()
+		}
+		cognitoUser = result.user;
 	})
 };
 
 function cogLoginAdmin(){
-console.log("IN AUTHENTICATION")
 	let authenticationData = {
 		 Username : '',
 		 Password : ''
@@ -2779,10 +2712,6 @@ function cogListUsers(){
 	    let sessionToken = AWSCognito.config.credentials.sessionToken;
 
 	});
-
-console.log('in list users')
-console.log(session.user)
-console.log(userPool.userPoolId)
 
 ///ClientId : '7j3jhm5a3pkc67m52bf7tv10au',
 
@@ -2869,13 +2798,10 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 			setTimeout(function(){ // give time for food receipt & reminder to print
 				printClothesReceipt()
 			}, 2500);
-		} else if (serviceCategory == 'Back_To_School') {
+		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
 			const targetService = utilCalcTargetServices([serviceType])
 			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
 			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-
-console.log(dependents)
-
 			setTimeout(function(){ // give time for food receipt & reminder to print
 				printFirstStepReceipt(service, dependents)
 			}, 2500)
@@ -2886,6 +2812,40 @@ console.log(dependents)
 		uiShowLastServed()
 		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
 	}
+};
+
+function utilCalcLastBackToSchoolSignup(serviceType){
+	return dbGetClientServiceHistory()
+		.filter(item => item.serviceValid == "true")
+		.filter(item => item.serviceTypeId == serviceType.target.service)
+		.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
+}
+
+function utilCalcServiceFamilyCounts(serviceTypeId){
+	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
+	const serviceType = utilGetServiceTypeByID(serviceTypeId)
+	let servedCounts = {
+		adults: String(client.family.totalAdults),
+		children: String(client.family.totalChildren),
+		individuals: String(client.family.totalSize),
+		seniors: String(client.family.totalSeniors),
+		itemsServed: String(serviceType.numberItems)
+	}
+	let targetService = utilCalcTargetServices([serviceType])
+	if (serviceType.itemsPer == "Person") {
+		servedCounts.itemsServed = String(servedCounts.itemsServed * client.family.totalSize)
+		if (serviceType.target.child == "YES" && serviceType.serviceCategory=="Back_To_School"){
+			const numChildren = utilCalcValidAgeGrade("grade", targetService[0]).length
+			servedCounts = {
+				adults: 0,
+				children: numChildren,
+				individuals: numChildren,
+				seniors: 0,
+				itemsServed: serviceType.numberItems * numChildren,
+			}
+		}
+	}
+	return servedCounts
 };
 
 function utilCognitoPhoneFormat(telephone){
@@ -2909,7 +2869,7 @@ function utilGetFoodInterval(isUSDA){
 			return serviceTypes[i].serviceInterval
 		}
 	}
-}
+};
 
 function utilBeep(){
 	console.log("BAD BEEP")
@@ -2939,12 +2899,7 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 		// loop through each property in each targetServices
 		for (let prop in targetServices[i]) {
 			if (prop=="family_totalChildren") {
-				// if (targetServices[i][prop] == "Greater Than 0") {
-				// 	// dependents_gradeMax
-				// 	console.log("FAMILY TOTAL CHILDREN")
-				// }
 				// TODO move to grade and age target detection to helper function
-
 				if (targetServices[i]['dependents_gradeMin']!="Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
 					validDependents = utilCalcValidAgeGrade("grade",targetServices[i])
 				}
@@ -2956,10 +2911,24 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 					display = false
 				}
 			}
-			if (targetServices[i][prop] != client[prop] && prop.includes("family")==false && prop.includes("dependents")==false) {
+			if (prop == "service") { // targeting a voucher service
+				let servicesVouchers = utilCalcLastBackToSchoolSignup(activeServiceTypes[i])
+
+console.log(servicesVouchers)
+
+				if (servicesVouchers.length !== 1) {
+
+console.log("DISPLAY FALSE")
+
+					display = false
+				}
+			} else if (targetServices[i][prop] != client[prop] && prop.includes("family")==false && prop.includes("dependents")==false) {
 				display = false
 			}
 		}
+
+console.log(display	)
+
 		if (display) {
 			if (activeServiceTypes[i].serviceButtons == "Primary") {
 				if (activeServiceTypes[i].serviceCategory == "Food_Pantry") {
@@ -2995,13 +2964,13 @@ function utilCalcActiveServiceTypes(){
 			fromDateString.push(moment().year())
 			fromDateString.push(Number(serviceTypes[i].available.dateFromMonth))
 			fromDateString.push(Number(serviceTypes[i].available.dateFromDay))
-			let fromDate = moment(fromDateString)
+			let fromDate = moment(fromDateString).startOf('day')
 			// TO
 			let toDateString = []
 			toDateString.push(moment().year())
 			toDateString.push(Number(serviceTypes[i].available.dateToMonth))
 			toDateString.push(Number(serviceTypes[i].available.dateToDay))
-			let toDate = moment(toDateString)
+			let toDate = moment(toDateString).endOf('day')
 			// Adjust year dependent on months of TO and FROM
 			if (moment(fromDate).isAfter(toDate)) toDate = moment(toDate).add(1, 'y');
 			// Adjust year if FROM is after TODAY
@@ -3180,7 +3149,7 @@ function utilLoginUserShowScreens(){
 	uiShowHideLogin('hide')
 	navGotoSec('nav1')
 	cogGetUserAttributes()
-	dbGetServicesTypes()
+	dbGetServiceTypes()
 	users = dbGetUsers()
 	utilSetCurrentUser()
 	uiSetMenusForUser()
@@ -3334,9 +3303,10 @@ function utilSetLastServedFood(){
 
 function utilCalcLastServedDays() {
 	// get Last Served Date from client object & calculate number of days
-	let lastServed = {daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000}
+	let lastServed = {daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000}
 	if (client.lastServed[0] == undefined) return lastServed
 	let lastServedFood = client.lastServed.filter(obj => obj.serviceCategory == "Food_Pantry")
+
 	for (var i = 0; i < lastServedFood.length; i++) {
 		if (lastServedFood[i].isUSDA != "Emergency") {
 			let lastServedDay = moment(lastServedFood[i].serviceDateTime).startOf('day')
@@ -3349,8 +3319,12 @@ function utilCalcLastServedDays() {
 	}
 	lastServed.lowestDays = lastServed.daysUSDA
 	if (lastServed.daysNonUSDA < lastServed.daysUSDA) lastServed.lowestDays = lastServed.daysNonUSDA
+	let lastServedBackToSchool = client.lastServed.filter(obj => obj.serviceCategory == "Back_To_School")
+	if (lastServedBackToSchool.length > 0) {
+		lastServed.backToSchool = moment(lastServedBackToSchool[0].serviceDateTime).startOf('day')
+	}
 	return lastServed
-}
+};
 
 function utilCalcTargetServices(activeServiceTypes) {
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -3389,6 +3363,10 @@ function utilCalcTargetServices(activeServiceTypes) {
 			}
 		} else if (activeServiceTypes[i].target.child == "NO"){
 			targets[i].family_totalChildren = "0";
+		}
+		// target Voucher Service
+		if (activeServiceTypes[i].target.service !== "Unselected") {
+			targets[i].service = activeServiceTypes[i].target.service; //set target to Voucher service ID
 		}
 	}
 	return targets;
@@ -4065,6 +4043,20 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		if (serviceCategory == "Clothes_Closet") {
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
 		}
+		if (serviceCategory == "Back_To_School") {
+
+console.log(activeServiceType)
+console.log(client.lastServed)
+
+			if (activeServiceType.target.service == "Unselected") {
+				if (lastServed.backToSchool < activeServiceType.serviceInterval) {
+					return false
+				}
+			 } else {
+			 	return true
+			}
+		}
+
 		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
 		if (inLastServed.length > 0) {
 			inLastServed = inLastServed[0].serviceDateTime
@@ -4073,13 +4065,20 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		} else {
 			inLastServed = "2000-01-01"
 		}
+console.log("OTHER SERVICE")
+console.log(inLastServed)
 		const lastServedDate = moment(inLastServed).startOf('day')
+console.log(moment().startOf('day').diff(lastServedDate, 'days'))
+console.log(activeServiceType.serviceInterval)
+
 		if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return false
 	} else {
 		// secondary buttons
 		if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
 	}
 	// default: show button
+
+console.log("TRUE")
 	return true
 };
 
