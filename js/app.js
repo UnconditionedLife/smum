@@ -878,7 +878,7 @@ function uiLoadReportHeader(){
 	$('#printBodyDiv').html(uiGetTemplate('#reportHeader'))
 };
 
-function uiShowFamilyReportHeader(reportType) {
+function uiShowFamiliesReportHeader(reportType) {
 	uiLoadReportHeader()
 	let reportName = "FAMILIES WITH CHILDREN"
 	let template = "#reportFamiliesChildrenHeader"
@@ -893,6 +893,63 @@ function uiShowFamilyReportHeader(reportType) {
 	$('#headerLeft').html("FAMILIES")
 	$('#printBodyDiv').append(uiGetTemplate(template))
 	$('#headerRight').html('REPORT <i id="printReport" onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>')
+};
+
+function uiShowFamiliesReportRows(reportType) {
+	const grid = "#familiesGridInner"
+	$("#printBodyDiv").append('<div id="familiesGrid" class="familiesRowContainer"></div>')
+	for (var i = 1; i < 4600; i++) {
+		console.log(i)
+		let c = dbGetData(aws+"/clients/" + i)
+		if (c.count > 0) {
+			c = c.clients
+		} else {
+			continue
+		}
+		let lastVisit = c[0].lastServed.sort((a, b) => moment.utc(b.serviceDateTime).diff(moment.utc(a.serviceDateTime)))
+		if (lastVisit.length > 0) {
+			lastVisit = moment(lastVisit[0].serviceDateTime).format(uiDate)
+		} else {
+			lastVisit = " "
+		}
+		if (c.length == 1 && moment().diff(lastVisit, "days") < 365) {
+			const d = c[0].dependents
+			let childRows = []
+			$.each(d, function(index,item){
+				const childAge = moment().diff(item.dob, "years")
+				if ( childAge < 18) {
+					let childRow = {
+						name: item.givenName + " " + item.familyName,
+						age: childAge,
+						gender: item.gender,
+						grade: item.grade
+					}
+					childRows.push(childRow)
+				}
+			})
+			if (d.length > 0 && childRows.length > 0) {
+
+console.log(c)
+				$("#familiesGrid").append('<div id="familiesGridInner" class="familiesRowBox"></div>')
+				$(grid).append('<div class="monthItem secondary" style="grid-row: span ' + (childRows.length + 1) + '; font-weight: bold;">' + i +'</div>')
+				$(grid).append('<div class="monthItem secondary" style="font-weight: bold; text-align: left; padding-left: 12px">' + c[0].givenName + ' ' + c[0].familyName + '</div>')
+				$(grid).append('<div class="monthItem secondary" style="font-weight: bold;">' + c[0].telephone +'</div>')
+				$(grid).append('<div class="monthItem secondary" style="font-weight: bold;">' + c[0].zipcode +'</div>')
+				$(grid).append('<div class="monthItem secondary" style="font-weight: bold;">' + lastVisit +'</div>')
+				for (var x = 0; x < childRows.length; x++) {
+					console.log(childRows[x])
+					// if (x != 0) {
+					// 	$(grid).append('<div class="monthItem">&nbsp;</div>')
+					// }
+					$(grid).append('<div class="monthItem" style="text-align: left; padding-left: 12px">' + childRows[x].name +'</div>')
+					$(grid).append('<div class="monthItem">' + childRows[x].age +'</div>')
+					$(grid).append('<div class="monthItem">' + childRows[x].gender +'</div>')
+					$(grid).append('<div class="monthItem">' + childRows[x].grade +'</div>')
+
+				}
+			}
+		}
+	}
 };
 
 function uiShowFirstStepReportHeader(year, reportType){
@@ -1911,6 +1968,8 @@ console.log("Error: 0")
 
 		}
 		console.log("errorThrown", errorThrown)
+		console.log("errorThrown", JSON.parse(errorThrown))
+
 		// if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
 		// 	console.log("ACCESS ERROR") // force logon
 		// }
@@ -3101,8 +3160,8 @@ function utilGenerateDailyReport(){
 
 function utilGenerateFamiliesReport(){
 	const reportType = $('#reportFamilyType').val()
-	uiShowFamilyReportHeader(reportType)
-	// uiShowFamilyReportRows(reportType)
+	uiShowFamiliesReportHeader(reportType)
+	uiShowFamiliesReportRows(reportType)
 	uiShowHidePrint("show")
 };
 
