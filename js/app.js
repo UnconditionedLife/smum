@@ -192,7 +192,7 @@ function uiAddNewDependentsRow(){
 	dependentRow+="<td><select id='gender["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Male'>Male</option><option value='Female'>Female</option></select></td>"
 	dependentRow+="<td><input id='dob["+nextRow+"]' class='inputBox inputForTable dependentsForm' onchange='utilCalcDependentAge("+ parseInt(nextRow) + ")' type='date'></td>"
 	dependentRow+="<td class='dependentsViewOnly'><input id='age["+nextRow+"]' class='inputBox inputForTable dependentsForm' style='width:50px'></td>"
-	dependentRow+="<td><select id='grade["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='NA'>NA</option><option value='Pre-K'>Pre-K</option><option value='K'>K</option><option value='1'>1st</option><option value='2'>2nd</option><option value='3'>3rd</option><option value='4'>4th</option><option value='5'>5th</option><option value='6'>6th</option><option value='7'>7th</option><option value='8'>8th</option><option value='9'>9th</option><option value='10'>10th</option><option value='11'>11th</option><option value='12'>12th</option></select></td>"
+	dependentRow+="<td><select id='grade["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='NA'>NA</option><option value='Pre-K'>Pre-K</option><option value='K'>K</option><option value='1st'>1st</option><option value='2nd'>2nd</option><option value='3rd'>3rd</option><option value='4th'>4th</option><option value='5th'>5th</option><option value='6th'>6th</option><option value='7th'>7th</option><option value='8th'>8th</option><option value='9th'>9th</option><option value='10th'>10th</option><option value='11th'>11th</option><option value='12th'>12th</option></select></td>"
 	dependentRow+="<td><select id='isActive["+nextRow+"]' class='inputBox inputForTable dependentsForm'><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></td>"
 	dependentRow+="</tr>"
 	$('#dependentsTable').append(dependentRow)
@@ -2302,9 +2302,12 @@ function dbSaveDependentsTable(){
 	// TODO validate dependents and field level
 	// TODO validate dependents and form level
 	// TODO validate dependents age vs adult / child
-	// TODO validate dependents grade vs age (< 18)
+	// TODO validate dependents grade vs age (< 18) age-range below grade?
 	let dependents = [] // client.dependents
 	data = utilFormToJSON('.dependentsForm')
+
+console.log(data)
+
 	let numKey = Object.keys(data).length
 	for (var i = 0; i < numKey; i++) {
 		let key = Object.keys(data)[i]
@@ -2319,7 +2322,11 @@ function dbSaveDependentsTable(){
 		} else {
 			dependents[keyNum].createdDateTime = utilNow()
 		}
+		// add dependent record
 		dependents[keyNum][keyName] = data[Object.keys(data)[i]]
+
+console.log(data[Object.keys(data)[i]])
+
 		if (keyName == "grade") { // makes sure the gradeDateTime is updated
 			if (client.dependents[keyNum] == undefined) { // new dependent
 				if (dependents[keyNum][keyName] == "NA") {
@@ -2889,14 +2896,24 @@ function utilCalcServiceFamilyCounts(serviceTypeId){
 	let targetService = utilCalcTargetServices([serviceType])
 	if (serviceType.itemsPer == "Person") {
 		servedCounts.itemsServed = String(servedCounts.itemsServed * client.family.totalSize)
-		if (serviceType.target.child == "YES" && serviceType.serviceCategory=="Back_To_School"){
-			const numChildren = utilCalcValidAgeGrade("grade", targetService[0]).length
-			servedCounts = {
-				adults: 0,
-				children: numChildren,
-				individuals: numChildren,
-				seniors: 0,
-				itemsServed: serviceType.numberItems * numChildren,
+		if (serviceType.serviceCategory=="Back_To_School"){
+			if (serviceType.target.service == "Unselected") {
+				servedCounts = {
+					adults: 0,
+					children: 0,
+					individuals: 0,
+					seniors: 0,
+					itemsServed: 0,
+				}
+			} else {
+				const numChildren = utilCalcValidAgeGrade("grade", targetService[0]).length
+				servedCounts = {
+					adults: 0,
+					children: numChildren,
+					individuals: numChildren,
+					seniors: 0,
+					itemsServed: serviceType.numberItems * numChildren,
+				}
 			}
 		}
 	}
