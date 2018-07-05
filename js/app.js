@@ -180,11 +180,7 @@ function uiAddCategory(){
 };
 
 function uiAddNewDependentsRow(){
-	let nextRow = '00';
-	if (client.dependents!=null){
-		nextRow = client.dependents.length;
-		// if (nextRow < 10) nextRow = "0" + nextRow
-	}
+	const nextRow = $('#dependentsTable tr').length - 1
 	let dependentRow = "<tr>"
 	dependentRow+="<td><input id='givenName["+nextRow+"]' class='inputBox inputForTable dependentsForm'></td>"
 	dependentRow+="<td><input id='familyName["+nextRow+"]' class='inputBox inputForTable dependentsForm'></td>"
@@ -2305,9 +2301,6 @@ function dbSaveDependentsTable(){
 	// TODO validate dependents grade vs age (< 18) age-range below grade?
 	let dependents = [] // client.dependents
 	data = utilFormToJSON('.dependentsForm')
-
-console.log(data)
-
 	let numKey = Object.keys(data).length
 	for (var i = 0; i < numKey; i++) {
 		let key = Object.keys(data)[i]
@@ -2324,11 +2317,11 @@ console.log(data)
 		}
 		// add dependent record
 		dependents[keyNum][keyName] = data[Object.keys(data)[i]]
-
-console.log(data[Object.keys(data)[i]])
-
 		if (keyName == "grade") { // makes sure the gradeDateTime is updated
 			if (client.dependents[keyNum] == undefined) { // new dependent
+				if (dependents[keyNum][keyName] == "*EMPTY*") {
+					dependents[keyNum][keyName] = moment().diff(dependents[keyNum]["age"], "years")
+				}
 				if (dependents[keyNum][keyName] == "NA") {
 					dependents[keyNum].gradeDateTime = "NA"
 				} else {
@@ -3519,7 +3512,6 @@ function utilErrorHandler(errMessage, status, error, type) {
 function utilFormToJSON(form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let vals = {}
-// console.log($(form))
 	let formElements = $(form)
 	for (let i = 0; i < formElements.length; i++) {
 		let key = formElements[i].id
@@ -3530,10 +3522,8 @@ function utilFormToJSON(form){
 				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = utilNow()
 				// if (key === 'lastSeenDate') formVal = '*EMPTY*'
 			} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local'||valType == 'email') {
-console.log(key)
 				formVal = '*EMPTY*'
 			} else if (valType == 'number') {
-console.log(key + ' : ' + formVal + ' : '+ valType)
 				formVal = '0'
 			}
 		}
