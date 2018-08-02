@@ -980,7 +980,7 @@ function uiShowMonthlyReportHeader(monthYear, reportType){
 
 function utilPrintReport(){
 	//let path = window.location.href + "css/reports.css"     // Returns full URL
-	$("#printBodyDiv").printMe({ "path": ["css/print.css"] });
+	$("#printBodyDiv").printMe({ "path": ["css/print-v2.css"] });
 };
 
 function uiShowFirstStepReportRows(year, reportType){
@@ -1241,12 +1241,44 @@ function uiBuildFirstStepDistroRows(servicesVouchers) {
 	const grid = "#firstStepGrid"
 	$("#printBodyDiv").append('<div id="firstStepGrid" class="firstStepRowBox firstStepDistro" style="grid-row: 5"></div>')
 	for (let r = 0; r < servicesVouchers.length; r++) {
+		let packCount = 0
 		const sv = servicesVouchers[r]
-		total = total + parseInt(sv.itemsServed)
+		const c = dbGetData(aws+"/clients/" + sv.clientServedId).clients
+		const d = c[0].dependents
+		$.each(d, function(di, dependent){
+			const gradeGroup = utilCalcGradeGrouping(dependent)
+			if (gradeGroup == "Unable to Calculate Grade Level") {
+				return
+			} else {
+				packCount = packCount + 1
+			}
+			// if (gradeGroup == "K") gg = 0
+			// if (gradeGroup == "1-2") gg = 1
+			// if (gradeGroup == "3-5") gg = 2
+			// if (gradeGroup == "6-8") gg = 3
+			// if (gradeGroup == "9") gg = 4
+			// if (gradeGroup == "10-12") gg = 5
+			// let gender = "g"
+			// if (dependent.gender == "Male") {
+			// 	gender = "b"
+			// }
+			// count[gg][gender]++ // add one to count
+			// count[6][gender]++ // add one to count
+			// let fulfillment = servicesFulfillment // filter out other clients & other years
+			// 			.filter(item => item.clientServedId == service.clientServedId)
+			// 			.filter(item => moment(item.servicedDateTime).year() == moment(service.servicedDateTime).year())
+			// if (fulfillment.length > 0) {
+			// 	let deliv = gender + "d"
+			// 	count[gg][deliv]++ // add one to count
+			// 	count[6][deliv]++
+			// }
+		})
+		console.log("Families")
+		total = total + packCount
 		$(grid).append('<div class="monthItem">' + sv.clientServedId +'</div>')
 		$(grid).append('<div class="monthItem" style="text-align: left; padding-left: 12px;"><b>' + sv.clientFamilyName + "</b>, " + sv.clientGivenName + '</div>')
 		$(grid).append('<div class="monthItem"></div>')
-		$(grid).append('<div class="monthItem">' + sv.itemsServed +'</div>')
+		$(grid).append('<div class="monthItem">' + packCount +'</div>')
 	}
 	$(grid).append('<div class="monthItem grandTotal">Total</div>')
 	$(grid).append('<div class="monthItem grandTotal">&nbsp;</div>')

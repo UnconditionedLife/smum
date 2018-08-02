@@ -202,7 +202,6 @@ body {
 	display: grid;
 	grid-column: 2;
 	grid-template-rows: 35px;
-	/* border: 1px solid var(--green); */
 	margin-bottom: 2px;
 }
 
@@ -213,8 +212,6 @@ body {
 	display: grid;
 	grid-row: 5;
 	grid-column: 2;
-	grid-template-rows: auto;
-	grid-template-columns: auto;
 	margin-bottom: 2px;
 	border: 0;
 }
