@@ -980,7 +980,7 @@ function uiShowMonthlyReportHeader(monthYear, reportType){
 
 function utilPrintReport(){
 	//let path = window.location.href + "css/reports.css"     // Returns full URL
-	$("#printBodyDiv").printMe({ "path": ["css/print-v2.css"] });
+	$("#printBodyDiv").printMe({ "path": ["css/print-v3.css"] });
 };
 
 function uiShowFirstStepReportRows(year, reportType){
