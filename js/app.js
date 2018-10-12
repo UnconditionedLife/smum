@@ -2873,9 +2873,11 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 					return obj.serviceTypeId == serviceTypeId
 				})[0]
 			printFoodReceipt(service.isUSDA)
-			setTimeout(function(){ // give time for food receipt to print
-				printReminderReceipt()
-			}, 1250);
+			if (client.isActive == 'Client') {
+				setTimeout(function(){ // give time for food receipt to print
+					printReminderReceipt()
+				}, 1250);
+			}
 		} else if (serviceCategory == 'Clothes_Closet') {
 			setTimeout(function(){ // give time for food receipt & reminder to print
 				printClothesReceipt()
