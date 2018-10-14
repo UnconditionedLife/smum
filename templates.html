@@ -403,11 +403,29 @@
       <div class=""><input id="seniorAgeCutoff" type="number" class="inputBox settingsForm"></div>
       <div class="lableDiv">??</div>
       <div class=""><input id="confirmPassword" type="password" class="inputBox settingsForm"></div>
+      <div class="headingDiv span6">Days Closed</div>
+      <div id='calendar-container' class="span3">
+        <div id='calendar'></div>
+      </div>
+
       <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
          <input class="solidButton" onclick="dbSaveSettingsForm()" type="button" value="Save">
          <input class="openButton" onclick="uiResetSettingsForm()" type="button" value="Cancel">
       </div>
    </div>
+   <script>
+    $(function() {
+
+      // page is now ready, initialize the calendar...
+
+      $('#calendar').fullCalendar({
+        height: 300,
+        aspectRatio: 2
+        // put your options and callbacks here
+      })
+
+    });
+   </script>
 </template>
 
 <template id="changePasswordForm">

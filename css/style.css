@@ -1090,7 +1090,9 @@ tr {
 	margin-top:15px!important;
 
 }*/
-
+.fc-day {
+        background-color: green!important;
+}
 .formSubHeading{
 	text-align: left;
 	font-size:large;
