@@ -817,30 +817,31 @@ outline: -webkit-focus-ring-color auto 5px;
 	overflow: auto; */
 }
 
-.zipBadge{
+.listBadge{
 	display: inline-flex;
-	font-size: 16px;
+	font-size: 14px;
 	line-height: 19px;
 	background-color: var(--green);
 	color: white;
 	border-radius: 13px;
-	padding: 4px 5px 3px 9px;
+	padding: 3px 3px 1px 7px;
 	margin: 3px 3px 3px 3px;
 }
 
-.zipX{
-	height: 18px;
-	width: 18px;
-	font-size: 12px;
+.listBadgeX{
+	height: 16px;
+	width: 16px;
+	font-size: 11px;
 	line-height: 18px;
 	background-color: white;
 	color: var(--green);
-	border-radius: 10px;
-	margin-left: 5px;
-	text-align:  center;
-	font-weight: bold;
+	border-radius: 9px;
+	margin-left: 3px;
+	text-align: center;
 	cursor: pointer;
+	padding-left: 1px;
 }
+
 
 .ui-button{/*Sets height for all navbar buttons*/
 	height: 2.4rem;

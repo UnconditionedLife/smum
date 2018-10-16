@@ -382,27 +382,25 @@
       <div class="headingDiv span6">Interface</div>
       <div class="lableDiv">Play Sounds</div>
       <div>
-         <select id="playSound" class="inputBox settingsForm">
+         <select id="sounds" class="inputBox settingsForm">
             <option value="YES">YES</option>
             <option value="NO">NO</option>
          </select>
       </div>
       <div class="headingDiv span6">Services</div>
       <div class="lableDiv">New Zipcode</div>
-      <div style="display: inline-flex"><input id="serviceAreaZipcode" type="text" class="inputBox settingsForm"><input id="serviceAreaZipCodeList" type="hidden" class="inputBox settingsForm"></div>
-      <div class="span4"><input class="solidButton" onclick="uiAddZipCode()" type="button" value="Add" style="width: 50px;"></div>
+      <div style="display: inline-flex"><input id="serviceZipInput" type="text" class="inputBox"><input id="serviceZip" type="hidden" class="inputBox settingsForm"></div>
+      <div class="span4"><input class="solidButton" onclick="uiAddListItem('Zip')" type="button" value="Add" style="width: 50px;"></div>
       <div class="lableDiv">Our Zipcodes</div>
-      <div id="zipCodeContainer" class="span5"></div>
+      <div id="serviceZipDisplay" class="span5"></div>
       <div class="lableDiv">New Category</div>
-      <div style="display: inline-flex"><input id="serviceCategory" type="text" class="inputBox settingsForm"><input id="serviceCategoriesList" type="hidden" class="inputBox settingsForm"></div>
-      <div class="span4"><input class="solidButton" onclick="uiAddCategory()" type="button" value="Add" style="width: 50px;"></div>
+      <div style="display: inline-flex"><input id="serviceCatInput" type="text" class="inputBox"><input id="serviceCat" type="hidden" class="inputBox settingsForm"></div>
+      <div class="span4"><input class="solidButton" onclick="uiAddListItem('Cat')" type="button" value="Add" style="width: 50px;"></div>
       <div class="lableDiv">Service Categories</div>
-      <div id="categoriesContainer" class="span5"></div>
+      <div id="serviceCatDisplay" class="span5"></div>
       <div class="headingDiv span6">Clients</div>
       <div class="lableDiv">Senior Age</div>
-      <div class=""><input id="seniorAgeCutoff" type="number" class="inputBox settingsForm"></div>
-      <div class="lableDiv">??</div>
-      <div class=""><input id="confirmPassword" type="password" class="inputBox settingsForm"></div>
+      <div class=""><input id="seniorAge" type="number" class="inputBox settingsForm"></div>
       <div class="headingDiv span6">Days Closed</div>
       <div id='calendar-container' class="span3">
         <div id='calendar'></div>
@@ -450,39 +448,39 @@
       <div class="headingDiv span6">Daily Reports</div>
       <div class="lableDiv">Report</div>
       <div>
-         <select id="reportsDailyType" class="inputBox settingsForm">
+         <select id="reportsDailyType" class="inputBox reportsForm">
             <option value="ALL">All Services</option>
             <option value="FOOD" selected>Food Only</option>
          </select>
       </div>
       <div class="lableDiv">Date</div>
-      <div><input id="reportsDailyDate" type="date" class="inputBox settingsForm"></div>
+      <div><input id="reportsDailyDate" type="date" class="inputBox reportsForm"></div>
       <div></div>
       <div><input class="solidButton" onclick="utilGenerateDailyReport()" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
       <div class="headingDiv span6">Monthly Reports</div>
       <div class="lableDiv">Report</div>
       <div>
-         <select id="reportsMonthlyType" class="inputBox settingsForm">
+         <select id="reportsMonthlyType" class="inputBox reportsForm">
             <option value="ALL">All Services</option>
             <option value="FOOD" selected>Food Only</option>
          </select>
       </div>
       <div class="lableDiv">Month</div>
-      <div><input id="reportsMonthlyMonth" type="month" class="inputBox settingsForm"></div>
+      <div><input id="reportsMonthlyMonth" type="month" class="inputBox reportsForm"></div>
       <div></div>
       <div><input class="solidButton" onclick="utilGenerateMonthlyReport()" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
       <div class="headingDiv span6">First Step Reports</div>
       <div class="lableDiv">Report</div>
       <div>
-         <select id="reportFirstStepType" class="inputBox settingsForm">
+         <select id="reportFirstStepType" class="inputBox reportsForm">
             <option value="Distribution" selected>Distribution</option>
             <option value="Counts">Counts</option>
          </select>
       </div>
       <div class="lableDiv">Year</div>
-      <div><input id="reportFirstStepYear" type="number" class="inputBox settingsForm"></div>
+      <div><input id="reportFirstStepYear" type="number" class="inputBox reportsForm"></div>
       <div></div>
       <div><input class="solidButton" onclick="utilGenerateFirstStepReport()" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
@@ -490,7 +488,7 @@
       <div class="headingDiv span6">Clients Reports</div>
       <div class="lableDiv">Report</div>
       <div>
-         <select id="reportFamilyType" class="inputBox settingsForm">
+         <select id="reportFamilyType" class="inputBox reportsForm">
             <option value="Children">With Children</option>
          </select>
       </div>

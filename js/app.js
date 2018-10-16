@@ -14,7 +14,7 @@
 // TODO add number of Dependents to Dependents tab ie. Dependents(5) ... do not show () if 0
 // TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
-// TODO add printing function to Day & Daily report
+// TODO add print function to Day & Daily report
 
 const aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 const MAX_ID_DIGITS = 5
@@ -24,13 +24,13 @@ const uiDateTimeShort = 'MM/DD/YY H:mma'
 const longDate = "MMMM Do, YYYY  |  LT"
 const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
-
-const settings = {
+let settings = {
 	sounds: "YES",
 	seniorAge: 60,
 	serviceZipcodes: [95110, 95112, 95117, 95125, 95126, 95128, 95131, 95132, 95134, 95192],
-	serviceCategories: [],
-	clientStatus: ["Client", "NonClient", "Inactive"]
+	serviceCategories: [], //TODO get list of categories from the settings and populate form
+	clientStatus: ["Client", "NonClient", "Inactive"], //TODO us to populate form
+	closedDates: ["2018-12-25", "2018-12-26"]
 }
 
 const seniorAge = 60 // TODO set in Admin/Settings
@@ -118,7 +118,7 @@ function navSwitch(link){
 		case "logInOut":
 			navGotoSec("nav5")
 	}
-}
+};
 
 function navGotoSec(nav){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -150,33 +150,42 @@ function navGotoSec(nav){
 			}
 		}
 	$("#"+currentNavTab).show()
-}
+};
 
 function navGotoTab(tab){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	let useAttr = document.getElementById(tab);
 	useAttr.setAttribute('checked', true);
 	useAttr['checked'] = true;
-}
+};
 
 // **********************************************************************************************************
 // *********************************************** UI FUNCTIONS *********************************************
 // **********************************************************************************************************
 
-function uiAddCategory(){
+function uiAddListItem(type){
 	// adds a category to the list of Categories - called by Form Button
-	const category = $("#serviceCategory").val()
-	const badge = "<div id='cat" + category + "' class='zipBadge'>" + category + "<div id='catX"+ category +"' class='zipX' onclick='uiRemoveCategory(" + category + ")'>X</div></div>"
-	$("#categoriesContainer").append(badge)
-	let catList = $("#serviceCategoriesList").val()
-	if (catList == ""){
-		catList = [category]
-	} else {
-		catList = JSON.parse(catList)
-		catList.push(category)
+	const item = $("#service" + type + "Input").val()
+	const badge = "<div id='" + type.toLowerCase() + item + "' class='listBadge'>" + item + "<div class='listBadgeX' onclick=\"uiRemoveListItem('" + type + "', '" + item + "')\"" + ">X</div></div>"
+	let itemList = $("#service" + type).val()
+
+	// TODO validate if item is a Zipcode or a valid category name
+
+	if (itemList == ""){
+		itemList = "[]"
 	}
-	$("#serviceCategoriesList").val(JSON.stringify(catList))
-	$("#serviceCategory").val("")
+	itemList = JSON.parse(itemList)
+	if (itemList.includes(item)) {
+		utilBeep()
+
+		// TODO display item already exists error
+
+	} else {
+		itemList.push(item)
+		$("#service" + type + "Display").append(badge)
+		$("#service" + type).val(JSON.stringify(itemList))
+	}
+	$("#service" + type + "Input").val("")
 };
 
 function uiAddNewDependentsRow(){
@@ -193,24 +202,6 @@ function uiAddNewDependentsRow(){
 	dependentRow+="</tr>"
 	$('#dependentsTable').append(dependentRow)
 	uiToggleDependentsViewEdit('edit');
-};
-
-function uiAddZipCode(){
-	// addes a zipcode to the list of zipcodes SM services
-	const zipCode = $("#serviceAreaZipcode").val()
-	const badge = "<div id='zip" + zipCode + "' class='zipBadge'>" + zipCode + "<div id='zipX"+ zipCode +"' class='zipX' onclick='uiRemoveZipCode(" + zipCode + ")'>X</div></div>"
-	$("#zipCodeContainer").append(badge)
-	let zipList = $("#serviceAreaZipCodeList").val()
-	console.log(zipList)
-	if (zipList == ""){
-		zipList = [zipCode]
-	} else {
-		zipList = JSON.parse(zipList)
-		zipList.push(zipCode)
-	}
-	$("#serviceAreaZipCodeList").val(JSON.stringify(zipList))
-	$("#serviceAreaZipcode").val("")
-	console.log(zipList)
 };
 
 function uiBuildHistoryBottom(){
@@ -465,14 +456,16 @@ function uiOutlineTableRow(table, row){
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', 'var(--blue) 1px dashed').siblings().css('outline', 'none')
 };
 
-function uiRemoveCategory(category){
-	// remove ziocode from ui and settings object
-	$("#zip"+category).hide("slow")
-};
-
-function uiRemoveZipCode(zipCode){
-	// remove ziocode from ui and settings object
-	$("#zip"+zipCode).hide("slow")
+function uiRemoveListItem(type, item){
+	// remove item from zipcode or Category list settings
+	$("#" + type.toLowerCase() + item).hide("slow") // to animate hide
+	$("#" + type.toLowerCase() + item).remove() // to remove conflict of double ID
+	// remove from the hidden form field
+	let itemList = $("#service" + type).val()
+	itemList = JSON.parse(itemList)
+	const index = itemList.indexOf(item)
+ 	if (index > -1) {itemList.splice(index, 1)}
+	$("#service" + type).val(JSON.stringify(itemList))
 };
 
 function uiResetChangePasswordForm(){
@@ -493,6 +486,12 @@ function uiResetDependentsTable() {
 	// clear changes in feilds
 	uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName","relationship","gender","dob","age","grade","isActive"],'dependentsTable')
 	uiToggleDependentsViewEdit('view') // set display to view
+};
+
+function uiResetSettingsForm(){
+
+	//TODO Build clear rest form
+
 };
 
 function uiResetNotesTab(){
@@ -1613,6 +1612,10 @@ function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTy
 	}
 };
 
+function uiPopulateBadges(){
+
+};
+
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
 	$.each(data, function(key,value){
@@ -1720,8 +1723,9 @@ function uiShowUsers(){
 
 function uiShowSettings(){
 	$('#settingsFormContainer').html(uiGetTemplate('#settingsForm'))
+	uiPopulateForm(settings, 'settingsForm')
+	uiPopulateBadges()
 	// TODO build Table, API, object for settings
-	// uiPopulateForm(globalSettings, 'settingsForm')
 };
 
 function uiGenSelectHTML(val,options,col,id){
@@ -1922,6 +1926,10 @@ function uiResetServiceTypeForm(){
 // **********************************************************************************************************
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
+
+function dbGetAppSettings(){
+	return dbGetData(aws+"/settings")
+};
 
 function dbGetClientServiceHistory(){
 	return dbGetData(aws+"/clients/services/"+client.clientId).services
@@ -2156,7 +2164,7 @@ function dbSaveUser(context){
 	result = dbPostData(URL, JSON.stringify(userData))
 	if (result == "success") {
 		utilBloop() // TODO move bloop to successful POST ()
-		// TODO add sounds settings in Admin Settings (ON / OFF)
+		// TODO add sounds settings in Admin Settings (Yes / NO)
 		users = dbGetUsers()
 		utilSetCurrentUser()
 		uiShowUsers()
@@ -2401,7 +2409,26 @@ function dbSaveServiceTypeForm(context){
 	let URL = aws+"/servicetypes"
 	uiSaveButton('serviceType', 'Saving...')
 	dbPostData(URL,JSON.stringify(data))
-}
+};
+
+function dbSaveSettingsForm(){
+
+console.log("In save setting!")
+
+	let data = utilFormToJSON('.settingsForm')
+
+console.log(data)
+
+	const zips = data.serviceZip
+	const cats = data.serviceCat
+	data.serviceCat = cats.toString()
+	data.serviceZip = zips.toString()
+
+console.log(data)
+
+	let URL = aws+'/settings'
+	dbPostData(URL,JSON.stringify(data))
+};
 
 function dbSearchClients(){
 	let str =  $('#searchField').val()
@@ -2680,6 +2707,9 @@ function cogLoginUser() {
 				$('#nav4').html('')
 				$(loginError).html("Sorry, your account is INACTIVE.")
 			}
+			settings = dbGetAppSettings()
+
+console.log(settings)
     },
     onFailure: (err) => {
 			console.log("COGNITO ERROR")
