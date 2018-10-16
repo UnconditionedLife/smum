@@ -414,17 +414,58 @@
       </div>
    </div>
    <script>
+   let closedEvent = {
+     id : "closed",
+     title: "Closed",
+     start: "",
+     allDay: true,
+     editable: false,
+     backgroundColor: "red"
+
+   };
     $(function() {
 
       // page is now ready, initialize the calendar...
 
       $('#calendar').fullCalendar({
         height: 300,
-        aspectRatio: 2
+        aspectRatio: 2,
+        dayRender: function (date, cell) {
+          let weekObj = selectDays(date.format());
+          if (weekObj.dayOfWeek==0){
+            addClosedEvent(date.format());
+          }
+          if ((weekObj.weekInMonth==2 || weekObj.weekInMonth==4 || weekObj.weekInMonth==5)&&weekObj.dayOfWeek==6){
+            addClosedEvent(date.format());
+          }
+        },
+        dayClick: function(date, jsEvent, view) {
+          console.log('Clicked on: ' + date.format());
+          selectDays(date.format());
+          addClosedEvent(date.format());
+        }
         // put your options and callbacks here
       })
 
     });
+    function selectDays(dayOfYear){
+      let momentDay = moment(dayOfYear)
+      let dayOfWeek = momentDay.day();
+      let weekInMonth = momentDay.isoWeek() - momentDay.subtract('days', momentDay.date()-1).isoWeek() + 1;
+      return {
+        "dayOfWeek":dayOfWeek,
+        "weekInMonth": weekInMonth
+      }
+    }
+    function addClosedEvent(dayOfYear){ //when the green or yellow button is pushed, change a specific date's color.
+
+      closedEvent.id = "closed"+dayOfYear;
+      closedEvent.start = dayOfYear;
+       let dayEvents = $('#calendar').fullCalendar( 'clientEvents', closedEvent.id );
+       if (dayEvents.length==0){
+         $('#calendar').fullCalendar( 'renderEvent', closedEvent, false);
+       }
+    }
    </script>
 </template>
 
