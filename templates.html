@@ -78,9 +78,6 @@
       <div class="financials editOnly"><input id="financials.foodStamps" type="number" class="inputBox clientForm"></div>
       <div class="lableDiv editOnly">Govt Assist</div>
       <div class="financials editOnly"><input id="financials.govtAssistance" type="number" class="inputBox clientForm"></div>
-
-
-
       <div class="headingDiv span6 viewOnly">Family Totals</div>
       <div class="lableDiv viewOnly">Adults</div>
       <div class="viewOnly"><input id="family.totalAdults" type="number" class="inputBox clientForm" readonly></div>
@@ -112,7 +109,8 @@
       </div>
       <div class="lableDiv">Category</div>
       <select id="serviceCategory" class="inputBox serviceTypeForm" onChange="uiToggleIsUSDA()">
-         <option value="Administration">Administration</option>
+         <!-- TODO to be removed once settings are fully tested -->
+         <!-- <option value="Administration">Administration</option>
          <option value="Back_To_School">Back To School</option>
          <option value="Clothes_Closet">Clothes Closet</option>
          <option value="Food_Pantry">Food Pantry</option>
@@ -121,7 +119,7 @@
          <option value="Thanksgiving">Thanksgiving</option>
          <option value="Christmas">Christmas</option>
          <option value="Vouchers">Vouchers</option>
-         <option value="Winter_Warming">Winter Warming</option>
+         <option value="Winter_Warming">Winter Warming</option> -->
       </select>
       <div class="lableDiv">Status</div>
       <div>
@@ -241,13 +239,7 @@
       <div class="childDiv"><input id="target.childMinAge" type="number" class="inputBox serviceTypeForm"></div>
       <div class="lableDiv childDiv">Max Age</div>
       <div class="childDiv"><input id="target.childMaxAge" type="number" class="inputBox serviceTypeForm"></div>
-      <!-- <div class="span2 childDiv"></div> -->
-      <div class="lableDiv">Service</div>
-      <div>
-         <select id="target.service" class="inputBox serviceTypeForm" onchange="uiToggleAgeGrade()">
-            <option value="Unselected">Unselected</option>
-         </select>
-      </div>
+      <div class="span2 childDiv"></div>
       <div class="lableDiv childDiv">Min Grade</div>
       <div class="childDiv">
       	<select id="target.childMinGrade" class="inputBox serviceTypeForm">
@@ -289,16 +281,23 @@
       <div class="headingDiv span6">Fullfillment</div>
       <div class="lableDiv">Type</div>
       <div>
-        <select id="fulfillment.type" class="inputBox serviceTypeForm" onchange="uiToggleFulfillDates()">
+        <select id="fulfillment.type" class="inputBox serviceTypeForm" onchange="uiToggleFulfillFields()">
           <option value="Fulfill">Fulfill</option>
           <option value="Notify">Notify</option>
           <option value="Voucher">Voucher</option>
+          <option value="Voucher_Fulfill">Voucher Fulfill</option>
         </select>
       </div>
       <div class="lableDiv fulfillDiv">From</div>
       <div class="fulfillDiv"><input id="fulfillment.fromDateTime" type="datetime-local" class="inputBox serviceTypeForm"></div>
       <div class="lableDiv fulfillDiv">To</div>
       <div class="fulfillDiv"><input id="fulfillment.toDateTime" type="datetime-local" class="inputBox serviceTypeForm"></div>
+      <div class="lableDiv voucherFulfillDiv">Service</div>
+      <div class="voucherFulfillDiv" "span3">
+         <select id="target.service" class="inputBox serviceTypeForm" onchange="uiToggleAgeGrade()">
+            <option value="Unselected">Unselected</option>
+         </select>
+      </div>
       <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
          <input id="serviceTypeSaveButton" class="solidButton" onclick="dbSaveServiceTypeForm()" type="button" value="Save">
          <input class="openButton" onclick="uiResetServiceTypeForm()" type="button" value="Cancel">
@@ -398,73 +397,44 @@
       <div class="span4"><input class="solidButton" onclick="uiAddListItem('Cat')" type="button" value="Add" style="width: 50px;"></div>
       <div class="lableDiv">Service Categories</div>
       <div id="serviceCatDisplay" class="span5"></div>
+      <div class="span6">&nbsp;</div>
       <div class="headingDiv span6">Clients</div>
       <div class="lableDiv">Senior Age</div>
       <div class=""><input id="seniorAge" type="number" class="inputBox settingsForm"></div>
+      <div class="span6">&nbsp;</div>
       <div class="headingDiv span6">Days Closed</div>
-      <div id='calendar-container' class="span3">
+      <div id='calendar-container' class="span4">
         <div id='calendar'></div>
       </div>
+      <div class="span2">
+         <!-- hidden fields to contain selection from client input -->
+         <input id="closedDays" type="hidden" class="inputBox settingsForm">
+         <input id="closedEveryDays" type="hidden" class="inputBox settingsForm">
+         <input id="closedEveryDaysWeek" type="hidden" class="inputBox settingsForm">
 
+         <div id='calendarPopup'>
+            <p id="calendarPopupHeader">Select CLOSURE for:</p>
+            <table>
+               <tr>
+                  <td onclick="utilSelectDay(0)"><input id="selectDays" name="selectDays" type="radio" class="inputBox settingsForm showRadio" value="0" /></td>
+                  <td id="selectDayLable" onclick="utilSelectDay(0)">X day only! </td>
+               </tr>
+               <tr>
+                  <td onclick="utilSelectDay(1)"><input id="selectDays" name="selectDays" type="radio" class="inputBox settingsForm showRadio" value="1" /></td>
+                  <td id='selectEveryDayLable' onclick="utilSelectDay(1)">Every Xday!</td>
+               </tr>
+               <tr>
+                  <td onclick="utilSelectDay(2)"><input id="selectDays" name="selectDays" type="radio" class="inputBox settingsForm showRadio" value="2" /></td>
+                  <td id='selectEveryDayWeekLable' onclick="utilSelectDay(2)">Every Xday of the y week of the month!</td>
+               </tr>
+            </table>
+         </div>
+      </div>
       <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
          <input class="solidButton" onclick="dbSaveSettingsForm()" type="button" value="Save">
          <input class="openButton" onclick="uiResetSettingsForm()" type="button" value="Cancel">
       </div>
    </div>
-   <script>
-   let closedEvent = {
-     id : "closed",
-     title: "Closed",
-     start: "",
-     allDay: true,
-     editable: false,
-     backgroundColor: "red"
-
-   };
-    $(function() {
-
-      // page is now ready, initialize the calendar...
-
-      $('#calendar').fullCalendar({
-        height: 300,
-        aspectRatio: 2,
-        dayRender: function (date, cell) {
-          let weekObj = selectDays(date.format());
-          if (weekObj.dayOfWeek==0){
-            addClosedEvent(date.format());
-          }
-          if ((weekObj.weekInMonth==2 || weekObj.weekInMonth==4 || weekObj.weekInMonth==5)&&weekObj.dayOfWeek==6){
-            addClosedEvent(date.format());
-          }
-        },
-        dayClick: function(date, jsEvent, view) {
-          console.log('Clicked on: ' + date.format());
-          selectDays(date.format());
-          addClosedEvent(date.format());
-        }
-        // put your options and callbacks here
-      })
-
-    });
-    function selectDays(dayOfYear){
-      let momentDay = moment(dayOfYear)
-      let dayOfWeek = momentDay.day();
-      let weekInMonth = momentDay.isoWeek() - momentDay.subtract('days', momentDay.date()-1).isoWeek() + 1;
-      return {
-        "dayOfWeek":dayOfWeek,
-        "weekInMonth": weekInMonth
-      }
-    }
-    function addClosedEvent(dayOfYear){ //when the green or yellow button is pushed, change a specific date's color.
-
-      closedEvent.id = "closed"+dayOfYear;
-      closedEvent.start = dayOfYear;
-       let dayEvents = $('#calendar').fullCalendar( 'clientEvents', closedEvent.id );
-       if (dayEvents.length==0){
-         $('#calendar').fullCalendar( 'renderEvent', closedEvent, false);
-       }
-    }
-   </script>
 </template>
 
 <template id="changePasswordForm">

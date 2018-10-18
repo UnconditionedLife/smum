@@ -379,6 +379,26 @@ main{
 	display: none;
 }
 
+#calendarPopup {
+	margin: 100px 0 0 50px;
+	background-color: var(--light-green);
+	padding: 20px;
+	border: var(--green) solid 2px;
+	border-radius: 13px;
+	box-shadow: 5px 5px 20px;
+}
+
+#calendarPopupHeader {
+	font-size: 18px;
+	font-weight: bold;
+	color: var(--blue)
+}
+
+.showRadio{
+	display: inline-flex !important;
+	float: left;
+}
+
 .serviceTypeFormDiv {
   width: 100%;
   display: grid;
@@ -821,9 +841,9 @@ outline: -webkit-focus-ring-color auto 5px;
 	display: inline-flex;
 	font-size: 14px;
 	line-height: 19px;
-	background-color: var(--green);
-	color: white;
+	background-color: white;
 	border-radius: 13px;
+	border: var(--green) solid 1px;
 	padding: 3px 3px 1px 7px;
 	margin: 3px 3px 3px 3px;
 }
@@ -833,15 +853,14 @@ outline: -webkit-focus-ring-color auto 5px;
 	width: 16px;
 	font-size: 11px;
 	line-height: 18px;
-	background-color: white;
-	color: var(--green);
+	background-color: var(--green);
+	color: white;
 	border-radius: 9px;
 	margin-left: 3px;
 	text-align: center;
 	cursor: pointer;
 	padding-left: 1px;
 }
-
 
 .ui-button{/*Sets height for all navbar buttons*/
 	height: 2.4rem;
@@ -1252,7 +1271,7 @@ checkbox[readonly]{
 	border-width: 6px;
 	border-style: solid;
 	text-align: center;
-	line-height: 40px;
+	line-height: 20px;
 	color: var(--brown);
 	font-size: 18px;
 	font-weight: bold;
@@ -1260,7 +1279,9 @@ checkbox[readonly]{
 	cursor: pointer;
 	box-shadow: 6px 6px 3px lightgrey;
 	width: 180px;
+	padding-top: 6px;
 }
+
 
 /* #receiptTab {
 	position: absolute;
@@ -1334,7 +1355,7 @@ checkbox[readonly]{
 	border-width: 12px;
 	border-style: solid;
 	text-align: center;
-	line-height: 40px;
+	line-height: 20px;
 	color: var(--red);
 	font-size: 18px;
 	font-weight: bold;

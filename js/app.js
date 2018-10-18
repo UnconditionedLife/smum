@@ -24,16 +24,8 @@ const uiDateTimeShort = 'MM/DD/YY H:mma'
 const longDate = "MMMM Do, YYYY  |  LT"
 const date = 'YYYY-MM-DD'
 const dateTime = 'YYYY-MM-DDTHH:mm'
-let settings = {
-	sounds: "YES",
-	seniorAge: 60,
-	serviceZipcodes: [95110, 95112, 95117, 95125, 95126, 95128, 95131, 95132, 95134, 95192],
-	serviceCategories: [], //TODO get list of categories from the settings and populate form
-	clientStatus: ["Client", "NonClient", "Inactive"], //TODO us to populate form
-	closedDates: ["2018-12-25", "2018-12-26"]
-}
-
-const seniorAge = 60 // TODO set in Admin/Settings
+let settings = {}
+// 	settings.serviceZip: [95110, 95112, 95117, 95125, 95126, 95128, 95131, 95132, 95134, 95192] // reference only
 let rowNum = 1
 let clientData = null // current client search results
 let servicesRendered = [] // tally of services as they are clicked
@@ -57,6 +49,14 @@ let userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poo
 let session = {}
 let cognitoUser = {}
 let authorization = {}
+let closedEvent = {
+	id : "closed",
+	title: "Closed",
+	start: "",
+	allDay: true,
+	editable: false,
+	backgroundColor: "red"
+}
 
 // TODO build some selects in forms from data in settings (ie. Categories)
 
@@ -163,10 +163,14 @@ function navGotoTab(tab){
 // *********************************************** UI FUNCTIONS *********************************************
 // **********************************************************************************************************
 
+function uiAddBadge(type, item){
+	const badge = "<div id='" + type.toLowerCase() + item + "' class='listBadge'>" + item + "<div class='listBadgeX' onclick=\"uiRemoveListItem('" + type + "', '" + item + "')\"" + ">X</div></div>"
+	$("#service" + type + "Display").append(badge)
+};
+
 function uiAddListItem(type){
 	// adds a category to the list of Categories - called by Form Button
 	const item = $("#service" + type + "Input").val()
-	const badge = "<div id='" + type.toLowerCase() + item + "' class='listBadge'>" + item + "<div class='listBadgeX' onclick=\"uiRemoveListItem('" + type + "', '" + item + "')\"" + ">X</div></div>"
 	let itemList = $("#service" + type).val()
 
 	// TODO validate if item is a Zipcode or a valid category name
@@ -182,7 +186,9 @@ function uiAddListItem(type){
 
 	} else {
 		itemList.push(item)
-		$("#service" + type + "Display").append(badge)
+		uiAddBadge(type, item)
+		//const badge = "<div id='" + type.toLowerCase() + item + "' class='listBadge'>" + item + "<div class='listBadgeX' onclick=\"uiRemoveListItem('" + type + "', '" + item + "')\"" + ">X</div></div>"
+		//$("#service" + type + "Display").append(badge)
 		$("#service" + type).val(JSON.stringify(itemList))
 	}
 	$("#service" + type + "Input").val("")
@@ -432,7 +438,32 @@ jQuery('<div/>', {
 	});
 	$('[id="' + id + '"]' + formClass).addClass("errorField")
 };
-// *** UI L ***
+
+function uiInitFullCalendar(){
+	$(function() {
+		$('#calendar').fullCalendar({
+			height: 300,
+			aspectRatio: 1.5,
+			dayRender: function (date, cell) {
+				let weekObj = utilSelectDays(date.format());
+				if (weekObj.dayOfWeek==0){
+					utilAddClosedEvent(date.format());
+				}
+				if ((weekObj.weekInMonth==2 || weekObj.weekInMonth==4 || weekObj.weekInMonth==5)&&weekObj.dayOfWeek==6){
+					utilAddClosedEvent(date.format());
+				}
+			},
+			dayClick: function(date, jsEvent, view) {
+				console.log('Clicked on: ' + date.format());
+				$('#calendarPopup').show('slow')
+				utilSelectDays(date.format());
+				utilAddClosedEvent(date.format());
+			}
+			// put your options and callbacks here
+		})
+	});
+};
+
 function uiLoginFormToggleValidation(todo){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
 	console.log("REDO LOGIN TO SHOW VALIDATION FIELD")
@@ -1548,6 +1579,9 @@ function uiShowNewServiceTypeForm(){
 	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
 	$('#serviceTypeId').val(cuid())
 	navGotoTab("aTab2")
+	// TODO from does not seem to be getting updated by the following functions
+	uiPopulateServiceCategories()
+	uiPopulateTargetServiceSelect()
 };
 
 function uiShowNewUserForm(){
@@ -1613,7 +1647,12 @@ function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTy
 };
 
 function uiPopulateBadges(){
-
+	for (var i = 0; i < settings.serviceZip.length; i++) {
+		uiAddBadge('Zip',settings.serviceZip[i])
+	}
+	for (var i = 0; i < settings.serviceCat.length; i++) {
+		uiAddBadge('Cat',settings.serviceCat[i])
+	}
 };
 
 function uiPopulateForm(data, form){
@@ -1642,7 +1681,7 @@ function uiPopulateForm(data, form){
 	});
 	if (form === 'serviceTypeForm') {
 		uiToggleAgeGrade()
-		uiToggleFulfillDates()
+		uiToggleFulfillFields()
 	} else if (form === 'clientForm'){
 		$('#clientAge').val(client.age) // readonly unsaved value
 		uiToggleClientAddress()
@@ -1650,6 +1689,16 @@ function uiPopulateForm(data, form){
 		// TODO HIDE ADMIN Fields
 	}
 	return
+};
+
+function uiPopulateServiceCategories(){
+	let items = settings.serviceCat
+	$.each(items, function (i, item) {
+    $('#serviceCategory').append($('<option>', {
+        value: item.replace(/ /g, '_'),
+        text : item
+    }));
+});
 };
 
 function uiPopulateTargetServiceSelect(){
@@ -1709,6 +1758,7 @@ function uiShowServicesButtons(){
 function uiShowServiceTypeForm(){
 	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
 	uiPopulateTargetServiceSelect()
+	uiPopulateServiceCategories()
 	uiPopulateForm(serviceType, 'serviceTypeForm')
 	uiToggleIsUSDA()
 };
@@ -1722,10 +1772,30 @@ function uiShowUsers(){
 };
 
 function uiShowSettings(){
+	uiInitFullCalendar()
 	$('#settingsFormContainer').html(uiGetTemplate('#settingsForm'))
 	uiPopulateForm(settings, 'settingsForm')
+	// these are objects that need to be handled seperately
+	$('#serviceZip').val(JSON.stringify(settings.serviceZip))
+	$('#serviceCat').val(JSON.stringify(settings.serviceCat))
 	uiPopulateBadges()
-	// TODO build Table, API, object for settings
+
+	// TODO Populate the calendar
+};
+
+function utilSelectDay(selected){
+	console.log("selected", selected)
+  $('#calendarPopup').hide('slow')
+};
+
+function utilSelectDays(dayOfYear){
+	let momentDay = moment(dayOfYear)
+	let dayOfWeek = momentDay.day();
+	let weekInMonth = momentDay.isoWeek() - momentDay.subtract('days', momentDay.date()-1).isoWeek() + 1;
+	return {
+		"dayOfWeek":dayOfWeek,
+		"weekInMonth": weekInMonth
+	}
 };
 
 function uiGenSelectHTML(val,options,col,id){
@@ -1876,11 +1946,16 @@ function uiToggleAgeGrade(){
 	}
 };
 
-function uiToggleFulfillDates(){
+function uiToggleFulfillFields(){
 	if ($('[id="fulfillment.type"]').val() == 'Voucher') {
 		$('.fulfillDiv').show('slow')
 	} else {
 		$('.fulfillDiv').hide('slow')
+	}
+	if ($('[id="fulfillment.type"]').val() == 'Voucher_Fulfill') {
+		$('.voucherFulfillDiv').show('slow')
+	} else {
+		$('.voucherFulfillDiv').hide('slow')
 	}
 };
 
@@ -1928,7 +2003,18 @@ function uiResetServiceTypeForm(){
 // **********************************************************************************************************
 
 function dbGetAppSettings(){
-	return dbGetData(aws+"/settings")
+	let temp = dbGetData(aws+"/settings")
+	if (temp.serviceZip == "*EMPTY*") {
+		temp.serviceZip = []
+	} else {
+		temp.serviceZip = utilStringToArray(temp.serviceZip)
+	}
+	if (temp.serviceCat == "*EMPTY*") {
+		temp.serviceCat = []
+	} else {
+		temp.serviceCat = utilStringToArray(temp.serviceCat)
+	}
+	return temp
 };
 
 function dbGetClientServiceHistory(){
@@ -2055,7 +2141,8 @@ function dbGetServiceTypes(){
 			if (nameA < nameB) return -1
 			if (nameA > nameB) return 1
 		return 0; //default return value (no sorting)
-		})
+	})
+	console.log(serviceTypes)
 };
 
 function dbGetUsers(){
@@ -2164,7 +2251,6 @@ function dbSaveUser(context){
 	result = dbPostData(URL, JSON.stringify(userData))
 	if (result == "success") {
 		utilBloop() // TODO move bloop to successful POST ()
-		// TODO add sounds settings in Admin Settings (Yes / NO)
 		users = dbGetUsers()
 		utilSetCurrentUser()
 		uiShowUsers()
@@ -2412,22 +2498,26 @@ function dbSaveServiceTypeForm(context){
 };
 
 function dbSaveSettingsForm(){
+	let data = utilFormToJSON('.settingsForm') // array fields are strings
+	if (data.serviceZip != "") {
+		data.serviceZip = utilArrayToObject(JSON.parse(data.serviceZip))
+	} else {
+		data.serviceZip = "*EMPTY*"
+	}
 
-console.log("In save setting!")
+console.log(data.serviceCat)
 
-	let data = utilFormToJSON('.settingsForm')
-
-console.log(data)
-
-	const zips = data.serviceZip
-	const cats = data.serviceCat
-	data.serviceCat = cats.toString()
-	data.serviceZip = zips.toString()
+	if (data.serviceCat != "") {
+		data.serviceCat = utilArrayToObject(JSON.parse(data.serviceCat))
+	} else {
+		data.serviceCat = "*EMPTY*"
+	}
 
 console.log(data)
 
 	let URL = aws+'/settings'
 	dbPostData(URL,JSON.stringify(data))
+	settings = dbGetAppSettings()
 };
 
 function dbSearchClients(){
@@ -2706,10 +2796,11 @@ function cogLoginUser() {
 				$('#nav5').html('Login')
 				$('#nav4').html('')
 				$(loginError).html("Sorry, your account is INACTIVE.")
-			}
-			settings = dbGetAppSettings()
+			} else {
+				settings = dbGetAppSettings()
 
-console.log(settings)
+	console.log(settings)
+			}
     },
     onFailure: (err) => {
 			console.log("COGNITO ERROR")
@@ -2873,6 +2964,15 @@ console.log('made it past config')
 // *********************************************** UTIL FUNCTIONS *******************************************
 // **********************************************************************************************************
 
+function utilAddClosedEvent(dayOfYear){ //when the green or yellow button is pushed, change a specific date's color.
+	closedEvent.id = "closed"+dayOfYear;
+	closedEvent.start = dayOfYear;
+	 let dayEvents = $('#calendar').fullCalendar( 'clientEvents', closedEvent.id );
+	 if (dayEvents.length==0){
+		 $('#calendar').fullCalendar( 'renderEvent', closedEvent, false);
+	 }
+};
+
 function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 3)) return
 	let serviceType = utilGetServiceTypeByID(serviceTypeId)
@@ -2928,17 +3028,30 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 	}
 };
 
-function utilCalcLastBackToSchoolSignup(serviceType){
+function utilArrayToObject(arr){
+	return arr.reduce(function(acc, cur, i) {
+		acc[i] = cur
+		return acc
+	}, {});
+};
+
+function utilCalcVoucherServiceSignup(serviceType){
+
+console.log(serviceType)
+
 	let history = dbGetClientServiceHistory()
 		.filter(item => item.serviceValid == "true")
 		.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
-	if (serviceType.target.service == "Unselected") {
-		history = history.filter(item => item.serviceTypeId == serviceType.serviceTypeId)
-	} else {
-		history = history.filter(item => item.serviceCategory == serviceType.serviceCategory)
-	}
+	// if (serviceType.target.service == "Unselected") {
+		history = history.filter(item => item.serviceTypeId == serviceType.target.service)
+	// } else {
+	// 	history = history.filter(item => item.serviceCategory == serviceType.serviceCategory)
+	// }
+
+console.log(history)
+
 	return history
-}
+};
 
 function utilCalcServiceFamilyCounts(serviceTypeId){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -3002,18 +3115,22 @@ function utilGetFoodInterval(isUSDA){
 
 function utilBeep(){
 	console.log("BAD BEEP")
-	let sound = document.getElementById("beep")
-	sound.volume= .1
-	sound.loop = false
-	sound.play()
+	if (settings.sounds == "YES"){
+		let sound = document.getElementById("beep")
+		sound.volume= .1
+		sound.loop = false
+		sound.play()
+	}
 };
 
 function utilBloop(){
 	console.log("GOOD BLOOP")
-	let sound = document.getElementById("bloop")
-	sound.volume= .1
-	sound.loop = false
-	sound.play()
+	if (settings.sounds == "YES"){
+		let sound = document.getElementById("bloop")
+		sound.volume= .1
+		sound.loop = false
+		sound.play()
+	}
 };
 
 function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServices, lastServed) {
@@ -3040,8 +3157,8 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 					display = false
 				}
 			}
-			if (prop == "service") { // targeting a voucher service
-				let servicesVouchers = utilCalcLastBackToSchoolSignup(activeServiceTypes[i])
+			if (prop == "service") { // targeting a voucher fulfill service
+				let servicesVouchers = utilCalcVoucherServiceSignup(activeServiceTypes[i])
 				if (servicesVouchers.length !== 1) {
 					display = false
 				}
@@ -3116,21 +3233,21 @@ function utilCalcClientFamilyCounts(){
 	if (client.family == undefined) client.family = {}
 	// dependents age & family counts
 	let fam = {totalAdults:1, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:1}
-	if (client.age >= seniorAge) ++fam.totalSeniors
+	if (client.age >= settings.seniorAge) ++fam.totalSeniors
 	for (let i = 0; i < client.dependents.length; i++) {
 		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
 		if (client.dependents[i].isActive == "Active") {
 			if (client.dependents[i].relationship == "Spouse") {
 				++fam.totalAdults
 				++fam.totalSize
-				if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
+				if (client.dependents[i].age >= settings.seniorAge) ++fam.totalSeniors
 			}
 			if (client.dependents[i].relationship == "Other") {
 				if (client.dependents[i].age >= 18) {
 					++fam.totalOtherDependents
 					++fam.totalAdults
 					++fam.totalSize
-					if (client.dependents[i].age >= seniorAge) ++fam.totalSeniors
+					if (client.dependents[i].age >= settings.seniorAge) ++fam.totalSeniors
 				}
 				if (client.dependents[i].age < 18) {
 					++fam.totalOtherDependents
@@ -3262,6 +3379,7 @@ function utilGradeToNumber(grade){
 	return parseInt(grade);
 };
 
+
 function utilLoginUserShowScreens(){
 	$('#nav4').html('<i class="fa fa-user" aria-hidden="true"></i> ' + session.user.username)
 	$('#nav5').html('Logout')
@@ -3319,7 +3437,31 @@ function utilRemoveSettingsZipcode(zipCode){
 	// update settings object
 	console.log("update settings object")
 	settings.zipcodes
-}
+};
+
+function utilStringToArray(str){
+	let arr = []
+
+console.log(str)
+
+	if (str != "{}") {
+		str = str.replace(/=/g, '":"').replace(/\{/g, '{"').replace(/\}/g, '"}').replace(/, /g, '", "')
+		obj = JSON.parse(str)
+
+console.log(obj)
+
+		for (var key in obj) {
+	    if (obj.hasOwnProperty(key)) {
+	      arr.push(obj[key])
+	    }
+		}
+	}
+
+console.log(str)
+console.log(arr)
+
+	return arr
+};
 
 function utilUpdateService(serviceId){
 	let service = dbGetService(serviceId)
@@ -4050,7 +4192,7 @@ function utilValidateConfig(form, id){
 												"IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
 												"NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
 												"SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "GU", "PR", "VI"]} ],
-				 						  zipcode: [ 'required', 'zipcode', {lookup: settings.serviceZipcodes} ],
+				 						  zipcode: [ 'required', 'zipcode', {lookup: settings.serviceZip} ],
 										zipSuffix: [ 'zipsuffix' ],
 				 					  telephone: [ 'phoneNumber' ],
 				 		  			 		email: [ 'email' ],
@@ -4113,7 +4255,7 @@ function utilValidateConfig(form, id){
 			 	 target_childMaxAge: [ 'integer' ], // TODO required if terget child is "YES"
 			 target_childMinGrade: [ {lookup: ["Unselected","Pre-K","K","1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if target child is "YES"
 			 target_childMaxGrade: [ {lookup: ["Unselected","Pre-K","K","1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if target child is "YES"
-			     fulfillment_type: [ 'required', {lookup: ["Fulfill", "Notify", "Voucher"]} ],
+			     fulfillment_type: [ 'required', {lookup: ["Fulfill", "Notify", "Voucher", "Voucher_Fulfill"]} ],
    fulfillment_fromDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ],
 	   fulfillment_toDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ]
 	}
@@ -4159,18 +4301,19 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		if (serviceCategory == "Clothes_Closet") {
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
 		}
-		if (serviceCategory == "Back_To_School") {
-			const backToSchool = utilCalcLastBackToSchoolSignup(activeServiceType)
-			let backToSchoolDays = 10000
-			if (backToSchool.length == 1) {
-				backToSchoolDays = moment().diff(backToSchool[0].servicedDateTime, 'days')
+		// validate that a voucher was already registered
+		if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
+			const voucherHistory = utilCalcVoucherServiceSignup(activeServiceType)
+			let voucherDays = 10000
+			if (voucherHistory.length == 1) {
+				voucherDays = moment().diff(voucherHistory[0].servicedDateTime, 'days')
 			}
 			if (activeServiceType.target.service == "Unselected") {
-				if (backToSchoolDays < activeServiceType.serviceInterval) {
+				if (voucherDays < activeServiceType.serviceInterval) {
 					return false
 				}
 		  } else {
-				if (backToSchoolDays == 10000) {
+				if (voucherDays == 10000) {
 			  	return false
 				} else {
 					return true
