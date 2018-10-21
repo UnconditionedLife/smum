@@ -2028,15 +2028,14 @@ function uiResetServiceTypeForm(){
 
 function dbGetAppSettings(){
 	let temp = dbGetData(aws+"/settings")
-	if (temp.serviceZip == "*EMPTY*") {
-		temp.serviceZip = []
-	} else {
-		temp.serviceZip = utilStringToArray(temp.serviceZip)
-	}
-	if (temp.serviceCat == "*EMPTY*") {
-		temp.serviceCat = []
-	} else {
-		temp.serviceCat = utilStringToArray(temp.serviceCat)
+	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek"]
+	for (var i = 0; i < fields.length; i++) {
+		let x = fields[i]
+		if (temp[x] == "*EMPTY*") {
+			temp[x] = []
+		} else {
+			temp[x] = utilStringToArray(temp[x])
+		}
 	}
 	return temp
 };
@@ -2523,22 +2522,15 @@ function dbSaveServiceTypeForm(context){
 
 function dbSaveSettingsForm(){
 	let data = utilFormToJSON('.settingsForm') // array fields are strings
-	if (data.serviceZip != "") {
-		data.serviceZip = utilArrayToObject(JSON.parse(data.serviceZip))
-	} else {
-		data.serviceZip = "*EMPTY*"
+	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek"]
+	for (var i = 0; i < fields.length; i++) {
+		let x = fields[i]
+		if (data[x] != "") {
+			data[x] = utilArrayToObject(JSON.parse(data[x]))
+		} else {
+			data[x] = "*EMPTY*"
+		}
 	}
-
-console.log(data.serviceCat)
-
-	if (data.serviceCat != "") {
-		data.serviceCat = utilArrayToObject(JSON.parse(data.serviceCat))
-	} else {
-		data.serviceCat = "*EMPTY*"
-	}
-
-console.log(data)
-
 	let URL = aws+'/settings'
 	dbPostData(URL,JSON.stringify(data))
 	settings = dbGetAppSettings()
@@ -4372,7 +4364,7 @@ let printer = null;
 connect()
 
 function connect() {
- 	var ipAddress = '192.168.1.137'
+ 	var ipAddress = settings.printerIP // was '192.168.1.137'
  	var port = '8008'
  	ePosDev.connect(ipAddress, port, callback_connect)
 };
@@ -4426,7 +4418,7 @@ function drawCanvas(name,width,height){
 };
 
 function print_canvas(name){
-	var ADDRESS = 'http://192.168.1.137/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
+	var ADDRESS = 'http://' + printerIP + '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
 	var epos = new epson.CanvasPrint(ADDRESS);
 	epos.cut = false;
 	epos.align = epos.ALIGN_CENTER;
