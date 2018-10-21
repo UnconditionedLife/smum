@@ -438,24 +438,46 @@ jQuery('<div/>', {
 	});
 	$('[id="' + id + '"]' + formClass).addClass("errorField")
 };
-
+function utilParseHiddenArray(id){
+	let arr = $("#"+id).val();
+	if (arr == "[]"){
+		return [];
+	}
+	return JSON.parse(arr);
+}
 function uiInitFullCalendar(){
 	$(function() {
 		$('#calendar').fullCalendar({
 			height: 300,
 			aspectRatio: 1.5,
 			dayRender: function (date, cell) {
+				let closedEveryDays =utilParseHiddenArray("closedEveryDays");
+				let closedEveryDaysWeek =utilParseHiddenArray("closedEveryDaysWeek");;
+				let closedDays = utilParseHiddenArray("closedDays");
 				let weekObj = utilSelectDays(date.format());
-				if (weekObj.dayOfWeek==0){
-					utilAddClosedEvent(date.format());
+				for (dayOfWeek = 0; dayOfWeek < closedEveryDays.length; dayOfWeek++){
+					if (weekObj.dayOfWeek==closedEveryDays[dayOfWeek]){
+						utilAddClosedEvent(date.format());
+					}
 				}
-				if ((weekObj.weekInMonth==2 || weekObj.weekInMonth==4 || weekObj.weekInMonth==5)&&weekObj.dayOfWeek==6){
-					utilAddClosedEvent(date.format());
+
+				for (week = 0; week < closedEveryDaysWeek.length; week++){
+					if (weekObj.weekInMonth==closedEveryDaysWeek[week][0]){
+						if (weekObj.dayOfWeek==closedEveryDaysWeek[week][1]){
+							utilAddClosedEvent(date.format());
+						}
+					}
+				}
+
+				for (dayOfYear = 0; dayOfYear < closedDays.length; dayOfYear++){
+					if (weekObj.dayOfYear==closedDays[dayOfYear]){
+						utilAddClosedEvent(date.format());
+					}
 				}
 			},
 			dayClick: function(date, jsEvent, view) {
 				console.log('Clicked on: ' + date.format());
-				$('#calendarPopup').show('slow')
+				$('#calendarPopup').show('slow');
 				utilSelectDays(date.format());
 				utilAddClosedEvent(date.format());
 			}
@@ -1789,12 +1811,14 @@ function utilSelectDay(selected){
 };
 
 function utilSelectDays(dayOfYear){
+	console.log(dayOfYear);
 	let momentDay = moment(dayOfYear)
 	let dayOfWeek = momentDay.day();
 	let weekInMonth = momentDay.isoWeek() - momentDay.subtract('days', momentDay.date()-1).isoWeek() + 1;
 	return {
 		"dayOfWeek":dayOfWeek,
-		"weekInMonth": weekInMonth
+		"weekInMonth": weekInMonth,
+		"dayOfYear": dayOfYear
 	}
 };
 
