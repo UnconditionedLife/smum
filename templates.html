@@ -373,8 +373,6 @@
    </div>
 </template>
 
-<!-- TODO Add service periods to settings - 14/28 days  -->
-
 <template id="settingsForm">
    <div class="adminSettingsFormDiv">
       <div class="span6"><span class="messageText"><b>System settings. Be careful with changes.</b></span></div>
@@ -386,6 +384,8 @@
             <option value="NO">NO</option>
          </select>
       </div>
+      <div class="lableDiv">Printer Address</div>
+      <div><input id="printerIP" class="inputBox settingsForm"></div>
       <div class="headingDiv span6">Services</div>
       <div class="lableDiv">New Zipcode</div>
       <div style="display: inline-flex"><input id="serviceZipInput" type="text" class="inputBox"><input id="serviceZip" type="hidden" class="inputBox settingsForm"></div>
