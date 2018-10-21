@@ -477,6 +477,19 @@ function uiInitFullCalendar(){
 			},
 			dayClick: function(date, jsEvent, view) {
 				console.log('Clicked on: ' + date.format());
+				let possibleDates = utilSelectDays(date.format());
+
+				// TODO need to know if currently Closed or Open
+				let todo = "Closure/Opening"
+				$('#calendarPopupHeader').html('Select ' + todo + ' for:')
+
+				$('#selectDayLable').html(date.format('MMM D, YYYY') + ' only!')
+				let dayOfWeek = date.format('dddd')
+				$('#selectEveryDayLable').html('Every ' + dayOfWeek + ' of the year!')
+				let weekInMonth = utilGetOrdinal(date.isoWeek() - date.subtract('days', date.date()-1).isoWeek() + 1)
+				$('#selectEveryDayWeekLable').html('Every ' + weekInMonth + ' ' + dayOfWeek + ' of the year!')
+				
+
 				$('#calendarPopup').show('slow');
 				utilSelectDays(date.format());
 				utilAddClosedEvent(date.format());
@@ -3457,25 +3470,15 @@ function utilRemoveSettingsZipcode(zipCode){
 
 function utilStringToArray(str){
 	let arr = []
-
-console.log(str)
-
 	if (str != "{}") {
 		str = str.replace(/=/g, '":"').replace(/\{/g, '{"').replace(/\}/g, '"}').replace(/, /g, '", "')
 		obj = JSON.parse(str)
-
-console.log(obj)
-
 		for (var key in obj) {
 	    if (obj.hasOwnProperty(key)) {
 	      arr.push(obj[key])
 	    }
 		}
 	}
-
-console.log(str)
-console.log(arr)
-
 	return arr
 };
 
@@ -3863,6 +3866,12 @@ function utilCalcUserAge(source){
 		adminUser.age = ""
 	}
 };
+
+function utilGetOrdinal(n) {
+  var s=["th","st","nd","rd"],
+  v=n%100;
+  return n+(s[(v-20)%10]||s[v]||s[0])
+ }
 
 function utilSetCurrentClient(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
