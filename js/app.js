@@ -456,23 +456,24 @@ function uiInitFullCalendar(){
 				let closedEveryDays =utilParseHiddenArray("closedEveryDays");
 				let closedEveryDaysWeek =utilParseHiddenArray("closedEveryDaysWeek");;
 				let closedDays = utilParseHiddenArray("closedDays");
+				let openDays = utilParseHiddenArray("openDays");
+				console.log(openDays)
 				let weekObj = utilSelectDays(date.format());
+				let index = openDays.indexOf(date.format())
 				for (dayOfWeek = 0; dayOfWeek < closedEveryDays.length; dayOfWeek++){
-					if (weekObj.dayOfWeek==closedEveryDays[dayOfWeek]){
+					if (weekObj.dayOfWeek==closedEveryDays[dayOfWeek] && index==-1){
 						utilAddClosedEvent(date.format());
 					}
 				}
 
 				for (week = 0; week < closedEveryDaysWeek.length; week++){
-					if (weekObj.weekInMonth==closedEveryDaysWeek[week][0]){
-						if (weekObj.dayOfWeek==closedEveryDaysWeek[week][1]){
-							utilAddClosedEvent(date.format());
-						}
+					if (weekObj.weekInMonth==closedEveryDaysWeek[week][0] && weekObj.dayOfWeek==closedEveryDaysWeek[week][1] && index==-1){
+						utilAddClosedEvent(date.format());
 					}
 				}
 
 				for (dayOfYear = 0; dayOfYear < closedDays.length; dayOfYear++){
-					if (weekObj.dayOfYear==closedDays[dayOfYear]){
+					if (weekObj.dayOfYear==closedDays[dayOfYear] && index==-1){
 						utilAddClosedEvent(date.format());
 					}
 				}
@@ -1816,31 +1817,81 @@ function uiShowSettings(){
 function utilSelectDay(selected){
 	let clickDate = moment($("#selectedDate").val()).format('YYYY-MM-DD')
 	let opt = utilSelectDays(clickDate)
+	let hasEvents = $('#calendar').fullCalendar( 'clientEvents', "closed"+clickDate ).length>0
+	let openDays = utilParseHiddenArray('openDays')
+	let openIndex = openDays.indexOf(clickDate)
+
 	if (selected == 'dayOfYear'){
 		let arr = utilParseHiddenArray('closedDays')
-		arr.push(clickDate)
+		let index = arr.indexOf(clickDate)
+		if (hasEvents && index != -1){
+			arr.splice(index,1);
+		}
+		else if (hasEvents){
+			openDays.push(clickDate)
+		}
+		else if (!hasEvents){
+			arr.push(clickDate)
+		}
 		$('#closedDays').val(JSON.stringify(arr))
 		// utilAddClosedEvent(clickDate)
 	} else if (selected == 'dayOfWeek'){
 		let arr = utilParseHiddenArray("closedEveryDays")
-		arr.push(opt.dayOfWeek.toString())
+		let weekMonthArr = utilParseHiddenArray('closedEveryDaysWeek')
+		let dayOfWeek = opt.dayOfWeek.toString()
+		let index = arr.indexOf(dayOfWeek)
+		if (hasEvents && index != -1){
+			arr.splice(index,1);
+		}
+		else if (!hasEvents){
+			for (let i = 0; i < weekMonthArr.length; i++){
+				if (weekMonthArr[i][1]==dayOfWeek){
+					console.log(weekMonthArr)
+					weekMonthArr.splice(i,1)
+					console.log(weekMonthArr)
+					i--;
+				}
+			}
+			arr.push(dayOfWeek)
+		}
+		$('#closedEveryDaysWeek').val(JSON.stringify(weekMonthArr))
 		$('#closedEveryDays').val(JSON.stringify(arr))
 		//TODO add all days to current month
 	} else if (selected == 'day&WeekOfMonth'){
 		let arr = utilParseHiddenArray('closedEveryDaysWeek')
 		let pairArr = [opt.weekInMonth.toString(), opt.dayOfWeek.toString()]
-		arr.push(pairArr)
+		let index = isItemInArray(arr,pairArr)
+		if (hasEvents && index != -1){
+			arr.splice(index,1);
+		}
+		else if (!hasEvents){
+			arr.push(pairArr)
+		}
 		$('#closedEveryDaysWeek').val(JSON.stringify(arr))
+
 		// utilAddClosedEvent(clickDate)
 	}
 	// $('#calendar').fullCalendar('refetchEvents');
 	// $('#calendar').fullCalendar( 'renderEvent', 'closedEvent' , false )
+	if (!hasEvents && openIndex!=-1){
+		openDays.splice(openIndex,1)
+	}
+	$('#openDays').val(JSON.stringify(openDays))
+
 	$('#calendar').fullCalendar('prev');
 	$('#calendar').fullCalendar('next');
 
   $('#calendarPopup').hide('slow')
 };
-
+function isItemInArray(array, item) {
+    for (var i = 0; i < array.length; i++) {
+        // This if statement depends on the format of your array
+        if (array[i][0] == item[0] && array[i][1] == item[1]) {
+            return i;   // Found it
+        }
+    }
+    return -1;   // Not found
+}
 function utilSelectDays(dayOfYear){
 	console.log(dayOfYear);
 	let momentDay = moment(dayOfYear)
