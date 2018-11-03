@@ -3065,6 +3065,15 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 			setTimeout(function(){ // give time for food receipt & reminder to print
 				prnPrintFirstStepReceipt(service, dependents)
 			}, 3750)
+		} else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+			const targetService = utilCalcTargetServices([serviceType])
+			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				prnPrintTurkeyReceipt(service)
+			}, 2500)
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				prnPrintTurkeyReceipt(service)
+			}, 3750)
 		}
 		uiShowLastServed()
 		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
@@ -4558,6 +4567,47 @@ function prnPrintFoodReceipt(isUSDA){
 			printer.addTextSize(2, 2);
     	printer.addText(' ' + isUSDA + ' \n');
 			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addText('**************************************\n');
+    	printer.addFeedLine(2);
+    	printer.addCut(printer.CUT_FEED);
+    	printer.send();
+	}, 500);
+};
+
+function prnPrintTurkeyReceipt(serviceType){
+	if (printer == null) {
+		console.log("Printer Not Connected")
+		return
+	}
+	let serviceName = serviceType.serviceName
+	prnAddHeader();
+	setTimeout(function f(){
+			printer.addTextSize(1, 2);
+			printer.addFeedLine(2);
+    	printer.addText('* ' + serviceName.toUpperCase() + ' *\n');
+			printer.addTextSize(1, 1);
+    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
+			printer.addFeedLine(1);
+			printer.addTextSize(2, 2);
+			printer.addText(client.givenName + ' ' + client.familyName + '\n');
+			printer.addFeedLine(1);
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 1);
+    	printer.addText(' ' + client.clientId + ' \n');
+			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+			printer.addFeedLine(1)
+			printer.addTextAlign(printer.ALIGN_CENTER);
+    	printer.addText('**************************************\n')
+			printer.addText('PRESENT THIS FOR PICKUP\n')
+			printer.addText('HAY PRESENTAR PARA RECLAMAR\n')
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 2);
+    	printer.addText(' ' + moment(serviceType.fulfillment.fromDateTime).format("MMMM Do, YYYY")+ ' \n');
+			printer.addTextSize(1, 1);
+			printer.addFeedLine(1);
+			printer.addText(' '+ moment(serviceType.fulfillment.fromDateTime).format("h:mm a")+" - " + moment(serviceType.fulfillment.toDateTime).format("h:mm a")+' \n');
     	printer.addTextStyle(false,false,false,printer.COLOR_1);
     	printer.addText('**************************************\n');
     	printer.addFeedLine(2);
