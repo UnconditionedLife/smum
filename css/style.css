@@ -380,7 +380,7 @@ main{
 }
 
 #calendarPopup {
-	margin: 100px 0 0 50px;
+	margin: 60px 0 0 30px;
 	background-color: var(--light-green);
 	padding: 20px;
 	border: var(--green) solid 2px;

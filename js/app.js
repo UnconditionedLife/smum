@@ -448,8 +448,10 @@ function utilParseHiddenArray(id){
 function uiInitFullCalendar(){
 	$(function() {
 		$('#calendar').fullCalendar({
-			height: 300,
+			height: 380,
 			aspectRatio: 1.5,
+			contentHeight: 380,
+			fixedWeekCount: false,
 			dayRender: function (date, cell) {
 				let closedEveryDays =utilParseHiddenArray("closedEveryDays");
 				let closedEveryDaysWeek =utilParseHiddenArray("closedEveryDaysWeek");;
@@ -475,26 +477,19 @@ function uiInitFullCalendar(){
 					}
 				}
 			},
-			dayClick: function(date, jsEvent, view) {
-				console.log('Clicked on: ' + date.format());
-				let possibleDates = utilSelectDays(date.format());
-
+			dayClick: function(clickDate, jsEvent, view) {
+				console.log('Clicked on: ' + clickDate.format());
+				let opt = utilSelectDays(clickDate.format());
+				$("#selectedDate").val(clickDate.format('YYYY-MM-DD')) // store day selected in hidden field
+				// display popup menu
 				// TODO need to know if currently Closed or Open
 				let todo = "Closure/Opening"
 				$('#calendarPopupHeader').html('Select ' + todo + ' for:')
-
-				$('#selectDayLable').html(date.format('MMM D, YYYY') + ' only!')
-				let dayOfWeek = date.format('dddd')
-				$('#selectEveryDayLable').html('Every ' + dayOfWeek + ' of the year!')
-				let weekInMonth = utilGetOrdinal(date.isoWeek() - date.subtract('days', date.date()-1).isoWeek() + 1)
-				$('#selectEveryDayWeekLable').html('Every ' + weekInMonth + ' ' + dayOfWeek + ' of the year!')
-				
-
+				$('#selectDayLable').html(clickDate.format('MMM DD, YYYY') + ' only!')
+				$('#selectEveryDayLable').html('Every ' + utilDayOfWeekAsString(opt.dayOfWeek) + ' of the year!')
+				$('#selectEveryDayWeekLable').html('Every ' + utilGetOrdinal(opt.weekInMonth) + ' ' + utilDayOfWeekAsString(opt.dayOfWeek) + ' of the year!')
 				$('#calendarPopup').show('slow');
-				utilSelectDays(date.format());
-				utilAddClosedEvent(date.format());
 			}
-			// put your options and callbacks here
 		})
 	});
 };
@@ -1733,7 +1728,7 @@ function uiPopulateServiceCategories(){
         value: item.replace(/ /g, '_'),
         text : item
     }));
-});
+	});
 };
 
 function uiPopulateTargetServiceSelect(){
@@ -1819,7 +1814,26 @@ function uiShowSettings(){
 };
 
 function utilSelectDay(selected){
-	console.log("selected", selected)
+	let clickDate = moment($("#selectedDate").val()).format('YYYY-MM-DD')
+	let opt = utilSelectDays(clickDate)
+	if (selected == 'dayOfYear'){
+		let arr = JSON.parse($('#closedDays').val())
+		arr.push(clickDate)
+		$('#closedDays').val(JSON.stringify(arr))
+		utilAddClosedEvent(clickDate)
+	} else if (selected == 'dayOfWeek'){
+		let arr = JSON.parse($('#closedEveryDays').val())
+		arr.push(opt.dayOfWeek.toString())
+		$('#closedEveryDays').val(JSON.stringify(arr))
+		//TODO add all days to current month
+	} else if (selected == 'day&WeekOfMonth'){
+		let arr = JSON.parse($('#closedEveryDaysWeek').val())
+		let pairArr = [opt.weekInMonth.toString(), opt.dayOfWeek.toString()]
+		arr.push(pairArr)
+		$('#closedEveryDaysWeek').val(JSON.stringify(arr))
+		utilAddClosedEvent(clickDate)
+	}
+	$('#calendar').fullCalendar( 'renderEvent', 'closedEvent' , false )
   $('#calendarPopup').hide('slow')
 };
 
@@ -2827,8 +2841,8 @@ function cogLoginUser() {
 				$(loginError).html("Sorry, your account is INACTIVE.")
 			} else {
 				settings = dbGetAppSettings()
-
-	console.log(settings)
+				prnConnect()
+				console.log(settings)
 			}
     },
     onFailure: (err) => {
@@ -2996,10 +3010,10 @@ console.log('made it past config')
 function utilAddClosedEvent(dayOfYear){ //when the green or yellow button is pushed, change a specific date's color.
 	closedEvent.id = "closed"+dayOfYear;
 	closedEvent.start = dayOfYear;
-	 let dayEvents = $('#calendar').fullCalendar( 'clientEvents', closedEvent.id );
-	 if (dayEvents.length==0){
-		 $('#calendar').fullCalendar( 'renderEvent', closedEvent, false);
-	 }
+ 	let dayEvents = $('#calendar').fullCalendar( 'clientEvents', closedEvent.id )
+ 	if (dayEvents.length==0){
+	 	$('#calendar').fullCalendar( 'renderEvent', closedEvent, false)
+ 	}
 };
 
 function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
@@ -3031,25 +3045,25 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 			let service = serviceTypes.filter(function( obj ) {
 					return obj.serviceTypeId == serviceTypeId
 				})[0]
-			printFoodReceipt(service.isUSDA)
+			prnPrintFoodReceipt(service.isUSDA)
 			if (client.isActive == 'Client') {
 				setTimeout(function(){ // give time for food receipt to print
-					printReminderReceipt()
+					prnPrintReminderReceipt()
 				}, 1250);
 			}
 		} else if (serviceCategory == 'Clothes_Closet') {
 			setTimeout(function(){ // give time for food receipt & reminder to print
-				printClothesReceipt()
+				prnPrintClothesReceipt()
 			}, 2500);
 		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
 			const targetService = utilCalcTargetServices([serviceType])
 			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
 			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
 			setTimeout(function(){ // give time for food receipt & reminder to print
-				printFirstStepReceipt(service, dependents)
+				prnPrintFirstStepReceipt(service, dependents)
 			}, 2500)
 			setTimeout(function(){ // give time for food receipt & reminder to print
-				printFirstStepReceipt(service, dependents)
+				prnPrintFirstStepReceipt(service, dependents)
 			}, 3750)
 		}
 		uiShowLastServed()
@@ -3867,11 +3881,25 @@ function utilCalcUserAge(source){
 	}
 };
 
+function utilDayOfWeekAsString(dayIndex) {
+  return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][dayIndex]
+};
+
 function utilGetOrdinal(n) {
   var s=["th","st","nd","rd"],
   v=n%100;
   return n+(s[(v-20)%10]||s[v]||s[0])
- }
+};
+
+function utilPadTrimString(str, length) {
+	if (length > str.length) { // pad
+		return str.padEnd(length)
+	} else if (length < str.length) { // trim
+		return str.substring(0, length)
+	} else {
+		return str
+	}
+};
 
 function utilSetCurrentClient(index){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -4364,52 +4392,49 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 };
 
 // **********************************************************************************************************
-// PRINTER FUNCTIONS
+//     PRN PRINTER FUNCTIONS
 // **********************************************************************************************************
 // global printer vars
 let ePosDev = new epson.ePOSDevice();
 let img = document.getElementById('smum');
 let printer = null;
-connect()
 
-function connect() {
- 	var ipAddress = settings.printerIP // was '192.168.1.137'
+function prnConnect() {
+ 	// var ipAddress = settings.printerIP // was '192.168.1.137'
  	var port = '8008'
- 	ePosDev.connect(ipAddress, port, callback_connect)
+ 	ePosDev.connect(settings.printerIP, port, prnCallback_connect)
 };
 
-function callback_connect(resultConnect){
+function prnCallback_connect(resultConnect){
  	var deviceId = 'local_printer';
  	var options = {'crypto' : false, 'buffer' : false};
  	if ((resultConnect == 'OK') || (resultConnect == 'SSL_CONNECT_OK')) {
 	 	//Retrieves the Printer object
-	 	ePosDev.createDevice(deviceId, ePosDev.DEVICE_TYPE_PRINTER, options,
-	 	callback_createDevice);
+	 	ePosDev.createDevice(deviceId, ePosDev.DEVICE_TYPE_PRINTER, options, prnCallback_createDevice);
  	}	else {
 	 	//Displays error messages
 	 	console.log("Error in callback_connect");
  }
 };
 
-function callback_createDevice(deviceObj, errorCode){
- if (deviceObj === null) {
-	 //Displays an error message if the system fails to retrieve the Printer object
-	 console.log("error in callback_createDevice 1");
-	 return;
- }
- printer = deviceObj;
- //Registers the print complete event
- printer.onreceive = function(response){
-	 if (response.success) {
-		 console.log("success in callback_createDevice");
-	 }
-	 else {
-		 console.log("error in callback_createDevice 1");
-	 }
- }
+function prnCallback_createDevice(deviceObj, errorCode){
+ 	if (deviceObj === null) {
+		//Displays an error message if the system fails to retrieve the Printer object
+	 	console.log("error in callback_createDevice 1");
+	 	return;
+ 	}
+ 	printer = deviceObj;
+ 	//Registers the print complete event
+ 	printer.onreceive = function(response){
+	 	if (response.success) {
+		 	console.log("success in callback_createDevice");
+	 	} else {
+			console.log("error in callback_createDevice 1");
+	 	}
+ 	}
 };
 
-function addImage(name,src, width, height){
+function prnAddImage(name,src, width, height){
 	var newCanvas = $('<canvas>',{'id':name,'width':width,'height':height})
 	var mainDiv = $('.main-container')
 	var img = $('<img>',{'id':name+'img','src':src,'width':width,'height':height})
@@ -4418,7 +4443,7 @@ function addImage(name,src, width, height){
 	console.log(mainDiv)
 };
 
-function drawCanvas(name,width,height){
+function prnDrawCanvas(name,width,height){
 	var canvas = document.getElementById(name);
 	var context = canvas.getContext('2d');
 	var img = document.getElementById(name+'img')
@@ -4426,8 +4451,8 @@ function drawCanvas(name,width,height){
 	context.drawImage(img, 0,0,width-200,height-50)
 };
 
-function print_canvas(name){
-	var ADDRESS = 'http://' + printerIP + '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
+function prnPrintCanvas(name){
+	var ADDRESS = 'http://' + settings.printerIP + '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
 	var epos = new epson.CanvasPrint(ADDRESS);
 	epos.cut = false;
 	epos.align = epos.ALIGN_CENTER;
@@ -4435,13 +4460,13 @@ function print_canvas(name){
 	epos.print(canvas)
 };
 
-function addHeader(){
+function prnAddHeader(){
 	if (document.getElementById('smumimg')==null){
-		addImage('smum','images/receipt-logo.png','500','146');
+		prnAddImage('smum','images/receipt-logo.png','500','146');
 	}
 	setTimeout(function f(){
-		drawCanvas('smum',500,145);
-  	print_canvas('smum');
+		prnDrawCanvas('smum',500,145);
+  	prnPrintCanvas('smum');
   	printer.addTextAlign(printer.ALIGN_CENTER);
   	printer.addTextSmooth(true);
   	// printer.addText('-------------------------------\n');
@@ -4451,12 +4476,12 @@ function addHeader(){
   }, 250)
 };
 
-function printClothesReceipt(){
+function prnPrintClothesReceipt(){
 	if (printer == null) {
 		console.log("Printer Not Connected")
 		return
 	}
-	addHeader();
+	prnAddHeader();
 	setTimeout(function f(){
 		printer.addTextSize(1, 2);
 		printer.addFeedLine(2);
@@ -4501,12 +4526,12 @@ function printClothesReceipt(){
 	}, 500);
 };
 
-function printFoodReceipt(isUSDA){
+function prnPrintFoodReceipt(isUSDA){
 	if (printer == null) {
 		console.log("Printer Not Connected")
 		return
 	}
-	addHeader();
+	prnAddHeader();
 	setTimeout(function f(){
 			printer.addTextSize(1, 2);
 			printer.addFeedLine(2);
@@ -4540,17 +4565,8 @@ function printFoodReceipt(isUSDA){
     	printer.send();
 	}, 500);
 };
-function utilPadTrimString(str, length) {
-	if (length > str.length) { // pad
-		return str.padEnd(length)
-	} else if (length < str.length) { // trim
-		return str.substring(0, length)
-	} else {
-		return str
-	}
-};
 
-function printFirstStepReceipt(serviceType, dependents){
+function prnPrintFirstStepReceipt(serviceType, dependents){
 	let sortedDependents = utilSortDependentsByGrade(dependents)
 
 	// TODO remove - for testing only
@@ -4563,13 +4579,12 @@ function printFirstStepReceipt(serviceType, dependents){
 	// 	console.log(childName + gender + gradeGroup + '\n')
 	// }
 
-
 	if (printer == null) {
 		console.log("Printer Not Connected")
 		return
 	}
 	let serviceName = serviceType.serviceName
-	addHeader();
+	prnAddHeader();
 	setTimeout(function f(){
 			printer.addTextSize(1, 2);
 			printer.addFeedLine(2);
@@ -4614,12 +4629,13 @@ function printFirstStepReceipt(serviceType, dependents){
     	printer.send();
 	}, 500);
 };
-function printReminderReceipt(){
+
+function prnPrintReminderReceipt(){
 	if (printer == null) {
 		console.log("Printer Not Connected")
 		return
 	}
-	addHeader();
+	prnAddHeader();
 	setTimeout(function f(){
 			printer.addTextSize(1, 2);
 			printer.addFeedLine(2);
@@ -4649,3 +4665,4 @@ function printReminderReceipt(){
     	printer.send();
 	}, 500);
 };
+// #EOF

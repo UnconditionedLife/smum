@@ -408,6 +408,7 @@
       </div>
       <div class="span2">
          <!-- hidden fields to contain selection from client input -->
+         <input id="selectedDate" type="hidden" value='' class="inputBox">
          <input id="closedDays" type="hidden" value='["2018-12-13"]' class="inputBox settingsForm">
          <input id="closedEveryDays" type="hidden"  value='["0"]' class="inputBox settingsForm">
          <input id="closedEveryDaysWeek" type="hidden" value='[["2","6"],["4","6"],["5","6"]]' class="inputBox settingsForm">
@@ -416,16 +417,16 @@
             <p id="calendarPopupHeader">Select CLOSURE for:</p>
             <table>
                <tr>
-                  <td onclick="utilSelectDay(0)"><input id="selectDays" name="selectDays" type="radio" class="inputBox settingsForm showRadio" value="0" /></td>
-                  <td id="selectDayLable" onclick="utilSelectDay(0)">X day only! </td>
+                  <td onclick="utilSelectDay('dayOfYear')"><input name="selectDays" type="radio" class="inputBox settingsForm showRadio" value="0" /></td>
+                  <td id="selectDayLable" onclick="utilSelectDay('dayOfYear')">X day only! </td>
                </tr>
                <tr>
-                  <td onclick="utilSelectDay(1)"><input id="selectDays" name="selectDays" type="radio" class="inputBox settingsForm showRadio" value="1" /></td>
-                  <td id='selectEveryDayLable' onclick="utilSelectDay(1)">Every Xday!</td>
+                  <td onclick="utilSelectDay('dayOfWeek')"><input name="selectDays" type="radio" class="inputBox settingsForm showRadio" value="1" /></td>
+                  <td id='selectEveryDayLable' onclick="utilSelectDay('dayOfWeek')">Every Xday!</td>
                </tr>
                <tr>
-                  <td onclick="utilSelectDay(2)"><input id="selectDays" name="selectDays" type="radio" class="inputBox settingsForm showRadio" value="2" /></td>
-                  <td id='selectEveryDayWeekLable' onclick="utilSelectDay(2)">Every Xday of the y week of the month!</td>
+                  <td onclick="utilSelectDay('day&WeekOfMonth')"><input name="selectDays" type="radio" class="inputBox settingsForm showRadio" value="2" /></td>
+                  <td id='selectEveryDayWeekLable' onclick="utilSelectDay('day&WeekOfMonth')">Every Xday of the y week of the month!</td>
                </tr>
             </table>
          </div>
