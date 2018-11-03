@@ -1817,23 +1817,27 @@ function utilSelectDay(selected){
 	let clickDate = moment($("#selectedDate").val()).format('YYYY-MM-DD')
 	let opt = utilSelectDays(clickDate)
 	if (selected == 'dayOfYear'){
-		let arr = JSON.parse($('#closedDays').val())
+		let arr = utilParseHiddenArray('closedDays')
 		arr.push(clickDate)
 		$('#closedDays').val(JSON.stringify(arr))
-		utilAddClosedEvent(clickDate)
+		// utilAddClosedEvent(clickDate)
 	} else if (selected == 'dayOfWeek'){
-		let arr = JSON.parse($('#closedEveryDays').val())
+		let arr = utilParseHiddenArray("closedEveryDays")
 		arr.push(opt.dayOfWeek.toString())
 		$('#closedEveryDays').val(JSON.stringify(arr))
 		//TODO add all days to current month
 	} else if (selected == 'day&WeekOfMonth'){
-		let arr = JSON.parse($('#closedEveryDaysWeek').val())
+		let arr = utilParseHiddenArray('closedEveryDaysWeek')
 		let pairArr = [opt.weekInMonth.toString(), opt.dayOfWeek.toString()]
 		arr.push(pairArr)
 		$('#closedEveryDaysWeek').val(JSON.stringify(arr))
-		utilAddClosedEvent(clickDate)
+		// utilAddClosedEvent(clickDate)
 	}
-	$('#calendar').fullCalendar( 'renderEvent', 'closedEvent' , false )
+	// $('#calendar').fullCalendar('refetchEvents');
+	// $('#calendar').fullCalendar( 'renderEvent', 'closedEvent' , false )
+	$('#calendar').fullCalendar('prev');
+	$('#calendar').fullCalendar('next');
+
   $('#calendarPopup').hide('slow')
 };
 
