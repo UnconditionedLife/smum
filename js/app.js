@@ -438,13 +438,15 @@ jQuery('<div/>', {
 	});
 	$('[id="' + id + '"]' + formClass).addClass("errorField")
 };
+
 function utilParseHiddenArray(id){
 	let arr = $("#"+id).val();
 	if (arr == "[]"){
 		return [];
 	}
 	return JSON.parse(arr);
-}
+};
+
 function uiInitFullCalendar(){
 	$(function() {
 		$('#calendar').fullCalendar({
@@ -1688,6 +1690,9 @@ function uiPopulateBadges(){
 
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
+
+console.log("populating form")
+
 	$.each(data, function(key,value){
 		if (typeof(data[key])=='object') {
 			let obj = data[key]
@@ -1803,15 +1808,17 @@ function uiShowUsers(){
 };
 
 function uiShowSettings(){
-	uiInitFullCalendar()
 	$('#settingsFormContainer').html(uiGetTemplate('#settingsForm'))
-	uiPopulateForm(settings, 'settingsForm')
+	uiPopulateForm(settings, 'settingsForm') // assigns settings values to form fields
 	// these are objects that need to be handled seperately
 	$('#serviceZip').val(JSON.stringify(settings.serviceZip))
 	$('#serviceCat').val(JSON.stringify(settings.serviceCat))
+	$('#closedDays').val(JSON.stringify(settings.closedDays))
+	$('#closedEveryDays').val(JSON.stringify(settings.closedEveryDays))
+	$('#closedEveryDaysWeek').val(JSON.stringify(settings.closedEveryDaysWeek))
+	$('#openDays').val(JSON.stringify(settings.openDays))
 	uiPopulateBadges()
-
-	// TODO Populate the calendar
+	uiInitFullCalendar()
 };
 
 function utilSelectDay(selected){
@@ -1820,7 +1827,6 @@ function utilSelectDay(selected){
 	let hasEvents = $('#calendar').fullCalendar( 'clientEvents', "closed"+clickDate ).length>0
 	let openDays = utilParseHiddenArray('openDays')
 	let openIndex = openDays.indexOf(clickDate)
-
 	if (selected == 'dayOfYear'){
 		let arr = utilParseHiddenArray('closedDays')
 		let index = arr.indexOf(clickDate)
@@ -1846,9 +1852,7 @@ function utilSelectDay(selected){
 		else if (!hasEvents){
 			for (let i = 0; i < weekMonthArr.length; i++){
 				if (weekMonthArr[i][1]==dayOfWeek){
-					console.log(weekMonthArr)
 					weekMonthArr.splice(i,1)
-					console.log(weekMonthArr)
 					i--;
 				}
 			}
@@ -1868,11 +1872,7 @@ function utilSelectDay(selected){
 			arr.push(pairArr)
 		}
 		$('#closedEveryDaysWeek').val(JSON.stringify(arr))
-
-		// utilAddClosedEvent(clickDate)
 	}
-	// $('#calendar').fullCalendar('refetchEvents');
-	// $('#calendar').fullCalendar( 'renderEvent', 'closedEvent' , false )
 	if (!hasEvents && openIndex!=-1){
 		openDays.splice(openIndex,1)
 	}
@@ -1883,17 +1883,18 @@ function utilSelectDay(selected){
 
   $('#calendarPopup').hide('slow')
 };
+
 function isItemInArray(array, item) {
-    for (var i = 0; i < array.length; i++) {
-        // This if statement depends on the format of your array
-        if (array[i][0] == item[0] && array[i][1] == item[1]) {
-            return i;   // Found it
-        }
+  for (var i = 0; i < array.length; i++) {
+    // This if statement depends on the format of your array
+    if (array[i][0] == item[0] && array[i][1] == item[1]) {
+      return i;   // Found it
     }
-    return -1;   // Not found
-}
+  }
+  return -1;   // Not found
+};
+
 function utilSelectDays(dayOfYear){
-	console.log(dayOfYear);
 	let momentDay = moment(dayOfYear)
 	let dayOfWeek = momentDay.day();
 	let weekInMonth = momentDay.isoWeek() - momentDay.subtract('days', momentDay.date()-1).isoWeek() + 1;
@@ -2110,7 +2111,7 @@ function uiResetServiceTypeForm(){
 
 function dbGetAppSettings(){
 	let temp = dbGetData(aws+"/settings")
-	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek"]
+	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
 	for (var i = 0; i < fields.length; i++) {
 		let x = fields[i]
 		if (temp[x] == "*EMPTY*") {
@@ -2604,10 +2605,10 @@ function dbSaveServiceTypeForm(context){
 
 function dbSaveSettingsForm(){
 	let data = utilFormToJSON('.settingsForm') // array fields are strings
-	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek"]
+	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
 	for (var i = 0; i < fields.length; i++) {
 		let x = fields[i]
-		if (data[x] != "") {
+		if (data[x] != "" && data[x] != []) {
 			data[x] = utilArrayToObject(JSON.parse(data[x]))
 		} else {
 			data[x] = "*EMPTY*"
@@ -3137,7 +3138,11 @@ function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
 
 function utilArrayToObject(arr){
 	return arr.reduce(function(acc, cur, i) {
-		acc[i] = cur
+		if (Array.isArray(cur)) {
+			acc[i] = utilArrayToObject(cur)
+		} else {
+			acc[i] = cur
+		}
 		return acc
 	}, {});
 };
@@ -3540,21 +3545,80 @@ function utilRemoveService(serviceId){
 	return
 };
 
-function utilRemoveSettingsZipcode(zipCode){
-	// update settings object
-	console.log("update settings object")
-	settings.zipcodes
-};
+// function utilRemoveSettingsZipcode(zipCode){
+// 	// update settings object
+// 	console.log("update settings object")
+// 	settings.zipcodes
+// };
 
 function utilStringToArray(str){
 	let arr = []
 	if (str != "{}") {
-		str = str.replace(/=/g, '":"').replace(/\{/g, '{"').replace(/\}/g, '"}').replace(/, /g, '", "')
-		obj = JSON.parse(str)
-		for (var key in obj) {
-	    if (obj.hasOwnProperty(key)) {
-	      arr.push(obj[key])
-	    }
+
+console.log(str)
+
+		str = str.replace(/=/g, '":"').replace(/\{/g, '{"').replace(/\}/g, '"}').replace(/, /g, '", "') // .replace(/=\{/g, "\":\"{").replace(/\}\, /g, "}', ").replace(/\}\}/g, "}'}")
+
+		// split the string if there are nested faux objects
+		stringArr = str.split(/\"\{|\}\"/g)
+
+
+
+		// let subArrIndexStart = str.indexOf('\"{\"')
+		// if (subArrIndexStart != -1) {
+		// 	let subArrIndexEnd = str.indexOf('\"}\"', subArrIndexStart++)
+		//
+		// }
+
+console.log(stringArr)
+
+console.log(stringArr.length)
+
+		let newStr = ""
+
+
+		if (stringArr.length > 1) {
+
+console.log("nested array")
+
+			for (var i = 0; i < stringArr.length; i++) {
+				if (i == 0 || i == stringArr.length -1) {
+					newStr = newStr + stringArr[i]
+				} else {
+
+console.log(stringArr[i])
+					if (stringArr[i].indexOf(",") != 0) {
+
+						let subArrObj = JSON.parse("{" + stringArr[i] + "}")
+
+						console.log(subArrObj)
+						let subArr = []
+						for (var key in subArrObj) {
+					    if (subArrObj.hasOwnProperty(key)) {
+					      subArr.push(subArrObj[key])
+					    }
+						}
+						arr.push(subArr)
+
+
+
+					}
+				}
+			}
+		} else {
+
+console.log("normal array")
+
+console.log(str)
+
+
+
+			obj = JSON.parse(str)
+			for (var key in obj) {
+		    if (obj.hasOwnProperty(key)) {
+		      arr.push(obj[key])
+		    }
+			}
 		}
 	}
 	return arr
