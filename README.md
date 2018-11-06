@@ -1,17 +1,15 @@
 # SMUM-Checkin
 A cloud hosted checkin application (SPA) for Santa Maria Urban Ministries in San Jose, California.
 
-<img src="https://res.cloudinary.com/hrscywv4p/image/upload/c_limit,fl_lossy,h_1440,w_720,f_auto,q_auto/v1/134667/f510cc08e01543eebf2edc25fd14b3da_qvjufo.png">
+![SMUM logo](https://res.cloudinary.com/hrscywv4p/image/upload/c_limit,fl_lossy,h_1440,w_720,f_auto,q_auto/v1/134667/f510cc08e01543eebf2edc25fd14b3da_qvjufo.png)
 
 The application is used at the intake desk to service client needs. It helps manage the services provided to low-income families & homeless individuals in the downtown community. These are some of the services managed by SMUM-Checkin:
 
-<ol>
-  <li>Food Pantry
-  <li>Clothing
-  <li>Hygiene Supplies
-  <li>Christmas Gifts for Children
-  <li>Thanksgiving Turkeys
-</ol>
+1. Food Pantry
+2. Clothing
+3. Hygiene Supplies
+4. Christmas Gifts for Children
+5. Thanksgiving Turkeys
 
 SMUM-Checkin manages client registration and facilitates the  provision of available service by the volunteers. Since each service has a period of availability, minimum frequency, and target recipients, the software handles all of the calculations &mdash; offering the volunteer a simplified number of choices to offer the client. The interface reduces the complexity by displaying easy to understand service buttons. A push of a button logs the service details in the system and in future will print out a client receipt (see Future Development below).
 
