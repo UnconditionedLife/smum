@@ -447,6 +447,35 @@ function utilParseHiddenArray(id){
 	return JSON.parse(arr);
 };
 
+// TODO should switch to an implementation that follows RFC 5545
+function dateIsClosed(dateRules, date) {
+	let dateObj = dateParse(date.format());
+	if (dateRules.openDays.indexOf(dateObj.formatted) >= 0) {
+		console.log("Open: "+date.format());
+		return false;
+	}
+	for (i = 0; i < dateRules.closedEveryDays.length; i++) {
+		if (dateObj.dayOfWeek == dateRules.closedEveryDays[i]) {
+			console.log("Closed(weekly): "+date.format());
+			return true;
+		}
+	}
+	for (i = 0; i < dateRules.closedEveryDaysWeek.length; i++) {
+		if (dateObj.weekInMonth == dateRules.closedEveryDaysWeek[i][0] &&
+			dateObj.dayOfWeek == dateRules.closedEveryDaysWeek[i][1]) {
+			console.log("Closed(monthly): "+date.format());
+			return true;
+		}
+	}
+	for (i = 0; i < dateRules.closedDays.length; i++) {
+		if (dateObj.formatted == dateRules.closedDays[i]) {
+			console.log("Closed(single): "+date.format());
+			return true;
+		}
+	}
+	return false;
+}
+
 function uiInitFullCalendar(){
 	$(function() {
 		$('#calendar').fullCalendar({
@@ -455,34 +484,19 @@ function uiInitFullCalendar(){
 			contentHeight: 380,
 			fixedWeekCount: false,
 			dayRender: function (date, cell) {
-				let closedEveryDays =utilParseHiddenArray("closedEveryDays");
-				let closedEveryDaysWeek =utilParseHiddenArray("closedEveryDaysWeek");;
-				let closedDays = utilParseHiddenArray("closedDays");
-				let openDays = utilParseHiddenArray("openDays");
-				console.log(openDays)
-				let weekObj = utilSelectDays(date.format());
-				let index = openDays.indexOf(date.format())
-				for (dayOfWeek = 0; dayOfWeek < closedEveryDays.length; dayOfWeek++){
-					if (weekObj.dayOfWeek==closedEveryDays[dayOfWeek] && index==-1){
-						utilAddClosedEvent(date.format());
-					}
+				let dateRules = {
+					closedEveryDays: utilParseHiddenArray("closedEveryDays"),
+					closedEveryDaysWeek: utilParseHiddenArray("closedEveryDaysWeek"),
+				 	closedDays: utilParseHiddenArray("closedDays"),
+				 	openDays: utilParseHiddenArray("openDays")
 				}
-
-				for (week = 0; week < closedEveryDaysWeek.length; week++){
-					if (weekObj.weekInMonth==closedEveryDaysWeek[week][0] && weekObj.dayOfWeek==closedEveryDaysWeek[week][1] && index==-1){
-						utilAddClosedEvent(date.format());
-					}
-				}
-
-				for (dayOfYear = 0; dayOfYear < closedDays.length; dayOfYear++){
-					if (weekObj.dayOfYear==closedDays[dayOfYear] && index==-1){
-						utilAddClosedEvent(date.format());
-					}
+				if (dateIsClosed(dateRules, date)) {
+					utilAddClosedEvent(date.format());
 				}
 			},
 			dayClick: function(clickDate, jsEvent, view) {
 				console.log('Clicked on: ' + clickDate.format());
-				let opt = utilSelectDays(clickDate.format());
+				let opt = dateParse(clickDate.format());
 				$("#selectedDate").val(clickDate.format('YYYY-MM-DD')) // store day selected in hidden field
 				// display popup menu
 				// TODO need to know if currently Closed or Open
@@ -1823,7 +1837,7 @@ function uiShowSettings(){
 
 function utilSelectDay(selected){
 	let clickDate = moment($("#selectedDate").val()).format('YYYY-MM-DD')
-	let opt = utilSelectDays(clickDate)
+	let opt = dateParse(clickDate)
 	let hasEvents = $('#calendar').fullCalendar( 'clientEvents', "closed"+clickDate ).length>0
 	let openDays = utilParseHiddenArray('openDays')
 	let openIndex = openDays.indexOf(clickDate)
@@ -1894,14 +1908,15 @@ function isItemInArray(array, item) {
   return -1;   // Not found
 };
 
-function utilSelectDays(dayOfYear){
-	let momentDay = moment(dayOfYear)
+function dateParse(dateString){
+	let momentDay = moment(dateString)
 	let dayOfWeek = momentDay.day();
-	let weekInMonth = momentDay.isoWeek() - momentDay.subtract('days', momentDay.date()-1).isoWeek() + 1;
+	let weekInMonth = momentDay.isoWeek() -
+		momentDay.subtract('days', momentDay.date()-1).isoWeek() + 1;
 	return {
-		"dayOfWeek":dayOfWeek,
+		"dayOfWeek": dayOfWeek,
 		"weekInMonth": weekInMonth,
-		"dayOfYear": dayOfYear
+		"formatted": dateString
 	}
 };
 
@@ -3063,9 +3078,9 @@ console.log('made it past config')
 // *********************************************** UTIL FUNCTIONS *******************************************
 // **********************************************************************************************************
 
-function utilAddClosedEvent(dayOfYear){ //when the green or yellow button is pushed, change a specific date's color.
-	closedEvent.id = "closed"+dayOfYear;
-	closedEvent.start = dayOfYear;
+function utilAddClosedEvent(dateString){ //when the green or yellow button is pushed, change a specific date's color.
+	closedEvent.id = "closed"+dateString;
+	closedEvent.start = dateString;
  	let dayEvents = $('#calendar').fullCalendar( 'clientEvents', closedEvent.id )
  	if (dayEvents.length==0){
 	 	$('#calendar').fullCalendar( 'renderEvent', closedEvent, false)
