@@ -2691,7 +2691,7 @@ function dateIsClosed(dateRules, date) {
 		}
 	}
 	return false;
-}
+};
 
 function dateFindOpen(target, earliest) {
 	let proposed = moment(target);
@@ -2712,7 +2712,7 @@ function dateFindOpen(target, earliest) {
 			return proposed;
 		}
 	}
-}
+};
 
 // **********************************************************************************************************
 // *********************************************** COG FUNCTIONS ********************************************
@@ -3338,7 +3338,7 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 	}
 	if (buttons == "primary") return btnPrimary
 	if (buttons == "secondary") return btnSecondary
-}
+};
 
 function utilCalcActiveServiceTypes(){
 	// build Active Service Types array of Service Types which cover today's date
@@ -3371,7 +3371,7 @@ function utilCalcActiveServiceTypes(){
 		}
 	}
 	return activeServiceTypes
-}
+};
 
 function utilCalcClientFamilyCounts(){
 	// age TODO Move this to other Function
@@ -3432,7 +3432,7 @@ function utilCalcCurrentGrade(numericGrade,date){
 	let years = today.diff(dateEntered,'year');
 	let currentGrade = numericGrade+years;
 	return currentGrade;
-}
+};
 
 function utilCalcGradeGrouping(dependent){
 	let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(dependent.grade))
@@ -3591,44 +3591,17 @@ function utilRemoveService(serviceId){
 function utilStringToArray(str){
 	let arr = []
 	if (str != "{}") {
-
-console.log(str)
-
-		str = str.replace(/=/g, '":"').replace(/\{/g, '{"').replace(/\}/g, '"}').replace(/, /g, '", "') // .replace(/=\{/g, "\":\"{").replace(/\}\, /g, "}', ").replace(/\}\}/g, "}'}")
-
+		str = str.replace(/=/g, '":"').replace(/\{/g, '{"').replace(/\}/g, '"}').replace(/, /g, '", "')
 		// split the string if there are nested faux objects
 		stringArr = str.split(/\"\{|\}\"/g)
-
-
-
-		// let subArrIndexStart = str.indexOf('\"{\"')
-		// if (subArrIndexStart != -1) {
-		// 	let subArrIndexEnd = str.indexOf('\"}\"', subArrIndexStart++)
-		//
-		// }
-
-console.log(stringArr)
-
-console.log(stringArr.length)
-
 		let newStr = ""
-
-
 		if (stringArr.length > 1) {
-
-console.log("nested array")
-
 			for (var i = 0; i < stringArr.length; i++) {
 				if (i == 0 || i == stringArr.length -1) {
 					newStr = newStr + stringArr[i]
 				} else {
-
-console.log(stringArr[i])
 					if (stringArr[i].indexOf(",") != 0) {
-
 						let subArrObj = JSON.parse("{" + stringArr[i] + "}")
-
-						console.log(subArrObj)
 						let subArr = []
 						for (var key in subArrObj) {
 					    if (subArrObj.hasOwnProperty(key)) {
@@ -3636,20 +3609,10 @@ console.log(stringArr[i])
 					    }
 						}
 						arr.push(subArr)
-
-
-
 					}
 				}
 			}
 		} else {
-
-console.log("normal array")
-
-console.log(str)
-
-
-
 			obj = JSON.parse(str)
 			for (var key in obj) {
 		    if (obj.hasOwnProperty(key)) {
