@@ -610,7 +610,7 @@ function uiShowHideClientMessage(todo){
 	} else {
 		$('#msgOverlay').hide()
 	}
-}
+};
 
 function uiToggleNoteForm(todo, index){
 	if (todo == "show"){
@@ -756,7 +756,7 @@ function uiShowHideLogin(todo){
 		$('#loginPassword').val('')
 		$('#loginCode').val('')
 	}
-}
+};
 
 function uiShowHidePassword(){
 	if ($('#loginPassword').attr('type') == 'password') {
@@ -764,12 +764,12 @@ function uiShowHidePassword(){
 	} else {
     $('#loginPassword').attr('type', 'password');
 	}
-}
+};
 
 function uiShowHistory(){
 	uiBuildHistoryTop()
 	uiBuildHistoryBottom()
-}
+};
 
 function uiShowHistoryData(clientHistory){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 1)) return
@@ -1676,9 +1676,6 @@ function uiPopulateBadges(){
 
 function uiPopulateForm(data, form){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 2)) return
-
-console.log("populating form")
-
 	$.each(data, function(key,value){
 		if (typeof(data[key])=='object') {
 			let obj = data[key]
@@ -2771,7 +2768,7 @@ function cogUserChangePassword(){
 		uiShowHideError("show", "Passwords don't match!!", "Please enter the new password correctly in both fields.")
 		// TODO show error
 	}
-}
+};
 
 function cogUserConfirm(){
 	let validationCode = $('#loginCode').val(),
@@ -2813,8 +2810,7 @@ function cogResendValidationCode(){
 		}
 		$("#loginError").html("New code has been sent.")
 	});
-}
-
+};
 
 function cogForgotPassword(){
 	let userName = $("#loginUserName").val()
@@ -3033,68 +3029,6 @@ function cogLoginAdmin(){
  })
 };
 
-function cogListUsers(){
-	// Set the region where your identity pool exists (us-east-1, eu-west-1)
-	AWSCognito.config.region = 'us-west-2';
-
-	// Configure the credentials provider to use your identity pool
-	AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-	    IdentityPoolId: 'us-west-2:d6cc97a3-a582-4295-a901-4d312b92c47a',
-	});
-
-	// Make the call to obtain credentials
-	AWSCognito.config.credentials.get(function(){
-
-	    // Credentials will be available when this function is called.
-	    let accessKeyId = AWSCognito.config.credentials.accessKeyId;
-	    let secretAccessKey = AWSCognito.config.credentials.secretAccessKey;
-	    let sessionToken = AWSCognito.config.credentials.sessionToken;
-
-	});
-
-///ClientId : '7j3jhm5a3pkc67m52bf7tv10au',
-
-// AWSCognito.config.update({ })
-
-let logPool = "cognito-idp.us-west-2.amazonaws.com/"+ userPool.userPoolId
-
-	AWSCognito.config.region = 'us-west-2'
-
-	let loginsCognitoKey = 'cognito-idp.us-west-2.amazonaws.com/us-west-2_AufYE4o3x'
-	let loginsIdpData = {};
-	loginsIdpData[loginsCognitoKey] = authorization.accessToken
-	AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-	    IdentityPoolId: 'us-west-2:d6cc97a3-a582-4295-a901-4d312b92c47a',
-	    Logins: loginsIdpData
-	});
-
-console.log(AWSCognito.config.credentials)
-
-console.log('made it past config')
-
-	//
-	// AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-	//     IdentityPoolId: userPool.userPoolId,
-	// 		Logins : {
-	// 			logPool : authorization.accessToken
-	// 		}
-	// });
-
-	// Need to provide placeholder keys unless unauthorised user access is enabled for user pool
-	params = {
-		UserPoolId: userPool.userPoolId, /* required */
-		AttributesToGet: [],
-		Filter: '',
-		Limit: 0,
-		PaginationToken: ''
-	};
-
-	let cognitoidentityserviceprovider = new AWSCognito.CognitoIdentityServiceProvider();
-	cognitoidentityserviceprovider.listUsers(params, function(err, data) {
-	  if (err) console.log(err, err.stack); // an error occurred
-	  else     console.log(data);           // successful response
-	});
-}
 
 // **********************************************************************************************************
 // *********************************************** UTIL FUNCTIONS *******************************************
@@ -3527,7 +3461,6 @@ function utilGradeToNumber(grade){
 	if (grade == "K") return 0
 	return parseInt(grade);
 };
-
 
 function utilLoginUserShowScreens(){
 	$('#nav4').html('<i class="fa fa-user" aria-hidden="true"></i> ' + session.user.username)
@@ -4737,17 +4670,6 @@ function prnPrintTurkeyReceipt(serviceType){
 
 function prnPrintFirstStepReceipt(serviceType, dependents){
 	let sortedDependents = utilSortDependentsByGrade(dependents)
-
-	// TODO remove - for testing only
-	// console.log(sortedDependents)
-	// for (let i=0; i<sortedDependents.length; i++){
-	// 	let currentDependent = sortedDependents[i]
-	// 	let childName = utilPadTrimString(currentDependent.givenName.toUpperCase()+' '+currentDependent.familyName.toUpperCase(), 24) // pad / trim right to 24
-	// 	let gender =  utilPadTrimString(currentDependent.gender.toUpperCase(), 9) // pad to 9
-	// 	let gradeGroup = utilPadTrimString(utilCalcGradeGrouping(currentDependent), 5) // pad to 5
-	// 	console.log(childName + gender + gradeGroup + '\n')
-	// }
-
 	if (printer == null) {
 		console.log("Printer Not Connected")
 		return
@@ -4804,8 +4726,6 @@ function prnPrintReminderReceipt(){
 	let targetDate = moment().add(14, 'days');
 	let earliestDate = moment().add(7, 'days');
 	let nextVisit = dateFindOpen(targetDate, earliestDate);
-	// console.log('Target visit: '+targetDate.format('YYYY-MM-DD'))
-	// console.log('Next visit: '+nextVisit.format('YYYY-MM-DD'))
 	if (printer == null) {
 		console.log("Printer Not Connected")
 		return
