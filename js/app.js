@@ -5,6 +5,7 @@
 // -->   nav...  provide Nav Section and Tab navigation
 // -->   util..  provide general utility
 // -->   db....  interact with AWS DynamoDB service
+// -->   date..  interact with dates and calendar
 // -->   cog...  interact with AWS Cognito service
 // Function naming syntax [prefix][action][subject]
 
@@ -446,35 +447,6 @@ function utilParseHiddenArray(id){
 	}
 	return JSON.parse(arr);
 };
-
-// TODO should switch to an implementation that follows RFC 5545
-function dateIsClosed(dateRules, date) {
-	let dateObj = dateParse(date.format());
-	if (dateRules.openDays.indexOf(dateObj.formatted) >= 0) {
-		console.log("Open: "+date.format());
-		return false;
-	}
-	for (i = 0; i < dateRules.closedEveryDays.length; i++) {
-		if (dateObj.dayOfWeek == dateRules.closedEveryDays[i]) {
-			console.log("Closed(weekly): "+date.format());
-			return true;
-		}
-	}
-	for (i = 0; i < dateRules.closedEveryDaysWeek.length; i++) {
-		if (dateObj.weekInMonth == dateRules.closedEveryDaysWeek[i][0] &&
-			dateObj.dayOfWeek == dateRules.closedEveryDaysWeek[i][1]) {
-			console.log("Closed(monthly): "+date.format());
-			return true;
-		}
-	}
-	for (i = 0; i < dateRules.closedDays.length; i++) {
-		if (dateObj.formatted == dateRules.closedDays[i]) {
-			console.log("Closed(single): "+date.format());
-			return true;
-		}
-	}
-	return false;
-}
 
 function uiInitFullCalendar(){
 	$(function() {
@@ -1908,18 +1880,6 @@ function isItemInArray(array, item) {
   return -1;   // Not found
 };
 
-function dateParse(dateString){
-	let momentDay = moment(dateString)
-	let dayOfWeek = momentDay.day();
-	let weekInMonth = momentDay.isoWeek() -
-		momentDay.subtract('days', momentDay.date()-1).isoWeek() + 1;
-	return {
-		"dayOfWeek": dayOfWeek,
-		"weekInMonth": weekInMonth,
-		"formatted": dateString
-	}
-};
-
 function uiGenSelectHTML(val,options,col,id){
 	if (!utilValidateArguments(arguments.callee.name, arguments, 4)) return
 	html = "<select id='"+col+"["+id+"]' class='inputBox dependentsForm'>"
@@ -2688,6 +2648,68 @@ function dbSearchClients(){
 		} else {
 			uiSetClientsHeader(clientData.length + ' Clients Found')
 			navGotoTab("tab1")
+		}
+	}
+}
+
+// **********************************************************************************************************
+// *********************************************** DATE FUNCTIONS *******************************************
+// **********************************************************************************************************
+
+function dateParse(dateString) {
+	let momentDay = moment(dateString)
+	let dayOfWeek = momentDay.day();
+	let weekInMonth = momentDay.isoWeek() -
+		momentDay.subtract(momentDay.date()-1, 'days').isoWeek() + 1;
+	return {
+		"dayOfWeek": dayOfWeek,
+		"weekInMonth": weekInMonth,
+		"formatted": dateString
+	}
+};
+
+// TODO should switch to an implementation that follows RFC 5545
+function dateIsClosed(dateRules, date) {
+	let dateObj = dateParse(date.format('YYYY-MM-DD'));
+	if (dateRules.openDays.indexOf(dateObj.formatted) >= 0) {
+		return false;
+	}
+	for (i = 0; i < dateRules.closedEveryDays.length; i++) {
+		if (dateObj.dayOfWeek == dateRules.closedEveryDays[i]) {
+			return true;
+		}
+	}
+	for (i = 0; i < dateRules.closedEveryDaysWeek.length; i++) {
+		if (dateObj.weekInMonth == dateRules.closedEveryDaysWeek[i][0] &&
+			dateObj.dayOfWeek == dateRules.closedEveryDaysWeek[i][1]) {
+			return true;
+		}
+	}
+	for (i = 0; i < dateRules.closedDays.length; i++) {
+		if (dateObj.formatted == dateRules.closedDays[i]) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function dateFindOpen(target, earliest) {
+	let proposed = moment(target);
+	// Start with target date and work backward to earliest
+	while (proposed >= earliest) {
+		if (dateIsClosed(settings, proposed)) {
+			proposed.subtract(1, 'days');
+		} else {
+			return proposed;
+		}
+	}
+	// Select the first open date after target
+	proposed = moment(target).add(1, 'days');
+	while (true) {
+		if (dateIsClosed(settings, proposed)) {
+			proposed.add(1, 'days');
+		} else {
+			return proposed;
 		}
 	}
 }
@@ -4815,6 +4837,12 @@ function prnPrintFirstStepReceipt(serviceType, dependents){
 };
 
 function prnPrintReminderReceipt(){
+	// Determine next visit date
+	let targetDate = moment().add(14, 'days');
+	let earliestDate = moment().add(7, 'days');
+	let nextVisit = dateFindOpen(targetDate, earliestDate);
+	// console.log('Target visit: '+targetDate.format('YYYY-MM-DD'))
+	// console.log('Next visit: '+nextVisit.format('YYYY-MM-DD'))
 	if (printer == null) {
 		console.log("Printer Not Connected")
 		return
@@ -4840,7 +4868,7 @@ function prnPrintReminderReceipt(){
     	printer.addText('**************************************\n')
     	printer.addTextStyle(true,false,false,printer.COLOR_1);
 			printer.addTextSize(1, 2);
-    	printer.addText(' ' + moment().add(14, 'd').format("MMMM Do, YYYY") + ' \n');
+    	printer.addText(' ' + nextVisit.format("MMMM Do, YYYY") + ' \n');
 			printer.addTextSize(1, 1);
     	printer.addTextStyle(false,false,false,printer.COLOR_1);
     	printer.addText('**************************************\n');
