@@ -13,14 +13,14 @@ body {
 	font: 14px/1 'Open Sans', sans-serif;
 }
 
-#printBodyDiv {
+#reportBodyDiv {
 	position: inherit;
 	display: grid;
 	grid-template-columns: 30px 1fr 30px;
 	grid-template-rows: 70px 25px 70px 8px auto;
 	padding: 30px 0 30px;
-	width: 90vw;
-	height: 80vh;
+	width: 96vw;
+	height: 94vh;
 	background-color: white;
 	overflow: scroll;
 }
@@ -97,6 +97,18 @@ body {
 	margin-bottom: 30px;
 }
 
+.voucherBodyHeaderBox {
+	background-color: white;
+	width: 100%;
+	height: 70px;
+	display: grid;
+	grid-row: 3;
+	grid-column: 2;
+	grid-template-rows: 35px 35px;
+	border: 1px solid var(--green);
+	margin-bottom: 30px;
+}
+
 .familiesBodyHeaderBox  {
 	background-color: white;
 	width: 100%;
@@ -133,6 +145,18 @@ body {
 .todayItem{
 	line-height: 32px;
 	text-align: center;
+	border-bottom: .5px solid lightgrey;
+}
+
+.todayItemLeft{
+	line-height: 32px;
+	text-align: left;
+	border-bottom: .5px solid lightgrey;
+}
+
+.todayItemRight{
+	line-height: 32px;
+	text-align: right;
 	border-bottom: .5px solid lightgrey;
 }
 
@@ -195,7 +219,7 @@ body {
 	margin-bottom: 8px;
 }
 
-.firstStepRowBox {
+.voucherRowBox {
 	background-color: white;
 	width: 100%;
 	height: 35px;
@@ -226,11 +250,11 @@ body {
 	margin-bottom: 2px;
 }
 
-.firstStepDistro {
+.voucherDistro {
 	grid-template-columns: 1fr 4fr 4fr 2fr;
 }
 
-.firstStepCount {
+.voucherCount {
 	grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
@@ -285,7 +309,7 @@ body {
   font-weight: bold;
 }
 
-.firstStepDistroHeaderItem{
+.voucherDistroHeaderItem{
   border: 1px solid var(--green);
 	background-color: var(--light-green);
   font-size: 14px;
@@ -295,7 +319,7 @@ body {
 	grid-row: span 2;
 }
 
-.firstStepCountHeaderItem{
+.voucherCountHeaderItem{
   border: 1px solid var(--green);
 	background-color: var(--light-green);
   font-size: 14px;

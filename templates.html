@@ -469,7 +469,7 @@
       <div class="lableDiv">Date</div>
       <div><input id="reportsDailyDate" type="date" class="inputBox reportsForm"></div>
       <div></div>
-      <div><input class="solidButton" onclick="utilGenerateDailyReport()" type="button" value="Run"></div>
+      <div><input class="solidButton" onclick="utilGenerateDailyReport('report')" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
       <div class="headingDiv span6">Monthly Reports</div>
       <div class="lableDiv">Report</div>
@@ -484,18 +484,26 @@
       <div></div>
       <div><input class="solidButton" onclick="utilGenerateMonthlyReport()" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
-      <div class="headingDiv span6">First Step Reports</div>
+      <div class="headingDiv span6">Voucher Distribution Reports</div>
       <div class="lableDiv">Report</div>
       <div>
-         <select id="reportFirstStepType" class="inputBox reportsForm">
-            <option value="Distribution" selected>Distribution</option>
-            <option value="Counts">Counts</option>
-         </select>
+         <select id="reportVoucherDistro" class="inputBox reportsForm"></select>
       </div>
       <div class="lableDiv">Year</div>
-      <div><input id="reportFirstStepYear" type="number" class="inputBox reportsForm"></div>
+      <div><input id="reportVoucherDistroYear" type="number" class="inputBox reportsForm"></div>
       <div></div>
-      <div><input class="solidButton" onclick="utilGenerateFirstStepReport()" type="button" value="Run"></div>
+      <div><input class="solidButton" onclick="utilGenerateVoucherReport('Distro')" type="button" value="Run"></div>
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6">Voucher Final Count Reports</div>
+      <div class="lableDiv">Report</div>
+      <div>
+         <select id="reportVoucherCount" class="inputBox reportsForm"></select>
+      </div>
+      <div class="lableDiv">Year</div>
+      <div><input id="reportVoucherCountYear" type="number" class="inputBox reportsForm"></div>
+      <div></div>
+      <div><input id='voucherCountButton'  class="solidButton" onclick="utilGenerateVoucherReport('Count')" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
       <div class="headingDiv span6"><span style="font-size: 20px; line-height: 30px;">Family Reports</span></div>
       <div class="headingDiv span6">Clients Reports</div>
@@ -514,96 +522,114 @@
 
 <!-- report templates -->
 <template id="reportHeader">
-  <div class="reportHeaderBox">
-    <div id="headerLeft" class="reportHeaderSides">DAILY</div>
-    <div class="reportHeaderCenter">
-        <!-- <div id="orgName">SANTA MARIA URBAN MINISTRY</div> -->
-        <div id="orgName">SANTA MARIA URBAN MINISTRY</div>
-        <div id="reportName">REPORT NAME</div>
-        <div id="reportDates">REPORT DATE</div>
-    </div>
-    <div id="headerRight" class="reportHeaderSides">REPORT</div>
-  </div>
+   <div class="reportHeaderBox">
+      <div id="reportHeaderLeft" class="reportHeaderSides">DAILY</div>
+         <div class="reportHeaderCenter">
+            <div id="reportOrgName">SANTA MARIA URBAN MINISTRY</div>
+            <div id="reportName">00000</div>
+            <div id="reportDates">REPORT DATE</div>
+         </div>
+      <div id="reportHeaderRight" class="reportHeaderSides">REPORT</div>
+   </div>
+</template>
+
+<template id="todayHeader">
+   <div class="reportHeaderBox">
+      <div id="todayHeaderLeft" class="reportHeaderSides">DAILY</div>
+         <div class="reportHeaderCenter">
+            <div id="todayOrgName">SANTA MARIA URBAN MINISTRY</div>
+            <div id="todayName">00000</div>
+            <div id="todayDates">REPORT DATE</div>
+         </div>
+      <div id="todayHeaderRight" class="reportHeaderSides">REPORT</div>
+   </div>
 </template>
 
 <template id="dailyReportHeader">
-  <div class="todayReportBodyHeaderBox">
-    <div id="headerClient" class="bodyHeaderItem">Client</div>
-    <div id="headerClientsServed" class="bodyHeaderItem">Clients Served</div>
-    <div id="headerHomelessServed" class="bodyHeaderItem">Homeless Served</div>
-    <div id="headerNonClientsServed" class="bodyHeaderItem">NonClients Served</div>
-    <div class="bodyHeaderItem">ID</div>
-    <div class="bodyHeaderItem">Given</div>
-    <div class="bodyHeaderItem">Family</div>
-    <div class="bodyHeaderItem">ZIP</div>
-    <div class="bodyHeaderItem">Households</div>
-    <div class="bodyHeaderItem">Individuals</div>
-    <div class="bodyHeaderItem">Children</div>
-    <div class="bodyHeaderItem">Adults</div>
-    <div class="bodyHeaderItem">Seniors</div>
-    <div class="bodyHeaderItem">Families</div>
-    <div class="bodyHeaderItem">Individuals</div>
-    <div class="bodyHeaderItem">Families</div>
-    <div class="bodyHeaderItem">Individuals</div>
-  </div>
+   <div class="todayReportBodyHeaderBox">
+      <div id="headerClient" class="bodyHeaderItem">Client</div>
+      <div id="headerClientsServed" class="bodyHeaderItem">Clients Served</div>
+      <div id="headerHomelessServed" class="bodyHeaderItem">Homeless Served</div>
+      <div id="headerNonClientsServed" class="bodyHeaderItem">NonClients Served</div>
+      <div class="bodyHeaderItem">ID</div>
+      <div class="bodyHeaderItem">Given</div>
+      <div class="bodyHeaderItem">Family</div>
+      <div class="bodyHeaderItem">ZIP</div>
+      <div class="bodyHeaderItem">Households</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Children</div>
+      <div class="bodyHeaderItem">Adults</div>
+      <div class="bodyHeaderItem">Seniors</div>
+      <div class="bodyHeaderItem">Families</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Families</div>
+      <div class="bodyHeaderItem">Individuals</div>
+   </div>
 </template>
 
 <template id="allServicesBodyHeader">
-  <div class="allServicesBodyHeaderBox">
-    <div class="bodyHeaderItem">Category</div>
-    <div class="bodyHeaderItem">Service</div>
-    <div class="bodyHeaderItem">Households</div>
-    <div class="bodyHeaderItem">Individuals</div>
-    <div class="bodyHeaderItem">Items</div>
-  </div>
+   <div class="allServicesBodyHeaderBox">
+      <div class="bodyHeaderItem">Category</div>
+      <div class="bodyHeaderItem">Service</div>
+      <div class="bodyHeaderItem">Households</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Items</div>
+   </div>
 </template>
 
 <template id="foodBodyHeader">
-  <div class="foodBodyHeaderBox">
-    <div id="headerUSDA" class="bodyHeaderItem">USDA<br />NonUSDA</div>
-    <div id="headerClientsServed" class="bodyHeaderItem">Clients Services</div>
-    <div id="headerHomelessServed" class="bodyHeaderItem">Homeless Services</div>
-    <div id="headerNonClientsServed" class="bodyHeaderItem">NonClients Services</div>
-    <div class="bodyHeaderItem">Households</div>
-    <div class="bodyHeaderItem">Individuals</div>
-    <div class="bodyHeaderItem">Children</div>
-    <div class="bodyHeaderItem">Adults</div>
-    <div class="bodyHeaderItem">Seniors</div>
-    <div class="bodyHeaderItem">Families</div>
-    <div class="bodyHeaderItem">Individuals</div>
-    <div class="bodyHeaderItem">Families</div>
-    <div class="bodyHeaderItem">Individuals</div>
-  </div>
+   <div class="foodBodyHeaderBox">
+      <div id="headerUSDA" class="bodyHeaderItem">USDA<br />NonUSDA</div>
+      <div id="headerClientsServed" class="bodyHeaderItem">Clients Services</div>
+      <div id="headerHomelessServed" class="bodyHeaderItem">Homeless Services</div>
+      <div id="headerNonClientsServed" class="bodyHeaderItem">NonClients Services</div>
+      <div class="bodyHeaderItem">Households</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Children</div>
+      <div class="bodyHeaderItem">Adults</div>
+      <div class="bodyHeaderItem">Seniors</div>
+      <div class="bodyHeaderItem">Families</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Families</div>
+      <div class="bodyHeaderItem">Individuals</div>
+   </div>
 </template>
 
-<template id="reportFirstStepDistroHeader">
-  <div class="firstStepBodyHeaderBox firstStepDistro">
-    <div class="hdrCell stacked2Line">Client #<br># De Cliente</div>
-    <div class="hdrCell stacked2Line">Client Name<br>Nombre</div>
-    <div class="hdrCell stacked2Line">CLIENT SIGNATURE<br>FIRMA</div>
-    <div class="hdrCell stacked2Line">Total # Backpacks<br>Total De Mochilas</div>
-  </div>
+<template id="reportVoucherDistroHeader">
+   <div class="voucherBodyHeaderBox voucherDistro">
+      <div class="hdrCell stacked2Line">Client #<br># De Cliente</div>
+      <div class="hdrCell stacked2Line">Client Name<br>Nombre</div>
+      <div class="hdrCell stacked2Line">CLIENT SIGNATURE<br>FIRMA</div>
+      <div class="hdrCell stacked2Line">Total #</div>
+   </div>
 </template>
 
-<template id="reportFirstStepCountsHeader">
-  <div class="firstStepBodyHeaderBox firstStepCount">
-    <div class="hdrCell stacked">Grade Group</div>
-    <div class="hdrCell stacked">Gender</div>
-    <div class="hdrCell stacked">Count</div>
-    <div class="hdrCell stacked">Delivered</div>
-  </div>
+<template id="reportVoucherGradesCountHeader"> <!-- backpacks, toys -->
+   <div class="voucherBodyHeaderBox voucherCount">
+      <div class="hdrCell stacked">Grade Group</div>
+      <div class="hdrCell stacked">Gender</div>
+      <div class="hdrCell stacked">Registered</div>
+      <div class="hdrCell stacked">Delivered</div>
+   </div>
+</template>
+
+<template id="reportVoucherCountHeader"> <!-- turkey, gift cards  -->
+   <div class="voucherBodyHeaderBox voucherCount">
+      <div class="hdrCell stacked span2">Registered</div>
+      <div class="hdrCell stacked span2">Delivered</div>
+   </div>
 </template>
 
 <template id="reportFamiliesChildrenHeader">
-  <div class="familiesBodyHeaderBox">
-    <div class="hdrCell stacked">Client #</div>
-    <div class="hdrCell">Client Name</div>
-    <div class="hdrCell">Telephone</div>
-    <div class="hdrCell">Zipcode</div>
-    <div class="hdrCell">Last Visit</div>
-    <div class="hdrCell secondary">Child Name</div>
-    <div class="hdrCell secondary">Age</div>
-    <div class="hdrCell secondary">Gender</div>
-    <div class="hdrCell secondary">Grade</div>
-  </div>
+   <div class="familiesBodyHeaderBox">
+      <div class="hdrCell stacked">Client #</div>
+      <div class="hdrCell">Client Name</div>
+      <div class="hdrCell">Telephone</div>
+      <div class="hdrCell">Zipcode</div>
+      <div class="hdrCell">Last Visit</div>
+      <div class="hdrCell secondary">Child Name</div>
+      <div class="hdrCell secondary">Age</div>
+      <div class="hdrCell secondary">Gender</div>
+      <div class="hdrCell secondary">Grade</div>
+   </div>
 </template>
