@@ -43,7 +43,7 @@ body {
 	display: grid;
   grid-column: 2;
 	grid-template-columns: 1fr 1fr 1fr;
-	border: 1px solid var(--green);
+	border: 2px solid var(--green);
 }
 
 .allServicesBodyHeaderBox{
@@ -55,7 +55,7 @@ body {
 	grid-column: 2;
 	grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 	grid-template-rows: 35px;
-	border: 1px solid var(--green);
+	border: 2px solid var(--green);
 	margin-bottom: 30px;
 }
 
@@ -68,7 +68,7 @@ body {
 	grid-column: 2;
 	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	grid-template-rows: 35px 35px;
-	border: 1px solid var(--green);
+	border: 2px solid var(--green);
 	margin-bottom: 30px;
 }
 
@@ -81,7 +81,7 @@ body {
 	grid-column: 2;
 	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 	grid-template-rows: 35px 35px;
-	border: 1px solid var(--green);
+	border: 2px solid var(--green);
 	margin-bottom: 30px;
 }
 
@@ -93,7 +93,7 @@ body {
 	grid-row: 3;
 	grid-column: 2;
 	grid-template-rows: 35px 35px;
-	border: 1px solid var(--green);
+	border: 2px solid var(--green);
 	margin-bottom: 30px;
 }
 
@@ -105,7 +105,7 @@ body {
 	grid-row: 3;
 	grid-column: 2;
 	grid-template-rows: 35px 35px;
-	border: 1px solid var(--green);
+	border: 2px solid var(--green);
 	margin-bottom: 30px;
 }
 
@@ -118,7 +118,7 @@ body {
 	grid-column: 2;
 	grid-template-columns: 1fr 3fr 2fr 2fr 2fr;
 	grid-template-rows: 35px 35px;
-	border: 1px solid var(--green);
+	border: 2px solid var(--green);
 	margin-bottom: 30px;
 }
 
@@ -304,7 +304,7 @@ body {
 .bodyHeaderItem {
   border: 1px solid var(--green);
   font-size: 12px;
-  line-height:  35px;
+  line-height: 32px;
   text-align:  center;
   font-weight: bold;
 }
@@ -339,8 +339,9 @@ body {
 }
 
 .stacked {
-  line-height: 68px;
-	grid-row: span 2;
+  line-height: 66px;
+  height: 66px;
+  grid-row: span 2;
 }
 
 .stacked2Line {

@@ -504,7 +504,7 @@
       <div><input id="reportVoucherCountYear" type="number" class="inputBox reportsForm"></div>
       <div></div>
       <div><input id='voucherCountButton'  class="solidButton" onclick="utilGenerateVoucherReport('Count')" type="button" value="Run"></div>
-      <div class="headingDiv span6"></div>
+      <!-- <div class="headingDiv span6"></div>
       <div class="headingDiv span6"><span style="font-size: 20px; line-height: 30px;">Family Reports</span></div>
       <div class="headingDiv span6">Clients Reports</div>
       <div class="lableDiv">Report</div>
@@ -514,7 +514,7 @@
          </select>
       </div>
       <div></div>
-      <div><input class="solidButton" onclick="utilGenerateFamiliesReport()" type="button" value="Run"></div>
+      <div><input class="solidButton" onclick="utilGenerateFamiliesReport()" type="button" value="Run"></div> -->
       <div></div>
       <div></div>
    </div>
@@ -604,9 +604,18 @@
    </div>
 </template>
 
-<template id="reportVoucherGradesCountHeader"> <!-- backpacks, toys -->
+<template id="reportVoucherGradesCountHeader"> <!-- backpacks -->
    <div class="voucherBodyHeaderBox voucherCount">
       <div class="hdrCell stacked">Grade Group</div>
+      <div class="hdrCell stacked">Gender</div>
+      <div class="hdrCell stacked">Registered</div>
+      <div class="hdrCell stacked">Delivered</div>
+   </div>
+</template>
+
+<template id="reportVoucherAgesCountHeader"> <!-- toys -->
+   <div class="voucherBodyHeaderBox voucherCount">
+      <div class="hdrCell stacked">Age Group</div>
       <div class="hdrCell stacked">Gender</div>
       <div class="hdrCell stacked">Registered</div>
       <div class="hdrCell stacked">Delivered</div>

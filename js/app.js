@@ -177,9 +177,8 @@ function uiAddListItem(type){
 	}
 	itemList = JSON.parse(itemList)
 	if (itemList.includes(item)) {
-		utilBeep()
 		let message = '\"' + item + '\"' + ' is already in the list.'
-		uiShowHideError('show', 'Duplicate Value', message)
+		uiShowHideError('show', 'Duplicate Value', message, 'beep')
 	} else {
 		itemList.push(item)
 		uiAddBadge(type, item)
@@ -699,7 +698,8 @@ function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, to
 	}
 };
 
-function uiShowHideError(todo, title, message){
+function uiShowHideError(todo, title, message, sound){
+	if (sound == 'beep') { utilBeep() }
 	if (todo == 'show'){
 		$('#errorOverlay').show().css('display', 'flex')
 		$('#errorTitle').html(title)
@@ -903,7 +903,7 @@ function uiLoadReportHeader(vals){
 	} else if (moment(vals.reportDate).format(date) == moment().format(date)) {
 		vals.reportDate = moment().format(longDate)
 	} else {
-		vals.reportDate = moment(reportDate).format("MMMM Do, YYYY")
+		vals.reportDate = moment(vals.reportDate).format("MMMM Do, YYYY")
 	}
 	$('#' + vals.targetDiv + 'Dates').html(vals.reportDate)
 	$('#' + vals.targetDiv + 'HeaderLeft').html(vals.category)
@@ -994,6 +994,7 @@ function uiShowVoucherReportHeader(year, reportType, targetType, serviceType){
 		     print: true
 	}
 	uiLoadReportHeader(vals)
+	if (reportType == 'Distro') { targetType = '' }
 	const template = '#reportVoucher' + targetType + reportType + 'Header'
 	uiSetPrintBodyTemplate(template, vals.targetDiv)
 };
@@ -1024,7 +1025,19 @@ function utilPrintReport(){
 function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 	let count = []
 	let fulfillmentService = utilGetFulfillmentServiceByID(serviceType.serviceTypeId)[0]
+	if (fulfillmentService == undefined) {
+		let message = 'No Matching Fulfillment Service Exists! <br> Add or Assign a Fulfillment Service.'
+		uiShowHideError('show', 'Missing Fulfillment Service', message, 'beep')
+		console.log('error and return')
+		return 'failed'
+	}
 	let servicesVouchers = dbGetServicesByIdAndYear(serviceType.serviceTypeId, year)
+	if (servicesVouchers.length < 1) {
+		let message = 'No service Records were found!'
+		uiShowHideError('show', 'No Services', message, 'beep')
+		console.log('error and return')
+		return 'failed'
+	}
 	let servicesFulfillment = []
 	if (reportType == "Distro") { 				// Distro Report
 		servicesVouchers = servicesVouchers
@@ -1040,13 +1053,13 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 		servicesFulfillment = dbGetServicesByIdAndYear(fulfillmentService.serviceTypeId, year)
 		if (targetType == 'Grades') {
 			count = [
-			 	{gg: "K", b: 0, g: 0, bd: 0, gd: 0},
-				{gg: "1-2", b: 0, g: 0, bd: 0, gd: 0},
-				{gg: "3-5", b: 0, g: 0, bd: 0, gd: 0},
-				{gg: "6-8", b: 0, g: 0,  bd: 0, gd: 0},
-				{gg: "9", b: 0, g: 0,  bd: 0, gd: 0},
-				{gg: "10-12", b: 0, g: 0, bd: 0, gd: 0},
-				{gg: "ALL GROUPS", b: 0, g: 0, bd: 0, gd: 0}
+			 	{grp: "K", b: 0, g: 0, bd: 0, gd: 0},
+				{grp: "1-2", b: 0, g: 0, bd: 0, gd: 0},
+				{grp: "3-5", b: 0, g: 0, bd: 0, gd: 0},
+				{grp: "6-8", b: 0, g: 0,  bd: 0, gd: 0},
+				{grp: "9", b: 0, g: 0,  bd: 0, gd: 0},
+				{grp: "10-12", b: 0, g: 0, bd: 0, gd: 0},
+				{grp: "ALL GROUPS", b: 0, g: 0, bd: 0, gd: 0}
 			]
 			$.each(servicesVouchers, function(i, service){
 				const c = dbGetData(aws+"/clients/" + service.clientServedId).clients
@@ -1072,9 +1085,40 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 				})
 			})
 		} else if (targetType == 'Ages') {
-			console.log('in target Ages')
-
-
+			count = [
+			 	{grp: "0-1", b: 0, g: 0, bd: 0, gd: 0},
+				{grp: "2-3", b: 0, g: 0, bd: 0, gd: 0},
+				{grp: "4-6", b: 0, g: 0, bd: 0, gd: 0},
+				{grp: "7-8", b: 0, g: 0,  bd: 0, gd: 0},
+				{grp: "9-10", b: 0, g: 0,  bd: 0, gd: 0},
+				{grp: "11-12", b: 0, g: 0, bd: 0, gd: 0},
+				{grp: "13-17", b: 0, g: 0, bd: 0, gd: 0},
+				{grp: "ALL GROUPS", b: 0, g: 0, bd: 0, gd: 0}
+			]
+			$.each(servicesVouchers, function(i, service){
+				const c = dbGetData(aws+"/clients/" + service.clientServedId).clients
+				let d = c[0].dependents
+				d = utilCalcDependentsAges(d)
+				$.each(d, function(di, dependent){
+					const ageGroup = utilCalcAgeGrouping(dependent)
+					if (ageGroup == "Unable to Calculate Age Level") {
+						return
+					}
+					const ageGroups = ["0-1", "2-3", "4-6", "7-8", "9-10", "11-12", "13-17"]
+					let grp = ageGroups.findIndex(i => i == ageGroup)
+					let gender = "g"
+					if (dependent.gender == "Male") {gender = "b"}
+					count[grp][gender]++ // add one to count
+					count[7][gender]++ // add one to count
+					let fulfillment = servicesFulfillment // filter out other clients
+								.filter(item => item.clientServedId == service.clientServedId)
+					if (fulfillment.length > 0) {
+						let deliv = gender + "d"
+						count[grp][deliv]++ // add one to count
+						count[7][deliv]++
+					}
+				})
+			})
 		} else {
 			count = [{ r: 0, d: 0 }] // registered/delivered
 			$.each(servicesVouchers, function(i, service){
@@ -1266,22 +1310,17 @@ function uiBuildVoucherCountRows(count, targetType) {
 		if (c == count.length -1) {
 			style = ' style="border-top: 1px solid var(--green);"'
 		}
-		if (targetType == 'Grades') {
-			$(grid).append('<div class="gradeGroup"' + style + '>' + row.gg +'</div>')
+		if (targetType == 'Grades' || targetType == 'Ages') {
+			$(grid).append('<div class="gradeGroup"' + style + '>' + row.grp +'</div>')
 			$(grid).append('<div class="monthItem secondary"' + style + '>Boys</div>')
 			$(grid).append('<div class="monthItem secondary"' + style + '>' + row.b +'</div>')
 			$(grid).append('<div class="monthItem secondary"' + style + '>' + row.bd +'</div>')
 			$(grid).append('<div class="monthItem">Girls</div>')
 			$(grid).append('<div class="monthItem">' + row.g +'</div>')
 			$(grid).append('<div class="monthItem">' + row.gd +'</div>')
-		} else if (targetType == 'Ages') {
-
-			// TODO Christmas ????
-
 		} else {
 			const noshow = row.r - row.d
 			const percDelivery = row.d / row.r
-			
 			$(grid).append('<div class="monthItem secondary"' + style + '>' + row.r + '</div>')
 			$(grid).append('<div class="monthItem secondary"' + style + '>' + row.d + '</div>')
 			$(grid).append('<div class="monthItem secondary"' + style + '>' + noshow  + '</div>')
@@ -1292,6 +1331,10 @@ function uiBuildVoucherCountRows(count, targetType) {
 	if (targetType == 'Grades' || targetType == 'Ages') {
 		let total = count[6].b + count[6].g
 		let deliv = count[6].bd + count[6].gd
+		if (targetType == 'Ages') {
+			total = count[7].b + count[7].g
+			deliv = count[7].bd + count[7].gd
+		}
 		$(grid).append('<div class="monthItem grandTotal">GRAND TOTAL</div>')
 		$(grid).append('<div class="monthItem grandTotal">BOYS & GIRLS</div>')
 		$(grid).append('<div class="monthItem grandTotal">' + total +'</div>')
@@ -1300,8 +1343,7 @@ function uiBuildVoucherCountRows(count, targetType) {
 	}
 };
 
-function uiBuildVoucherDistroRows(servicesVouchers, targeType) {
-	// TODO Create Pagination
+function uiBuildVoucherDistroRows(servicesVouchers, targetType) {
 	let total = 0
 	const grid = "#voucherGrid"
 	$("#reportBodyDiv").append('<div id="voucherGrid" class="voucherRowBox voucherDistro" style="grid-row: 5"></div>')
@@ -1309,14 +1351,26 @@ function uiBuildVoucherDistroRows(servicesVouchers, targeType) {
 		let itemCount = 0
 		const sv = servicesVouchers[r]
 		const c = dbGetData(aws+"/clients/" + sv.clientServedId).clients
-		if (targeType == 'grades' || targeType == 'ages') {
-			const d = c[0].dependents
+		if (targetType == 'Grades' || targetType == 'Ages') {
+			let d = c[0].dependents
+			if (targetType == 'Ages') {
+				d = utilCalcDependentsAges(d)
+			}
 			$.each(d, function(di, dependent){
-				const gradeGroup = utilCalcGradeGrouping(dependent)
-				if (gradeGroup == "Unable to Calculate Grade Level") {
-					return
-				} else {
-					itemCount += 1
+				if (targetType == 'Grades') {
+					const gradeGroup = utilCalcGradeGrouping(dependent)
+					if (gradeGroup == "Unable to Calculate Grade Level") {
+						return
+					} else {
+						itemCount += 1
+					}
+				} else if (targetType == 'Ages') {
+					const ageGroup = utilCalcAgeGrouping(dependent)
+					if (ageGroup == "Unable to Calculate Age Level") {
+						return
+					} else {
+						itemCount += 1
+					}
 				}
 			})
 			console.log("Families")
@@ -2046,7 +2100,6 @@ function uiGetTemplate(template){
 	let imp = document.querySelector('link[rel="import"]');
 	let temp = imp.import.querySelector(template);
 	let clone = document.importNode(temp.content, true);
-	//document.querySelector('.main-div').appendChild(clone);
 	return clone
 };
 
@@ -2733,9 +2786,9 @@ function cogUserChangePassword(){
 		cognitoUser.changePassword(password, newPassword, function(err, result) {
 	    if (err) {
 				if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.") {
-					uiShowHideError("show", "Too many attemps!!", "Please try again later.")
+					uiShowHideError("show", "Too many attemps!!", "Please try again later.", 'beep')
 				} else if (err == "NotAuthorizedException: Incorrect username or password."){
-					uiShowHideError("show", "Incorrect password", "Please enter your Existing Password again.<br>Make sure the <b>caps lock</b> is not on.")
+					uiShowHideError("show", "Incorrect password", "Please enter your Existing Password again.<br>Make sure the <b>caps lock</b> is not on.", 'beep')
 				} else {
 					alert(err)
 				 	return
@@ -2751,9 +2804,8 @@ function cogUserChangePassword(){
 			}
 	  });
 	} else {
-		utilBeep()
 		console.log("PASSWORDS DON'T MATCH")
-		uiShowHideError("show", "Passwords don't match!!", "Please enter the new password correctly in both fields.")
+		uiShowHideError("show", "Passwords don't match!!", "Please enter the new password correctly in both fields.", 'beep')
 		// TODO show error
 	}
 };
@@ -3157,7 +3209,7 @@ function utilCognitoPhoneFormat(telephone){
 };
 
 function utilGetFulfillmentServiceByID(serviceTypeId) {
-	return vouchers = serviceTypes.filter(function( obj ) {
+	return serviceTypes.filter(function( obj ) {
 		return obj.target.service == serviceTypeId
 	})
 };
@@ -3215,14 +3267,14 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 		for (let prop in targetServices[i]) {
 			if (prop=="family_totalChildren") {
 				// TODO move to grade and age target detection to helper function
-				if (targetServices[i]['dependents_gradeMin']!="Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
+				if (targetServices[i]['dependents_gradeMin'] != "Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
 					validDependents = utilCalcValidAgeGrade("grade",targetServices[i])
 				}
 				//TODO change service types to store non age entries as -1
-				else if (targetServices[i]['target.childMaxAge']>0){
+				if (targetServices[i]['dependents_ageMax'] > 0){
 					validDependents = utilCalcValidAgeGrade("age",targetServices[i])
 				}
-				if (validDependents.length==0){
+				if (validDependents.length == 0){
 					display = false
 				}
 			}
@@ -3291,6 +3343,34 @@ function utilCalcActiveServiceTypes(){
 		}
 	}
 	return activeServiceTypes
+};
+
+function utilCalcAgeGrouping(dependent){
+	let age = dependent.age
+	if (age >= 0 && age <= 1 ){
+		return "0-1"
+	}
+	else if  (age >= 2 && age <= 3){
+		return "2-3"
+	}
+	else if (age >= 4 && age <= 6){
+		return "4-6"
+	}
+	else if (age >= 7 && age <= 8){
+		return "7-8"
+	}
+	else if (age >= 9 && age <= 10){
+		return "9-10"
+	}
+	else if (age >= 11 && age <= 12){
+		return "11-12"
+	}
+	else if (age >= 13 && age <= 17){
+		return "13-17"
+	}
+	else {
+		return "Unable to Calculate Age Level"
+	}
 };
 
 function utilCalcClientFamilyCounts(){
@@ -3400,10 +3480,10 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 				dependents.push(client.dependents[j])
 			}
 		}
-		if (gradeOrAge=="age" && client.dependents[j].isActive=="Active"){
+		if (gradeOrAge == "age" && client.dependents[j].isActive == "Active"){
 			let age = client.dependents[j].age
-			if (age>=targetService['dependents_ageMin']
-			&& age<=targetService['dependents_ageMax']){
+			if (age >= targetService['dependents_ageMin']
+			&& age <= targetService['dependents_ageMax']){
 				dependents.push(client.dependents[j])
 			}
 		}
@@ -3413,9 +3493,6 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 
 function utilGenerateDailyReport(targetDiv){
 	let dayDate = $('#reportsDailyDate').val()
-
-// TODO all services????
-
 	uiShowDailyReportHeader(dayDate, targetDiv, 'DAILY')
 	uiShowDailyReportRows(dayDate, targetDiv)
 	uiShowHideReport("show")
@@ -3433,14 +3510,14 @@ function utilGenerateVoucherReport(reportType){
 	const serviceTypeId = $('#reportVoucher' + reportType).val() // form pulldown
 	const serviceType = utilGetServiceTypeByID(serviceTypeId)
 	let targetType = ''
-	if (serviceType.target.child == 'YES' && reportType == 'Count') {
+	if (serviceType.target.child == 'YES') {
 		if (serviceType.target.childMaxGrade != "Unselected") {targetType = 'Grades'}
 		if (serviceType.target.childMaxAge != "0") {targetType = 'Ages'}
 	}
 	const year = $('#reportVoucher' + reportType + 'Year').val()
 	uiShowVoucherReportHeader(year, reportType, targetType, serviceType)
-	uiShowVoucherReportRows(year, reportType, targetType, serviceType)
-	uiShowHideReport("show")
+	let result = uiShowVoucherReportRows(year, reportType, targetType, serviceType)
+	if (result != 'failed') { uiShowHideReport("show") }
 };
 
 function utilGenerateMonthlyReport(){
@@ -3781,15 +3858,13 @@ function utilErrorHandler(errMessage, status, error, type) {
 		cogLogoutUser()
 		const title = "Login Expired"
 		const message =  "Login again to continue."
-		utilBeep()
-		uiShowHideError("show", title, message)
+		uiShowHideError("show", title, message, 'beep')
 		cogLoginUser
 	} else if (type == "code" ) {
 		if (error == "argument count") {
 			const title = errMessage
 			const message =  status
-			utilBeep()
-			uiShowHideError("show", title, message)
+			uiShowHideError("show", title, message, 'beep')
 		}
 	} else if (type == "cognito") {
 
@@ -3897,6 +3972,15 @@ function utilCalcDependentAge(index){
 			client.dependents.age = newAge
 		}
 	}
+};
+
+function utilCalcDependentsAges(dependents){
+	$.each(dependents, function(i, dependent){
+		if (dependent.dob != null){
+			dependents[i].age = moment().diff(dependent.dob, "years")
+		}
+	})
+	return dependents
 };
 
 function utilCalcFoodInterval(isUSDA, activeServiceTypes) {
