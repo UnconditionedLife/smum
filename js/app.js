@@ -1279,8 +1279,13 @@ function uiBuildVoucherCountRows(count, targetType) {
 			// TODO Christmas ????
 
 		} else {
-			$(grid).append('<div class="monthItem span2 secondary"' + style + '>' + row.r + '</div>')
-			$(grid).append('<div class="monthItem span2 secondary"' + style + '>' + row.d + '</div>')
+			const noshow = row.r - row.d
+			const percDelivery = row.d / row.r
+			
+			$(grid).append('<div class="monthItem secondary"' + style + '>' + row.r + '</div>')
+			$(grid).append('<div class="monthItem secondary"' + style + '>' + row.d + '</div>')
+			$(grid).append('<div class="monthItem secondary"' + style + '>' + noshow  + '</div>')
+			$(grid).append('<div class="monthItem secondary"' + style + '>' + percDelivery + '%</div>')
 		}
 	}
 
