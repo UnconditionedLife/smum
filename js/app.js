@@ -853,14 +853,17 @@ function uiRefreshReport(targetDiv){
 	uiShowDailyReportRows(moment().format(date), targetDiv)
 };
 
-function uiShowDailyReportHeader(reportDate, targetDiv, title){
-	const name = 'FOOD PANTRY'
-	let refresh = false
-	let print = true
-	if (targetDiv == 'today') {
-		refresh = true
+function uiShowDailyReportHeader(reportDate, targetDiv, name){
+	const vals = {
+		 targetDiv: targetDiv,
+		      name: name + ' REPORT',
+		  category: 'FOOD PANTRY',
+		reportDate: reportDate,
+		   refresh: false,
+		     print: true
 	}
-	uiLoadReportHeader(reportDate, targetDiv, name, title, refresh, print) // print: 'print' = print link
+	if (targetDiv == 'today') { vals.refresh = true }
+	uiLoadReportHeader(vals)
 	uiSetPrintBodyTemplate('#dailyReportHeader', targetDiv)
 };
 
@@ -892,36 +895,40 @@ function uiShowDailyReportRows(dayDate, targetDiv){
 	uiShowTodayTotals(grandTotals, "#" + targetDiv + "grandTotalGrid")
 };
 
-function uiLoadReportHeader(reportDate, targetDiv, name, title, refresh, print){
-	$('#' + targetDiv + 'BodyDiv').html(uiGetTemplate('#' + targetDiv + 'Header'))
-	$('#' + targetDiv + 'Name').html(name)
-	if (reportDate == '') {
-		reportDate = moment().format(longDate)
-	} else if (moment(reportDate).format(date) == moment().format(date)) {
-		reportDate = moment().format(longDate)
+function uiLoadReportHeader(vals){
+	$('#' + vals.targetDiv + 'BodyDiv').html(uiGetTemplate('#' + vals.targetDiv + 'Header'))
+	$('#' + vals.targetDiv + 'Name').html(vals.name)
+	if (vals.reportDate == '') {
+		vals.reportDate = moment().format(longDate)
+	} else if (moment(vals.reportDate).format(date) == moment().format(date)) {
+		vals.reportDate = moment().format(longDate)
 	} else {
-		reportDate = moment(reportDate).format("MMMM Do, YYYY")
+		vals.reportDate = moment(reportDate).format("MMMM Do, YYYY")
 	}
-	$('#' + targetDiv + 'Dates').html(reportDate)
-	$('#' + targetDiv + 'HeaderLeft').html(title)
+	$('#' + vals.targetDiv + 'Dates').html(vals.reportDate)
+	$('#' + vals.targetDiv + 'HeaderLeft').html(vals.category)
 	let report = 'REPORT '
-	if (refresh) {report += '<i onClick="uiRefreshReport(\'' + targetDiv + '\')" class="fa fa-refresh" aria-hidden="true"></i>'}
-	if (print) {report += ' <i onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>'}
-	$('#' + targetDiv + 'HeaderRight').html(report)
+	if (vals.refresh) {report += '<i onClick="uiRefreshReport(\'' + vals.targetDiv + '\')" class="fa fa-refresh" aria-hidden="true"></i>'}
+	if (vals.print) {report += ' <i onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>'}
+	$('#' + vals.targetDiv + 'HeaderRight').html(report)
 };
 
 function uiShowFamiliesReportHeader(reportType) {
-	const reportDate = ''
-	const targetDiv = 'report'
-	let name = "FAMILIES WITH CHILDREN"
+	let vals = {
+		 targetDiv: 'report',
+	      	name: 'FAMILIES WITH CHILDREN',
+		  category: 'FAMILIES',
+		reportDate: '',
+		   refresh: false,
+	     	 print: true
+	}
 	let template = "#reportFamiliesChildrenHeader"
 	if (reportType == "Homeless") {
-		name = "HOMELESS FAMILIES"
+		vals.name = "HOMELESS FAMILIES"
 		template = "#reportFamiliesHomelessHeader"
 	}
-	const title = "FAMILIES"
-	uiLoadReportHeader(reportDate, targetDiv, name, title, false, true) //name, title, refresh, print
-	uiSetPrintBodyTemplate(template, targetDiv)
+	uiLoadReportHeader(vals)
+	uiSetPrintBodyTemplate(template, vals.targetDiv)
 };
 
 function uiSetPrintBodyTemplate(template, targetDiv){
@@ -978,28 +985,35 @@ function uiShowFamiliesReportRows(reportType) {
 };
 
 function uiShowVoucherReportHeader(year, reportType, targetType, serviceType){
-	const reportDate = ''
-	const targetDiv = 'report'
-	const name = serviceType.serviceName + ' ' + reportType
-	const title = serviceType.serviceCategory.replace(/_/g,' ')
+	const vals = {
+		 targetDiv: 'report',
+		      name: serviceType.serviceName + ' ' + reportType,
+		  category: serviceType.serviceCategory.replace(/_/g,' '),
+		reportDate: '',
+		   refresh: false,
+		     print: true
+	}
+	uiLoadReportHeader(vals)
 	const template = '#reportVoucher' + targetType + reportType + 'Header'
-	uiLoadReportHeader(reportDate, targetDiv, name, title, false, true)
-	uiSetPrintBodyTemplate(template, targetDiv)
+	uiSetPrintBodyTemplate(template, vals.targetDiv)
 };
 
 function uiShowMonthlyReportHeader(monthYear, reportType){
-	const reportDate = ''
-	const targetDiv = 'report'
-	const title = 'MONTHLY'
-	let name = 'FOOD PANTRY'
+	let vals = {
+		 targetDiv: 'report',
+		      name: 'MONTHLY REPORT',
+		  category: 'FOOD PANTRY',
+		reportDate: '',
+		   refresh: false,
+		     print: true
+	}
 	let template = '#foodBodyHeader'
-	const date = 'today'
 	if (reportType == 'ALL') {
-		name = 'ALL SERVICES'
+		vals.category = 'ALL SERVICES'
 		template = '#allServicesBodyHeader'
 	}
-	uiLoadReportHeader(reportDate, targetDiv, name, title, false, true) // targetDiv, name, title, refresh link, printer link
-	uiSetPrintBodyTemplate(template, targetDiv)
+	uiLoadReportHeader(vals)
+	uiSetPrintBodyTemplate(template, vals.targetDiv)
 };
 
 function utilPrintReport(){
@@ -1297,11 +1311,11 @@ function uiBuildVoucherDistroRows(servicesVouchers, targeType) {
 				if (gradeGroup == "Unable to Calculate Grade Level") {
 					return
 				} else {
-					itemCount = itemCount + 1
+					itemCount += 1
 				}
 			})
 			console.log("Families")
-		} else if (targeType == 'none') {
+		} else {
 			itemCount = 1
 			console.log("Individuals")
 		}
@@ -3425,14 +3439,18 @@ function utilGenerateVoucherReport(reportType){
 };
 
 function utilGenerateMonthlyReport(){
-	const reportDate = ''
-	const targetDiv = 'report'
 	const monthYear = $('#reportsMonthlyMonth').val()
 	const reportType = $('#reportsMonthlyType').val()
-	const name = "MONTHLY"
-	const title = "FOOD PANTRY"
-	const print = "print"
-	uiLoadReportHeader(reportDate, targetDiv, name, title, false, true) // name, title, refresh, print
+	const vals = {
+		 targetDiv: 'report',
+		      name: 'FOOD PANTRY',
+		  category: 'MONTHLY REPORT',
+		reportDate: '',
+		   refresh: false,
+		     print: true
+	}
+	if (reportType == 'ALL') { vals.name = 'ALL SERVICES' }
+	uiLoadReportHeader(vals)
 	uiShowHideReport("show")
 	uiShowMonthlyReportHeader(monthYear, reportType)
 	uiShowMonthlyReportRows(monthYear, reportType)
