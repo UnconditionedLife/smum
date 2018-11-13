@@ -3179,22 +3179,22 @@ function utilGetServiceTypeByID(serviceTypeId){
 };
 
 function utilBeep(){
-	console.log("BAD BEEP")
 	if (settings.sounds == "YES"){
-		let sound = document.getElementById("beep")
-		sound.volume= .1
-		sound.loop = false
-		sound.play()
+		console.log("BAD BEEP")
+    let beep  = new Audio("sounds/beep.wav")
+		beep.volume = .1
+		beep.loop = false
+		beep.play()
 	}
 };
 
 function utilBloop(){
 	console.log("GOOD BLOOP")
 	if (settings.sounds == "YES"){
-		let sound = document.getElementById("bloop")
-		sound.volume= .1
-		sound.loop = false
-		sound.play()
+		let bloop  = new Audio("sounds/bloop.wav")
+		bloop.volume= .1
+		bloop.loop = false
+		bloop.play()
 	}
 };
 
