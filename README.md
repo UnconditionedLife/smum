@@ -17,7 +17,7 @@ SMUM-Checkin manages client registration and facilitates the  provision of avail
 This is an ongoing development project created and supported by volunteers. We are seeking to involve software developers from San Jose and the surrounding communities. We are offering young developers an outlet for volunteering to their local community by doing what they most enjoy doing.
 
 #### High School Tech Volunteer Program
-We are reaching out to regional high schools to build long-term relationships. We want partners help promote this Tech Volunteer Program to students and the broader community. We believe this is a great opportunity to introduce tech students to the idea of helping build tools for communities in need.
+We are reaching out to regional high schools to build long-term *relationships*. We want partners help promote this Tech Volunteer Program to students and the broader community. We believe this is a great opportunity to introduce tech students to the idea of helping build tools for communities in need.
 
 ## Future Development
 Our goal is to have near continuous development of improvements and new features. A few of the planned features can be seen below.
