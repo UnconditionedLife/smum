@@ -1019,7 +1019,7 @@ function uiShowMonthlyReportHeader(monthYear, reportType){
 
 function utilPrintReport(){
 	//let path = window.location.href + "css/reports.css"     // Returns full URL
-	$("#reportBodyDiv").printMe({ "path": ["css/print-v3.css"] });
+	$("#reportBodyDiv").printMe({ "path": ["css/print-v4.css"] });
 };
 
 function uiShowVoucherReportRows(year, reportType, targetType, serviceType){

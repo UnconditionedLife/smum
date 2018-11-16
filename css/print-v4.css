@@ -101,6 +101,18 @@ body {
 	margin-bottom: 30px;
 }
 
+#reportBodyDiv {
+	position: inherit;
+	display: grid;
+	grid-template-columns: 30px 1fr 30px;
+	grid-template-rows: 70px 25px 70px 8px auto;
+	padding: 30px 0 30px;
+	width: 96vw;
+	height: 94vh;
+	background-color: white;
+	overflow: scroll;
+}
+
 .todayReportBodyHeaderBox{
 	background-color: white;
 	width: 100%;
@@ -171,7 +183,17 @@ body {
 	page-break-inside: avoid;
 }
 
-.firstStepRowBox {
+/* .firstStepRowBox {
+	background-color: white;
+	width: 100%;
+	height: 24px;
+	display: grid;
+	grid-column: 2;
+	grid-template-rows: 24px;
+	margin-bottom: 2px;
+} */
+
+.voucherRowBox {
 	background-color: white;
 	width: 100%;
 	height: 24px;
@@ -181,11 +203,19 @@ body {
 	margin-bottom: 2px;
 }
 
-.firstStepDistro {
+/* .firstStepDistro {
 	grid-template-columns: 1fr 4fr 4fr 2fr;
 }
 
 .firstStepCount {
+	grid-template-columns: 1fr 1fr 1fr 1fr;
+} */
+
+.voucherDistro {
+	grid-template-columns: 1fr 4fr 4fr 2fr;
+}
+
+.voucherCount {
 	grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
@@ -247,7 +277,7 @@ body {
 	-webkit-print-color-adjust:exact;
 }
 
-.firstStepBodyHeaderBox {
+/* .firstStepBodyHeaderBox {
 	background-color: white;
 	width: 100%;
 	height: 48px;
@@ -256,6 +286,19 @@ body {
 	grid-column: 2;
 	grid-template-rows: 24px 24px;
 	border: 1px solid var(--green);
+	margin-bottom: 24px;
+	-webkit-print-color-adjust:exact;
+} */
+
+.voucherBodyHeaderBox {
+	background-color: white;
+	width: 100%;
+	height: 48px;
+	display: grid;
+	grid-row: 3;
+	grid-column: 2;
+	grid-template-rows: 24px 24px;
+	border: 2px solid var(--green);
 	margin-bottom: 24px;
 	-webkit-print-color-adjust:exact;
 }
