@@ -4413,8 +4413,8 @@ function utilValidateConfig(form, id){
 			 target_childMinGrade: [ {lookup: ["Unselected","Pre-K","K","1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if target child is "YES"
 			 target_childMaxGrade: [ {lookup: ["Unselected","Pre-K","K","1","2","3","4","5","6","7","8","9","10","11","12"]}  ], // TODO required if target child is "YES"
 			     fulfillment_type: [ 'required', {lookup: ["Fulfill", "Notify", "Voucher", "Voucher_Fulfill"]} ],
-   fulfillment_fromDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ],
-	   fulfillment_toDateTime: [ 'date', 'dateAfterNow', 'dateAfterNow' ]
+   fulfillment_fromDateTime: [ 'date' ],
+	   fulfillment_toDateTime: [ 'date' ]
 	}
 	let passwordForm = {
 		existingPassword: [ 'password'],
