@@ -874,7 +874,7 @@ function uiShowDailyReportRows(dayDate, targetDiv){
 		.filter(item => item.serviceValid == 'true')
 		.filter(item => item.serviceCategory == "Food_Pantry")
 		.sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
-	let servicesUSDA = servicesFood.filter(item => item.isUSDA == "USDA")
+	let servicesUSDA = servicesFood.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
 	let servicesNonUSDA = servicesFood.filter(item => item.isUSDA == "NonUSDA")
 	$(targetDivId).append('<div id="' + targetDiv + 'USDAGrid" class="todayReportRowBox" style="grid-row: 5"><div class="todaySectionHeader">USDA</div></div>')
 	$(targetDivId).append('<div id="' + targetDiv + 'NonUSDAGrid" class="todayReportRowBox" style="grid-row: 6"><div class="todaySectionHeader">NonUSDA</div></div>')
@@ -1156,7 +1156,7 @@ function uiShowMonthlyReportRows(monthYear, reportType){
 			.sort((a, b) => parseInt(a.servicedDay) - parseInt(b.servicedDay))
 		let dayUSDA = ""
 		let servicesUSDA = servicesFood
-			.filter(item => item.isUSDA == "USDA")
+			.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
 		let servicesNonUSDA = servicesFood
 			.filter(item => item.isUSDA == "NonUSDA")
 		servicesUSDA = utilCalcMonthlyRows(servicesUSDA)
