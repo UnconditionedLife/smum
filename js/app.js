@@ -2753,6 +2753,28 @@ function dateFindOpen(target, earliest) {
 };
 
 // **********************************************************************************************************
+// ********************************************** CLICK FUNCTIONS *******************************************
+// **********************************************************************************************************
+
+function clickGenerateMonthlyReport(){
+	const monthYear = $('#reportsMonthlyMonth').val()
+	const reportType = $('#reportsMonthlyType').val()
+	const vals = {
+		 targetDiv: 'report',
+		      name: 'FOOD PANTRY',
+		  category: 'MONTHLY REPORT',
+		reportDate: '',
+		   refresh: false,
+		     print: true
+	}
+	if (reportType == 'ALL') vals.name = 'ALL SERVICES'
+	uiLoadReportHeader(vals)
+	uiShowHideReport("show")
+	uiShowMonthlyReportHeader(monthYear, reportType)
+	uiShowMonthlyReportRows(monthYear, reportType)
+};
+
+// **********************************************************************************************************
 // *********************************************** COG FUNCTIONS ********************************************
 // **********************************************************************************************************
 function cogLogoutUser(){
@@ -3067,7 +3089,6 @@ function cogLoginAdmin(){
 		}
  })
 };
-
 
 // **********************************************************************************************************
 // *********************************************** UTIL FUNCTIONS *******************************************
@@ -3776,7 +3797,10 @@ function utilCalcTargetServices(activeServiceTypes) {
 		// make list of specific targets.... for each type.
 		targets[i] = {}
 		// target homeless
-		if (activeServiceTypes[i].target.homeless !== "Unselected") targets[i].homeless = activeServiceTypes[i].target.homeless;
+		if (activeServiceTypes[i].target.homeless !== "NO") {
+			targets[i].homeless = 'YES';
+			console.log(activeServiceTypes[i].target.homeless)
+		}
 		// target families with children, singles, couples
 		if (activeServiceTypes[i].target.family == "Single Individual") {
 			targets[i].family_totalSize = 1;
