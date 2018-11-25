@@ -455,6 +455,11 @@ main{
   padding-right: 6px;
 }
 
+#msgBox {
+	color: red;
+	font-size: x-large;
+}
+
 .lableDiv {
   display: flex;
   background-color: var(--light-green);

@@ -1320,7 +1320,7 @@ function uiBuildVoucherCountRows(count, targetType) {
 			$(grid).append('<div class="monthItem">' + row.gd +'</div>')
 		} else {
 			const noshow = row.r - row.d
-			const percDelivery = row.d / row.r
+			const percDelivery = Math.round(100 * row.d / row.r)
 			$(grid).append('<div class="monthItem secondary"' + style + '>' + row.r + '</div>')
 			$(grid).append('<div class="monthItem secondary"' + style + '>' + row.d + '</div>')
 			$(grid).append('<div class="monthItem secondary"' + style + '>' + noshow  + '</div>')
@@ -3493,16 +3493,24 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 
 function utilGenerateDailyReport(targetDiv){
 	let dayDate = $('#reportsDailyDate').val()
-	uiShowDailyReportHeader(dayDate, targetDiv, 'DAILY')
-	uiShowDailyReportRows(dayDate, targetDiv)
-	uiShowHideReport("show")
+	$('#msgBox').html('Generating report...')
+	setTimeout(function() {
+		uiShowDailyReportHeader(dayDate, targetDiv, 'DAILY')
+		uiShowDailyReportRows(dayDate, targetDiv)
+		$('#msgBox').html('')
+		uiShowHideReport("show")
+	}, 0)
 };
 
 function utilGenerateFamiliesReport(){
 	const reportType = $('#reportFamilyType').val()
-	uiShowFamiliesReportHeader(reportType)
-	uiShowFamiliesReportRows(reportType)
-	uiShowHideReport("show")
+	$('#msgBox').html('Generating report...')
+	setTimeout(function() {
+		uiShowFamiliesReportHeader(reportType)
+		uiShowFamiliesReportRows(reportType)
+		$('#msgBox').html('')
+		uiShowHideReport("show")
+	}, 0)
 };
 
 function utilGenerateVoucherReport(reportType){
@@ -3515,9 +3523,14 @@ function utilGenerateVoucherReport(reportType){
 		if (serviceType.target.childMaxAge != "0") {targetType = 'Ages'}
 	}
 	const year = $('#reportVoucher' + reportType + 'Year').val()
-	uiShowVoucherReportHeader(year, reportType, targetType, serviceType)
-	let result = uiShowVoucherReportRows(year, reportType, targetType, serviceType)
-	if (result != 'failed') { uiShowHideReport("show") }
+	$('#msgBox').html('Generating report...')
+	setTimeout(function() {
+		uiShowVoucherReportHeader(year, reportType, targetType, serviceType)
+		let result = uiShowVoucherReportRows(year, reportType, targetType, serviceType)
+		$('#msgBox').html('')
+		if (result != 'failed')
+			uiShowHideReport("show")
+	}, 0)
 };
 
 function utilGenerateMonthlyReport(){
@@ -3532,10 +3545,14 @@ function utilGenerateMonthlyReport(){
 		     print: true
 	}
 	if (reportType == 'ALL') { vals.name = 'ALL SERVICES' }
-	uiLoadReportHeader(vals)
-	uiShowHideReport("show")
-	uiShowMonthlyReportHeader(monthYear, reportType)
-	uiShowMonthlyReportRows(monthYear, reportType)
+	$('#msgBox').html('Generating report...')
+	setTimeout(function() {
+		uiLoadReportHeader(vals)
+		uiShowMonthlyReportHeader(monthYear, reportType)
+		uiShowMonthlyReportRows(monthYear, reportType)
+		$('#msgBox').html('')
+		uiShowHideReport("show")
+	}, 0);
 };
 
 function utilGradeToNumber(grade){
