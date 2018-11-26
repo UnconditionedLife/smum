@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- ?v=1.0.1 -->
 <html lang="en">
    <head>
       <!-- Required meta tags -->
@@ -8,9 +9,9 @@
       <link rel="icon" href="favicon.ico" type="image/x-icon">
       <link rel="stylesheet" href="css/jquery-ui.min.css">
       <link rel="stylesheet" href="css/fullcalendar.css">
-	   <link rel="stylesheet" href="css/style.css">
-      <link rel="stylesheet" href="css/reports.css">
-      <link rel="import" href="templates.html">
+	   <link rel="stylesheet" href="css/style.css?v=1.0.1">
+      <link rel="stylesheet" href="css/reports.css?v=1.0.1">
+      <link rel="import" href="templates.html?v=1.0.1">
       <!-- <audio id="beep" src="sounds/beep.wav" autostart="false"></audio> -->
       <!-- <audio id="bloop" src="sounds/bloop.wav" autostart="false"></audio> -->
       <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.122.0/aws-sdk.min.js"></script> -->
@@ -78,7 +79,6 @@
                <label id="tabLable7" for="tab7">Today</label>
 
                <section id="content1"> <!-- Found -->
-                  <!-- <div class="topFormButtonsDiv"><input class="solidButton" onclick="uiShowNewClientForm()" type="button" value="New Client"></div> -->
                   <container id="searchContainer"></container>
                </section>
                <section id="content2"> <!-- Services -->
@@ -91,7 +91,7 @@
                </section>
                <section id="content3"> <!-- Client -->
                   <div class="topFormButtonsDiv">
-                     <input id="newClientButton" class="solidButton viewOnly" onclick="uiShowNewClientForm()" type="button" value="New Client">
+                     <input id="newClientButton" class="solidButton viewOnly" onclick="clickShowNewClientForm()" type="button" value="New Client">
                      <input id="clientLeftSlider" class="leftSlider sliderActive" onclick="uiToggleClientViewEdit('view')" type="button" value="View">
                      <input id="clientRightSlider" class="rightSlider" onclick="uiToggleClientViewEdit('edit')" type="button" value="Edit">
                   </div>
@@ -487,25 +487,14 @@
       <div id="reportBodyDiv"></div>
    </div>
    <div class="main-container" style="margin:auto; width:100%; visibility:hidden"></div>
-
-   <!--- <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.js"></script> --->
    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
    crossorigin="anonymous"></script>
    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
    <script type="text/javascript" src="js/jquery-printme.min.js"></script>
-
-
    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
-
-   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script> -->
-   <!-- integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
-   crossorigin="anonymous" -->
-
    <script src="https://cdnjs.cloudflare.com/ajax/libs/cuid/1.3.8/browser-cuid.min.js"></script>
-<!--  <script src="data/foodSmall.js"></script>
-   <script src="js/dataImport.js"></script> -->
-   <script src="js/app.js"></script>
+   <script src="js/app.js?v=1.0.1"></script>
    <script src="js/fullcalendar.js"></script>
   </body>
 </html>

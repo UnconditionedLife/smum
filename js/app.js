@@ -16,6 +16,7 @@
 // TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
 
+const ver = '?v=1.0.1'
 const aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 const MAX_ID_DIGITS = 5
 const uiDate = 'MM/DD/YYYY'
@@ -659,9 +660,11 @@ function uiUpdateButton(elem, set) {
 	if (set == 'Gen') {
 		$(elem).val('Generating...')
 		$(elem).css('background-color', 'red')
+		$(elem).css('font-weight', 'bold')
 	} else {
 		$(elem).val('Run')
 		$(elem).css('background-color', 'var(--blue)')
+		$(elem).css('font-weight', 'normal')
 	}
 };
 
@@ -838,8 +841,8 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 			let btnClass = "btnPrimary"
 			if ((activeServiceTypes[x].serviceCategory == "Administration") || (activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
 			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'";
-			let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png'>";
-			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
+			let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png" + ver + "'>";
+			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
 		}
 	}
 	$('#servicePrimaryButtons').html(primaryButtons)
@@ -1363,9 +1366,8 @@ function uiBuildVoucherDistroRows(servicesVouchers, targetType) {
 		const c = dbGetData(aws+"/clients/" + sv.clientServedId).clients
 		if (targetType == 'Grades' || targetType == 'Ages') {
 			let d = c[0].dependents.filter( obj => obj.isActive == "Active")
-			if (targetType == 'Ages') {
-				d = utilCalcDependentsAges(d)
-			}
+			// need to calculate ages off all Active dependents first
+			if (targetType == 'Ages') d = utilCalcDependentsAges(d)
 			$.each(d, function(di, dependent){
 				if (targetType == 'Grades') {
 					const gradeGroup = utilCalcGradeGrouping(dependent)
@@ -1721,7 +1723,7 @@ function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTy
 	for (let i=0; i < btnSecondary.length; i++){
 		let x = btnSecondary[i];
 		let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'"
-		let service = '<div id="btn-' + activeServiceTypes[x].serviceTypeId +'\" class="btnSecondary" onclick=\"utilAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "</div>"
+		let service = '<div id="btn-' + activeServiceTypes[x].serviceTypeId +'\" class="btnSecondary" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "</div>"
 		$('#serviceSecondaryButtons').append(service)
 	}
 };
@@ -1964,11 +1966,11 @@ function uiGenSelectHTMLTable(selector, data, col, tableID){
   for (let i = 0; i < data.length; i++) {
     tr = table.insertRow(-1);
     if (tableID == 'clientTable'){
-			tr.setAttribute("onclick", 'utilSetCurrentClient(' + i + ')')
+			tr.setAttribute("onclick", 'clickSetCurrentClient(' + i + ')')
 		} else if (tableID == 'serviceTypesTable'){
-			tr.setAttribute("onclick", 'utilSetCurrentServiceType(' + i + ')')
+			tr.setAttribute("onclick", 'clickSetCurrentServiceType(' + i + ')')
 		} else if (tableID == 'usersTable'){
-			tr.setAttribute("onclick", 'utilSetCurrentAdminUser(' + i + ')')
+			tr.setAttribute("onclick", 'clickSetCurrentAdminUser(' + i + ')')
 		}
     for (let j = 0; j < col.length; j++) {
 			let depNum = i
@@ -2691,7 +2693,7 @@ function dbSearchClients(){
 	 	uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
 		uiResetNotesTab()
 		if (clientData.length == 1){
-			utilSetCurrentClient(0) // go straight to SERVICES
+			clickSetCurrentClient(0) // go straight to SERVICES
 			navGotoTab("tab2")
 		} else {
 			uiSetClientsHeader(clientData.length + ' Clients Found')
@@ -2766,6 +2768,91 @@ function dateFindOpen(target, earliest) {
 // ********************************************** CLICK FUNCTIONS *******************************************
 // **********************************************************************************************************
 
+function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
+	let serviceType = utilGetServiceTypeByID(serviceTypeId)
+	let serviceId = "" // new service
+	let serviceValid = true
+	// graydout button so undo service
+	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
+		const serviceItem = servicesRendered.filter(obj => obj.serviceTypeId == serviceTypeId)
+		serviceValid = false
+		serviceId = serviceItem[0].serviceId
+	}
+	// save service record
+	const servedCounts = utilCalcServiceFamilyCounts(serviceTypeId)
+	const serviceRecord = utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid)
+	const result = dbSaveServiceRecord(serviceRecord)
+	if (serviceType.serviceButtons == "Primary" && result == "success"){
+		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
+	}
+	if (serviceId != "" && result == "success") {
+		// ungrayout button
+		uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
+		if (serviceButtons == "Primary") {
+			$("#image-"+serviceTypeId).removeClass("imageGrayOut")
+		}
+	} else if (serviceId == "" && result == "success") {
+		if (serviceCategory == 'Food_Pantry') {
+			// TODO Use function here
+			let service = serviceTypes.filter(function( obj ) {
+					return obj.serviceTypeId == serviceTypeId
+				})[0]
+			prnPrintFoodReceipt(service.isUSDA)
+			if (client.isActive == 'Client') {
+				setTimeout(function(){ // give time for food receipt to print
+					prnPrintReminderReceipt()
+				}, 1250);
+			}
+		} else if (serviceCategory == 'Clothes_Closet') {
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				prnPrintClothesReceipt()
+			}, 2500);
+		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+			const targetService = utilCalcTargetServices([serviceType])
+			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
+			// TODO use function here
+			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				prnPrintFirstStepReceipt(service, dependents)
+			}, 2500)
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				prnPrintFirstStepReceipt(service, dependents)
+			}, 3750)
+		} else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+			const targetService = utilCalcTargetServices([serviceType])
+			// TODO use function here
+			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				prnPrintVoucherReceipt(service)
+			}, 2500)
+			setTimeout(function(){ // give time for food receipt & reminder to print
+				prnPrintVoucherReceipt(service)
+			}, 3750)
+		} else if (serviceCategory == 'Christmas' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+			const targetService = utilCalcTargetServices([serviceType])
+			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+			if (targetService[0].family_totalChildren == "Greater Than 0") {
+				const dependents = utilCalcValidAgeGrade("age", targetService[0])
+				setTimeout(function(){ // give time for food receipt & reminder to print
+					prnPrintChristmasToyReceipt(service, dependents)
+				}, 2500)
+				setTimeout(function(){ // give time for food receipt & reminder to print
+					prnPrintChristmasToyReceipt(service, dependents)
+				}, 3750)
+			} else {
+				setTimeout(function(){ // give time for food receipt & reminder to print
+					prnPrintVoucherReceipt(service)
+				}, 2500)
+				setTimeout(function(){ // give time for food receipt & reminder to print
+					prnPrintVoucherReceipt(service)
+				}, 3750)
+			}
+		}
+		uiShowLastServed()
+		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
+	}
+};
+
 function clickGenerateDailyReport(targetDiv){
 	const dayDate = $('#reportsDailyDate').val()
 	const buttonId = '#dailyReportButton'
@@ -2790,9 +2877,8 @@ function clickGenerateMonthlyReport(){
 		     print: true
 	}
 	if (reportType == 'ALL') vals.name = 'ALL SERVICES'
-	uiUpdateButton('#monthlyReportButton', 'Gen') // 'Gen' or 'Run'
 	const buttonId = '#monthlyReportButton'
-	$(buttonId).val('Generating...')
+	uiUpdateButton(buttonId, 'Gen') // 'Gen' or 'Run'
 	setTimeout(function() {
 		uiLoadReportHeader(vals)
 		uiShowMonthlyReportHeader(monthYear, reportType)
@@ -2812,9 +2898,9 @@ function clickGenerateVoucherReport(reportType){
 		if (serviceType.target.childMaxAge != "0") {targetType = 'Ages'}
 	}
 	const year = $('#reportVoucher' + reportType + 'Year').val()
-	let buttonId = '#voucherDistroReportButton'
-	if (reportType == 'Count') buttonId = '#voucherCountReportButton'
-	$(buttonId).val('Generating...')
+	const buttonId = '#voucher' + reportType + 'ReportButton'
+	// if (reportType == 'Count') buttonId = '#voucherCountReportButton'
+	uiUpdateButton(buttonId, 'Gen') // 'Gen' or 'Run'
 	setTimeout(function() {
 		uiShowVoucherReportHeader(year, reportType, targetType, serviceType)
 		let result = uiShowVoucherReportRows(year, reportType, targetType, serviceType)
@@ -2823,6 +2909,39 @@ function clickGenerateVoucherReport(reportType){
 			uiShowHideReport("show")
 	}, 0)
 };
+
+function clickSetCurrentAdminUser(index){
+	adminUser = users[index]
+	uiOutlineTableRow('usersTable', index+1)
+	uiSetAdminHeader(adminUser.userName)
+	utilCalcUserAge("data")
+	uiShowUserForm()
+	uiToggleUserNewEdit("existing")
+	navGotoTab("aTab5")
+};
+
+function clickSetCurrentClient(index){
+	servicesRendered = []
+	client = clientData[index]
+	utilRemoveEmptyPlaceholders()
+	utilCalcClientAge("db")
+	utilCalcClientFamilyCounts() // calculate fields counts and ages
+	uiShowHistory()
+	uiUpdateCurrentClient(index)
+	$('#receiptBody').html("")
+};
+
+function clickSetCurrentServiceType(index){
+	serviceType = serviceTypes[index]
+	uiOutlineTableRow('serviceTypesTable', index+1)
+	uiSetAdminHeader(serviceType.serviceName)
+	uiShowServiceTypeForm()
+	navGotoTab("aTab2")
+};
+
+function clickShowNewClientForm(){
+	uiShowNewClientForm()
+}
 
 // **********************************************************************************************************
 // *********************************************** COG FUNCTIONS ********************************************
@@ -3151,72 +3270,6 @@ function utilAddClosedEvent(dateString){ //when the green or yellow button is pu
  	if (dayEvents.length==0){
 	 	$('#calendar').fullCalendar( 'renderEvent', closedEvent, false)
  	}
-};
-
-function utilAddService(serviceTypeId, serviceCategory, serviceButtons){
-	let serviceType = utilGetServiceTypeByID(serviceTypeId)
-	let serviceId = "" // new service
-	let serviceValid = true
-	// graydout button so undo service
-	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
-		const serviceItem = servicesRendered.filter(obj => obj.serviceTypeId == serviceTypeId)
-		serviceValid = false
-		serviceId = serviceItem[0].serviceId
-	}
-	// save service record
-	const servedCounts = utilCalcServiceFamilyCounts(serviceTypeId)
-	const serviceRecord = utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid)
-	const result = dbSaveServiceRecord(serviceRecord)
-	if (serviceType.serviceButtons == "Primary" && result == "success"){
-		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
-	}
-	if (serviceId != "" && result == "success") {
-		// ungrayout button
-		uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
-		if (serviceButtons == "Primary") {
-			$("#image-"+serviceTypeId).removeClass("imageGrayOut")
-		}
-	} else if (serviceId == "" && result == "success") {
-		if (serviceCategory == 'Food_Pantry') {
-			// TODO Use function here
-			let service = serviceTypes.filter(function( obj ) {
-					return obj.serviceTypeId == serviceTypeId
-				})[0]
-			prnPrintFoodReceipt(service.isUSDA)
-			if (client.isActive == 'Client') {
-				setTimeout(function(){ // give time for food receipt to print
-					prnPrintReminderReceipt()
-				}, 1250);
-			}
-		} else if (serviceCategory == 'Clothes_Closet') {
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintClothesReceipt()
-			}, 2500);
-		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
-			const targetService = utilCalcTargetServices([serviceType])
-			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
-			// TODO use function here
-			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintFirstStepReceipt(service, dependents)
-			}, 2500)
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintFirstStepReceipt(service, dependents)
-			}, 3750)
-		} else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
-			const targetService = utilCalcTargetServices([serviceType])
-			// TODO use function here
-			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintTurkeyReceipt(service)
-			}, 2500)
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintTurkeyReceipt(service)
-			}, 3750)
-		}
-		uiShowLastServed()
-		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
-	}
 };
 
 function utilArrayToObject(arr){
@@ -4097,35 +4150,6 @@ function utilPadTrimString(str, length) {
 	}
 };
 
-function utilSetCurrentClient(index){
-	servicesRendered = []
-	client = clientData[index]
-	utilRemoveEmptyPlaceholders()
-	utilCalcClientAge("db")
-	utilCalcClientFamilyCounts() // calculate fields counts and ages
-	uiShowHistory()
-	uiUpdateCurrentClient(index)
-	$('#receiptBody').html("")
-};
-
-function utilSetCurrentServiceType(index){
-	serviceType = serviceTypes[index]
-	uiOutlineTableRow('serviceTypesTable', index+1)
-	uiSetAdminHeader(serviceType.serviceName)
-	uiShowServiceTypeForm()
-	navGotoTab("aTab2")
-};
-
-function utilSetCurrentAdminUser(index){
-	adminUser = users[index]
-	uiOutlineTableRow('usersTable', index+1)
-	uiSetAdminHeader(adminUser.userName)
-	utilCalcUserAge("data")
-	uiShowUserForm()
-	uiToggleUserNewEdit("existing")
-	navGotoTab("aTab5")
-};
-
 function utilSetCurrentUser(){
 	currentUser = users.filter(obj => obj.userName == user.username)[0]
 };
@@ -4499,6 +4523,10 @@ function utilValidateConfig(form, id){
 	if (form == "noteForm") return noteForm[id]
 };
 
+function utilSortDependentsByAge(dependents){
+	return dependents.sort((a,b) => a.age-b.age)
+};
+
 function utilSortDependentsByGrade(dependents){
 	return dependents.sort((a,b) => utilCalcCurrentGrade(utilGradeToNumber(a.grade))-utilCalcCurrentGrade(utilGradeToNumber(b.grade)))
 };
@@ -4747,47 +4775,6 @@ function prnPrintFoodReceipt(isUSDA){
 	}, 500);
 };
 
-function prnPrintTurkeyReceipt(serviceType){
-	if (printer == null) {
-		console.log("Printer Not Connected")
-		return
-	}
-	let serviceName = serviceType.serviceName
-	prnAddHeader();
-	setTimeout(function f(){
-			printer.addTextSize(1, 2);
-			printer.addFeedLine(2);
-    	printer.addText('* ' + serviceName.toUpperCase() + ' *\n');
-			printer.addTextSize(1, 1);
-    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
-			printer.addFeedLine(1);
-			printer.addTextSize(2, 2);
-			printer.addText(client.givenName + ' ' + client.familyName + '\n');
-			printer.addFeedLine(1);
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 1);
-    	printer.addText(' ' + client.clientId + ' \n');
-			printer.addTextSize(1, 1);
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-			printer.addFeedLine(1)
-			printer.addTextAlign(printer.ALIGN_CENTER);
-    	printer.addText('**************************************\n')
-			printer.addText('PRESENT THIS FOR PICKUP\n')
-			printer.addText('HAY PRESENTAR PARA RECLAMAR\n')
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 2);
-    	printer.addText(' ' + moment(serviceType.fulfillment.fromDateTime).format("MMMM Do, YYYY")+ ' \n');
-			printer.addTextSize(1, 1);
-			printer.addFeedLine(1);
-			printer.addText(' '+ moment(serviceType.fulfillment.fromDateTime).format("h:mm a")+" - " + moment(serviceType.fulfillment.toDateTime).format("h:mm a")+' \n');
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-    	printer.addText('**************************************\n');
-    	printer.addFeedLine(2);
-    	printer.addCut(printer.CUT_FEED);
-    	printer.send();
-	}, 500);
-};
-
 function prnPrintFirstStepReceipt(serviceType, dependents){
 	let sortedDependents = utilSortDependentsByGrade(dependents)
 	if (printer == null) {
@@ -4840,6 +4827,101 @@ function prnPrintFirstStepReceipt(serviceType, dependents){
     	printer.send();
 	}, 500);
 };
+
+function prnPrintChristmasToyReceipt(serviceType, dependents){
+	let sortedDependents = utilSortDependentsByAge(dependents)
+	if (printer == null) {
+		console.log("Printer Not Connected")
+		return
+	}
+	let serviceName = serviceType.serviceName
+	prnAddHeader();
+	setTimeout(function f(){
+			printer.addTextSize(1, 2);
+			printer.addFeedLine(2);
+    	printer.addText('* ' + serviceName.toUpperCase() + ' *\n');
+			printer.addTextSize(1, 1);
+    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
+			printer.addFeedLine(1);
+			printer.addTextSize(2, 2);
+			printer.addText(client.givenName + ' ' + client.familyName + '\n');
+			printer.addFeedLine(1);
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 1);
+    	printer.addText(' ' + client.clientId + ' \n');
+			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addFeedLine(1);
+			printer.addText('CHILDREN / NINOS        GENDER    AGE');
+    	printer.addFeedLine(1);
+			printer.addTextAlign(printer.ALIGN_LEFT);
+			for (let i=0; i<sortedDependents.length; i++){
+				let currentDependent = sortedDependents[i]
+				let childName = utilPadTrimString(currentDependent.givenName.toUpperCase()+' '+currentDependent.familyName.toUpperCase(), 24) // pad / trim right to 24
+				let gender =  utilPadTrimString(currentDependent.gender.toUpperCase(), 9) // pad to 9
+				let ageGroup = utilPadTrimString(utilCalcAgeGrouping(currentDependent), 5) // pad to 5
+				printer.addText(childName + gender + ageGroup + '\n')
+			}
+			printer.addFeedLine(1)
+			printer.addTextAlign(printer.ALIGN_CENTER);
+    	printer.addText('**************************************\n')
+			printer.addText('PRESENT THIS FOR PICKUP\n')
+			printer.addText('HAY PRESENTAR PARA RECLAMAR\n')
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 2);
+    	printer.addText(' ' + moment(serviceType.fulfillment.fromDateTime).format("MMMM Do, YYYY")+ ' \n');
+			printer.addTextSize(1, 1);
+			printer.addFeedLine(1);
+			printer.addText(' '+ moment(serviceType.fulfillment.fromDateTime).format("h:mm a")+" - " + moment(serviceType.fulfillment.toDateTime).format("h:mm a")+' \n');
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addText('**************************************\n');
+    	printer.addFeedLine(2);
+    	printer.addCut(printer.CUT_FEED);
+    	printer.send();
+	}, 500);
+};
+
+function prnPrintVoucherReceipt(serviceType){
+	if (printer == null) {
+		console.log("Printer Not Connected")
+		return
+	}
+	let serviceName = serviceType.serviceName
+	prnAddHeader();
+	setTimeout(function f(){
+			printer.addTextSize(1, 2);
+			printer.addFeedLine(2);
+    	printer.addText('* ' + serviceName.toUpperCase() + ' *\n');
+			printer.addTextSize(1, 1);
+    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
+			printer.addFeedLine(1);
+			printer.addTextSize(2, 2);
+			printer.addText(client.givenName + ' ' + client.familyName + '\n');
+			printer.addFeedLine(1);
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 1);
+    	printer.addText(' ' + client.clientId + ' \n');
+			printer.addTextSize(1, 1);
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+			printer.addFeedLine(1)
+			printer.addTextAlign(printer.ALIGN_CENTER);
+    	printer.addText('**************************************\n')
+			printer.addText('PRESENT THIS FOR PICKUP\n')
+			printer.addText('HAY PRESENTAR PARA RECLAMAR\n')
+    	printer.addTextStyle(true,false,false,printer.COLOR_1);
+			printer.addTextSize(2, 2);
+    	printer.addText(' ' + moment(serviceType.fulfillment.fromDateTime).format("MMMM Do, YYYY")+ ' \n');
+			printer.addTextSize(1, 1);
+			printer.addFeedLine(1);
+			printer.addText(' '+ moment(serviceType.fulfillment.fromDateTime).format("h:mm a")+" - " + moment(serviceType.fulfillment.toDateTime).format("h:mm a")+' \n');
+    	printer.addTextStyle(false,false,false,printer.COLOR_1);
+    	printer.addText('**************************************\n');
+    	printer.addFeedLine(2);
+    	printer.addCut(printer.CUT_FEED);
+    	printer.send();
+	}, 500);
+};
+
 
 function prnPrintReminderReceipt(){
 	// Determine next visit date
