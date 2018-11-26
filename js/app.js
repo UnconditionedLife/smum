@@ -655,6 +655,16 @@ function uiUpdateAdminHeader() {
 	$("#adminTitle").html($("#serviceName").val())
 };
 
+function uiUpdateButton(elem, set) {
+	if (set == 'Gen') {
+		$(elem).val('Generating...')
+		$(elem).css('background-color', 'red')
+	} else {
+		$(elem).val('Run')
+		$(elem).css('background-color', 'var(--blue)')
+	}
+};
+
 function uiSaveButton(form, action){
 	if (action === 'Save') {
 		if ($('#'+form+'SaveButton').val() !== 'Save'){
@@ -2756,6 +2766,18 @@ function dateFindOpen(target, earliest) {
 // ********************************************** CLICK FUNCTIONS *******************************************
 // **********************************************************************************************************
 
+function clickGenerateDailyReport(targetDiv){
+	const dayDate = $('#reportsDailyDate').val()
+	const buttonId = '#dailyReportButton'
+	uiUpdateButton(buttonId, 'Gen') // 'Gen' or 'Run'
+	setTimeout(function() {
+		uiShowDailyReportHeader(dayDate, targetDiv, 'DAILY')
+		uiShowDailyReportRows(dayDate, targetDiv)
+		uiUpdateButton(buttonId, 'Run') // 'Gen' or 'Run'
+		uiShowHideReport("show")
+	}, 0)
+};
+
 function clickGenerateMonthlyReport(){
 	const monthYear = $('#reportsMonthlyMonth').val()
 	const reportType = $('#reportsMonthlyType').val()
@@ -2768,10 +2790,38 @@ function clickGenerateMonthlyReport(){
 		     print: true
 	}
 	if (reportType == 'ALL') vals.name = 'ALL SERVICES'
-	uiLoadReportHeader(vals)
-	uiShowHideReport("show")
-	uiShowMonthlyReportHeader(monthYear, reportType)
-	uiShowMonthlyReportRows(monthYear, reportType)
+	uiUpdateButton('#monthlyReportButton', 'Gen') // 'Gen' or 'Run'
+	const buttonId = '#monthlyReportButton'
+	$(buttonId).val('Generating...')
+	setTimeout(function() {
+		uiLoadReportHeader(vals)
+		uiShowMonthlyReportHeader(monthYear, reportType)
+		uiShowMonthlyReportRows(monthYear, reportType)
+		uiUpdateButton(buttonId, 'Run') // 'Gen' or 'Run'
+		uiShowHideReport("show")
+	}, 0)
+};
+
+function clickGenerateVoucherReport(reportType){
+	// reportType = "Count" or "Distro"
+	const serviceTypeId = $('#reportVoucher' + reportType).val() // form pulldown
+	const serviceType = utilGetServiceTypeByID(serviceTypeId)
+	let targetType = ''
+	if (serviceType.target.child == 'YES') {
+		if (serviceType.target.childMaxGrade != "Unselected") {targetType = 'Grades'}
+		if (serviceType.target.childMaxAge != "0") {targetType = 'Ages'}
+	}
+	const year = $('#reportVoucher' + reportType + 'Year').val()
+	let buttonId = '#voucherDistroReportButton'
+	if (reportType == 'Count') buttonId = '#voucherCountReportButton'
+	$(buttonId).val('Generating...')
+	setTimeout(function() {
+		uiShowVoucherReportHeader(year, reportType, targetType, serviceType)
+		let result = uiShowVoucherReportRows(year, reportType, targetType, serviceType)
+		uiUpdateButton(buttonId, 'Run') // 'Gen' or 'Run'
+		if (result != 'failed')
+			uiShowHideReport("show")
+	}, 0)
 };
 
 // **********************************************************************************************************
@@ -3512,17 +3562,6 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 	return dependents
 };
 
-function utilGenerateDailyReport(targetDiv){
-	let dayDate = $('#reportsDailyDate').val()
-	$('#msgBox').html('Generating report...')
-	setTimeout(function() {
-		uiShowDailyReportHeader(dayDate, targetDiv, 'DAILY')
-		uiShowDailyReportRows(dayDate, targetDiv)
-		$('#msgBox').html('')
-		uiShowHideReport("show")
-	}, 0)
-};
-
 function utilGenerateFamiliesReport(){
 	const reportType = $('#reportFamilyType').val()
 	$('#msgBox').html('Generating report...')
@@ -3531,26 +3570,6 @@ function utilGenerateFamiliesReport(){
 		uiShowFamiliesReportRows(reportType)
 		$('#msgBox').html('')
 		uiShowHideReport("show")
-	}, 0)
-};
-
-function utilGenerateVoucherReport(reportType){
-	// reportType = "Count" or "Distro"
-	const serviceTypeId = $('#reportVoucher' + reportType).val() // form pulldown
-	const serviceType = utilGetServiceTypeByID(serviceTypeId)
-	let targetType = ''
-	if (serviceType.target.child == 'YES') {
-		if (serviceType.target.childMaxGrade != "Unselected") {targetType = 'Grades'}
-		if (serviceType.target.childMaxAge != "0") {targetType = 'Ages'}
-	}
-	const year = $('#reportVoucher' + reportType + 'Year').val()
-	$('#msgBox').html('Generating report...')
-	setTimeout(function() {
-		uiShowVoucherReportHeader(year, reportType, targetType, serviceType)
-		let result = uiShowVoucherReportRows(year, reportType, targetType, serviceType)
-		$('#msgBox').html('')
-		if (result != 'failed')
-			uiShowHideReport("show")
 	}, 0)
 };
 
