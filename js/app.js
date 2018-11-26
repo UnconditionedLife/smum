@@ -3797,10 +3797,7 @@ function utilCalcTargetServices(activeServiceTypes) {
 		// make list of specific targets.... for each type.
 		targets[i] = {}
 		// target homeless
-		if (activeServiceTypes[i].target.homeless !== "NO") {
-			targets[i].homeless = 'YES';
-			console.log(activeServiceTypes[i].target.homeless)
-		}
+		if (activeServiceTypes[i].target.homeless !== "Unselected") targets[i].homeless = activeServiceTypes[i].target.homeless;
 		// target families with children, singles, couples
 		if (activeServiceTypes[i].target.family == "Single Individual") {
 			targets[i].family_totalSize = 1;
@@ -4516,6 +4513,17 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 				} else {
 					return true
 				}
+			}
+		}
+		//TODO: this is a workaround due to last served not tracking id. Need last served to track by service id.
+		if (activeServiceType.fulfillment.type == "Voucher"){
+			let service = dbGetServicesByIdAndYear(activeServiceType.serviceTypeId, moment().year())
+				.filter(obj => obj.clientServedId == client.clientId)
+			if (service.length == 0){
+				return true;
+			}
+			else {
+				return false;
 			}
 		}
 		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
