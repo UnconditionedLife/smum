@@ -16,7 +16,7 @@
 // TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
 
-const ver = '?v=1.0.1'
+const ver = '?v=1.0.2'
 const aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 const MAX_ID_DIGITS = 5
 const uiDate = 'MM/DD/YYYY'
@@ -1041,14 +1041,12 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 	if (fulfillmentService == undefined) {
 		let message = 'No Matching Fulfillment Service Exists! <br> Add or Assign a Fulfillment Service.'
 		uiShowHideError('show', 'Missing Fulfillment Service', message, 'beep')
-		console.log('error and return')
 		return 'failed'
 	}
 	let servicesVouchers = dbGetServicesByIdAndYear(serviceType.serviceTypeId, year)
 	if (servicesVouchers.length < 1) {
 		let message = 'No service Records were found!'
 		uiShowHideError('show', 'No Services', message, 'beep')
-		console.log('error and return')
 		return 'failed'
 	}
 	let servicesFulfillment = []
@@ -1064,6 +1062,7 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 		uiBuildVoucherDistroRows(servicesVouchers, targetType)
 	} else { // Count Report
 		servicesFulfillment = dbGetServicesByIdAndYear(fulfillmentService.serviceTypeId, year)
+		// Count Grade Report
 		if (targetType == 'Grades') {
 			count = [
 			 	{grp: "K", b: 0, g: 0, bd: 0, gd: 0},
@@ -1098,6 +1097,7 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 				})
 			})
 		} else if (targetType == 'Ages') {
+			// Count Grade Report
 			count = [
 			 	{grp: "0-1", b: 0, g: 0, bd: 0, gd: 0},
 				{grp: "2-3", b: 0, g: 0, bd: 0, gd: 0},
@@ -1133,6 +1133,7 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 				})
 			})
 		} else {
+			// Count No dependents targeted Report
 			count = [{ r: 0, d: 0 }] // registered/delivered
 			$.each(servicesVouchers, function(i, service){
 				count[0].r ++ // add one to count
@@ -1397,7 +1398,7 @@ function uiBuildVoucherDistroRows(servicesVouchers, targetType) {
 		$(grid).append('<div class="monthItem">' + itemCount +'</div>')
 	}
 	$(grid).append('<div class="monthItem grandTotal">Total</div>')
-	$(grid).append('<div class="monthItem grandTotal">&nbsp;</div>')
+	$(grid).append('<div class="monthItem grandTotal">' + servicesVouchers.length + '</div>')
 	$(grid).append('<div class="monthItem grandTotal">&nbsp;</div>')
 	$(grid).append('<div class="monthItem grandTotal">' + total + '</div>')
 	$(grid).append('<div class="blankRow4">&nbsp;</div>')
