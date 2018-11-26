@@ -269,12 +269,10 @@ function uiClearCurrentClient(){
 		$("#tabLable6").css("color", "#bbb")
 };
 
-function uiDisplayNotes(pageName){/**Displays notes table for a given page**/
+function uiDisplayNotes(pageName){ /**Displays notes table for a given page**/
 	//setMainSideDiv()
 	const tableStr = '<table class="notes"></table>'
 	$('#notesContainer').html(tableStr)
-	// var headerRow = '<tr style="height:50px;padding:10px;"><td><h4 class="siteHeading">'+pageName+'</h4>'
-	// headerRow+='<h5 class="siteHeading">'+moment().format(uiDate)+'</h5></td></tr>'
 	const headerRow = '<tr><td class="notesHeader">Created</td><td class="notesHeader">Note</td><td class="notesHeader">Created By</td><td class="notesHeader">Important</td></tr>'
 	$('.notes').append(headerRow)
 };
@@ -369,16 +367,6 @@ function uiEditHistory(todo, serviceId, rowNum){
 					if (i == 0){temp = moment(temp).format(uiDateTimeShort)}
 					$(".rowNum" + rowNum + ":eq(" + i + ")").html(temp)
 				}
-
-				// let servicedDateTime = $("#histEdit0").val()
-				// servicedDateTime = moment(servicedDateTime).format(uiDateTimeShort)
-				// let serviceName = $("#histEdit1").val()
-				// let clientStatus = $("#histEdit2").val()
-				// let homeless = $("#histEdit3").val()
-				// $(".rowNum" + rowNum + ":eq(0)").html(servicedDateTime)
-				// $(".rowNum" + rowNum + ":eq(1)").html(serviceName)
-				// $(".rowNum" + rowNum + ":eq(2)").html(isUSDA)
-				// $(".rowNum" + rowNum + ":eq(3)").html(homeless)
 				uiEditHistory("cancel", serviceId, rowNum)
 			}
 		} else {
@@ -2406,10 +2394,7 @@ function dbSaveUser(context){
 };
 
 function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid){
-	// TODO add senior cutoff age to the Settings
-	// TODO add Service area Zipcodes to the Settings
 	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
-
 	let emergencyFood = "NO",
 			// servicedMonth = moment().format("YYYYMM"),
 	 		servicedDay = moment().format("YYYYMMDD")
