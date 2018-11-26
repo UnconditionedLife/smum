@@ -1365,8 +1365,8 @@ function uiBuildVoucherDistroRows(servicesVouchers, targetType) {
 	for (let r = 0; r < servicesVouchers.length; r++) {
 		let itemCount = 0
 		const sv = servicesVouchers[r]
-		const c = dbGetData(aws+"/clients/" + sv.clientServedId).clients
 		if (targetType == 'Grades' || targetType == 'Ages') {
+			const c = dbGetData(aws+"/clients/" + sv.clientServedId).clients
 			let d = c[0].dependents.filter( obj => obj.isActive == "Active")
 			// need to calculate ages off all Active dependents first
 			if (targetType == 'Ages') d = utilCalcDependentsAges(d)
