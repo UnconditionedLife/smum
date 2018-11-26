@@ -1107,7 +1107,7 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 			]
 			$.each(servicesVouchers, function(i, service){
 				const c = dbGetData(aws+"/clients/" + service.clientServedId).clients
-				let d = c[0].dependents
+				let d = c[0].dependents.filter( obj => obj.isActive == "Active")
 				d = utilCalcDependentsAges(d)
 				$.each(d, function(di, dependent){
 					const ageGroup = utilCalcAgeGrouping(dependent)
@@ -1362,7 +1362,7 @@ function uiBuildVoucherDistroRows(servicesVouchers, targetType) {
 		const sv = servicesVouchers[r]
 		const c = dbGetData(aws+"/clients/" + sv.clientServedId).clients
 		if (targetType == 'Grades' || targetType == 'Ages') {
-			let d = c[0].dependents
+			let d = c[0].dependents.filter( obj => obj.isActive == "Active")
 			if (targetType == 'Ages') {
 				d = utilCalcDependentsAges(d)
 			}
@@ -3247,10 +3247,12 @@ function utilCalcServiceFamilyCounts(serviceTypeId){
 		itemsServed: String(serviceType.numberItems)
 	}
 	let targetService = utilCalcTargetServices([serviceType])
+	console.log(serviceType)
+	console.log(serviceType.fulfillment);
 	if (serviceType.itemsPer == "Person") {
 		servedCounts.itemsServed = String(servedCounts.itemsServed * client.family.totalSize)
-		if (serviceType.serviceCategory=="Back_To_School"){
-			if (serviceType.target.service == "Unselected") {
+		if (serviceType.fulfillment.type =="Voucher"){
+			if (serviceType.target.service == "Unselected" && serviceType.serviceCategory == "Back_To_School") {
 				servedCounts = {
 					adults: 0,
 					children: 0,
@@ -3259,7 +3261,14 @@ function utilCalcServiceFamilyCounts(serviceTypeId){
 					itemsServed: 0,
 				}
 			} else {
-				const numChildren = utilCalcValidAgeGrade("grade", targetService[0]).length
+				let numChildren = 0;
+				if (targetService[0].dependents_ageMax !== undefined){
+					numChildren = utilCalcValidAgeGrade("age", targetService[0]).length
+				}
+				if (targetService[0].dependents_gradeMax !== undefined){
+					numChildren = Math.abs(numChildren - utilCalcValidAgeGrade("grade", targetService[0]).length)
+				}
+
 				servedCounts = {
 					adults: 0,
 					children: numChildren,
@@ -3816,10 +3825,7 @@ function utilCalcTargetServices(activeServiceTypes) {
 		// make list of specific targets.... for each type.
 		targets[i] = {}
 		// target homeless
-		if (activeServiceTypes[i].target.homeless !== "NO") {
-			targets[i].homeless = 'YES';
-			console.log(activeServiceTypes[i].target.homeless)
-		}
+		if (activeServiceTypes[i].target.homeless !== "Unselected") targets[i].homeless = activeServiceTypes[i].target.homeless;
 		// target families with children, singles, couples
 		if (activeServiceTypes[i].target.family == "Single Individual") {
 			targets[i].family_totalSize = 1;
@@ -3854,6 +3860,7 @@ function utilCalcTargetServices(activeServiceTypes) {
 			targets[i].service = activeServiceTypes[i].target.service; //set target to Voucher service ID
 		}
 	}
+	console.log(targets);
 	return targets;
 }
 
@@ -4535,6 +4542,17 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 				} else {
 					return true
 				}
+			}
+		}
+		//TODO: this is a workaround due to last served not tracking id. Need last served to track by service id.
+		if (activeServiceType.fulfillment.type == "Voucher"){
+			let service = dbGetServicesByIdAndYear(activeServiceType.serviceTypeId, moment().year())
+				.filter(obj => obj.clientServedId == client.clientId)
+			if (service.length == 0){
+				return true;
+			}
+			else {
+				return false;
 			}
 		}
 		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
