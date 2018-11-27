@@ -32,6 +32,7 @@ let rowNum = 1
 let clientData = null // current client search results
 let servicesRendered = [] // tally of services as they are clicked
 let client = {} // current client
+let editFlag = {}
 uiClearCurrentClient()
 let user = {} // authenticated
 let currentUser = {}
@@ -70,7 +71,7 @@ $("#nav3").hide()
 $("#atabLable7").hide()
 uiShowDailyReportHeader(moment().format(date), 'today', "TODAY")
 document.onkeydown = function(e) {
-	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); dbSearchClients()}
+	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); clickSearchClients()}
 	if ($("#loginPassword").is(":focus")&&e.keyCode==13) {event.preventDefault(); cogLoginUser()}
 };
 
@@ -156,6 +157,27 @@ function navGotoTab(tab){
 	let useAttr = document.getElementById(tab);
 	useAttr.setAttribute('checked', true);
 	useAttr['checked'] = true;
+};
+
+// **********************************************************************************************************
+// ********************************************* STATE FUNCTIONS ********************************************
+// **********************************************************************************************************
+
+function stateCheckPendingEdit() {
+	if (editFlag.client) {
+		const title = "Client Not Saved!"
+		const message =  "Save or Cancel client form first."
+		uiShowHideError("show", title, message, 'beep')
+		navGotoTab("tab3")
+		return true
+	} else if (editFlag.dependents) {
+		const title = "Dependents Not Saved!"
+		const message =  "Save or Cancel dependents form first."
+		uiShowHideError("show", title, message, 'beep')
+		navGotoTab("tab4")
+		return true
+	}
+	return false
 };
 
 // **********************************************************************************************************
@@ -496,22 +518,6 @@ function uiRemoveListItem(type, item){
 
 function uiResetChangePasswordForm(){
 	$(".passwordForm").val("")
-};
-
-function uiResetClientForm(){
-	if (client == {}) {
-		uiShowNewClientForm()
-	} else {
-		uiPopulateForm(client, 'clientForm')
-		uiRemoveFormErrorBubbles('clientForm')
-		uiToggleClientViewEdit('view')
-	}
-};
-
-function uiResetDependentsTable() {
-	// clear changes in feilds
-	uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName","relationship","gender","dob","age","grade","isActive"],'dependentsTable')
-	uiToggleDependentsViewEdit('view') // set display to view
 };
 
 function uiResetSettingsForm(){
@@ -2011,7 +2017,7 @@ function uiGenSelectHTMLTable(selector, data, col, tableID){
     }
   }
   $(selector).html(table);
-	if (tableID == 'dependentsTable') uiToggleDependentsViewEdit('view');
+	if (tableID == 'dependentsTable') clickToggleDependentsViewEdit('view');
 }
 
 function uiToggleClientViewEdit(side){
@@ -2471,42 +2477,10 @@ function dbSaveNote(){
 	if (result == "success") {
 		utilCalcClientFamilyCounts()
 		utilCalcClientAge("db")
-		uiToggleDependentsViewEdit("view")
+		clickToggleDependentsViewEdit("view")
 		uiToggleNoteForm("hide", "")
 		uiShowExistingNotes("updating")
 	}
-};
-
-function dbSaveClientForm(context){
-	uiClearAllErrorBubbles()
-	const hasErrors = utilValidateForm("clientForm", context)
-	if (hasErrors) return
-	$("#updatedDateTime.clientForm").val(utilNow())
-	let data = {}
-	if (client.clientId == undefined) {
-		let clientId = dbGetNewClientID()
-		$("#clientId.clientForm").val(clientId)
-		data = utilFormToJSON('.clientForm')
-		data.dependents = []
-		data.lastServed = []
-		data.notes = []
-	} else {
-		data = utilFormToJSON('.clientForm')
-		if (client.dependents == undefined) client.dependents = []
-		if (client.lastServed == undefined) client.lastServed = []
-		data.dependents = client.dependents
-		data.lastServed = client.lastServed
-		for (var i = 0; i < data.dependents.length; i++) {
-			delete data.dependents[i].age
-		}
-		if (data.lastServed == undefined || data.lastServed == "") {
-			data.lastServed = []
-		}
-		if (data.notes == undefined || data.notes == "") {
-			data.notes = []
-		}
-	}
-	dbSaveCurrentClient(data)
 };
 
 function dbSaveCurrentClient(data){
@@ -2523,7 +2497,7 @@ function dbSaveCurrentClient(data){
 		} else {
 			clientId = $('#clientId.clientForm').val()
 			$('#searchField').val(clientId)
-			dbSearchClients()
+			clickSearchClients()
 		}
 		if (clientData != null) {
 			console.log("REDO CLIENT DATA")
@@ -2536,61 +2510,6 @@ function dbSaveCurrentClient(data){
 	$("body").css("cursor", "default");
 	uiSaveButton('client', 'SAVED!!')
 	return result
-};
-
-function dbSaveDependentsTable(){
-	// TODO validate dependents and field level
-	// TODO validate dependents and form level
-	// TODO validate dependents age vs adult / child
-	// TODO validate dependents grade vs age (< 18) age-range below grade?
-	let dependents = [] // client.dependents
-	data = utilFormToJSON('.dependentsForm')
-	let numKey = Object.keys(data).length
-	for (var i = 0; i < numKey; i++) {
-		let key = Object.keys(data)[i]
-		let keyName = key.slice(0, key.indexOf("["))
-		let keyNum = key.slice(key.indexOf("[")+1,-1)
-		// updatedDateTime & createdDateTime are not in form
-		if (dependents[keyNum] == undefined) dependents[keyNum] = {updatedDateTime: utilNow()}
-		if (client.dependents[keyNum] != undefined) {
-			if (client.dependents[keyNum].createdDateTime != undefined) {
-				dependents[keyNum].createdDateTime = client.dependents[keyNum].createdDateTime
-			}
-		} else {
-			dependents[keyNum].createdDateTime = utilNow()
-		}
-		// add dependent record
-		dependents[keyNum][keyName] = data[Object.keys(data)[i]]
-		if (keyName == "grade") { // makes sure the gradeDateTime is updated
-			if (client.dependents[keyNum] == undefined) { // new dependent
-				if (dependents[keyNum][keyName] == "*EMPTY*") {
-					dependents[keyNum][keyName] = moment().diff(dependents[keyNum]["age"], "years")
-				}
-				if (dependents[keyNum][keyName] == "NA") {
-					dependents[keyNum].gradeDateTime = "NA"
-				} else {
-					dependents[keyNum].gradeDateTime = utilNow()
-				}
-			} else {
-				if (dependents[keyNum][keyName] != client.dependents[keyNum][keyName]) {
-					if (dependents[keyNum][keyName] == "NA") {
-						dependents[keyNum].gradeDateTime = "NA"
-					} else {
-						dependents[keyNum].gradeDateTime = utilNow()
-					}
-				} else {
-					dependents[keyNum].gradeDateTime = client.dependents[keyNum].gradeDateTime
-				}
-			}
-		}
-	}
-	client.dependents = dependents
-	const result = dbSaveCurrentClient(client)
-	if (result == "success") {
-		utilCalcClientFamilyCounts()
-		utilCalcClientAge("db")
-		uiToggleDependentsViewEdit("view")
-	}
 };
 
 function dbSaveServiceRecord(service){
@@ -2631,17 +2550,17 @@ function dbSaveSettingsForm(){
 	settings = dbGetAppSettings()
 };
 
-function dbSearchClients(){
-	let str =  $('#searchField').val()
-	$('#searchField').val('')
-	if (str === '') {
-		utilBeep()
-		return
-	}
-	if (currentNavTab !== "clients") navGotoSec("nav1")
-	clientData = null
-	const regex = /[/.]/g
- 	const slashCount = (str.match(regex) || []).length
+function dbSearchClients(str, slashCount){
+	// let str =  $('#searchField').val()
+	// $('#searchField').val('')
+	// if (str === '') {
+	// 	utilBeep()
+	// 	return
+	// }
+	// if (currentNavTab !== "clients") navGotoSec("nav1")
+	// clientData = null
+	// const regex = /[/.]/g
+ 	// const slashCount = (str.match(regex) || []).length
 	if (slashCount == 2){
 		str = utilCleanUpDate(str)
 		str = moment(str, uiDate).format(date)
@@ -2667,26 +2586,26 @@ function dbSearchClients(){
 			clientData = utilRemoveDupClients(d2.concat(d1))
 		}
 	}
-	uiShowHideClientMessage('hide')   // close ClientMessage overlay in case it's open
-	if (clientData==null||clientData.length==0){
-	 	utilBeep()
-	 	uiSetClientsHeader("0 Clients Found")
-		client = {}
-		servicesRendered = []
-		uiClearCurrentClient()
-	 	// TODO clear current client
-  } else {
-	 	let columns = ["clientId","givenName","familyName","dob","street"]
-	 	uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
-		uiResetNotesTab()
-		if (clientData.length == 1){
-			clickSetCurrentClient(0) // go straight to SERVICES
-			navGotoTab("tab2")
-		} else {
-			uiSetClientsHeader(clientData.length + ' Clients Found')
-			navGotoTab("tab1")
-		}
-	}
+	// uiShowHideClientMessage('hide')   // close ClientMessage overlay in case it's open
+	// if (clientData==null||clientData.length==0){
+	//  	utilBeep()
+	//  	uiSetClientsHeader("0 Clients Found")
+	// 	client = {}
+	// 	servicesRendered = []
+	// 	uiClearCurrentClient()
+	//  	// TODO clear current client
+  // } else {
+	//  	let columns = ["clientId","givenName","familyName","dob","street"]
+	//  	uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
+	// 	uiResetNotesTab()
+	// 	if (clientData.length == 1){
+	// 		clickSetCurrentClient(0) // go straight to SERVICES
+	// 		navGotoTab("tab2")
+	// 	} else {
+	// 		uiSetClientsHeader(clientData.length + ' Clients Found')
+	// 		navGotoTab("tab1")
+	// 	}
+	// }
 }
 
 // **********************************************************************************************************
@@ -2897,6 +2816,147 @@ function clickGenerateVoucherReport(reportType){
 	}, 0)
 };
 
+function clickResetClientForm(){
+	editFlag.client = false
+	if (client == {}) {
+		uiShowNewClientForm()
+	} else {
+		uiPopulateForm(client, 'clientForm')
+		uiRemoveFormErrorBubbles('clientForm')
+		uiToggleClientViewEdit('view')
+	}
+};
+
+function clickResetDependentsTable() {
+	editFlag.dependents = false
+	// clear changes in feilds
+	uiGenSelectHTMLTable('#dependentsFormContainer',client.dependents,["givenName","familyName","relationship","gender","dob","age","grade","isActive"],'dependentsTable')
+	clickToggleDependentsViewEdit('view') // set display to view
+};
+
+function clickSaveClientForm(context){
+	editFlag.client = false
+	uiClearAllErrorBubbles()
+	const hasErrors = utilValidateForm("clientForm", context)
+	if (hasErrors) return
+	$("#updatedDateTime.clientForm").val(utilNow())
+	let data = {}
+	if (client.clientId == undefined) {
+		let clientId = dbGetNewClientID()
+		$("#clientId.clientForm").val(clientId)
+		data = utilFormToJSON('.clientForm')
+		data.dependents = []
+		data.lastServed = []
+		data.notes = []
+	} else {
+		data = utilFormToJSON('.clientForm')
+		if (client.dependents == undefined) client.dependents = []
+		if (client.lastServed == undefined) client.lastServed = []
+		data.dependents = client.dependents
+		data.lastServed = client.lastServed
+		for (var i = 0; i < data.dependents.length; i++) {
+			delete data.dependents[i].age
+		}
+		if (data.lastServed == undefined || data.lastServed == "") {
+			data.lastServed = []
+		}
+		if (data.notes == undefined || data.notes == "") {
+			data.notes = []
+		}
+	}
+	dbSaveCurrentClient(data)
+};
+
+function clickSaveDependentsTable(){
+	// TODO validate dependents and field level
+	// TODO validate dependents and form level
+	// TODO validate dependents age vs adult / child
+	// TODO validate dependents grade vs age (< 18) age-range below grade?
+	editFlag.dependents = false
+	let dependents = [] // client.dependents
+	data = utilFormToJSON('.dependentsForm')
+	let numKey = Object.keys(data).length
+	for (var i = 0; i < numKey; i++) {
+		let key = Object.keys(data)[i]
+		let keyName = key.slice(0, key.indexOf("["))
+		let keyNum = key.slice(key.indexOf("[")+1,-1)
+		// updatedDateTime & createdDateTime are not in form
+		if (dependents[keyNum] == undefined) dependents[keyNum] = {updatedDateTime: utilNow()}
+		if (client.dependents[keyNum] != undefined) {
+			if (client.dependents[keyNum].createdDateTime != undefined) {
+				dependents[keyNum].createdDateTime = client.dependents[keyNum].createdDateTime
+			}
+		} else {
+			dependents[keyNum].createdDateTime = utilNow()
+		}
+		// add dependent record
+		dependents[keyNum][keyName] = data[Object.keys(data)[i]]
+		if (keyName == "grade") { // makes sure the gradeDateTime is updated
+			if (client.dependents[keyNum] == undefined) { // new dependent
+				if (dependents[keyNum][keyName] == "*EMPTY*") {
+					dependents[keyNum][keyName] = moment().diff(dependents[keyNum]["age"], "years")
+				}
+				if (dependents[keyNum][keyName] == "NA") {
+					dependents[keyNum].gradeDateTime = "NA"
+				} else {
+					dependents[keyNum].gradeDateTime = utilNow()
+				}
+			} else {
+				if (dependents[keyNum][keyName] != client.dependents[keyNum][keyName]) {
+					if (dependents[keyNum][keyName] == "NA") {
+						dependents[keyNum].gradeDateTime = "NA"
+					} else {
+						dependents[keyNum].gradeDateTime = utilNow()
+					}
+				} else {
+					dependents[keyNum].gradeDateTime = client.dependents[keyNum].gradeDateTime
+				}
+			}
+		}
+	}
+	client.dependents = dependents
+	const result = dbSaveCurrentClient(client)
+	if (result == "success") {
+		utilCalcClientFamilyCounts()
+		utilCalcClientAge("db")
+		uiToggleDependentsViewEdit("view")
+	}
+};
+
+function clickSearchClients() {
+	let str =  $('#searchField').val()
+	$('#searchField').val('')
+	if (str === '') {
+		utilBeep()
+		return
+	}
+	if (stateCheckPendingEdit()) return
+	if (currentNavTab !== "clients") navGotoSec("nav1")
+	clientData = null
+	const regex = /[/.]/g
+	const slashCount = (str.match(regex) || []).length
+	dbSearchClients(str, slashCount)
+	uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
+	if (clientData==null||clientData.length==0){
+		utilBeep()
+		uiSetClientsHeader("0 Clients Found")
+		client = {}
+		servicesRendered = []
+		uiClearCurrentClient()
+	} else {
+		let columns = ["clientId","givenName","familyName","dob","street"]
+		uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
+		uiResetNotesTab()
+		if (clientData.length == 1){
+			clickSetCurrentClient(0) // go straight to SERVICES
+			navGotoTab("tab2")
+		} else {
+			uiSetClientsHeader(clientData.length + ' Clients Found')
+			navGotoTab("tab1")
+		}
+	}
+};
+
 function clickSetCurrentAdminUser(index){
 	adminUser = users[index]
 	uiOutlineTableRow('usersTable', index+1)
@@ -2928,7 +2988,37 @@ function clickSetCurrentServiceType(index){
 
 function clickShowNewClientForm(){
 	uiShowNewClientForm()
-}
+};
+
+function clickToggleClientViewEdit(side){
+
+console.log(side)
+
+	if (side == 'edit') {
+		// set flag for being in edit mode
+		editFlag.client = true
+	} else {
+		// test for flag
+		if (!editFlag.client) {
+
+		}
+	}
+
+	uiToggleClientViewEdit(side)
+};
+
+function clickToggleDependentsViewEdit(side){
+	if (side == 'edit') {
+		// set flag for being in edit mode
+		editFlag.dependents = true
+	} else {
+		// test for flag
+		if (!editFlag.dependents) {
+
+		}
+	}
+	uiToggleDependentsViewEdit(side)
+};
 
 // **********************************************************************************************************
 // *********************************************** COG FUNCTIONS ********************************************
@@ -3403,7 +3493,9 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 				if (servicesVouchers.length !== 1) {
 					display = false
 				}
-			} else if (targetServices[i][prop] != client[prop] && prop.includes("family")==false && prop.includes("dependents")==false) {
+			} else if (targetServices[i][prop] != client[prop]
+					&& prop.includes("family")==false
+					&& prop.includes("dependents")==false) {
 				display = false
 			}
 		}
@@ -3900,7 +3992,6 @@ function utilCalcTargetServices(activeServiceTypes) {
 			targets[i].service = activeServiceTypes[i].target.service; //set target to Voucher service ID
 		}
 	}
-	console.log(targets);
 	return targets;
 }
 
