@@ -653,15 +653,15 @@ function uiUpdateAdminHeader() {
 
 function uiUpdateButton(elem, set) {
 	if (set == 'Gen') {
-		$(elem).val('Generating...')
-		$(elem).css('background-color', 'red')
-		$(elem).css('font-weight', 'bold')
+		elem.value = 'Generating...';
+		elem.style.backgroundColor = 'red';
+		// elem.style.fontWeight = 'bold';
 	} else {
-		$(elem).val('Run')
-		$(elem).css('background-color', 'var(--blue)')
-		$(elem).css('font-weight', 'normal')
+		elem.value = 'Run';
+		elem.style.backgroundColor = 'var(--blue)';
+		// elem.style.fontWeight = 'normal';
 	}
-};
+}
 
 function uiSaveButton(form, action){
 	if (action === 'Save') {
@@ -2759,19 +2759,18 @@ function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
 	}
 };
 
-function clickGenerateDailyReport(targetDiv){
+function clickGenerateDailyReport(btn, targetDiv){
 	const dayDate = $('#reportsDailyDate').val()
-	const buttonId = '#dailyReportButton'
-	uiUpdateButton(buttonId, 'Gen') // 'Gen' or 'Run'
+	uiUpdateButton(btn, 'Gen') // 'Gen' or 'Run'
 	setTimeout(function() {
 		uiShowDailyReportHeader(dayDate, targetDiv, 'DAILY')
 		uiShowDailyReportRows(dayDate, targetDiv)
-		uiUpdateButton(buttonId, 'Run') // 'Gen' or 'Run'
+		uiUpdateButton(btn, 'Run') // 'Gen' or 'Run'
 		uiShowHideReport("show")
 	}, 0)
 };
 
-function clickGenerateMonthlyReport(){
+function clickGenerateMonthlyReport(btn){
 	const monthYear = $('#reportsMonthlyMonth').val()
 	const reportType = $('#reportsMonthlyType').val()
 	const vals = {
@@ -2783,18 +2782,17 @@ function clickGenerateMonthlyReport(){
 		     print: true
 	}
 	if (reportType == 'ALL') vals.name = 'ALL SERVICES'
-	const buttonId = '#monthlyReportButton'
-	uiUpdateButton(buttonId, 'Gen') // 'Gen' or 'Run'
+	uiUpdateButton(btn, 'Gen') // 'Gen' or 'Run'
 	setTimeout(function() {
 		uiLoadReportHeader(vals)
 		uiShowMonthlyReportHeader(monthYear, reportType)
 		uiShowMonthlyReportRows(monthYear, reportType)
-		uiUpdateButton(buttonId, 'Run') // 'Gen' or 'Run'
+		uiUpdateButton(btn, 'Run') // 'Gen' or 'Run'
 		uiShowHideReport("show")
 	}, 0)
 };
 
-function clickGenerateVoucherReport(reportType){
+function clickGenerateVoucherReport(btn, reportType){
 	// reportType = "Count" or "Distro"
 	const serviceTypeId = $('#reportVoucher' + reportType).val() // form pulldown
 	const serviceType = utilGetServiceTypeByID(serviceTypeId)
@@ -2806,11 +2804,11 @@ function clickGenerateVoucherReport(reportType){
 	const year = $('#reportVoucher' + reportType + 'Year').val()
 	const buttonId = '#voucher' + reportType + 'ReportButton'
 	// if (reportType == 'Count') buttonId = '#voucherCountReportButton'
-	uiUpdateButton(buttonId, 'Gen') // 'Gen' or 'Run'
+	uiUpdateButton(btn, 'Gen') // 'Gen' or 'Run'
 	setTimeout(function() {
 		uiShowVoucherReportHeader(year, reportType, targetType, serviceType)
 		let result = uiShowVoucherReportRows(year, reportType, targetType, serviceType)
-		uiUpdateButton(buttonId, 'Run') // 'Gen' or 'Run'
+		uiUpdateButton(btn, 'Run') // 'Gen' or 'Run'
 		if (result != 'failed')
 			uiShowHideReport("show")
 	}, 0)

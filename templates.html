@@ -457,7 +457,7 @@
       <div class="lableDiv">Date</div>
       <div><input id="reportsDailyDate" type="date" class="inputBox reportsForm"></div>
       <div></div>
-      <div><input id="dailyReportButton" class="solidButton" onclick="clickGenerateDailyReport('report')" type="button" value="Run"></div>
+      <div><input id="dailyReportButton" class="solidButton" onclick="clickGenerateDailyReport(this, 'report')" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
       <div class="headingDiv span6">Monthly Reports</div>
       <div class="lableDiv">Report</div>
@@ -470,7 +470,7 @@
       <div class="lableDiv">Month</div>
       <div><input id="reportsMonthlyMonth" type="month" class="inputBox reportsForm"></div>
       <div></div>
-      <div><input id="monthlyReportButton" class="solidButton" onclick="clickGenerateMonthlyReport()" type="button" value="Run"></div>
+      <div><input id="monthlyReportButton" class="solidButton" onclick="clickGenerateMonthlyReport(this)" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
       <div class="headingDiv span6">Voucher Distribution Reports</div>
       <div class="lableDiv">Report</div>
@@ -480,7 +480,7 @@
       <div class="lableDiv">Year</div>
       <div><input id="reportVoucherDistroYear" type="number" class="inputBox reportsForm"></div>
       <div></div>
-      <div><input id="voucherDistroReportButton" class="solidButton" onclick="clickGenerateVoucherReport('Distro')" type="button" value="Run"></div>
+      <div><input id="voucherDistroReportButton" class="solidButton" onclick="clickGenerateVoucherReport(this, 'Distro')" type="button" value="Run"></div>
       <div class="headingDiv span6"></div>
       <div class="headingDiv span6"></div>
       <div class="headingDiv span6">Voucher Final Count Reports</div>
@@ -491,7 +491,7 @@
       <div class="lableDiv">Year</div>
       <div><input id="reportVoucherCountYear" type="number" class="inputBox reportsForm"></div>
       <div></div>
-      <div><input id='voucherCountReportButton'  class="solidButton" onclick="clickGenerateVoucherReport('Count')" type="button" value="Run"></div>
+      <div><input id='voucherCountReportButton'  class="solidButton" onclick="clickGenerateVoucherReport(this, 'Count')" type="button" value="Run"></div>
       <!-- <div class="headingDiv span6"></div>
       <div class="headingDiv span6"><span style="font-size: 20px; line-height: 30px;">Family Reports</span></div>
       <div class="headingDiv span6">Clients Reports</div>
