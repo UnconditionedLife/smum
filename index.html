@@ -1,12 +1,13 @@
-clickToggleClientViewEdit(<!DOCTYPE html>
+<!DOCTYPE html>
+<!-- SANTA MARIA URBAN MINISTRY -->
 <!-- ?v=1.0.2 -->
 <html lang="en">
    <head>
       <!-- Required meta tags -->
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-      <link rel="icon" href="favicon.ico" type="image/x-icon">
+      <link rel="shortcut icon" href="favicon.ico?v=1.0.2" type="image/x-icon">
+      <link rel="icon" href="favicon.ico?v=1.0.2" type="image/x-icon">
       <link rel="stylesheet" href="css/jquery-ui.min.css">
       <link rel="stylesheet" href="css/fullcalendar.css">
 	   <link rel="stylesheet" href="css/style.css?v=1.0.2">
@@ -117,13 +118,13 @@ clickToggleClientViewEdit(<!DOCTYPE html>
                   <div id="historyBottom"></div>
                </section>
                <section id="content6"> <!-- Notes -->
-                  <div id="newNoteButton" class="topFormButtonsDiv"><input class="solidButton" onclick="uiToggleNoteForm('show','')" type="button" value="New Note"></div>
+                  <div id="newNoteButton" class="topFormButtonsDiv"><input class="solidButton" onclick="clickToggleNoteForm('show','')" type="button" value="New Note"></div>
                   <div id="noteEditForm">
                      <div id="noteEditHeader">NEW NOTE</div>
                      <div><textarea id="noteTextArea" class="noteForm" required></textarea></div>
                      <div style="padding: 12px"><input id="noteIsImportant" class="noteForm" type="checkbox" value="true"> <span class="checkboxtext">&nbsp; IMPORTANT!</span></div>
-                     <div style="padding-top: 8px;"><p><input class="solidButton" onclick="dbSaveNote()" type="button" value="Save"></p></div>
-                     <div style="padding-top: 8px;"><input class="openButton" onclick="uiToggleNoteForm('hide', '')" type="button" value="Cancel"></div>
+                     <div style="padding-top: 8px;"><p><input class="solidButton" onclick="clickSaveNote()" type="button" value="Save"></p></div>
+                     <div style="padding-top: 8px;"><input class="openButton" onclick="clickToggleNoteForm('hide', '')" type="button" value="Cancel"></div>
                   </div>
                   <container id="notesContainer"></container>
                </section>

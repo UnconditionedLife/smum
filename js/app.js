@@ -164,17 +164,23 @@ function navGotoTab(tab){
 // **********************************************************************************************************
 
 function stateCheckPendingEdit() {
+	let tab = ''
+	let section = ''
 	if (editFlag.client) {
-		const title = "Client Not Saved!"
-		const message =  "Save or Cancel client form first."
-		uiShowHideError("show", title, message, 'beep')
-		navGotoTab("tab3")
-		return true
+		section = 'Client'
+		tab = "tab3"
 	} else if (editFlag.dependents) {
-		const title = "Dependents Not Saved!"
-		const message =  "Save or Cancel dependents form first."
+		section = 'Dependents'
+		tab = "tab4"
+	} else if (editFlag.notes) {
+		section = 'Note'
+		tab = "tab6"
+	}
+	if (section !== '') {
+		title = section + " Not Saved!"
+		message =  "Save or Cancel the " + section + " form first."
 		uiShowHideError("show", title, message, 'beep')
-		navGotoTab("tab4")
+		navGotoTab(tab)
 		return true
 	}
 	return false
@@ -592,26 +598,6 @@ function uiShowHideClientMessage(todo){
 	}
 };
 
-function uiToggleNoteForm(todo, index){
-	if (todo == "show"){
-		$("#newNoteButton").hide()
-		$("#noteEditForm").show()
-		if (index !== ""){
-			$("#noteTextArea").val(client.notes[index].noteText)
-			if (client.notes[index].isImportant == "true") {
-				$("#noteIsImportant").prop("checked", true)
-			} else {
-				$("#noteIsImportant").prop("checked", false)
-			}
-		}
-	} else {
-		$("#newNoteButton").show()
-		$("#noteEditForm").hide()
-		$("#noteTextArea").val("")
-		$("#noteIsImportant").prop("checked", false)
-	}
-};
-
 function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 	if (action == "gray") {
 		//$("#btn-"+serviceTypeId).css({'color': 'var(--grey-green)', 'border-color': 'var(--grey-green)'})
@@ -651,17 +637,15 @@ function uiUpdateAdminHeader() {
 	$("#adminTitle").html($("#serviceName").val())
 };
 
-function uiUpdateButton(elem, set) {
+function uiUpdateButton(btn, set) {
 	if (set == 'Gen') {
-		elem.value = 'Generating...';
-		elem.style.backgroundColor = 'red';
-		// elem.style.fontWeight = 'bold';
+		btn.value = 'Generating...';
+		btn.style.backgroundColor = 'red';
 	} else {
-		elem.value = 'Run';
-		elem.style.backgroundColor = 'var(--blue)';
-		// elem.style.fontWeight = 'normal';
+		btn.value = 'Run';
+		btn.style.backgroundColor = 'var(--blue)';
 	}
-}
+};
 
 function uiSaveButton(form, action){
 	if (action === 'Save') {
@@ -1679,7 +1663,7 @@ function uiShowUserForm(){
 function uiShowNote(index, dateTime, text, user, important){
 	let clickableRow = ""
 	// if (session.user.username == user) {
-	// 	clickableRow = "class=\'notesRow\' onClick=\'uiToggleNoteForm(\"show\"," + index + ")\'"
+	// 	clickableRow = "class=\'notesRow\' onClick=\'clickToggleNoteForm(\"show\"," + index + ")\'"
 	// }
 	$('.notes').append('<tr><td class="notesData">'+dateTime+'</td><td class="notesData">'+text+'</td><td class="notesData">'+user+'</td><td class="notesDataImportant">'+important+'</td><td class="notesData"><i class="fa fa-times-circle" onClick="utilDeleteNote(' + index +')"></i></td></tr>')
 }
@@ -2457,32 +2441,6 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 	return serviceRecord
 };
 
-function dbSaveNote(){
-	hasError = utilValidateField("noteTextArea", "noteForm")
-	if (hasError) {
-		utilBeep()
-		return
-	}
-	let tmp = {}
-	tmp.noteText = $("#noteTextArea").val().toString()
-	tmp.createdDateTime = moment().format(dateTime)
-	tmp.updatedDateTime = moment().format(dateTime)
-	tmp.noteByUserName = session.user.username
-	let isImportant = false
-	if ($("#noteIsImportant").is(":checked")) isImportant = true
-	tmp.isImportant = isImportant
-	client.notes.push(tmp)
-// TODO SAVE CLIENT ... NEED TO USE UPDATE TO ONLY UPDATE SOME FIELDS
-	const result = dbSaveCurrentClient(client)
-	if (result == "success") {
-		utilCalcClientFamilyCounts()
-		utilCalcClientAge("db")
-		clickToggleDependentsViewEdit("view")
-		uiToggleNoteForm("hide", "")
-		uiShowExistingNotes("updating")
-	}
-};
-
 function dbSaveCurrentClient(data){
 	uiSaveButton('client', 'Saving...')
 	$("body").css("cursor", "progress")
@@ -2833,7 +2791,6 @@ function clickResetDependentsTable() {
 };
 
 function clickSaveClientForm(context){
-	editFlag.client = false
 	uiClearAllErrorBubbles()
 	const hasErrors = utilValidateForm("clientForm", context)
 	if (hasErrors) return
@@ -2862,7 +2819,8 @@ function clickSaveClientForm(context){
 			data.notes = []
 		}
 	}
-	dbSaveCurrentClient(data)
+	let result = dbSaveCurrentClient(data)
+	if (result == 'success') editFlag.client = false
 };
 
 function clickSaveDependentsTable(){
@@ -2870,7 +2828,6 @@ function clickSaveDependentsTable(){
 	// TODO validate dependents and form level
 	// TODO validate dependents age vs adult / child
 	// TODO validate dependents grade vs age (< 18) age-range below grade?
-	editFlag.dependents = false
 	let dependents = [] // client.dependents
 	data = utilFormToJSON('.dependentsForm')
 	let numKey = Object.keys(data).length
@@ -2915,9 +2872,37 @@ function clickSaveDependentsTable(){
 	client.dependents = dependents
 	const result = dbSaveCurrentClient(client)
 	if (result == "success") {
+		editFlag.dependents = false
 		utilCalcClientFamilyCounts()
 		utilCalcClientAge("db")
 		uiToggleDependentsViewEdit("view")
+	}
+};
+
+function clickSaveNote(){
+	hasError = utilValidateField("noteTextArea", "noteForm")
+	if (hasError) {
+		utilBeep()
+		return
+	}
+	editFlag.dependents = false
+	let tmp = {}
+	tmp.noteText = $("#noteTextArea").val().toString()
+	tmp.createdDateTime = moment().format(dateTime)
+	tmp.updatedDateTime = moment().format(dateTime)
+	tmp.noteByUserName = session.user.username
+	let isImportant = false
+	if ($("#noteIsImportant").is(":checked")) isImportant = true
+	tmp.isImportant = isImportant
+	client.notes.push(tmp)
+// TODO SAVE CLIENT ... NEED TO USE UPDATE TO ONLY UPDATE SOME FIELDS
+	const result = dbSaveCurrentClient(client)
+	if (result == "success") {
+		utilCalcClientFamilyCounts()
+		utilCalcClientAge("db")
+		clickToggleDependentsViewEdit("view")
+		clickToggleNoteForm("hide", "")
+		uiShowExistingNotes("updating")
 	}
 };
 
@@ -2989,33 +2974,38 @@ function clickShowNewClientForm(){
 };
 
 function clickToggleClientViewEdit(side){
-
-console.log(side)
-
-	if (side == 'edit') {
-		// set flag for being in edit mode
-		editFlag.client = true
-	} else {
-		// test for flag
-		if (!editFlag.client) {
-
-		}
-	}
-
+	// set flag for being in edit mode
+	if (side == 'edit') editFlag.client = true
 	uiToggleClientViewEdit(side)
 };
 
 function clickToggleDependentsViewEdit(side){
-	if (side == 'edit') {
-		// set flag for being in edit mode
-		editFlag.dependents = true
-	} else {
-		// test for flag
-		if (!editFlag.dependents) {
-
-		}
-	}
+	// set flag for being in edit mode
+	if (side == 'edit') editFlag.dependents = true
 	uiToggleDependentsViewEdit(side)
+};
+
+function clickToggleNoteForm(todo, index){
+	if (todo == "show"){
+		editFlag.notes = true
+		$("#newNoteButton").hide()
+		$("#noteEditForm").show()
+		if (index !== ""){
+			$("#noteTextArea").val(client.notes[index].noteText)
+			if (client.notes[index].isImportant == "true") {
+				$("#noteIsImportant").prop("checked", true)
+			} else {
+				$("#noteIsImportant").prop("checked", false)
+			}
+		}
+	} else {
+		// check for edit mode
+		editFlag.notes = false
+		$("#newNoteButton").show()
+		$("#noteEditForm").hide()
+		$("#noteTextArea").val("")
+		$("#noteIsImportant").prop("checked", false)
+	}
 };
 
 // **********************************************************************************************************
