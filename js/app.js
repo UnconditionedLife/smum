@@ -4091,7 +4091,7 @@ function utilFormToJSON(form){
 	}
 	vals.updatedDateTime = utilNow();
 	return vals
-}
+};
 
 function utilKeyToLabel(x){
 	let data = {
