@@ -1570,11 +1570,11 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
 	$(grid).append('<div class="monthTotal">'+ gTotal.ni +'</div>')
 };
 
-function uiShowTodayTotals(serviceTotal, grid){
-	let lable = "USDA TOTALS"
-	if (grid == "#NonUSDAGrid") lable = "NonUSDA TOTALS"
-	if (grid == "#grandTotalGrid") lable = "TODAY'S GRAND TOTALS"
-	$(grid).append('<div class="todayTotalLable">'+lable+'</div>')
+function uiShowTodayTotals(serviceTotal, grid) {
+	let label = "USDA TOTALS"
+	if (grid == "#reportNonUSDAGrid") label = "NonUSDA TOTALS"
+	if (grid == "#reportgrandTotalGrid") label = "TODAY'S GRAND TOTALS"
+	$(grid).append('<div class="todayTotalLable">'+label+'</div>')
 	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.hh +'</div>')
 	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ind +'</div>')
 	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ch +'</div>')
@@ -1706,6 +1706,8 @@ function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTy
 		let service = '<div id="btn-' + activeServiceTypes[x].serviceTypeId +'\" class="btnSecondary" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "</div>"
 		$('#serviceSecondaryButtons').append(service)
 	}
+	// let service = '<div class="btnSecondary" id="btn-test" onclick="clickTestService()">Printer Test</div>';
+	// $('#serviceSecondaryButtons').append(service);
 };
 
 function uiPopulateBadges(){
@@ -2632,6 +2634,36 @@ function dateFindOpen(target, earliest) {
 // ********************************************** CLICK FUNCTIONS *******************************************
 // **********************************************************************************************************
 
+// Printer test function
+receiptIndex = 0;
+function clickTestService() {
+	let service;
+	switch(receiptIndex) {
+		case 0:
+			prnPrintClothesReceipt();
+			break;
+		case 1:
+			prnPrintFoodReceipt('USDA');
+			break;
+		case 2:
+			prnPrintReminderReceipt();
+			break;
+		case 3:
+			service = serviceTypes.filter(obj => obj.serviceName == 'Thanksgiving Turkey')[0];
+			prnPrintVoucherReceipt(service);
+			break;
+		case 4:
+			service = serviceTypes.filter(obj => obj.serviceName == 'Christmas Toy')[0];
+			prnPrintVoucherReceipt(service, client.dependents, 'age');
+			break;
+		case 5:
+			service = serviceTypes.filter(obj => obj.serviceName == 'First Step')[0];
+			prnPrintVoucherReceipt(service, client.dependents, 'grade');
+			break;
+	}
+	receiptIndex = (receiptIndex + 1) % 6;
+}
+
 function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
 	let serviceType = utilGetServiceTypeByID(serviceTypeId)
 	let serviceId = "" // new service
@@ -2677,10 +2709,10 @@ function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
 			// TODO use function here
 			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
 			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintFirstStepReceipt(service, dependents)
+				prnPrintVoucherReceipt(serviceType, dependents, 'grade');
 			}, 2500)
 			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintFirstStepReceipt(service, dependents)
+				prnPrintVoucherReceipt(serviceType, dependents, 'grade');
 			}, 3750)
 		} else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
 			const targetService = utilCalcTargetServices([serviceType])
@@ -2698,17 +2730,17 @@ function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
 			if (targetService[0].family_totalChildren == "Greater Than 0") {
 				const dependents = utilCalcValidAgeGrade("age", targetService[0])
 				setTimeout(function(){ // give time for food receipt & reminder to print
-					prnPrintChristmasToyReceipt(service, dependents)
+					prnPrintVoucherReceipt(serviceType, dependents, 'age');
 				}, 2500)
 				setTimeout(function(){ // give time for food receipt & reminder to print
-					prnPrintChristmasToyReceipt(service, dependents)
+					prnPrintVoucherReceipt(serviceType, dependents, 'age');
 				}, 3750)
 			} else {
 				setTimeout(function(){ // give time for food receipt & reminder to print
-					prnPrintVoucherReceipt(service)
+					prnPrintVoucherReceipt(service);
 				}, 2500)
 				setTimeout(function(){ // give time for food receipt & reminder to print
-					prnPrintVoucherReceipt(service)
+					prnPrintVoucherReceipt(service);
 				}, 3750)
 			}
 		}
@@ -4676,9 +4708,7 @@ let img = document.getElementById('smum');
 let printer = null;
 
 function prnConnect() {
- 	// var ipAddress = settings.printerIP // was '192.168.1.137'
- 	var port = '8008'
- 	ePosDev.connect(settings.printerIP, port, prnCallback_connect)
+ 	ePosDev.connect(settings.printerIP, '8008', prnCallback_connect)
 };
 
 function prnCallback_connect(resultConnect){
@@ -4692,6 +4722,12 @@ function prnCallback_connect(resultConnect){
 	 	console.log("Error in callback_connect");
  }
 };
+
+function prnGetWindow() {
+	let win = window.open('', 'Receipt Printer', 'width=550,height=1000');
+	win.document.title = 'Receipt Printer';
+	return win;
+}
 
 function prnCallback_createDevice(deviceObj, errorCode){
  	if (deviceObj === null) {
@@ -4735,297 +4771,196 @@ function prnPrintCanvas(name){
 	epos.print(canvas)
 };
 
-function prnAddHeader(){
+function prnStartReceipt() {
 	if (document.getElementById('smumimg')==null){
-		prnAddImage('smum','images/receipt-logo.png','500','146');
+		prnAddImage('smum', 'images/receipt-logo.png', '500', '146');
 	}
-	setTimeout(function f(){
-		prnDrawCanvas('smum',500,145);
-  	prnPrintCanvas('smum');
-  	printer.addTextAlign(printer.ALIGN_CENTER);
-  	printer.addTextSmooth(true);
-  	// printer.addText('-------------------------------\n');
-  	printer.addText('778 S. Almaden Avenue\n');
-  	printer.addText('San Jose, CA 95110\n');
-  	printer.addText('(408) 292-3314\n');
-  }, 250)
-};
+	if (printer) {
+		prnDrawCanvas('smum', 500, 145);
+		prnPrintCanvas('smum');
+		printer.addTextAlign(printer.ALIGN_CENTER);
+		printer.addTextSmooth(true);
+	} else {
+		let prnWindow = prnGetWindow();
+		prnWindow.document.writeln('<p align="center">');
+		prnWindow.document.writeln('<img src="images/receipt-logo.png" width="200" height="58" /><br/><br/><br/>');
+	}
+	prnTextLine('778 S. Almaden Avenue');
+	prnTextLine('San Jose, CA 95110');
+	prnTextLine('(408) 292-3314');
+}
 
-function prnPrintClothesReceipt(){
-	if (printer == null) {
-		console.log("Printer Not Connected")
-		return
+function prnAlign(align) {
+	if (printer) {
+		if (align == 'left')
+			printer.addTextAlign(printer.ALIGN_LEFT);
+		else if (align == 'center')
+			printer.addTextAlign(printer.ALIGN_CENTER);
 	}
-	prnAddHeader();
-	setTimeout(function f(){
-		printer.addTextSize(1, 2);
+	else {
+		let prnWindow = prnGetWindow();
+		prnWindow.document.writeln('</p><p align="' + align + '">')
+	}
+}
+
+function prnTextLine(str, width, height, attrs) {
+	if (width == null)
+		width = 1;
+	if (height == null)
+		height = 1;
+	let inverse = attrs && attrs.indexOf('inverse') >= 0;
+	if (printer) {
+		printer.addTextSize(width, height);
+		if (inverse)
+			printer.addTextStyle(true,false,false,printer.COLOR_1);
+		printer.addText(str + '\n');
+		if (inverse)
+			printer.addTextStyle(false,false,false,printer.COLOR_1);
+	} else {
+		let prnWindow = prnGetWindow();
+		let style = "font-family:monospace;";
+		if (height > 1)
+			style += 'font-size:' + height*100 + '%;';
+		if (inverse)
+			style += 'color:white;background-color:black;';
+		prnWindow.document.writeln('<span style="' + style + '">' +
+			str.replace(/ /g, '&nbsp;') + '<br/></span>')
+	}
+}
+
+function prnFeed(n) {
+	if (printer) {
+		printer.addTextSize(1, 1);
+  	printer.addFeedLine(n);
+	} else {
+		let prnWindow = prnGetWindow();
+		for (let i = 0; i < n; i++) {
+			prnWindow.document.writeln('<br/>');
+		}
+	}
+}
+
+function prnEndReceipt() {
+	if (printer) {
 		printer.addFeedLine(2);
-		printer.addText('* CLOTHES CLOSET PROGRAM *\n');
-		printer.addTextSize(1, 1);
-		printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
-  	printer.addFeedLine(1);
-		printer.addTextSize(2, 2);
-		printer.addText(client.givenName + ' ' + client.familyName + '\n');
-		printer.addTextSize(2, 1);
-		printer.addFeedLine(1);
-		printer.addTextStyle(true,false,false,printer.COLOR_1);
-  	printer.addText(' ' + client.clientId + ' \n');
-  	printer.addTextStyle(false,false,false,printer.COLOR_1);
-		printer.addTextSize(1, 1);
-  	printer.addFeedLine(1);
-		const numAdults = client.family.totalAdults
-		const numChildren = client.family.totalChildren
-		const numArticles = (numAdults + numChildren) * 3 // TODO remove hardcoded itemsServed
-  	printer.addText('ADULTS | ADULTOS\t\t' + numAdults +	'\n');
-  	printer.addText('CHILDREN | NINOS\t\t' + numChildren +	'\n');
-  	printer.addFeedLine(1);
-  	printer.addText('LIMIT OF 3 ITEMS PER PERSON\n');
-  	printer.addText('LIMITE 3 ARTICULOS POR PERSONA\n');
-  	printer.addFeedLine(1);
-  	printer.addText('TOTAL ARTICLES | ARTICULOS\n');
-		printer.addText('**************************************\n')
-  	printer.addTextStyle(true,false,false,printer.COLOR_1);
-		printer.addTextSize(2, 2);
-  	printer.addText(' ' + numArticles + ' \n');
-		printer.addTextSize(1, 1);
-  	printer.addTextStyle(false,false,false,printer.COLOR_1);
-  	printer.addText('**************************************\n');
-    printer.addFeedLine(1);
-  	printer.addText('MAXIMUM TIME 10 MINUTES\n');
-  	printer.addText('TIEMPO MAXIMO 10 MINUTOS\n');
-    printer.addFeedLine(2);
-  	printer.addText('TIME IN___________   TIME OUT___________\n');
-    printer.addFeedLine(3);
-    printer.addCut(printer.CUT_FEED);
+		printer.addCut(printer.CUT_FEED);
 		printer.send();
-	}, 500);
-};
-
-function prnPrintFoodReceipt(isUSDA){
-	if (printer == null) {
-		console.log("Printer Not Connected")
-		return
+	} else {
+		let prnWindow = prnGetWindow();
+		prnWindow.document.writeln('</p><br/><br/><hr/>');
 	}
-	prnAddHeader();
-	setTimeout(function f(){
-			printer.addTextSize(1, 2);
-			printer.addFeedLine(2);
-    	printer.addText('* EMERGENCY FOOD PANTRY PROGRAM *\n');
-			printer.addTextSize(1, 1);
-    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
-			printer.addFeedLine(1);
-			printer.addTextSize(2, 2);
-			printer.addText(client.givenName + ' ' + client.familyName + '\n');
-			printer.addFeedLine(1);
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 1);
-    	printer.addText(' ' + client.clientId + ' \n');
-			printer.addTextSize(1, 1);
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-			printer.addText('(' + client.zipcode +	')\n');
-    	printer.addFeedLine(1);
-			printer.addText('ADULTS | ADULTOS\t\t' + client.family.totalAdults +	'\n');
-			printer.addText('CHILDREN | NINOS\t\t' + client.family.totalChildren +	'\n');
-    	printer.addText('FAMILY | FAMILIA:\t\t' + client.family.totalSize + '\n');
-    	printer.addFeedLine(1);
-    	printer.addText('**************************************\n')
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 2);
-    	printer.addText(' ' + isUSDA + ' \n');
-			printer.addTextSize(1, 1);
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-    	printer.addText('**************************************\n');
-    	printer.addFeedLine(2);
-    	printer.addCut(printer.CUT_FEED);
-    	printer.send();
-	}, 500);
-};
+}
 
-function prnPrintFirstStepReceipt(serviceType, dependents){
-	let sortedDependents = utilSortDependentsByGrade(dependents)
-	if (printer == null) {
-		console.log("Printer Not Connected")
-		return
-	}
-	let serviceName = serviceType.serviceName
-	prnAddHeader();
-	setTimeout(function f(){
-			printer.addTextSize(1, 2);
-			printer.addFeedLine(2);
-    	printer.addText('* ' + serviceName.toUpperCase() + ' *\n');
-			printer.addTextSize(1, 1);
-    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
-			printer.addFeedLine(1);
-			printer.addTextSize(2, 2);
-			printer.addText(client.givenName + ' ' + client.familyName + '\n');
-			printer.addFeedLine(1);
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 1);
-    	printer.addText(' ' + client.clientId + ' \n');
-			printer.addTextSize(1, 1);
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-    	printer.addFeedLine(1);
-			printer.addText('CHILDREN / NINOS        GENDER   GRADE');
-    	printer.addFeedLine(1);
-			printer.addTextAlign(printer.ALIGN_LEFT);
-			for (let i=0; i<sortedDependents.length; i++){
-				let currentDependent = sortedDependents[i]
-				let childName = utilPadTrimString(currentDependent.givenName.toUpperCase()+' '+currentDependent.familyName.toUpperCase(), 24) // pad / trim right to 24
-				let gender =  utilPadTrimString(currentDependent.gender.toUpperCase(), 9) // pad to 9
-				let gradeGroup = utilPadTrimString(utilCalcGradeGrouping(currentDependent), 5) // pad to 5
-				printer.addText(childName + gender + gradeGroup + '\n')
+function prnServiceHeader(title) {
+	prnFeed(2);
+	prnTextLine('* ' + title + ' *', 1, 2);
+	prnTextLine(moment().format("MMMM Do, YYYY LT"));
+	prnFeed(1);
+	prnTextLine(client.givenName + ' ' + client.familyName, 2, 2);
+	prnFeed(1);
+	prnTextLine(' ' + client.clientId + ' ', 2, 1, ['inverse']);
+}
+
+function prnPickupTimes(fromDateTime, toDateTime) {
+	prnTextLine('**************************************')
+	prnTextLine('PRESENT THIS FOR PICKUP')
+	prnTextLine('HAY PRESENTAR PARA RECLAMAR')
+	prnTextLine(' ' + moment(fromDateTime).format("MMMM Do, YYYY")+ ' ', 2, 2, ['inverse']);
+	prnFeed(1);
+	prnTextLine(' '+ moment(fromDateTime).format("h:mm a")+" - " + moment(toDateTime).format("h:mm a")+' ', 1, 1, ['inverse']);
+	prnTextLine('**************************************');
+}
+
+function prnPrintClothesReceipt() {
+	prnStartReceipt();
+	setTimeout(function f() {
+		const numAdults = client.family.totalAdults;
+		const numChildren = client.family.totalChildren;
+		const numArticles = (numAdults + numChildren) * 3; // TODO remove hardcoded itemsServed
+		prnServiceHeader('CLOTHES CLOSET PROGRAM');
+		prnFeed(1);
+  	prnTextLine('ADULTS | ADULTOS\t\t' + numAdults);
+  	prnTextLine('CHILDREN | NIÑOS\t\t' + numChildren);
+  	prnFeed(1);
+  	prnTextLine('LIMIT OF 3 ITEMS PER PERSON');
+  	prnTextLine('LIMITE 3 ARTICULOS POR PERSONA');
+  	prnFeed(1);
+  	prnTextLine('TOTAL ARTICLES | ARTICULOS');
+		prnTextLine('**************************************')
+  	prnTextLine(' ' + numArticles + ' ', 2, 2, ['inverse']);
+  	prnTextLine('**************************************');
+    prnFeed(1);
+  	prnTextLine('MAXIMUM TIME 10 MINUTES');
+  	prnTextLine('TIEMPO MAXIMO 10 MINUTOS');
+    prnFeed(2);
+  	prnTextLine('TIME IN___________   TIME OUT___________');
+		prnEndReceipt();
+	}, 500);
+}
+
+function prnPrintFoodReceipt(isUSDA) {
+	prnStartReceipt();
+	setTimeout(function f() {
+			prnServiceHeader('EMERGENCY FOOD PANTRY PROGRAM');
+			prnTextLine('(' + client.zipcode +	')');
+    	prnFeed(1);
+			prnTextLine('ADULTS | ADULTOS\t\t' + client.family.totalAdults);
+			prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
+    	prnTextLine('FAMILY | FAMILIA:\t\t' + client.family.totalSize);
+    	prnFeed(1);
+    	prnTextLine('**************************************')
+    	prnTextLine(' ' + isUSDA + ' ', 2, 2, ['inverse']);
+    	prnTextLine('**************************************');
+    	prnEndReceipt();
+	}, 500);
+}
+
+function prnPrintVoucherReceipt(serviceType, dependents, grouping) {
+	let serviceName = serviceType.serviceName;
+	prnStartReceipt();
+	setTimeout(function f() {
+		prnServiceHeader(serviceName.toUpperCase());
+		prnFeed(1);
+		if (dependents) {
+			let sortingFn, groupingFn;
+			prnAlign('left');
+		  if (grouping == 'age') {
+				sortingFn = utilSortDependentsByAge;
+				groupingFn = utilCalcAgeGrouping;
+				prnTextLine('CHILDREN / NIÑOS        GENDER   AGE');
+			} else if (grouping = 'grade') {
+				sortingFn = utilSortDependentsByGrade;
+				groupingFn = utilCalcGradeGrouping;
+				prnTextLine('CHILDREN / NIÑOS        GENDER   GRADE');
 			}
-			printer.addFeedLine(1)
-			printer.addTextAlign(printer.ALIGN_CENTER);
-    	printer.addText('**************************************\n')
-			printer.addText('PRESENT THIS FOR PICKUP\n')
-			printer.addText('HAY PRESENTAR PARA RECLAMAR\n')
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 2);
-    	printer.addText(' ' + moment(serviceType.fulfillment.fromDateTime).format("MMMM Do, YYYY")+ ' \n');
-			printer.addTextSize(1, 1);
-			printer.addFeedLine(1);
-			printer.addText(' '+ moment(serviceType.fulfillment.fromDateTime).format("h:mm a")+" - " + moment(serviceType.fulfillment.toDateTime).format("h:mm a")+' \n');
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-    	printer.addText('**************************************\n');
-    	printer.addFeedLine(2);
-    	printer.addCut(printer.CUT_FEED);
-    	printer.send();
-	}, 500);
-};
-
-function prnPrintChristmasToyReceipt(serviceType, dependents){
-	let sortedDependents = utilSortDependentsByAge(dependents)
-	if (printer == null) {
-		console.log("Printer Not Connected")
-		return
-	}
-	let serviceName = serviceType.serviceName
-	prnAddHeader();
-	setTimeout(function f(){
-			printer.addTextSize(1, 2);
-			printer.addFeedLine(2);
-    	printer.addText('* ' + serviceName.toUpperCase() + ' *\n');
-			printer.addTextSize(1, 1);
-    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
-			printer.addFeedLine(1);
-			printer.addTextSize(2, 2);
-			printer.addText(client.givenName + ' ' + client.familyName + '\n');
-			printer.addFeedLine(1);
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 1);
-    	printer.addText(' ' + client.clientId + ' \n');
-			printer.addTextSize(1, 1);
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-    	printer.addFeedLine(1);
-			printer.addText('CHILDREN / NINOS        GENDER    AGE');
-    	printer.addFeedLine(1);
-			printer.addTextAlign(printer.ALIGN_LEFT);
-			for (let i=0; i<sortedDependents.length; i++){
-				let currentDependent = sortedDependents[i]
-				let childName = utilPadTrimString(currentDependent.givenName.toUpperCase()+' '+currentDependent.familyName.toUpperCase(), 24) // pad / trim right to 24
-				let gender =  utilPadTrimString(currentDependent.gender.toUpperCase(), 9) // pad to 9
-				let ageGroup = utilPadTrimString(utilCalcAgeGrouping(currentDependent), 5) // pad to 5
-				printer.addText(childName + gender + ageGroup + '\n')
+			prnFeed(1);
+			for (let dep of sortingFn(dependents)) {
+				let childName = utilPadTrimString(dep.givenName.toUpperCase()+' '+dep.familyName.toUpperCase(), 24);
+				let gender =  utilPadTrimString(dep.gender.toUpperCase(), 9);
+				let group = utilPadTrimString(groupingFn(dep), 5);
+				prnTextLine(childName + gender + group);
 			}
-			printer.addFeedLine(1)
-			printer.addTextAlign(printer.ALIGN_CENTER);
-    	printer.addText('**************************************\n')
-			printer.addText('PRESENT THIS FOR PICKUP\n')
-			printer.addText('HAY PRESENTAR PARA RECLAMAR\n')
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 2);
-    	printer.addText(' ' + moment(serviceType.fulfillment.fromDateTime).format("MMMM Do, YYYY")+ ' \n');
-			printer.addTextSize(1, 1);
-			printer.addFeedLine(1);
-			printer.addText(' '+ moment(serviceType.fulfillment.fromDateTime).format("h:mm a")+" - " + moment(serviceType.fulfillment.toDateTime).format("h:mm a")+' \n');
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-    	printer.addText('**************************************\n');
-    	printer.addFeedLine(2);
-    	printer.addCut(printer.CUT_FEED);
-    	printer.send();
+			prnFeed(1);
+		}
+		prnAlign('center');
+		prnPickupTimes(serviceType.fulfillment.fromDateTime, serviceType.fulfillment.toDateTime);
+    prnEndReceipt();
 	}, 500);
-};
+}
 
-function prnPrintVoucherReceipt(serviceType){
-	if (printer == null) {
-		console.log("Printer Not Connected")
-		return
-	}
-	let serviceName = serviceType.serviceName
-	prnAddHeader();
-	setTimeout(function f(){
-			printer.addTextSize(1, 2);
-			printer.addFeedLine(2);
-    	printer.addText('* ' + serviceName.toUpperCase() + ' *\n');
-			printer.addTextSize(1, 1);
-    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
-			printer.addFeedLine(1);
-			printer.addTextSize(2, 2);
-			printer.addText(client.givenName + ' ' + client.familyName + '\n');
-			printer.addFeedLine(1);
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 1);
-    	printer.addText(' ' + client.clientId + ' \n');
-			printer.addTextSize(1, 1);
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-			printer.addFeedLine(1)
-			printer.addTextAlign(printer.ALIGN_CENTER);
-    	printer.addText('**************************************\n')
-			printer.addText('PRESENT THIS FOR PICKUP\n')
-			printer.addText('HAY PRESENTAR PARA RECLAMAR\n')
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 2);
-    	printer.addText(' ' + moment(serviceType.fulfillment.fromDateTime).format("MMMM Do, YYYY")+ ' \n');
-			printer.addTextSize(1, 1);
-			printer.addFeedLine(1);
-			printer.addText(' '+ moment(serviceType.fulfillment.fromDateTime).format("h:mm a")+" - " + moment(serviceType.fulfillment.toDateTime).format("h:mm a")+' \n');
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-    	printer.addText('**************************************\n');
-    	printer.addFeedLine(2);
-    	printer.addCut(printer.CUT_FEED);
-    	printer.send();
-	}, 500);
-};
-
-
-function prnPrintReminderReceipt(){
+function prnPrintReminderReceipt() {
 	// Determine next visit date
 	let targetDate = moment().add(14, 'days');
 	let earliestDate = moment().add(7, 'days');
 	let nextVisit = dateFindOpen(targetDate, earliestDate);
-	if (printer == null) {
-		console.log("Printer Not Connected")
-		return
-	}
-	prnAddHeader();
-	setTimeout(function f(){
-			printer.addTextSize(1, 2);
-			printer.addFeedLine(2);
-    	printer.addText('* NEXT VISIT REMINDER *\n');
-			printer.addTextSize(1, 1);
-    	printer.addText(moment().format("MMMM Do, YYYY LT")+'\n');
-			printer.addFeedLine(1);
-			printer.addTextSize(2, 2);
-			printer.addText(client.givenName + ' ' + client.familyName + '\n');
-			printer.addFeedLine(1);
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(2, 1);
-    	printer.addText(' ' + client.clientId + ' \n');
-			printer.addTextSize(1, 1);
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-    	printer.addFeedLine(1);
-    	printer.addText('NEXT VISIT | PRÓXIMA VISITA\n');
-    	printer.addText('**************************************\n')
-    	printer.addTextStyle(true,false,false,printer.COLOR_1);
-			printer.addTextSize(1, 2);
-    	printer.addText(' ' + nextVisit.format("MMMM Do, YYYY") + ' \n');
-			printer.addTextSize(1, 1);
-    	printer.addTextStyle(false,false,false,printer.COLOR_1);
-    	printer.addText('**************************************\n');
-    	printer.addFeedLine(2);
-    	printer.addCut(printer.CUT_FEED);
-    	printer.send();
+	prnStartReceipt();
+	setTimeout(function f() {
+		prnServiceHeader('NEXT VISIT REMINDER');
+		prnFeed(1);
+    prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
+    prnTextLine('**************************************')
+    prnTextLine(' ' + nextVisit.format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
+    prnTextLine('**************************************');
+    prnEndReceipt();
 	}, 500);
-};
-// #EOF
+}
