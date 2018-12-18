@@ -16,7 +16,7 @@
 // TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
 
-const ver = '?v=1.0.2'
+const ver = '?v=1.0.3'
 $('#versionNum').html(ver.split('=')[1]) // display version number on top right
 const aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 const MAX_ID_DIGITS = 5
@@ -2128,8 +2128,9 @@ function dbGetAppSettings(){
 	return temp
 };
 
-function dbGetClientServiceHistory(){
-	return dbGetData(aws+"/clients/services/"+client.clientId).services
+function dbGetClientActiveServiceHistory(){
+	let history = dbGetData(aws+"/clients/services/"+client.clientId).services
+	return history.filter(item => item.serviceValid == "true")
 };
 
 function dbGetData(uUrl){
@@ -2266,10 +2267,9 @@ function dbGetUsers(){
 };
 
 function dbLoadServiceHistory(){
-	let clientHistory = dbGetClientServiceHistory()
+	let clientHistory = dbGetClientActiveServiceHistory()
 	clientHistory = clientHistory
 		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
-		.filter(item => item.serviceValid == "true")
 	uiShowHistoryData(clientHistory)
 };
 
@@ -3380,9 +3380,18 @@ function utilArrayToObject(arr){
 	}, {});
 };
 
+function utilGetHistoryLastService(serviceHistory, serviceType){
+	return serviceHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
+	.filter(item => item.serviceTypeId == serviceType.serviceTypeId)
+};
+
+function utilGetVoucherTargetService(serviceHistory, serviceType){
+	return serviceHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
+	.filter(item => item.serviceTypeId == serviceType.target.service)
+};
+
 function utilCalcVoucherServiceSignup(serviceType){
-	return dbGetClientServiceHistory()
-		.filter(item => item.serviceValid == "true")
+	return dbGetClientActiveServiceHistory()
 		.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
 		.filter(item => item.serviceTypeId == serviceType.target.service)
 };
@@ -3912,9 +3921,8 @@ function utilUpdateService(serviceId){
 
 function utilUpdateLastServed(){
 	// get the service history
-	const history = dbGetClientServiceHistory()
+	const history = dbGetClientActiveServiceHistory()
 	let h = history
-		.filter(item => item.serviceValid == "true")
 		.filter(item => item.serviceButtons == "Primary")
 		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
 	let topHist = []
@@ -4632,6 +4640,7 @@ function utilSortDependentsByGrade(dependents){
 function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
 	if (activeServiceType.serviceButtons == "Primary") {
 		const serviceCategory = activeServiceType.serviceCategory
+		let serviceHistory
 		if (serviceCategory == "Food_Pantry") {
 			let nonUSDAServiceInterval = utilCalcFoodInterval("NonUSDA", activeServiceTypes)
 			let USDAServiceInterval = utilCalcFoodInterval("USDA", activeServiceTypes)
@@ -4651,9 +4660,11 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		if (serviceCategory == "Clothes_Closet") {
 			if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
 		}
-		// validate that a voucher was already registered
+		// validate that a voucher was already registered for
 		if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
-			const voucherHistory = utilCalcVoucherServiceSignup(activeServiceType)
+			serviceHistory = dbGetClientActiveServiceHistory()
+			//const voucherHistory = utilCalcVoucherServiceSignup(activeServiceType)
+			const voucherHistory = utilGetVoucherTargetService(serviceHistory, activeServiceType)
 			let voucherDays = 10000
 			if (voucherHistory.length == 1) {
 				voucherDays = moment().diff(voucherHistory[0].servicedDateTime, 'days')
@@ -4665,8 +4676,6 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		  } else {
 				if (voucherDays == 10000) {
 			  	return false
-				} else {
-					return true
 				}
 			}
 		}
@@ -4683,7 +4692,16 @@ function utilValidateServiceInterval(activeServiceType, activeServiceTypes, last
 		}
 		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
 		if (inLastServed.length > 0) {
-			inLastServed = inLastServed[0].serviceDateTime
+			// if a voucher fulfill service then need to chech against Voucher service
+			if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
+				// get voucher service
+				const voucherHistory = utilGetHistoryLastService(serviceHistory, activeServiceType)
+				if (voucherHistory.length > 0) {
+					return false;
+				}
+			} else {
+				inLastServed = inLastServed[0].serviceDateTime
+			}
 		} else if (serviceCategory == "Administration") {
 			inLastServed = client.familyIdCheckedDate
 		} else {
