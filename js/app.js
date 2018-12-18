@@ -297,7 +297,7 @@ function uiClearCurrentClient(){
 		$("#tabLable6").css("color", "#bbb")
 };
 
-function uiDisplayNotes(pageName){ /**Displays notes table for a given page**/
+function uiShowNotes(pageName){ /**Displays notes table for a given page**/
 	//setMainSideDiv()
 	const tableStr = '<table class="notes"></table>'
 	$('#notesContainer').html(tableStr)
@@ -1612,7 +1612,7 @@ function uiShowChangePasswordForm(){
 };
 
 function uiShowClientEdit(isEdit){
-	uiDisplayNotes("Client Notes")
+	uiShowNotes("Client Notes")
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
 	$('#clientSaveButton.newOnly').remove()
 	uiPopulateForm(client, 'clientForm')
@@ -1825,7 +1825,7 @@ function uiShowServiceTypeForm(){
 };
 
 function uiShowServiceTypes(){
-	uiGenSelectHTMLTable('#serviceTypesContainer',serviceTypes,["serviceName","serviceDescription","isActive"],'serviceTypesTable')
+	uiGenSelectHTMLTable('#serviceTypesContainer',serviceTypes,["serviceName","serviceCategory","serviceDescription","isActive"],'serviceTypesTable')
 };
 
 function uiShowUsers(){
@@ -4147,6 +4147,7 @@ function utilKeyToLabel(x){
 								  isActive: "Status",
 							 serviceName: "Name",
 				serviceDescription: "Description",
+					 serviceCategory: "Category",
 				   createdDateTime: "Profile Created",
 					 updatedDateTime: "Profile Updated",
 				     firstSeenDate: "First Seen",
