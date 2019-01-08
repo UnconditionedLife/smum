@@ -1,0 +1,12 @@
+if: fork = false
+language: node_js
+node_js:
+- lts/*
+deploy:
+  provider: s3
+  access_key_id: AKIAJKDNXH645OQSRCCA
+  secret_access_key:
+    secure: C94eKQzkv2zaZ2/v5uggz7ByW57KOWjhRSLvqUWMzckRupFhSWrO2AKSiDh0VFZmdlyFNNoI/k3epsnwZzOQZcy8B/Yzp4QXqRP2H1rSD86a/vdlKpRkShp8msWWQSgIr1OCSHG7tNJ0bSa1nChH4T7egQ6yHrtmdE+VQH++DQUrpxice90kIWRmODlT6//o1mAicOgcjuiUqw+xvrIOf6YbPuP88ORBxBJF5SAV7D0q3sLlILXsgjITzSPwSQ4s9lkjn4dlpmZIQ20FS+0D/e3MdeOHQengvQquPT+IG1qXDc8uKqMYLfWuKiW3okBsr3g+MAyv+mpT7/yb1z/SK+0YNgOs0PxuHRbB0aRWfXkyd745Hwck/Lg2OcV2uBUQEXwtzahx/QwC4gbmihchhuKRo27Lkc1XpKZ3/gcSoXpHd4SFW334O44TpFtU0F6xrnZZaQHz6HYmVi7xselZRYhY4CFxVTvbH4XEKpmZUzYm01P6lrvCUbW2/ggc0ML0W6WIVnxy9Iy+yjUZrednIgvkW0MmYaebqBkvuQLtDUXnWu5Bf3/V65rjc+NH4L8o6cahoFial35bTbF1RLBvEolNt8dSfCQqY9rMGfauFBAjQzePlmfzvVa1i4LUNBoVAkG7c+tJGXxvXBq1s6pSgqGPVzT07tDD0F+JFL3ENi4=
+  bucket: smum-dev
+  region: us-west-2
+  acl: public_read
