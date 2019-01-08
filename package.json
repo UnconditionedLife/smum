@@ -1,0 +1,19 @@
+{
+  "name": "smum",
+  "version": "1.0.3",
+  "description": "Santa Maria Client Management System",
+  "main": "js/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnconditionedLife/smum.git"
+  },
+  "author": "Jose Leal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/UnconditionedLife/smum/issues"
+  },
+  "homepage": "https://github.com/UnconditionedLife/smum#readme"
+}

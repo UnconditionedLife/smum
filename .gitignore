@@ -1,5 +1,3 @@
-
-*.json
 data/clientsMissingData.txt
 *.csv
 data/foodA.js
