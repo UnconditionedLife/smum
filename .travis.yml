@@ -10,4 +10,4 @@ deploy:
   region: us-west-2
   acl: public_read
   on:
-    branch: react
+    branch: dev
