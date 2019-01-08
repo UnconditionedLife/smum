@@ -1,4 +1,4 @@
-if: fork = false
+if: branch = react
 language: node_js
 node_js:
 - lts/*
