@@ -1,4 +1,3 @@
-if: branch = react
 language: node_js
 node_js:
 - lts/*
@@ -10,3 +9,5 @@ deploy:
   bucket: smum-dev
   region: us-west-2
   acl: public_read
+  on:
+    branch: react
