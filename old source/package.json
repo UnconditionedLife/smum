@@ -6,14 +6,16 @@
   "scripts": {
     "test": "echo \"No tests\" && exit 0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/UnconditionedLife/smum.git"
-  },
+  "repository": "git+https://github.com/UnconditionedLife/smum.git",
   "author": "Jose Leal",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/UnconditionedLife/smum/issues"
   },
-  "homepage": "https://github.com/UnconditionedLife/smum#readme"
+  "homepage": "https://github.com/UnconditionedLife/smum#readme",
+  "devDependencies": {
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.28.1",
+    "webpack-dev-server": "^3.1.14"
+  }
 }
