@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './Navbar.css';
-
+import SearchBox from './SearchBox/SearchBox'
 class Navbar extends Component {
   constructor(props){
     super(props);
@@ -15,11 +15,7 @@ class Navbar extends Component {
             <img src="images/smumLogo.png" width="31" height="42" alt="SMUM" />
             <span>&nbsp;&nbsp;Santa Maria Urban Ministry</span>
           </div>
-          <div className="searchDiv">
-            <input id="searchField" className="search" type="text" placeholder="Search clients" />
-            <i className="fa fa-search-plus fa-lg searchIcon" aria-hidden="true" />
-            {/* <img class="searchImage" src="images/search.png" onclick="clientSearchResults()"> */}
-          </div>
+          <SearchBox />
           {/* <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
       </button>
