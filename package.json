@@ -2,8 +2,9 @@
   "name": "smum",
   "version": "1.0.3",
   "description": "Client Recordkeeping System",
-  "main": "js/index.js",
+  "main": "index.js",
   "scripts": {
+    "start":"node index.js",
     "test": "\"echo\\\"No tests\\\" && exit 0\""
   },
   "repository": {
@@ -17,6 +18,7 @@
   },
   "homepage": "https://github.com/UnconditionedLife/smum#readme",
   "dependencies": {
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "requirejs": "^2.3.6"
   }
 }
