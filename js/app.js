@@ -61,6 +61,9 @@ let closedEvent = {
 	backgroundColor: "red"
 }
 
+let htmlTodayHeader = ""
+let htmlReportHeader = ""
+
 // TODO build some selects in forms from data in settings (ie. Categories)
 
 uiFillDate()
@@ -846,7 +849,7 @@ function uiRefreshReport(targetDiv){
 };
 
 function uiShowDailyReportHeader(reportDate, targetDiv, name){
-	const vals = {
+	const headerInfo = {
 		 targetDiv: targetDiv,
 		      name: name + ' REPORT',
 		  category: 'FOOD PANTRY',
@@ -854,8 +857,8 @@ function uiShowDailyReportHeader(reportDate, targetDiv, name){
 		   refresh: false,
 		     print: true
 	}
-	if (targetDiv == 'today') { vals.refresh = true }
-	uiLoadReportHeader(vals)
+	if (targetDiv == 'today') { headerInfo.refresh = true }
+	uiLoadReportHeader(headerInfo)
 	uiSetPrintBodyTemplate('#dailyReportHeader', targetDiv)
 };
 
@@ -874,39 +877,39 @@ function uiShowDailyReportRows(dayDate, targetDiv){
 	totals.push(uiBuildTodayRows(servicesUSDA, "#" + targetDiv + "USDAGrid"))
 	totals.push(uiBuildTodayRows(servicesNonUSDA, "#" + targetDiv + "NonUSDAGrid"))
 	grandTotals = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
-	grandTotals.hh =  totals[0].hh + totals[1].hh
-	grandTotals.ind =  totals[0].ind + totals[1].ind
-	grandTotals.ch =  totals[0].ch + totals[1].ch
-	grandTotals.ad =  totals[0].ad + totals[1].ad
-	grandTotals.sen =  totals[0].sen + totals[1].sen
-	grandTotals.hf =  totals[0].hf + totals[1].hf
-	grandTotals.hi =  totals[0].hi + totals[1].hi
-	grandTotals.nf =  totals[0].nf + totals[1].nf
-	grandTotals.ni =  totals[0].ni + totals[1].ni
+	for (let key in grandTotals) {
+		grandTotals[key] =  totals[0][key] + totals[1][key]
+	}
 	$(targetDivId).append('<div id="' + targetDiv + 'grandTotalGrid" class="todayReportRowBox" style="grid-row: 7"></div>')
 	uiShowTodayTotals(grandTotals, "#" + targetDiv + "grandTotalGrid")
 };
 
-function uiLoadReportHeader(vals){
-	$('#' + vals.targetDiv + 'BodyDiv').html(uiGetTemplate('#' + vals.targetDiv + 'Header'))
-	$('#' + vals.targetDiv + 'Name').html(vals.name)
-	if (vals.reportDate == '') {
-		vals.reportDate = moment().format(longDate)
-	} else if (moment(vals.reportDate).format(date) == moment().format(date)) {
-		vals.reportDate = moment().format(longDate)
-	} else {
-		vals.reportDate = moment(vals.reportDate).format("MMMM Do, YYYY")
-	}
-	$('#' + vals.targetDiv + 'Dates').html(vals.reportDate)
-	$('#' + vals.targetDiv + 'HeaderLeft').html(vals.category)
+function uiLoadReportHeader(headerInfo){
+	const targetPrefix = '#' + headerInfo.targetDiv
+	const template = uiGetTemplate(targetPrefix + 'Header')
+	$(targetPrefix + 'BodyDiv').html(template)
+	$(targetPrefix + 'Name').html(headerInfo.name)
+	uiSetReportHeaderDate(headerInfo.targetDate, headerInfo.targetDiv)
+	$(targetPrefix + 'HeaderLeft').html(headerInfo.category)
 	let report = 'REPORT '
-	if (vals.refresh) {report += '<i onClick="uiRefreshReport(\'' + vals.targetDiv + '\')" class="fa fa-refresh" aria-hidden="true"></i>'}
-	if (vals.print) {report += ' <i onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>'}
-	$('#' + vals.targetDiv + 'HeaderRight').html(report)
+	if (headerInfo.refresh) {report += '<i onClick="uiRefreshReport(\'' + headerInfo.targetDiv + '\')" class="fa fa-refresh" aria-hidden="true"></i>'}
+	if (headerInfo.print) {report += ' <i onClick="utilPrintReport()" class="fa fa-print" aria-hidden="true"></i>'}
+	$(targetPrefix + 'HeaderRight').html(report)
 };
 
+function uiSetReportHeaderDate(reportDate, targetDiv) {
+	if (reportDate == '') {
+		reportDate = moment().format(longDate)
+	} else if (moment(reportDate).format(date) == moment().format(date)) {
+		reportDate = moment().format(longDate)
+	} else {
+		reportDate = moment(reportDate).format("MMMM Do, YYYY")
+	}
+	$('#' + targetDiv + 'Dates').html(reportDate)
+}
+
 function uiShowFamiliesReportHeader(reportType) {
-	let vals = {
+	let headerInfo = {
 		 targetDiv: 'report',
 	      	name: 'FAMILIES WITH CHILDREN',
 		  category: 'FAMILIES',
@@ -916,11 +919,11 @@ function uiShowFamiliesReportHeader(reportType) {
 	}
 	let template = "#reportFamiliesChildrenHeader"
 	if (reportType == "Homeless") {
-		vals.name = "HOMELESS FAMILIES"
+		headerInfo.name = "HOMELESS FAMILIES"
 		template = "#reportFamiliesHomelessHeader"
 	}
-	uiLoadReportHeader(vals)
-	uiSetPrintBodyTemplate(template, vals.targetDiv)
+	uiLoadReportHeader(headerInfo)
+	uiSetPrintBodyTemplate(template, headerInfo.targetDiv)
 };
 
 function uiSetPrintBodyTemplate(template, targetDiv){
@@ -977,7 +980,7 @@ function uiShowFamiliesReportRows(reportType) {
 };
 
 function uiShowVoucherReportHeader(year, reportType, targetType, serviceType){
-	const vals = {
+	const headerInfo = {
 		 targetDiv: 'report',
 		      name: serviceType.serviceName + ' ' + reportType,
 		  category: serviceType.serviceCategory.replace(/_/g,' '),
@@ -985,14 +988,14 @@ function uiShowVoucherReportHeader(year, reportType, targetType, serviceType){
 		   refresh: false,
 		     print: true
 	}
-	uiLoadReportHeader(vals)
+	uiLoadReportHeader(headerInfo)
 	if (reportType == 'Distro') { targetType = '' }
 	const template = '#reportVoucher' + targetType + reportType + 'Header'
-	uiSetPrintBodyTemplate(template, vals.targetDiv)
+	uiSetPrintBodyTemplate(template, headerInfo.targetDiv)
 };
 
 function uiShowMonthlyReportHeader(monthYear, reportType){
-	let vals = {
+	let headerInfo = {
 		 targetDiv: 'report',
 		      name: 'MONTHLY REPORT',
 		  category: 'FOOD PANTRY',
@@ -1002,11 +1005,11 @@ function uiShowMonthlyReportHeader(monthYear, reportType){
 	}
 	let template = '#foodBodyHeader'
 	if (reportType == 'ALL') {
-		vals.category = 'ALL SERVICES'
+		headerInfo.category = 'ALL SERVICES'
 		template = '#allServicesBodyHeader'
 	}
-	uiLoadReportHeader(vals)
-	uiSetPrintBodyTemplate(template, vals.targetDiv)
+	uiLoadReportHeader(headerInfo)
+	uiSetPrintBodyTemplate(template, headerInfo.targetDiv)
 };
 
 function utilPrintReport(){
@@ -1438,152 +1441,77 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
 			gridRow = 4 + d
 			$("#reportBodyDiv").append('<div id="monthlyGrid'+ d +'" class="foodRowBox" style="grid-row: '+ gridRow +'"></div>')
 			let dTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+			const keyFull = {
+				 hh:'totalHouseholdsServed',
+				ind:'totalIndividualsServed',
+				 ch:'totalChildrenServed',
+				 ad:'totalAdultsServed',
+				sen:'totalSeniorsServed',
+				 hf:'totalHomelessFamily',
+				 hi:'totalHomelessInd',
+				 nf:'totalNonClientFamily',
+				 ni:'totalNonClientInd'}
 			// show day USDA
 			if (uDay.length == 1) {
-				uTotal.hh = uTotal.hh + parseInt(uDay[0].totalHouseholdsServed)
-				uTotal.ind = uTotal.ind + parseInt(uDay[0].totalIndividualsServed)
-				uTotal.ch = uTotal.ch + parseInt(uDay[0].totalChildrenServed)
-				uTotal.ad = uTotal.ad + parseInt(uDay[0].totalAdultsServed)
-				uTotal.sen = uTotal.sen + parseInt(uDay[0].totalSeniorsServed)
-				uTotal.hf = uTotal.hf + parseInt(uDay[0].totalHomelessFamily)
-				uTotal.hi = uTotal.hi + parseInt(uDay[0].totalHomelessInd)
-				uTotal.nf = uTotal.nf + parseInt(uDay[0].totalNonClientFamily)
-				uTotal.ni = uTotal.ni + parseInt(uDay[0].totalNonClientInd)
-				// Day total
-				dTotal.hh = parseInt(uDay[0].totalHouseholdsServed)
-				dTotal.ind = parseInt(uDay[0].totalIndividualsServed)
-				dTotal.ch = parseInt(uDay[0].totalChildrenServed)
-				dTotal.ad = parseInt(uDay[0].totalAdultsServed)
-				dTotal.sen = parseInt(uDay[0].totalSeniorsServed)
-				dTotal.hf = parseInt(uDay[0].totalHomelessFamily)
-				dTotal.hi = parseInt(uDay[0].totalHomelessInd)
-				dTotal.nf = parseInt(uDay[0].totalNonClientFamily)
-				dTotal.ni = parseInt(uDay[0].totalNonClientInd)
+				// calculate day USDA totals
+				$(grid).append('<div class="monthItem">USDA</div>')
+				for (let key in uTotal) {
+					keyFullName = keyFull[key]
+					dTotal[key] = parseInt(uDay[0][keyFullName])
+					uTotal[key] = uTotal[key] + dTotal[key]
+					$(grid).append('<div class="monthItem">'+ dTotal[key] +'</div>')
+				}
 			}
-			$(grid).append('<div class="monthItem">USDA</div>')
-			$(grid).append('<div class="monthItem">'+ dTotal.hh +'</div>')
-			$(grid).append('<div class="monthItem">'+ dTotal.ind +'</div>')
-			$(grid).append('<div class="monthItem">'+ dTotal.ch +'</div>')
-			$(grid).append('<div class="monthItem">'+ dTotal.ad +'</div>')
-			$(grid).append('<div class="monthItem">'+ dTotal.sen +'</div>')
-			$(grid).append('<div class="monthItem">'+ dTotal.hf +'</div>')
-			$(grid).append('<div class="monthItem">'+ dTotal.hi +'</div>')
-			$(grid).append('<div class="monthItem">'+ dTotal.nf +'</div>')
-			$(grid).append('<div class="monthItem">'+ dTotal.ni +'</div>')
+			$(grid).append('<div class="monthItem">NonUSDA</div>')
 			if (nDay.length == 1) {
 				// calculate day NonUSDA totals
-				nTotal.hh = nTotal.hh + parseInt(nDay[0].totalHouseholdsServed)
-				nTotal.ind = nTotal.ind + parseInt(nDay[0].totalIndividualsServed)
-				nTotal.ch = nTotal.ch + parseInt(nDay[0].totalChildrenServed)
-				nTotal.ad = nTotal.ad + parseInt(nDay[0].totalAdultsServed)
-				nTotal.sen = nTotal.sen + parseInt(nDay[0].totalSeniorsServed)
-				nTotal.hf = nTotal.hf + parseInt(nDay[0].totalHomelessFamily)
-				nTotal.hi = nTotal.hi + parseInt(nDay[0].totalHomelessInd)
-				nTotal.nf = nTotal.nf + parseInt(nDay[0].totalNonClientFamily)
-				nTotal.ni = nTotal.ni + parseInt(nDay[0].totalNonClientInd)
-				// calculate Day total
-				dTotal.hh = dTotal.hh + parseInt(nDay[0].totalHouseholdsServed)
-				dTotal.ind = dTotal.ind + parseInt(nDay[0].totalIndividualsServed)
-				dTotal.ch = dTotal.ch + parseInt(nDay[0].totalChildrenServed)
-				dTotal.ad = dTotal.ad + parseInt(nDay[0].totalAdultsServed)
-				dTotal.sen = dTotal.sen + parseInt(nDay[0].totalSeniorsServed)
-				dTotal.hf = dTotal.hf + parseInt(nDay[0].totalHomelessFamily)
-				dTotal.hi = dTotal.hi + parseInt(nDay[0].totalHomelessInd)
-				dTotal.nf = dTotal.nf + parseInt(nDay[0].totalNonClientFamily)
-				dTotal.ni = dTotal.ni + parseInt(nDay[0].totalNonClientInd)
-				$(grid).append('<div class="monthItem">NonUSDA</div>')
-				$(grid).append('<div class="monthItem">'+nDay[0].totalHouseholdsServed+'</div>')
-				$(grid).append('<div class="monthItem">'+nDay[0].totalIndividualsServed+'</div>')
-				$(grid).append('<div class="monthItem">'+nDay[0].totalChildrenServed+'</div>')
-				$(grid).append('<div class="monthItem">'+nDay[0].totalAdultsServed+'</div>')
-				$(grid).append('<div class="monthItem">'+nDay[0].totalSeniorsServed+'</div>')
-				$(grid).append('<div class="monthItem">'+nDay[0].totalHomelessFamily+'</div>')
-				$(grid).append('<div class="monthItem">'+nDay[0].totalHomelessInd+'</div>')
-				$(grid).append('<div class="monthItem">'+nDay[0].totalNonClientFamily+'</div>')
-				$(grid).append('<div class="monthItem">'+nDay[0].totalNonClientInd+'</div>')
+				for (let key in dTotal) {
+					keyFullName = keyFull[key]
+					nTotal[key] = nTotal[key] + parseInt(nDay[0][keyFullName])
+					// calculate Day total
+					dTotal[key] = dTotal[key] + parseInt(nDay[0][keyFullName])
+					// show day nonUSDA totals
+					$(grid).append('<div class="monthItem">'+ nDay[0][keyFullName] +'</div>')
+				}
 			} else {
-				$(grid).append('<div class="monthItem">NonUSDA</div>')
-				$(grid).append('<div class="monthItem">0</div>')
-				$(grid).append('<div class="monthItem">0</div>')
-				$(grid).append('<div class="monthItem">0</div>')
-				$(grid).append('<div class="monthItem">0</div>')
-				$(grid).append('<div class="monthItem">0</div>')
-				$(grid).append('<div class="monthItem">0</div>')
-				$(grid).append('<div class="monthItem">0</div>')
-				$(grid).append('<div class="monthItem">0</div>')
-				$(grid).append('<div class="monthItem">0</div>')
+				for (let key in dTotal) {
+					$(grid).append('<div class="monthItem">0</div>')
+				}
 			}
-			// show day totals
+			// show day totals & add grandTotals
 			$(grid).append('<div class="monthTotal">'+servicedDate+'</div>')
-			$(grid).append('<div class="monthTotal">'+ dTotal.hh +'</div>')
-			$(grid).append('<div class="monthTotal">'+ dTotal.ind +'</div>')
-			$(grid).append('<div class="monthTotal">'+ dTotal.ch +'</div>')
-			$(grid).append('<div class="monthTotal">'+ dTotal.ad +'</div>')
-			$(grid).append('<div class="monthTotal">'+ dTotal.sen +'</div>')
-			$(grid).append('<div class="monthTotal">'+ dTotal.hf +'</div>')
-			$(grid).append('<div class="monthTotal">'+ dTotal.hi +'</div>')
-			$(grid).append('<div class="monthTotal">'+ dTotal.nf +'</div>')
-			$(grid).append('<div class="monthTotal">'+ dTotal.ni +'</div>')
-			gTotal.hh = gTotal.hh + dTotal.hh
-			gTotal.ind = gTotal.ind + dTotal.ind
-			gTotal.ch = gTotal.ch + dTotal.ch
-			gTotal.ad = gTotal.ad + dTotal.ad
-			gTotal.sen = gTotal.sen + dTotal.sen
-			gTotal.hf = gTotal.hf + dTotal.hf
-			gTotal.hi = gTotal.hi + dTotal.hi
-			gTotal.nf = gTotal.nf + dTotal.nf
-			gTotal.ni = gTotal.ni + dTotal.ni
+			for (let key in dTotal) {
+				$(grid).append('<div class="monthTotal">'+ dTotal[key] +'</div>')
+				gTotal[key] = gTotal[key] + dTotal[key]
+			}
 		}
 	}
 	gridRow = gridRow + 1
 	$("#reportBodyDiv").append('<div id="monthlyGridTotal" class="foodRowBox" style="grid-row: '+ gridRow +'"></div>')
 	grid = "#monthlyGridTotal"
 	$(grid).append('<div class="monthTotal">USDA</div>')
-	$(grid).append('<div class="monthTotal">'+ uTotal.hh +'</div>')
-	$(grid).append('<div class="monthTotal">'+ uTotal.ind +'</div>')
-	$(grid).append('<div class="monthTotal">'+ uTotal.ch +'</div>')
-	$(grid).append('<div class="monthTotal">'+ uTotal.ad +'</div>')
-	$(grid).append('<div class="monthTotal">'+ uTotal.sen +'</div>')
-	$(grid).append('<div class="monthTotal">'+ uTotal.hf +'</div>')
-	$(grid).append('<div class="monthTotal">'+ uTotal.hi +'</div>')
-	$(grid).append('<div class="monthTotal">'+ uTotal.nf +'</div>')
-	$(grid).append('<div class="monthTotal">'+ uTotal.ni +'</div>')
+	for (let key in uTotal) {
+		$(grid).append('<div class="monthTotal">'+ uTotal[key] +'</div>')
+	}
 	$(grid).append('<div class="monthTotal">NonUSDA</div>')
-	$(grid).append('<div class="monthTotal">'+ nTotal.hh +'</div>')
-	$(grid).append('<div class="monthTotal">'+ nTotal.ind +'</div>')
-	$(grid).append('<div class="monthTotal">'+ nTotal.ch +'</div>')
-	$(grid).append('<div class="monthTotal">'+ nTotal.ad +'</div>')
-	$(grid).append('<div class="monthTotal">'+ nTotal.sen +'</div>')
-	$(grid).append('<div class="monthTotal">'+ nTotal.hf +'</div>')
-	$(grid).append('<div class="monthTotal">'+ nTotal.hi +'</div>')
-	$(grid).append('<div class="monthTotal">'+ nTotal.nf +'</div>')
-	$(grid).append('<div class="monthTotal">'+ nTotal.ni +'</div>')
+	for (let key in nTotal) {
+		$(grid).append('<div class="monthTotal">'+ nTotal[key] +'</div>')
+	}
 	$(grid).append('<div class="monthTotal">TOTAL</div>')
-	$(grid).append('<div class="monthTotal">'+ gTotal.hh +'</div>')
-	$(grid).append('<div class="monthTotal">'+ gTotal.ind +'</div>')
-	$(grid).append('<div class="monthTotal">'+ gTotal.ch +'</div>')
-	$(grid).append('<div class="monthTotal">'+ gTotal.ad +'</div>')
-	$(grid).append('<div class="monthTotal">'+ gTotal.sen +'</div>')
-	$(grid).append('<div class="monthTotal">'+ gTotal.hf +'</div>')
-	$(grid).append('<div class="monthTotal">'+ gTotal.hi +'</div>')
-	$(grid).append('<div class="monthTotal">'+ gTotal.nf +'</div>')
-	$(grid).append('<div class="monthTotal">'+ gTotal.ni +'</div>')
+	for (let key in gTotal) {
+		$(grid).append('<div class="monthTotal">'+ gTotal[key] +'</div>')
+	}
 };
 
 function uiShowTodayTotals(serviceTotal, grid) {
 	let label = "USDA TOTALS"
-	if (grid == "#reportNonUSDAGrid") label = "NonUSDA TOTALS"
-	if (grid == "#reportgrandTotalGrid") label = "TODAY'S GRAND TOTALS"
+	if (grid.includes("NonUSDAGrid")) label = "NonUSDA TOTALS"
+	if (grid == "#todaygrandTotalGrid") label = "TODAY'S GRAND TOTALS"
+	if (grid == "#reportgrandTotalGrid") label = "DAY'S GRAND TOTALS"
 	$(grid).append('<div class="todayTotalLable">'+label+'</div>')
-	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.hh +'</div>')
-	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ind +'</div>')
-	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ch +'</div>')
-	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ad +'</div>')
-	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.sen +'</div>')
-	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.hf +'</div>')
-	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.hi +'</div>')
-	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.nf +'</div>')
-	$(grid).append('<div class="todayTotalItem">'+ serviceTotal.ni +'</div>')
+	for (let key in serviceTotal) {
+		$(grid).append('<div class="todayTotalItem">'+ serviceTotal[key] +'</div>')
+	}
 };
 
 let uiShowServicesDateTime = function() {
@@ -2091,10 +2019,13 @@ function uiToggleIsUSDA() {
 };
 
 function uiGetTemplate(template){
-	let imp = document.querySelector('link[rel="import"]');
-	let temp = imp.import.querySelector(template);
-	let clone = document.importNode(temp.content, true);
-	return clone
+	// Removed the HTML Import of templates.html and embeded the templates in
+	// index.html 1/11/2019 - orginal codes is below
+	//let imp = document.querySelector('link[rel="import"]');
+	//let temp = imp.import.querySelector(template);
+
+	const temp = document.querySelector(template);
+	return document.importNode(temp.content, true);
 };
 
 function uiFillUserData(){
@@ -2763,7 +2694,7 @@ function clickGenerateDailyReport(btn, targetDiv){
 function clickGenerateMonthlyReport(btn){
 	const monthYear = $('#reportsMonthlyMonth').val()
 	const reportType = $('#reportsMonthlyType').val()
-	const vals = {
+	const headerInfo = {
 		 targetDiv: 'report',
 		      name: 'FOOD PANTRY',
 		  category: 'MONTHLY REPORT',
@@ -2771,10 +2702,10 @@ function clickGenerateMonthlyReport(btn){
 		   refresh: false,
 		     print: true
 	}
-	if (reportType == 'ALL') vals.name = 'ALL SERVICES'
+	if (reportType == 'ALL') headerInfo.name = 'ALL SERVICES'
 	uiUpdateButton(btn, 'Gen') // 'Gen' or 'Run'
 	setTimeout(function() {
-		uiLoadReportHeader(vals)
+		uiLoadReportHeader(headerInfo)
 		uiShowMonthlyReportHeader(monthYear, reportType)
 		uiShowMonthlyReportRows(monthYear, reportType)
 		uiUpdateButton(btn, 'Run') // 'Gen' or 'Run'
@@ -3746,7 +3677,7 @@ function utilGenerateFamiliesReport(){
 function utilGenerateMonthlyReport(){
 	const monthYear = $('#reportsMonthlyMonth').val()
 	const reportType = $('#reportsMonthlyType').val()
-	const vals = {
+	const headerInfo = {
 		 targetDiv: 'report',
 		      name: 'FOOD PANTRY',
 		  category: 'MONTHLY REPORT',
@@ -3754,10 +3685,10 @@ function utilGenerateMonthlyReport(){
 		   refresh: false,
 		     print: true
 	}
-	if (reportType == 'ALL') { vals.name = 'ALL SERVICES' }
+	if (reportType == 'ALL') { headerInfo.name = 'ALL SERVICES' }
 	$('#msgBox').html('Generating report...')
 	setTimeout(function() {
-		uiLoadReportHeader(vals)
+		uiLoadReportHeader(headerInfo)
 		uiShowMonthlyReportHeader(monthYear, reportType)
 		uiShowMonthlyReportRows(monthYear, reportType)
 		$('#msgBox').html('')
