@@ -16,7 +16,7 @@
 // TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
 
-const ver = '?v=1.0.3'
+const ver = '?v=1.0.4'
 $('#versionNum').html(ver.split('=')[1]) // display version number on top right
 const aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 const MAX_ID_DIGITS = 5
