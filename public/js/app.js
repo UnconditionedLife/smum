@@ -1416,13 +1416,32 @@ function uiBuildAllServicesMonthRows(services) {
 	$(grid).append('<div class="catHeader">&nbsp;</div>')
 	$(grid).append('<div class="monthItem">&nbsp;</div><div class="monthItem"></div><div class="monthItem"></div><div class="monthItem"></div><div class="monthItem"></div>')
 };
-
+function utilUpdateTotalsClient(totals, total, clientId){
+  if (!totals[total]['ids'].includes(clientId)) totals[total]['ids'].push(clientId)
+}
+function utilUpdateTotals(totals, total, field, dayServed, clientId){
+  if (!totals[total]['ids'].includes(clientId)) totals[total][field] += dayServed
+}
+function uiBuildTotalRow(grid, totals, total, name){
+  $(grid).append('<div class="monthTotal">'+name+'</div>')
+	for (let key in totals[total]) {
+    if (!(key === "ids")) $(grid).append('<div class="monthTotal">'+ totals[total][key] +'</div>')
+	}
+}
 function uiBuildFoodMonthRows(u, n, monthYear) {
 	let numDays = moment(monthYear, "YYYY-MM").endOf("month").format("DD")
 	numDays = parseInt(numDays) + 1
-	let uTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
-	let nTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
-	let gTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+  let totals = {
+    uTotalServices: "",
+    nTotalServices: "",
+    gTotalServices: "",
+    uTotalUnique: "",
+    nTotalUnique: "",
+    gTotalUnique: ""
+  }
+  for (let key in totals){
+    totals[key] = {ids:[],hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+  }
 	let yearMonth = u[0].servicedDay.substring(0,6)
 	let gridRow = 0
 	for (let d = 1; d < numDays; d++) {
@@ -1452,24 +1471,35 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
 			if (uDay.length == 1) {
 				// calculate day USDA totals
 				$(grid).append('<div class="monthItem">USDA</div>')
-				for (let key in uTotal) {
+        let clientId = parseInt(uDay[0]['clientServedId'])
+				for (let key in keyFull) {
 					keyFullName = keyFull[key]
 					dTotal[key] = parseInt(uDay[0][keyFullName])
-					uTotal[key] = uTotal[key] + dTotal[key]
+					totals['uTotalServices'][key] += dTotal[key]
+          utilUpdateTotals(totals,'uTotalUnique', key, dTotal[key], clientId)
+          utilUpdateTotals(totals,'gTotalUnique', key, dTotal[key], clientId)
 					$(grid).append('<div class="monthItem">'+ dTotal[key] +'</div>')
 				}
+        utilUpdateTotalsClient(totals,'uTotalUnique',clientId)
+        utilUpdateTotalsClient(totals,'gTotalUnique',clientId)
 			}
 			$(grid).append('<div class="monthItem">NonUSDA</div>')
 			if (nDay.length == 1) {
 				// calculate day NonUSDA totals
-				for (let key in dTotal) {
+        let clientId = parseInt(nDay[0]['clientServedId'])
+        for (let key in dTotal) {
 					keyFullName = keyFull[key]
-					nTotal[key] = nTotal[key] + parseInt(nDay[0][keyFullName])
+
+					totals['nTotalServices'][key] += parseInt(nDay[0][keyFullName])
 					// calculate Day total
-					dTotal[key] = dTotal[key] + parseInt(nDay[0][keyFullName])
+					dTotal[key] += parseInt(nDay[0][keyFullName])
 					// show day nonUSDA totals
+          utilUpdateTotals(totals,'nTotalUnique', key, parseInt(nDay[0][keyFullName]), clientId)
+          utilUpdateTotals(totals,'gTotalUnique', key, parseInt(nDay[0][keyFullName]), clientId)
 					$(grid).append('<div class="monthItem">'+ nDay[0][keyFullName] +'</div>')
 				}
+        utilUpdateTotalsClient(totals,'nTotalUnique',clientId)
+        utilUpdateTotalsClient(totals,'gTotalUnique',clientId)
 			} else {
 				for (let key in dTotal) {
 					$(grid).append('<div class="monthItem">0</div>')
@@ -1479,25 +1509,28 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
 			$(grid).append('<div class="monthTotal">'+servicedDate+'</div>')
 			for (let key in dTotal) {
 				$(grid).append('<div class="monthTotal">'+ dTotal[key] +'</div>')
-				gTotal[key] = gTotal[key] + dTotal[key]
+				totals['gTotalServices'][key] += dTotal[key]
 			}
 		}
 	}
 	gridRow = gridRow + 1
-	$("#reportBodyDiv").append('<div id="monthlyGridTotal" class="foodRowBox" style="grid-row: '+ gridRow +'"></div>')
+  console.log(totals)
+	$("#reportBodyDiv").append('<div id="monthlyGridTotal" class="foodRowBox" style="grid-row: '+ gridRow +'; height: 140px; grid-template-rows: 35px 35px 35px 35px;"></div>')
 	grid = "#monthlyGridTotal"
-	$(grid).append('<div class="monthTotal">USDA</div>')
-	for (let key in uTotal) {
-		$(grid).append('<div class="monthTotal">'+ uTotal[key] +'</div>')
-	}
-	$(grid).append('<div class="monthTotal">NonUSDA</div>')
-	for (let key in nTotal) {
-		$(grid).append('<div class="monthTotal">'+ nTotal[key] +'</div>')
-	}
-	$(grid).append('<div class="monthTotal">TOTAL</div>')
-	for (let key in gTotal) {
-		$(grid).append('<div class="monthTotal">'+ gTotal[key] +'</div>')
-	}
+  $(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">Services Counts</div>')
+	uiBuildTotalRow(grid, totals, 'uTotalServices','USDA')
+  uiBuildTotalRow(grid, totals, 'nTotalServices','NON USDA')
+  uiBuildTotalRow(grid, totals, 'gTotalServices','TOTAL')
+  gridRow = gridRow + 1
+  $("#reportBodyDiv").append('<div id="monthlyGridTotal2" class="foodRowBox" style="grid-row: '+ gridRow +'; height:140px; grid-template-rows: 35px 35px 35px 35px;"></div>')
+  grid = "#monthlyGridTotal2"
+
+  $(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">Unique Counts</div>')
+	uiBuildTotalRow(grid, totals, 'uTotalUnique','USDA')
+  uiBuildTotalRow(grid, totals, 'nTotalUnique','NON USDA')
+  uiBuildTotalRow(grid, totals, 'gTotalUnique','TOTAL')
+
+
 };
 
 function uiShowTodayTotals(serviceTotal, grid) {
