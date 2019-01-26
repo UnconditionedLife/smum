@@ -1,10 +1,11 @@
 {
   "name": "smum",
   "version": "1.0.3",
-  "description": "Santa Maria Client Management System",
-  "main": "js/app.js",
+  "description": "Client Recordkeeping System",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"No tests\" && exit 0"
+    "start":"node index.js",
+    "test": "\"echo\\\"No tests\\\" && exit 0\""
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/UnconditionedLife/smum/issues"
   },
-  "homepage": "https://github.com/UnconditionedLife/smum#readme"
+  "homepage": "https://github.com/UnconditionedLife/smum#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "requirejs": "^2.3.6"
+  }
 }
