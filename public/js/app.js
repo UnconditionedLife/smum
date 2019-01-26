@@ -1517,7 +1517,7 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
   console.log(totals)
 	$("#reportBodyDiv").append('<div id="monthlyGridTotal" class="foodRowBox" style="grid-row: '+ gridRow +'; height: 140px; grid-template-rows: 35px 35px 35px 35px;"></div>')
 	grid = "#monthlyGridTotal"
-  $(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">Services Counts</div>')
+  $(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">All Client Services</div>')
 	uiBuildTotalRow(grid, totals, 'uTotalServices','USDA')
   uiBuildTotalRow(grid, totals, 'nTotalServices','NON USDA')
   uiBuildTotalRow(grid, totals, 'gTotalServices','TOTAL')
@@ -1525,12 +1525,10 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
   $("#reportBodyDiv").append('<div id="monthlyGridTotal2" class="foodRowBox" style="grid-row: '+ gridRow +'; height:140px; grid-template-rows: 35px 35px 35px 35px;"></div>')
   grid = "#monthlyGridTotal2"
 
-  $(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">Unique Counts</div>')
+  $(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">Unique Clients Served</div>')
 	uiBuildTotalRow(grid, totals, 'uTotalUnique','USDA')
   uiBuildTotalRow(grid, totals, 'nTotalUnique','NON USDA')
   uiBuildTotalRow(grid, totals, 'gTotalUnique','TOTAL')
-
-
 };
 
 function uiShowTodayTotals(serviceTotal, grid) {
