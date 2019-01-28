@@ -3581,33 +3581,31 @@ function utilCalcClientFamilyCounts(){
 	}
 	if (client.family == undefined) client.family = {}
 	// dependents age & family counts
-	let fam = {totalAdults:1, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:1}
-	if (client.age >= settings.seniorAge) ++fam.totalSeniors
+	let fam = {totalAdults:0, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:0}
+	// client individual --- clients must be 18 or older
+	++fam.totalSize
+	if (client.age >= settings.seniorAge) {
+		console.log(client.age, 'senior')
+		++fam.totalSeniors
+	} else {
+		console.log(client.age, 'adult')
+		++fam.totalAdults
+	}
+	// client dependents
 	for (let i = 0; i < client.dependents.length; i++) {
 		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
 		if (client.dependents[i].isActive == "Active") {
-			if (client.dependents[i].relationship == "Spouse") {
+			if (client.dependents[i].age >= settings.seniorAge) {
+				++fam.totalSeniors
+			} else if (client.dependents[i].age < 18) {
+				++fam.totalChildren
+			} else {
 				++fam.totalAdults
-				++fam.totalSize
-				if (client.dependents[i].age >= settings.seniorAge) ++fam.totalSeniors
 			}
 			if (client.dependents[i].relationship == "Other") {
-				if (client.dependents[i].age >= 18) {
-					++fam.totalOtherDependents
-					++fam.totalAdults
-					++fam.totalSize
-					if (client.dependents[i].age >= settings.seniorAge) ++fam.totalSeniors
-				}
-				if (client.dependents[i].age < 18) {
-					++fam.totalOtherDependents
-					++fam.totalChildren
-					++fam.totalSize
-				}
+				++fam.totalOtherDependents
 			}
-			if (client.dependents[i].relationship == "Child") {
-				++fam.totalChildren
-				++fam.totalSize
-			}
+			++fam.totalSize
 		}
 	}
 	client.family.totalAdults = fam.totalAdults
