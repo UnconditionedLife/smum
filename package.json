@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/UnconditionedLife/smum#readme",
   "dependencies": {
+    "dynamodbexportcsv": "^0.2.6",
     "express": "^4.16.4",
     "requirejs": "^2.3.6"
   }
