@@ -2195,7 +2195,12 @@ function dbGetNewClientID(){
 	request = {}
 	newId = newId.toString()
 	request['lastId']=newId
-	dbPostData(aws+"/clients/lastid",JSON.stringify(request))
+	result = dbPostData(aws+"/clients/lastid",JSON.stringify(request))
+	console.log(result)
+	if (result != "success") {
+		utilBeep()
+		console.log("Last client ID not Saved")
+	}
 	return newId
 };
 
@@ -3585,10 +3590,8 @@ function utilCalcClientFamilyCounts(){
 	// client individual --- clients must be 18 or older
 	++fam.totalSize
 	if (client.age >= settings.seniorAge) {
-		console.log(client.age, 'senior')
 		++fam.totalSeniors
 	} else {
-		console.log(client.age, 'adult')
 		++fam.totalAdults
 	}
 	// client dependents
