@@ -1514,20 +1514,18 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
 		}
 	}
 	gridRow = gridRow + 1
-  console.log(totals)
 	$("#reportBodyDiv").append('<div id="monthlyGridTotal" class="foodRowBox" style="grid-row: '+ gridRow +'; height: 140px; grid-template-rows: 35px 35px 35px 35px;"></div>')
 	grid = "#monthlyGridTotal"
   $(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">All Client Services</div>')
 	uiBuildTotalRow(grid, totals, 'uTotalServices','USDA')
-  uiBuildTotalRow(grid, totals, 'nTotalServices','NON USDA')
+  uiBuildTotalRow(grid, totals, 'nTotalServices','NonUSDA')
   uiBuildTotalRow(grid, totals, 'gTotalServices','TOTAL')
   gridRow = gridRow + 1
   $("#reportBodyDiv").append('<div id="monthlyGridTotal2" class="foodRowBox" style="grid-row: '+ gridRow +'; height:140px; grid-template-rows: 35px 35px 35px 35px;"></div>')
   grid = "#monthlyGridTotal2"
-
   $(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">Unique Clients Served</div>')
 	uiBuildTotalRow(grid, totals, 'uTotalUnique','USDA')
-  uiBuildTotalRow(grid, totals, 'nTotalUnique','NON USDA')
+  uiBuildTotalRow(grid, totals, 'nTotalUnique','NonUSDA')
   uiBuildTotalRow(grid, totals, 'gTotalUnique','TOTAL')
 };
 
@@ -3403,7 +3401,6 @@ function utilBeep(){
 };
 
 function utilBloop(){
-	console.log("GOOD BLOOP")
 	if (settings.sounds == "YES"){
 		let bloop  = new Audio("sounds/bloop.wav")
 		bloop.volume= .1
