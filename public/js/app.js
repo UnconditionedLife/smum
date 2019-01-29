@@ -1662,7 +1662,9 @@ function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTy
 		let service = '<div id="btn-' + activeServiceTypes[x].serviceTypeId +'\" class="btnSecondary" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "</div>"
 		$('#serviceSecondaryButtons').append(service)
 	}
-	// let service = '<div class="btnSecondary" id="btn-test" onclick="clickTestService()">Printer Test</div>';
+	// let service = '<div class="btnSecondary" id="btn-test" onclick="clickPrintTestSingle()">Printer Test</div>';
+	// $('#serviceSecondaryButtons').append(service);
+	// service = '<div class="btnSecondary" id="btn-test" onclick="clickPrintTestBatch()">Printer Test (batch)</div>';
 	// $('#serviceSecondaryButtons').append(service);
 };
 
@@ -2598,35 +2600,6 @@ function dateFindOpen(target, earliest) {
 // ********************************************** CLICK FUNCTIONS *******************************************
 // **********************************************************************************************************
 
-// Printer test function
-receiptIndex = 0;
-function clickTestService() {
-	let service;
-	switch(receiptIndex) {
-		case 0:
-			prnPrintClothesReceipt();
-			break;
-		case 1:
-			prnPrintFoodReceipt('USDA');
-			break;
-		case 2:
-			prnPrintReminderReceipt();
-			break;
-		case 3:
-			service = serviceTypes.filter(obj => obj.serviceName == 'Thanksgiving Turkey')[0];
-			prnPrintVoucherReceipt(service);
-			break;
-		case 4:
-			service = serviceTypes.filter(obj => obj.serviceName == 'Christmas Toy')[0];
-			prnPrintVoucherReceipt(service, client.dependents, 'age');
-			break;
-		case 5:
-			service = serviceTypes.filter(obj => obj.serviceName == 'First Step')[0];
-			prnPrintVoucherReceipt(service, client.dependents, 'grade');
-			break;
-	}
-	receiptIndex = (receiptIndex + 1) % 6;
-}
 
 function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
 	let serviceType = utilGetServiceTypeByID(serviceTypeId)
@@ -2659,55 +2632,36 @@ function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
 				})[0]
 			prnPrintFoodReceipt(service.isUSDA)
 			if (client.isActive == 'Client') {
-				setTimeout(function(){ // give time for food receipt to print
-					prnPrintReminderReceipt()
-				}, 1250);
+				prnPrintReminderReceipt()
 			}
 		} else if (serviceCategory == 'Clothes_Closet') {
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintClothesReceipt()
-			}, 2500);
+			prnPrintClothesReceipt()
 		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
 			const targetService = utilCalcTargetServices([serviceType])
 			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
 			// TODO use function here
 			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintVoucherReceipt(serviceType, dependents, 'grade');
-			}, 2500)
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintVoucherReceipt(serviceType, dependents, 'grade');
-			}, 3750)
+			prnPrintVoucherReceipt(serviceType, dependents, 'grade');
+			prnPrintVoucherReceipt(serviceType, dependents, 'grade');
 		} else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
 			const targetService = utilCalcTargetServices([serviceType])
 			// TODO use function here
 			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintVoucherReceipt(service)
-			}, 2500)
-			setTimeout(function(){ // give time for food receipt & reminder to print
-				prnPrintVoucherReceipt(service)
-			}, 3750)
+			prnPrintVoucherReceipt(service)
+			prnPrintVoucherReceipt(service)
 		} else if (serviceCategory == 'Christmas' && serviceType.target.service == 'Unselected') { // ignore fulfillment
 			const targetService = utilCalcTargetServices([serviceType])
 			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
 			if (targetService[0].family_totalChildren == "Greater Than 0") {
 				const dependents = utilCalcValidAgeGrade("age", targetService[0])
-				setTimeout(function(){ // give time for food receipt & reminder to print
-					prnPrintVoucherReceipt(serviceType, dependents, 'age');
-				}, 2500)
-				setTimeout(function(){ // give time for food receipt & reminder to print
-					prnPrintVoucherReceipt(serviceType, dependents, 'age');
-				}, 3750)
+				prnPrintVoucherReceipt(serviceType, dependents, 'age');
+				prnPrintVoucherReceipt(serviceType, dependents, 'age');
 			} else {
-				setTimeout(function(){ // give time for food receipt & reminder to print
-					prnPrintVoucherReceipt(service);
-				}, 2500)
-				setTimeout(function(){ // give time for food receipt & reminder to print
-					prnPrintVoucherReceipt(service);
-				}, 3750)
+				prnPrintVoucherReceipt(service);
+				prnPrintVoucherReceipt(service);
 			}
 		}
+		prnFlush();
 		uiShowLastServed()
 		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
 	}
@@ -4687,7 +4641,8 @@ let img = document.getElementById('smum');
 let printer = null;
 
 function prnConnect() {
- 	ePosDev.connect(settings.printerIP, '8008', prnCallback_connect)
+	prnDrawCanvas('smum');
+ 	ePosDev.connect(settings.printerIP, '8008', prnCallback_connect);
 };
 
 function prnCallback_connect(resultConnect){
@@ -4725,45 +4680,32 @@ function prnCallback_createDevice(deviceObj, errorCode){
  	}
 };
 
-function prnAddImage(name,src, width, height){
-	var newCanvas = $('<canvas>',{'id':name,'width':width,'height':height})
-	var mainDiv = $('.main-container')
-	var img = $('<img>',{'id':name+'img','src':src,'width':width,'height':height})
-	mainDiv.append(newCanvas)
-	mainDiv.append(img)
-};
-
-function prnDrawCanvas(name,width,height){
-	var canvas = document.getElementById(name);
-	var context = canvas.getContext('2d');
-	var img = document.getElementById(name+'img')
-	img.setAttribute('crossOrigin', 'Anonymous')
-	context.drawImage(img, 0,0,width-200,height-50)
-};
-
-function prnPrintCanvas(name){
-	var ADDRESS = 'http://' + settings.printerIP + '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=5000';
-	var epos = new epson.CanvasPrint(ADDRESS);
-	epos.cut = false;
-	epos.align = epos.ALIGN_CENTER;
-	var canvas = document.getElementById(name)
-	epos.print(canvas)
-};
+function prnDrawCanvas(name) {
+	let canvas = document.getElementById(name);
+	let img = document.getElementById(name + 'img');
+	// img.setAttribute('crossOrigin', 'Anonymous');
+	canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+}
 
 function prnStartReceipt() {
-	if (document.getElementById('smumimg')==null){
-		prnAddImage('smum', 'images/receipt-logo.png', '500', '146');
-	}
+	let logo = document.getElementById('smum');
 	if (printer) {
-		prnDrawCanvas('smum', 500, 145);
-		prnPrintCanvas('smum');
 		printer.addTextAlign(printer.ALIGN_CENTER);
 		printer.addTextSmooth(true);
+		printer.addImage(logo.getContext('2d'), 0, 0, logo.width, logo.height,
+			printer.COLOR_1, printer.MODE_GRAY16);
 	} else {
 		let prnWindow = prnGetWindow();
 		prnWindow.document.writeln('<p align="center">');
-		prnWindow.document.writeln('<img src="images/receipt-logo.png" width="200" height="58" /><br/><br/><br/>');
+		let logo_id = 'logo' + Math.floor(Math.random() * 10000);
+		let w = Math.floor(logo.width * 2 / 3);
+		let h = Math.floor(logo.height * 2 / 3);
+		prnWindow.document.writeln('<canvas id="' + logo_id + '" width="' + w +
+			'" height="' + h + '"></canvas>');
+		let ctx = prnWindow.document.getElementById(logo_id).getContext('2d');
+		ctx.drawImage(logo, 0, 0, w, h);
 	}
+	prnFeed(1);
 	prnTextLine('778 S. Almaden Avenue');
 	prnTextLine('San Jose, CA 95110');
 	prnTextLine('(408) 292-3314');
@@ -4823,11 +4765,15 @@ function prnEndReceipt() {
 	if (printer) {
 		printer.addFeedLine(2);
 		printer.addCut(printer.CUT_FEED);
-		printer.send();
 	} else {
 		let prnWindow = prnGetWindow();
 		prnWindow.document.writeln('</p><br/><br/><hr/>');
 	}
+}
+
+function prnFlush() {
+	if (printer)
+		printer.send();
 }
 
 function prnServiceHeader(title) {
@@ -4851,80 +4797,75 @@ function prnPickupTimes(fromDateTime, toDateTime) {
 }
 
 function prnPrintClothesReceipt() {
+	const numArticles = client.family.totalSize * 3; // TODO remove hardcoded itemsServed
+
 	prnStartReceipt();
-	setTimeout(function f() {
-		const numAdults = client.family.totalAdults;
-		const numChildren = client.family.totalChildren;
-		const numArticles = (numAdults + numChildren) * 3; // TODO remove hardcoded itemsServed
-		prnServiceHeader('CLOTHES CLOSET PROGRAM');
-		prnFeed(1);
-  	prnTextLine('ADULTS | ADULTOS\t\t' + numAdults);
-  	prnTextLine('CHILDREN | NIÑOS\t\t' + numChildren);
-  	prnFeed(1);
-  	prnTextLine('LIMIT OF 3 ITEMS PER PERSON');
-  	prnTextLine('LIMITE 3 ARTICULOS POR PERSONA');
-  	prnFeed(1);
-  	prnTextLine('TOTAL ARTICLES | ARTICULOS');
-		prnTextLine('**************************************')
-  	prnTextLine(' ' + numArticles + ' ', 2, 2, ['inverse']);
-  	prnTextLine('**************************************');
-    prnFeed(1);
-  	prnTextLine('MAXIMUM TIME 10 MINUTES');
-  	prnTextLine('TIEMPO MAXIMO 10 MINUTOS');
-    prnFeed(2);
-  	prnTextLine('TIME IN___________   TIME OUT___________');
-		prnEndReceipt();
-	}, 500);
+	prnServiceHeader('CLOTHES CLOSET PROGRAM');
+	prnFeed(1);
+	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
+	prnTextLine('ADULTS | ADULTOS\t\t' + client.family.totalAdults);
+	prnTextLine('SENIORS | MAYORES\t\t' + client.family.totalSeniors);
+	prnFeed(1);
+	prnTextLine('LIMIT OF 3 ITEMS PER PERSON');
+	prnTextLine('LIMITE 3 ARTICULOS POR PERSONA');
+	prnFeed(1);
+	prnTextLine('TOTAL ARTICLES | ARTICULOS');
+	prnTextLine('**************************************')
+	prnTextLine(' ' + numArticles + ' ', 2, 2, ['inverse']);
+	prnTextLine('**************************************');
+  prnFeed(1);
+	prnTextLine('MAXIMUM TIME 10 MINUTES');
+	prnTextLine('TIEMPO MAXIMO 10 MINUTOS');
+  prnFeed(2);
+	prnTextLine('TIME IN___________   TIME OUT___________');
+	prnEndReceipt();
 }
 
 function prnPrintFoodReceipt(isUSDA) {
 	prnStartReceipt();
-	setTimeout(function f() {
-			prnServiceHeader('EMERGENCY FOOD PANTRY PROGRAM');
-			prnTextLine('(' + client.zipcode +	')');
-    	prnFeed(1);
-			prnTextLine('ADULTS | ADULTOS\t\t' + client.family.totalAdults);
-			prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
-    	prnTextLine('FAMILY | FAMILIA:\t\t' + client.family.totalSize);
-    	prnFeed(1);
-    	prnTextLine('**************************************')
-    	prnTextLine(' ' + isUSDA + ' ', 2, 2, ['inverse']);
-    	prnTextLine('**************************************');
-    	prnEndReceipt();
-	}, 500);
+	prnServiceHeader('EMERGENCY FOOD PANTRY PROGRAM');
+	prnTextLine('(' + client.zipcode +	')');
+	prnFeed(1);
+	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
+	prnTextLine('ADULTS | ADULTOS\t\t' + client.family.totalAdults);
+	prnTextLine('SENIORS | MAYORES\t\t' + client.family.totalSeniors);
+	prnTextLine('FAMILY | FAMILIA:\t\t' + client.family.totalSize);
+	prnFeed(1);
+	prnTextLine('**************************************')
+	prnTextLine(' ' + isUSDA + ' ', 2, 2, ['inverse']);
+	prnTextLine('**************************************');
+	prnEndReceipt();
 }
 
 function prnPrintVoucherReceipt(serviceType, dependents, grouping) {
 	let serviceName = serviceType.serviceName;
 	prnStartReceipt();
-	setTimeout(function f() {
-		prnServiceHeader(serviceName.toUpperCase());
-		prnFeed(1);
-		if (dependents) {
-			let sortingFn, groupingFn;
-			prnAlign('left');
-		  if (grouping == 'age') {
-				sortingFn = utilSortDependentsByAge;
-				groupingFn = utilCalcAgeGrouping;
-				prnTextLine('CHILDREN / NIÑOS        GENDER   AGE');
-			} else if (grouping = 'grade') {
-				sortingFn = utilSortDependentsByGrade;
-				groupingFn = utilCalcGradeGrouping;
-				prnTextLine('CHILDREN / NIÑOS        GENDER   GRADE');
-			}
-			prnFeed(1);
-			for (let dep of sortingFn(dependents)) {
-				let childName = utilPadTrimString(dep.givenName.toUpperCase()+' '+dep.familyName.toUpperCase(), 24);
-				let gender =  utilPadTrimString(dep.gender.toUpperCase(), 9);
-				let group = utilPadTrimString(groupingFn(dep), 5);
-				prnTextLine(childName + gender + group);
-			}
-			prnFeed(1);
+	prnServiceHeader(serviceName.toUpperCase());
+	prnFeed(1);
+	if (dependents) {
+		let sortingFn, groupingFn;
+		prnAlign('left');
+	  if (grouping == 'age') {
+			sortingFn = utilSortDependentsByAge;
+			groupingFn = utilCalcAgeGrouping;
+			prnTextLine('CHILDREN / NIÑOS        GENDER   AGE');
+		} else if (grouping = 'grade') {
+			sortingFn = utilSortDependentsByGrade;
+			groupingFn = utilCalcGradeGrouping;
+			prnTextLine('CHILDREN / NIÑOS        GENDER   GRADE');
 		}
-		prnAlign('center');
-		prnPickupTimes(serviceType.fulfillment.fromDateTime, serviceType.fulfillment.toDateTime);
-    prnEndReceipt();
-	}, 500);
+		prnFeed(1);
+		for (let dep of sortingFn(dependents)) {
+			let childName = utilPadTrimString(dep.givenName.toUpperCase()+' '+dep.familyName.toUpperCase(), 24);
+			let gender =  utilPadTrimString(dep.gender.toUpperCase(), 9);
+			let group = utilPadTrimString(groupingFn(dep), 5);
+			prnTextLine(childName + gender + group);
+		}
+		prnFeed(1);
+	}
+	prnAlign('center');
+	prnPickupTimes(serviceType.fulfillment.fromDateTime, serviceType.fulfillment.toDateTime);
+  prnEndReceipt();
 }
 
 function prnPrintReminderReceipt() {
@@ -4933,13 +4874,54 @@ function prnPrintReminderReceipt() {
 	let earliestDate = moment().add(7, 'days');
 	let nextVisit = dateFindOpen(targetDate, earliestDate);
 	prnStartReceipt();
-	setTimeout(function f() {
-		prnServiceHeader('NEXT VISIT REMINDER');
-		prnFeed(1);
-    prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
-    prnTextLine('**************************************')
-    prnTextLine(' ' + nextVisit.format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
-    prnTextLine('**************************************');
-    prnEndReceipt();
-	}, 500);
+	prnServiceHeader('NEXT VISIT REMINDER');
+	prnFeed(1);
+  prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
+  prnTextLine('**************************************')
+  prnTextLine(' ' + nextVisit.format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
+  prnTextLine('**************************************');
+  prnEndReceipt();
+}
+
+// Printer testing
+receiptIndex = 0;
+const receiptTypes = 6;
+
+function clickPrintTestSingle() {
+	prnTestReceipt(receiptIndex);
+	prnFlush();
+	receiptIndex = (receiptIndex + 1) % receiptTypes;
+}
+
+function clickPrintTestBatch() {
+	for (let i=0; i < receiptTypes; i++)
+		prnTestReceipt(i);
+	prnFlush();
+}
+
+function prnTestReceipt(receiptType) {
+	let service;
+	switch(receiptType) {
+		case 0:
+			prnPrintClothesReceipt();
+			break;
+		case 1:
+			prnPrintFoodReceipt('USDA');
+			break;
+		case 2:
+			prnPrintReminderReceipt();
+			break;
+		case 3:
+			service = serviceTypes.filter(obj => obj.serviceName == 'Thanksgiving Turkey')[0];
+			prnPrintVoucherReceipt(service);
+			break;
+		case 4:
+			service = serviceTypes.filter(obj => obj.serviceName == 'Christmas Toy')[0];
+			prnPrintVoucherReceipt(service, client.dependents, 'age');
+			break;
+		case 5:
+			service = serviceTypes.filter(obj => obj.serviceName == 'First Step')[0];
+			prnPrintVoucherReceipt(service, client.dependents, 'grade');
+			break;
+	}
 }
