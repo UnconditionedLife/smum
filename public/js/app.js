@@ -2633,7 +2633,7 @@ function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
 				prnPrintReminderReceipt()
 			}
 		} else if (serviceCategory == 'Clothes_Closet') {
-			prnPrintClothesReceipt()
+			prnPrintClothesReceipt(serviceType)
 		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
 			const targetService = utilCalcTargetServices([serviceType])
 			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
@@ -4786,15 +4786,16 @@ function prnServiceHeader(title) {
 function prnPickupTimes(fromDateTime, toDateTime) {
 	prnTextLine('**************************************')
 	prnTextLine('PRESENT THIS FOR PICKUP')
-	prnTextLine('HAY PRESENTAR PARA RECLAMAR')
+	prnTextLine('HAY QUE PRESENTAR PARA RECLAMAR')
 	prnTextLine(' ' + moment(fromDateTime).format("MMMM Do, YYYY")+ ' ', 2, 2, ['inverse']);
 	prnFeed(1);
-	prnTextLine(' '+ moment(fromDateTime).format("h:mm a")+" - " + moment(toDateTime).format("h:mm a")+' ', 1, 1, ['inverse']);
+	prnTextLine(' ' + moment(fromDateTime).format("h:mm a") + ' - ' +
+		moment(toDateTime).format("h:mm a") + ' ', 1, 1, ['inverse']);
 	prnTextLine('**************************************');
 }
 
-function prnPrintClothesReceipt() {
-	const numArticles = client.family.totalSize * 3; // TODO remove hardcoded itemsServed
+function prnPrintClothesReceipt(serviceType) {
+	const numArticles = client.family.totalSize * serviceType.numberItems;
 
 	prnStartReceipt();
 	prnServiceHeader('CLOTHES CLOSET PROGRAM');
@@ -4803,16 +4804,16 @@ function prnPrintClothesReceipt() {
 	prnTextLine('ADULTS | ADULTOS\t\t' + client.family.totalAdults);
 	prnTextLine('SENIORS | MAYORES\t\t' + client.family.totalSeniors);
 	prnFeed(1);
-	prnTextLine('LIMIT OF 3 ITEMS PER PERSON');
-	prnTextLine('LIMITE 3 ARTICULOS POR PERSONA');
+	prnTextLine('LIMIT OF ' + serviceType.numberItems + ' ITEMS PER PERSON');
+	prnTextLine('LIMITE ' + serviceType.numberItems + ' ARTÍCULOS POR PERSONA');
 	prnFeed(1);
-	prnTextLine('TOTAL ARTICLES | ARTICULOS');
+	prnTextLine('TOTAL ITEMS | ARTÍCULOS');
 	prnTextLine('**************************************')
 	prnTextLine(' ' + numArticles + ' ', 2, 2, ['inverse']);
 	prnTextLine('**************************************');
   prnFeed(1);
 	prnTextLine('MAXIMUM TIME 10 MINUTES');
-	prnTextLine('TIEMPO MAXIMO 10 MINUTOS');
+	prnTextLine('TIEMPO MÁXIMO 10 MINUTOS');
   prnFeed(2);
 	prnTextLine('TIME IN___________   TIME OUT___________');
 	prnEndReceipt();
@@ -4853,7 +4854,8 @@ function prnPrintVoucherReceipt(serviceType, dependents, grouping) {
 		}
 		prnFeed(1);
 		for (let dep of sortingFn(dependents)) {
-			let childName = utilPadTrimString(dep.givenName.toUpperCase()+' '+dep.familyName.toUpperCase(), 24);
+			let childName = utilPadTrimString(dep.givenName.toUpperCase() +
+				' ' + dep.familyName.toUpperCase(), 24);
 			let gender =  utilPadTrimString(dep.gender.toUpperCase(), 9);
 			let group = utilPadTrimString(groupingFn(dep), 5);
 			prnTextLine(childName + gender + group);
@@ -4861,7 +4863,8 @@ function prnPrintVoucherReceipt(serviceType, dependents, grouping) {
 		prnFeed(1);
 	}
 	prnAlign('center');
-	prnPickupTimes(serviceType.fulfillment.fromDateTime, serviceType.fulfillment.toDateTime);
+	prnPickupTimes(serviceType.fulfillment.fromDateTime,
+		serviceType.fulfillment.toDateTime);
   prnEndReceipt();
 }
 
@@ -4900,7 +4903,8 @@ function prnTestReceipt(receiptType) {
 	let service;
 	switch(receiptType) {
 		case 0:
-			prnPrintClothesReceipt();
+			service = serviceTypes.filter(obj => obj.serviceName == 'Clothes')[0];
+			prnPrintClothesReceipt(service);
 			break;
 		case 1:
 			prnPrintFoodReceipt('USDA');
