@@ -9,6 +9,83 @@
 // -->   cog...  interact with AWS Cognito service
 // Function naming syntax [prefix][action][subject]
 
+let docClient = {}
+let settingsForm = {}
+
+// function awsInitDynamodb(){
+//   //ddb =  new AWS.DynamoDB( {region: 'us-west-2'} );
+//   docClient = new AWS.DynamoDB.DocumentClient( {region: 'us-west-2'} )
+// };
+
+
+class DB {
+	static async get( table, id ) {
+	  console.log("IN DB-GET", table)
+	  let params = {
+	    TableName: table,
+	    Key: { id: id }
+	  }
+	  const data = await docClient.get(params).promise()
+	  return data.Item
+  // TODO may require conditional statements for Item or Items
+	};
+
+	static async put( table, data ) {
+	  console.log("IN DB-PUT")
+		let params = {
+		  TableName: table,
+		  Item: data
+		};
+	  const result = await docClient.put(params).promise()
+	  console.log(result)
+	  return result
+	};
+
+ 	static errorHandler( err, method ) {
+  	if (method == 'put') {}
+  	console.log("ERROR:", err)
+	}
+}
+
+class Settings {
+	constructor(argObj) {
+		$.each(argObj, (key, val) => {
+			this[key] = val;
+		})
+	}
+
+	static async load(){
+		const table = 'SM-Settings';
+		const id = 'settings';
+		try {
+			let results = await DB.get( table, id )
+			settings = new Settings(results)
+
+console.log(settings)
+
+		} catch(err) {
+			DB.errorHandler(err, 'get')
+		}
+	}
+
+	async save(){
+		const table = "SM-Settings";
+		try {
+			const putResult = await DB.put(table, settingsForm)
+			console.log(putResult)
+			if (putResult) {
+				settings = settingsForm
+				settingsForm = {}
+				console.log(settings.printerIP)
+			}
+
+		} catch(err) {
+			DB.errorHandler(err , 'put')
+		}
+	}
+
+}
+
 // **********************************************************************************************************
 // *********************************************** GLOBAL VARS **********************************************
 // **********************************************************************************************************
@@ -60,6 +137,9 @@ let closedEvent = {
 	editable: false,
 	backgroundColor: "red"
 }
+
+// Direct dynamodb
+
 
 // TODO build some selects in forms from data in settings (ie. Categories)
 
@@ -200,7 +280,7 @@ function uiAddListItem(type){
 	const item = $("#service" + type + "Input").val()
 	let itemList = $("#service" + type).val()
 
-	// TODO validate if item is a Zipcode or a valid category name
+	// TODO validate if item is a valid Zipcode, Category or Program name
 
 	if (itemList == ""){
 		itemList = "[]"
@@ -453,6 +533,7 @@ function utilParseHiddenArray(id){
 	if (arr == "[]"){
 		return [];
 	}
+	console.log(arr)
 	return JSON.parse(arr);
 };
 
@@ -640,10 +721,16 @@ function uiUpdateAdminHeader() {
 function uiUpdateButton(btn, set) {
 	if (set == 'Gen') {
 		btn.value = 'Generating...';
-		btn.style.backgroundColor = 'red';
+		btn.addClass('solidButtonActive') // red
+	} else if (set == 'Saving') {
+		btn.val('Saving...');
+		btn.addClass('solidButtonActive')
+	} else if (set == 'Saved') {
+		btn.val('Saved');
+		btn.addClass('solidButtonDone') // blue
 	} else {
 		btn.value = 'Run';
-		btn.style.backgroundColor = 'var(--blue)';
+		btn.removeClass('solidButtonActive')
 	}
 };
 
@@ -1793,6 +1880,7 @@ function uiShowSettings(){
 	uiPopulateForm(settings, 'settingsForm') // assigns settings values to form fields
 	// these are objects that need to be handled seperately
 	$('#serviceZip').val(JSON.stringify(settings.serviceZip))
+	$('#serviceProg').val(JSON.stringify(settings.serviceProg))
 	$('#serviceCat').val(JSON.stringify(settings.serviceCat))
 	$('#closedDays').val(JSON.stringify(settings.closedDays))
 	$('#closedEveryDays').val(JSON.stringify(settings.closedEveryDays))
@@ -2073,6 +2161,7 @@ function uiResetServiceTypeForm(){
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
 
+// todo remove once code is migrated to DB object
 function dbGetAppSettings(){
 	let temp = dbGetData(aws+"/settings")
 	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
@@ -2458,22 +2547,6 @@ function dbSaveServiceTypeForm(context){
 	dbPostData(URL,JSON.stringify(data))
 };
 
-function dbSaveSettingsForm(){
-	let data = utilFormToJSON('.settingsForm') // array fields are strings
-	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
-	for (var i = 0; i < fields.length; i++) {
-		let x = fields[i]
-		if (data[x] != "" && data[x] != []) {
-			data[x] = utilArrayToObject(JSON.parse(data[x]))
-		} else {
-			data[x] = "*EMPTY*"
-		}
-	}
-	let URL = aws+'/settings'
-	dbPostData(URL,JSON.stringify(data))
-	settings = dbGetAppSettings()
-};
-
 function dbSearchClients(str, slashCount){
 	// let str =  $('#searchField').val()
 	// $('#searchField').val('')
@@ -2854,6 +2927,46 @@ function clickSaveNote(){
 	}
 };
 
+function clickSaveSettingsForm(){
+	let formData = utilFormToJSON('.settingsForm') // array fields are strings
+	formData.id = 'settings';
+
+console.log(formData)
+
+	const btn = $('#saveSettingsButton')
+	uiUpdateButton(btn, 'Saving') // 'Gen' or 'Run'
+	setTimeout(function() {
+		let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+		$.each(formData, (i, item) => {
+			if (formData[i] == "" || formData[i] == "[]") {
+				console.log(i)
+				delete formData[i]
+			} else if (formData[i].charAt(0) == "["){
+				formData[i] = JSON.parse(formData[i])
+			}
+		})
+
+		console.log(formData)
+		//  for (var i = 0; i < fields.length; i++) {
+		// 	 let x = fields[i]
+		//  	formData[x] = JSON.parse(formData[x])
+	  // }
+		// utilRemoveEmptyProperty(formData)
+		settingsForm = new Settings(formData)
+
+		console.log(settingsForm)
+
+		settingsForm.save()
+		setTimeout(function() {
+			uiUpdateButton(btn, 'Saved') // 'Gen' or 'Run'
+		}, 250)
+	}, 0)
+
+	// let URL = aws+'/settings'
+	// dbPostData(URL,JSON.stringify(data))
+
+};
+
 function clickSearchClients() {
 	let str =  $('#searchField').val()
 	$('#searchField').val('')
@@ -3173,8 +3286,29 @@ function cogLoginUser() {
 				$('#nav4').html('')
 				$(loginError).html("Sorry, your account is INACTIVE.")
 			} else {
-				settings = dbGetAppSettings()
-				prnConnect()
+				AWS.config.region = 'us-west-2';
+				AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        	IdentityPoolId : 'us-west-2:2a83c615-beaa-4600-9a07-382f21babe21',
+        	Logins : {
+          	// Change the key below according to the specific region your user pool is in.
+          	'cognito-idp.us-west-2.amazonaws.com/us-west-2_AufYE4o3x' : result.getIdToken().getJwtToken()
+        	}
+      	});
+			  AWS.config.credentials.get(function(err) {
+			    if (err) {
+						console.log(err)
+					} else {
+						console.log('GOT AWS CREDENTIALS')
+						//ddb =  new AWS.DynamoDB( {region: 'us-west-2'} );
+					  docClient = new AWS.DynamoDB.DocumentClient( {region: 'us-west-2'} )
+					}
+			  })
+				// wait for credentials
+				setTimeout(function(){
+					// settings = dbGetAppSettings()
+					Settings.load()
+					prnConnect()
+				}, 500);
 			}
     },
     onFailure: (err) => {
@@ -4015,29 +4149,34 @@ function utilErrorHandler(errMessage, status, error, type) {
 function utilFormToJSON(form){
 	let vals = {}
 	let formElements = $(form)
+
+console.log(formElements)
+
 	for (let i = 0; i < formElements.length; i++) {
 		let key = formElements[i].id
 		let formVal = formElements[i].value
 		let valType = formElements[i].type
-		if (formVal.length < 1) {
-			if (valType == 'hidden') {
-				if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = utilNow()
-				// if (key === 'lastSeenDate') formVal = '*EMPTY*'
-			} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local'||valType == 'email') {
-				formVal = '*EMPTY*'
-			} else if (valType == 'number') {
-				formVal = '0'
+		if (key !== "") {
+			if (formVal.length < 1) {
+				if (valType == 'hidden') {
+					if (key === 'createdDateTime'||key === 'updatedDateTime') formVal = utilNow()
+					// if (key === 'lastSeenDate') formVal = '*EMPTY*'
+				} else if (valType == 'text'||valType == 'date'||valType == 'datetime-local'||valType == 'email') {
+					formVal = '*EMPTY*'
+				} else if (valType == 'number') {
+					formVal = '0'
+				}
 			}
-		}
-		if (key.includes(".")) {
-			let split = key.split(".")
-			let obj = split[0]
-			if (typeof vals[obj] == 'undefined') {
-				vals[obj] = {}
+			if (key.includes(".")) {
+				let split = key.split(".")
+				let obj = split[0]
+				if (typeof vals[obj] == 'undefined') {
+					vals[obj] = {}
+				}
+				vals[obj][split[1]] = formVal
+			} else {
+				vals[key] = formVal
 			}
-			vals[obj][split[1]] = formVal
-		} else {
-			vals[key] = formVal
 		}
 	}
 	vals.updatedDateTime = utilNow();

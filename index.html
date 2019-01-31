@@ -16,9 +16,10 @@
       <!-- <audio id="beep" src="sounds/beep.wav" autostart="false"></audio> -->
       <!-- <audio id="bloop" src="sounds/bloop.wav" autostart="false"></audio> -->
       <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.122.0/aws-sdk.min.js"></script> -->
-      <script src="https://sdk.amazonaws.com/js/aws-sdk-2.190.0.min.js"></script>
+      <!-- <script src="https://sdk.amazonaws.com/js/aws-sdk-2.190.0.min.js"></script> -->
       <script src="js/aws-cognito-sdk.min.js"></script>
       <script src="js/amazon-cognito-identity.min.js"></script>
+      <script src="js/aws-sdk-2.368.0.min.js"></script>
       <script src="https://use.fontawesome.com/4bcfc4269b.js"></script>
       <script src="js/epos-2.9.0.js"></script>
    </head>
@@ -873,12 +874,17 @@
          <div class="lableDiv">New Zipcode</div>
          <div style="display: inline-flex"><input id="serviceZipInput" type="text" class="inputBox"><input id="serviceZip" type="hidden" class="inputBox settingsForm"></div>
          <div class="span4"><input class="solidButton" onclick="uiAddListItem('Zip')" type="button" value="Add" style="width: 50px;"></div>
-         <div class="lableDiv">Our Zipcodes</div>
+         <div class="lableDiv">Zipcodes</div>
          <div id="serviceZipDisplay" class="span5"></div>
+         <div class="lableDiv">New Program</div>
+         <div style="display: inline-flex"><input id="serviceProgInput" type="text" class="inputBox"><input id="serviceProg" type="hidden" class="inputBox settingsForm"></div>
+         <div class="span4"><input class="solidButton" onclick="uiAddListItem('Prog')" type="button" value="Add" style="width: 50px;"></div>
+         <div class="lableDiv">Programs</div>
+         <div id="serviceProgDisplay" class="span5"></div>
          <div class="lableDiv">New Category</div>
          <div style="display: inline-flex"><input id="serviceCatInput" type="text" class="inputBox"><input id="serviceCat" type="hidden" class="inputBox settingsForm"></div>
          <div class="span4"><input class="solidButton" onclick="uiAddListItem('Cat')" type="button" value="Add" style="width: 50px;"></div>
-         <div class="lableDiv">Service Categories</div>
+         <div class="lableDiv">Categories</div>
          <div id="serviceCatDisplay" class="span5"></div>
          <div class="span6">&nbsp;</div>
          <div class="headingDiv span6">Clients</div>
@@ -916,7 +922,7 @@
             </div>
          </div>
          <div class="span6" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-            <input class="solidButton" onclick="dbSaveSettingsForm()" type="button" value="Save">
+            <input id="saveSettingsButton" class="solidButton" onclick="clickSaveSettingsForm()" type="button" value="Save">
             <input class="openButton" onclick="uiResetSettingsForm()" type="button" value="Cancel">
          </div>
       </div>

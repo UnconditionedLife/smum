@@ -643,6 +643,19 @@ input.inputBox:read-only {
 	outline: -webkit-focus-ring-color auto 5px;
 }
 
+.solidButtonActive {
+	border-color: var(--red) !important;
+	background-color: var(--red) !important;
+}
+
+.solidButtonDone {
+	border-color: var(--light-green) !important;
+	background-color: var(--light-green) !important;
+}
+
+
+
+
 .openButton {
   display: flex;
   border-radius: 4px;
