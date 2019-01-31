@@ -4796,6 +4796,7 @@ function prnPickupTimes(fromDateTime, toDateTime) {
 
 function prnPrintClothesReceipt(serviceType) {
 	const numArticles = client.family.totalSize * serviceType.numberItems;
+	const timeLimit = 15; // TODO get from service properties
 
 	prnStartReceipt();
 	prnServiceHeader('CLOTHES CLOSET PROGRAM');
@@ -4812,8 +4813,8 @@ function prnPrintClothesReceipt(serviceType) {
 	prnTextLine(' ' + numArticles + ' ', 2, 2, ['inverse']);
 	prnTextLine('**************************************');
   prnFeed(1);
-	prnTextLine('MAXIMUM TIME 10 MINUTES');
-	prnTextLine('TIEMPO MÁXIMO 10 MINUTOS');
+	prnTextLine('MAXIMUM TIME ' + timeLimit + ' MINUTES');
+	prnTextLine('TIEMPO MÁXIMO ' + timeLimit + ' MINUTOS');
   prnFeed(2);
 	prnTextLine('TIME IN___________   TIME OUT___________');
 	prnEndReceipt();
