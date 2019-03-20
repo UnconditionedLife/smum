@@ -1127,7 +1127,7 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 	}
 };
 
-function uiShowMonthlyReportRows(monthYear, reportType){
+function uiShowMonthlyReportRows(monthYear, reportType, uniqueTotalCounts){
 	const currentMonth = moment().format("YYYY-MM")
 	let daysInMonth = moment(monthYear, "YYYY-MM").daysInMonth()
 	if (monthYear == currentMonth) daysInMonth = moment().format("D")
@@ -1152,9 +1152,9 @@ function uiShowMonthlyReportRows(monthYear, reportType){
 			.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
 		let servicesNonUSDA = servicesFood
 			.filter(item => item.isUSDA == "NonUSDA")
-		servicesUSDA = utilCalcMonthlyRows(servicesUSDA)
-		servicesNonUSDA = utilCalcMonthlyRows(servicesNonUSDA)
-		uiBuildFoodMonthRows(servicesUSDA, servicesNonUSDA, monthYear)
+		servicesUSDA = utilCalcMonthlyRows(servicesUSDA, uniqueTotalCounts, "uTotalUnique")
+		servicesNonUSDA = utilCalcMonthlyRows(servicesNonUSDA, uniqueTotalCounts, "nTotalUnique")
+		uiBuildFoodMonthRows(servicesUSDA, servicesNonUSDA, monthYear, uniqueTotalCounts)
 	} else {
 		// Other Services Report
 		servicesRendered = servicesRendered
@@ -1176,7 +1176,7 @@ function uiShowMonthlyReportRows(monthYear, reportType){
 	}
 };
 
-function utilCalcMonthlyRows(services){
+function utilCalcMonthlyRows(services, uniqueTotalCounts, countType){
 	let tempS = []
 	$.each(services, function(i, item){
 		let index = -1; // default value, in case no element is found
@@ -1189,22 +1189,31 @@ function utilCalcMonthlyRows(services){
 		  })
 		}
 		if (index > -1)	 {
+			item.totalHouseholdsServed = 1
 			tempS[index].totalHouseholdsServed = parseInt(tempS[index].totalHouseholdsServed) + 1
 			tempS[index].totalIndividualsServed = parseInt(tempS[index].totalIndividualsServed) + parseInt(item.totalIndividualsServed)
 			tempS[index].totalChildrenServed = parseInt(tempS[index].totalChildrenServed) + parseInt(item.totalChildrenServed)
 			tempS[index].totalAdultsServed = parseInt(tempS[index].totalAdultsServed) + parseInt(item.totalAdultsServed)
 			tempS[index].totalSeniorsServed = parseInt(tempS[index].totalSeniorsServed) + parseInt(item.totalSeniorsServed)
+			item.totalHomelessInd = 0
+			item.totalHomelessFamily = 0
 			if (item.homeless == "YES") {
 				if (item.totalIndividualsServed == 1) {
+					item.totalHomelessInd = 1
 					tempS[index].totalHomelessInd = parseInt(tempS[index].totalHomelessInd) + 1
 				} else {
+					item.totalHomelessFamily = 1
 					tempS[index].totalHomelessFamily = parseInt(tempS[index].totalHomelessFamily) + 1
 				}
 			}
+			item.totalNonClientInd = 0
+			item.totalNonClientFamily = 0
 			if (item.clientStatus != "Client") {
 				if (item.totalIndividualsServed == 1) {
+					item.totalNonClientInd = 1
 					tempS[index].totalNonClientInd = parseInt(tempS[index].totalNonClientInd) + 1
 				} else {
+					item.totalNonClientFamily = 1
 					tempS[index].totalNonClientFamily = parseInt(tempS[index].totalNonClientFamily) + 1
 				}
 			}
@@ -1235,7 +1244,35 @@ function utilCalcMonthlyRows(services){
 				}
 			}
 			tempS.push(item)
+			//console.log(uniqueTotalCounts)
+			//console.log(tempS)
 		}
+		const clientId = item['clientServedId']
+		const keyFull = {
+			 hh:'totalHouseholdsServed',
+			ind:'totalIndividualsServed',
+			 ch:'totalChildrenServed',
+			 ad:'totalAdultsServed',
+			sen:'totalSeniorsServed',
+			 hf:'totalHomelessFamily',
+			 hi:'totalHomelessInd',
+			 nf:'totalNonClientFamily',
+			 ni:'totalNonClientInd'
+		 }
+		 const isInClientType = !uniqueTotalCounts[countType]['ids'].includes(clientId)
+		 const isInGlobal = !uniqueTotalCounts["gTotalUnique"]['ids'].includes(clientId)
+		 for (let key in keyFull) {
+				keyFullName = keyFull[key]
+				totalValue = parseInt(item[keyFullName])
+				if (isInClientType){
+					uniqueTotalCounts[countType][key] += totalValue
+				}
+				if (isInGlobal){
+					uniqueTotalCounts["gTotalUnique"][key] += totalValue
+				}
+		}
+		utilAddClientIfUnique(uniqueTotalCounts, countType, clientId)
+		utilAddClientIfUnique(uniqueTotalCounts, "gTotalUnique", clientId)
 	})
 	return tempS
 };
@@ -1416,11 +1453,8 @@ function uiBuildAllServicesMonthRows(services) {
 	$(grid).append('<div class="catHeader">&nbsp;</div>')
 	$(grid).append('<div class="monthItem">&nbsp;</div><div class="monthItem"></div><div class="monthItem"></div><div class="monthItem"></div><div class="monthItem"></div>')
 };
-function utilUpdateTotalsClient(totals, total, clientId){
-  if (!totals[total]['ids'].includes(clientId)) totals[total]['ids'].push(clientId)
-}
-function utilUpdateTotals(totals, total, field, dayServed, clientId){
-  if (!totals[total]['ids'].includes(clientId)) totals[total][field] += dayServed
+function utilAddClientIfUnique(uniqueTotalCounts, countType, clientId){
+  if (!uniqueTotalCounts[countType]['ids'].includes(clientId)) uniqueTotalCounts[countType]['ids'].push(clientId)
 }
 function uiBuildTotalRow(grid, totals, total, name){
   $(grid).append('<div class="monthTotal">'+name+'</div>')
@@ -1428,16 +1462,13 @@ function uiBuildTotalRow(grid, totals, total, name){
     if (!(key === "ids")) $(grid).append('<div class="monthTotal">'+ totals[total][key] +'</div>')
 	}
 }
-function uiBuildFoodMonthRows(u, n, monthYear) {
+function uiBuildFoodMonthRows(u, n, monthYear, uniqueTotalCounts) {
 	let numDays = moment(monthYear, "YYYY-MM").endOf("month").format("DD")
 	numDays = parseInt(numDays) + 1
   let totals = {
     uTotalServices: "",
     nTotalServices: "",
-    gTotalServices: "",
-    uTotalUnique: "",
-    nTotalUnique: "",
-    gTotalUnique: ""
+    gTotalServices: ""
   }
   for (let key in totals){
     totals[key] = {ids:[],hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
@@ -1472,16 +1503,13 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
 				// calculate day USDA totals
 				$(grid).append('<div class="monthItem">USDA</div>')
         let clientId = parseInt(uDay[0]['clientServedId'])
+				console.log(uDay)
 				for (let key in keyFull) {
 					keyFullName = keyFull[key]
 					dTotal[key] = parseInt(uDay[0][keyFullName])
 					totals['uTotalServices'][key] += dTotal[key]
-          utilUpdateTotals(totals,'uTotalUnique', key, dTotal[key], clientId)
-          utilUpdateTotals(totals,'gTotalUnique', key, dTotal[key], clientId)
 					$(grid).append('<div class="monthItem">'+ dTotal[key] +'</div>')
 				}
-        utilUpdateTotalsClient(totals,'uTotalUnique',clientId)
-        utilUpdateTotalsClient(totals,'gTotalUnique',clientId)
 			}
 			$(grid).append('<div class="monthItem">NonUSDA</div>')
 			if (nDay.length == 1) {
@@ -1494,12 +1522,8 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
 					// calculate Day total
 					dTotal[key] += parseInt(nDay[0][keyFullName])
 					// show day nonUSDA totals
-          utilUpdateTotals(totals,'nTotalUnique', key, parseInt(nDay[0][keyFullName]), clientId)
-          utilUpdateTotals(totals,'gTotalUnique', key, parseInt(nDay[0][keyFullName]), clientId)
 					$(grid).append('<div class="monthItem">'+ nDay[0][keyFullName] +'</div>')
 				}
-        utilUpdateTotalsClient(totals,'nTotalUnique',clientId)
-        utilUpdateTotalsClient(totals,'gTotalUnique',clientId)
 			} else {
 				for (let key in dTotal) {
 					$(grid).append('<div class="monthItem">0</div>')
@@ -1524,9 +1548,9 @@ function uiBuildFoodMonthRows(u, n, monthYear) {
   $("#reportBodyDiv").append('<div id="monthlyGridTotal2" class="foodRowBox" style="grid-row: '+ gridRow +'; height:140px; grid-template-rows: 35px 35px 35px 35px;"></div>')
   grid = "#monthlyGridTotal2"
   $(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">Unique Clients Served</div>')
-	uiBuildTotalRow(grid, totals, 'uTotalUnique','USDA')
-  uiBuildTotalRow(grid, totals, 'nTotalUnique','NonUSDA')
-  uiBuildTotalRow(grid, totals, 'gTotalUnique','TOTAL')
+	uiBuildTotalRow(grid, uniqueTotalCounts, 'uTotalUnique','USDA')
+  uiBuildTotalRow(grid, uniqueTotalCounts, 'nTotalUnique','NonUSDA')
+  uiBuildTotalRow(grid, uniqueTotalCounts, 'gTotalUnique','TOTAL')
 };
 
 function uiShowTodayTotals(serviceTotal, grid) {
@@ -2692,7 +2716,16 @@ function clickGenerateMonthlyReport(btn){
 	setTimeout(function() {
 		uiLoadReportHeader(headerInfo)
 		uiShowMonthlyReportHeader(monthYear, reportType)
-		uiShowMonthlyReportRows(monthYear, reportType)
+		let uniqueTotalCounts = {
+			uTotalUnique: "",
+    	nTotalUnique: "",
+    	gTotalUnique: ""
+		}
+		for (let key in uniqueTotalCounts){
+	    uniqueTotalCounts[key] = {ids:[],hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+	  }
+		uiShowMonthlyReportRows(monthYear, reportType, uniqueTotalCounts)
+		console.log(uniqueTotalCounts)
 		uiUpdateButton(btn, 'Run') // 'Gen' or 'Run'
 		uiShowHideReport("show")
 	}, 0)
