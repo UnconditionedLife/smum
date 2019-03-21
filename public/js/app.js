@@ -9,7 +9,7 @@
 // -->   cog...  interact with AWS Cognito service
 // Function naming syntax [prefix][action][subject]
 
-let docClient = {}
+let docClient = {} // new DynamoDb DocClient object
 let settingsForm = {}
 
 // function awsInitDynamodb(){
@@ -17,6 +17,9 @@ let settingsForm = {}
 //   docClient = new AWS.DynamoDB.DocumentClient( {region: 'us-west-2'} )
 // };
 
+// **********************************************************************************************************
+// *********************************************** DYNAMODB API *********************************************
+// **********************************************************************************************************
 
 class DB {
 	static async get( table, id ) {
@@ -93,7 +96,7 @@ console.log(settings)
 // TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
 
-const ver = '?v=1.0.4'
+const ver = '?v=1.0.4j'
 $('#versionNum').html(ver.split('=')[1]) // display version number on top right
 const aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod"
 const MAX_ID_DIGITS = 5
