@@ -953,7 +953,6 @@
          <div><input id="reportsDailyDate" type="date" class="inputBox reportsForm"></div>
          <div></div>
          <div><input id="dailyReportButton" class="solidButton" onclick="clickGenerateDailyReport(this, 'report')" type="button" value="Run"></div>
-         <div class="headingDiv span6"></div>
          <div class="headingDiv span6">Monthly Reports</div>
          <div class="lableDiv">Report</div>
          <div>
@@ -966,6 +965,18 @@
          <div><input id="reportsMonthlyMonth" type="month" class="inputBox reportsForm"></div>
          <div></div>
          <div><input id="monthlyReportButton" class="solidButton" onclick="clickGenerateMonthlyReport(this)" type="button" value="Run"></div>
+         <div class="headingDiv span6">Annual Reports</div>
+         <div class="lableDiv">Report</div>
+         <div>
+            <select id="reportsAnnualType" class="inputBox reportsForm">
+               <!-- <option value="ALL">All Services</option> -->
+               <option value="FOOD" selected>Food Only</option>
+            </select>
+         </div>
+         <div class="lableDiv">Year</div>
+         <div><input id="reportsAnnualYear" type="number" class="inputBox reportsForm"></div>
+         <div></div>
+         <div><input id="annualReportButton" class="solidButton" onclick="clickGenerateAnnualReport(this)" type="button" value="Run"></div>
          <div class="headingDiv span6"></div>
          <div class="headingDiv span6">Voucher Distribution Reports</div>
          <div class="lableDiv">Report</div>
@@ -1048,9 +1059,27 @@
          <div class="bodyHeaderItem">Adults</div>
          <div class="bodyHeaderItem">Seniors</div>
          <div class="bodyHeaderItem">Families</div>
-         <div class="bodyHeaderItem">Individuals</div>
+         <div class="bodyHeaderItem">Singles</div>
          <div class="bodyHeaderItem">Families</div>
-         <div class="bodyHeaderItem">Individuals</div>
+         <div class="bodyHeaderItem">Singles</div>
+      </div>
+   </template>
+
+   <template id="annualFoodReportHeader">
+      <div class="foodBodyHeaderBox">
+         <div id="headerMonth" class="bodyHeaderItem">Month</div>
+         <div id="headerHouseholdsServed" class="bodyHeaderItem">Households Served</div>
+         <div id="headerIndividualsServed" class="bodyHeaderItem">Individuals Served</div>
+         <div id="headerChildrenServed" class="bodyHeaderItem">Children Served</div>
+         <div class="bodyHeaderItem">USDA</div>
+         <div class="bodyHeaderItem">NonUSDA</div>
+         <div class="bodyHeaderItem">Total</div>
+         <div class="bodyHeaderItem">USDA</div>
+         <div class="bodyHeaderItem">NonUSDA</div>
+         <div class="bodyHeaderItem">Total</div>
+         <div class="bodyHeaderItem">USDA</div>
+         <div class="bodyHeaderItem">NonUSDA</div>
+         <div class="bodyHeaderItem">Total</div>
       </div>
    </template>
 
@@ -1076,9 +1105,9 @@
          <div class="bodyHeaderItem">Adults</div>
          <div class="bodyHeaderItem">Seniors</div>
          <div class="bodyHeaderItem">Families</div>
-         <div class="bodyHeaderItem">Individuals</div>
+         <div class="bodyHeaderItem">Singles</div>
          <div class="bodyHeaderItem">Families</div>
-         <div class="bodyHeaderItem">Individuals</div>
+         <div class="bodyHeaderItem">Singles</div>
       </div>
    </template>
 

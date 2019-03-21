@@ -831,6 +831,7 @@ function uiShowReports(){
 	$('#reportsFormContainer').html(uiGetTemplate('#reportsForm'))
 	$('#reportsDailyDate').val(moment().format(date))
 	$('#reportsMonthlyMonth').val(moment().format('YYYY-MM'))
+	$('#reportsAnnualYear').val(moment().format('YYYY'))
 	uiAddListOfVoucherServiceTypes(utilGetListOfVoucherServiceTypes())
 	$('#reportVoucherDistroYear').val(moment().format('YYYY'))
 	$('#reportVoucherCountYear').val(moment().format('YYYY'))
@@ -990,6 +991,19 @@ function uiShowVoucherReportHeader(year, reportType, targetType, serviceType){
 	const template = '#reportVoucher' + targetType + reportType + 'Header'
 	uiSetPrintBodyTemplate(template, headerInfo.targetDiv)
 };
+function uiShowAnnualReportHeader(year, reportType){
+	let headerInfo = {
+		 targetDiv: 'report',
+		      name: 'ANNUAL REPORT',
+		  category: 'FOOD PANTRY',
+		reportDate: '',
+		   refresh: false,
+		     print: true
+	}
+	let template = '#annualFoodReportHeader'
+	uiLoadReportHeader(headerInfo)
+	uiSetPrintBodyTemplate(template, headerInfo.targetDiv)
+};
 
 function uiShowMonthlyReportHeader(monthYear, reportType){
 	let headerInfo = {
@@ -1126,8 +1140,7 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 		uiBuildVoucherCountRows(count, targetType)
 	}
 };
-
-function uiShowMonthlyReportRows(monthYear, reportType, uniqueTotalCounts){
+function utilGetServicesInMonth(monthYear){
 	const currentMonth = moment().format("YYYY-MM")
 	let daysInMonth = moment(monthYear, "YYYY-MM").daysInMonth()
 	if (monthYear == currentMonth) daysInMonth = moment().format("D")
@@ -1139,19 +1152,86 @@ function uiShowMonthlyReportRows(monthYear, reportType, uniqueTotalCounts){
 		let dayDate = monthYear + "-" + day
 		dayOfServices = dbGetDaysServices(dayDate)
 		servicesRendered = servicesRendered.concat(dayOfServices)
+
 	}
+	return servicesRendered
+}
+function utilCalcUSDANonUSDAServices(servicesRendered){
+	let servicesFood = servicesRendered
+		.filter(item => item.serviceCategory == "Food_Pantry")
+		.sort((a, b) => parseInt(a.servicedDay) - parseInt(b.servicedDay))
+	let dayUSDA = ""
+	let servicesUSDA = servicesFood
+		.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
+	let servicesNonUSDA = servicesFood
+		.filter(item => item.isUSDA == "NonUSDA")
+	return {
+		"USDA":servicesUSDA,
+		"Non_USDA":servicesNonUSDA
+	}
+}
+function utilBuildUniqueTotalCountsObject(){
+	let uniqueTotalCounts = {
+		uTotalUnique: "",
+		nTotalUnique: "",
+		gTotalUnique: ""
+	}
+	for (let key in uniqueTotalCounts){
+		uniqueTotalCounts[key] = {ids:[],hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+	}
+	return uniqueTotalCounts
+}
+function utilCalcAnnualFoodReport(year){
+	console.log(year)
+	let duplicateMonthCounts = []
+	let uniqueQuarterCounts = []
+	for (let quarter = 0; quarter<4; quarter++){
+		let uniqueTotalCounts = utilBuildUniqueTotalCountsObject()
+		for (let i = (quarter*3)+1; i < (quarter*3)+4; i++){
+			let month = i.toString()
+			if (month.length == 1){
+				month = "0"+month
+			}
+			let monthYear = year+"-"+month
+			while ($.active){
+				//do nothing
+			}
+			const currentMonth = moment().format("YYYY-MM")
+			const momentMonth = moment(monthYear).format("YYYY-MM")
+			if (momentMonth > currentMonth){
+				break
+			}
+			servicesRendered =  utilGetServicesInMonth(monthYear)
+			servicesRendered = servicesRendered
+				.filter(item => item.serviceValid == 'true')
+			services = utilCalcUSDANonUSDAServices(servicesRendered)
+			servicesUSDA = services["USDA"]
+			servicesNonUSDA = services["Non_USDA"]
+			servicesUSDA = utilCalcMonthlyRows(servicesUSDA, uniqueTotalCounts, "uTotalUnique")
+			servicesNonUSDA = utilCalcMonthlyRows(servicesNonUSDA, uniqueTotalCounts, "nTotalUnique")
+			let total = utilGetMonthlyTotalCounts(servicesUSDA, servicesNonUSDA, monthYear)
+			console.log("MONTHLY TOTAL")
+			console.log(total)
+			console.log("UNIQUE TOTAL")
+			console.log(uniqueTotalCounts)
+			duplicateMonthCounts.push(total)
+		}
+		uniqueQuarterCounts.push(uniqueTotalCounts)
+	}
+	return {
+		"byQuarter":uniqueQuarterCounts,
+		"byMonth":duplicateMonthCounts
+	}
+}
+function uiShowMonthlyReportRows(monthYear, reportType, uniqueTotalCounts){
+	let servicesRendered = utilGetServicesInMonth(monthYear)
 	servicesRendered = servicesRendered
 		.filter(item => item.serviceValid == 'true')
 	// Food Report
 	if (reportType == "FOOD") {
-		let servicesFood = servicesRendered
-			.filter(item => item.serviceCategory == "Food_Pantry")
-			.sort((a, b) => parseInt(a.servicedDay) - parseInt(b.servicedDay))
-		let dayUSDA = ""
-		let servicesUSDA = servicesFood
-			.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
-		let servicesNonUSDA = servicesFood
-			.filter(item => item.isUSDA == "NonUSDA")
+		services = utilCalcUSDANonUSDAServices(servicesRendered)
+		servicesUSDA = services["USDA"]
+		servicesNonUSDA = services["Non_USDA"]
 		servicesUSDA = utilCalcMonthlyRows(servicesUSDA, uniqueTotalCounts, "uTotalUnique")
 		servicesNonUSDA = utilCalcMonthlyRows(servicesNonUSDA, uniqueTotalCounts, "nTotalUnique")
 		uiBuildFoodMonthRows(servicesUSDA, servicesNonUSDA, monthYear, uniqueTotalCounts)
@@ -1461,6 +1541,79 @@ function uiBuildTotalRow(grid, totals, total, name){
 	for (let key in totals[total]) {
     if (!(key === "ids")) $(grid).append('<div class="monthTotal">'+ totals[total][key] +'</div>')
 	}
+}
+function uiBuildAnnualRow(grid, totals, name){
+  $(grid).append('<div class="monthTotal">'+name+'</div>')
+	$(grid).append('<div class="monthTotal">'+ totals['uTotal']['hh'] +'</div>')
+	$(grid).append('<div class="monthTotal">'+ totals['nTotal']['hh'] +'</div>')
+	$(grid).append('<div class="monthTotal">'+ totals['gTotal']['hh'] +'</div>')
+	$(grid).append('<div class="monthTotal">'+ totals['uTotal']['ind'] +'</div>')
+	$(grid).append('<div class="monthTotal">'+ totals['nTotal']['ind'] +'</div>')
+	$(grid).append('<div class="monthTotal">'+ totals['gTotal']['ind'] +'</div>')
+	$(grid).append('<div class="monthTotal">'+ totals['uTotal']['ch'] +'</div>')
+	$(grid).append('<div class="monthTotal">'+ totals['nTotal']['ch'] +'</div>')
+	$(grid).append('<div class="monthTotal">'+ totals['gTotal']['ch'] +'</div>')
+}
+function utilGetMonthlyTotalCounts(u,n,monthYear){
+	let numDays = moment(monthYear, "YYYY-MM").endOf("month").format("DD")
+	numDays = parseInt(numDays) + 1
+  let totals = {
+    uTotalServices: "",
+    nTotalServices: "",
+    gTotalServices: ""
+  }
+  for (let key in totals){
+    totals[key] = {ids:[],hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+  }
+	let yearMonth = u[0].servicedDay.substring(0,6)
+	let gridRow = 0
+	for (let d = 1; d < numDays; d++) {
+		let servicedDay = String(d)
+		if (servicedDay.length < 2) servicedDay = "0"+servicedDay
+		servicedDay = yearMonth + servicedDay
+		let hasUSDA = false, hasNonUSDA = false
+		let servicedDate = moment(servicedDay, "YYYYMMDD").format("MM/DD/YYYY")
+		let uDay = u.filter(function(item) {return item.servicedDay == servicedDay})
+		let nDay = n.filter(function(item) {return item.servicedDay == servicedDay})
+		if ((uDay.length == 1)||(nDay.length == 1)){
+			gridRow = 4 + d
+			let dTotal = {hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
+			const keyFull = {
+				 hh:'totalHouseholdsServed',
+				ind:'totalIndividualsServed',
+				 ch:'totalChildrenServed',
+				 ad:'totalAdultsServed',
+				sen:'totalSeniorsServed',
+				 hf:'totalHomelessFamily',
+				 hi:'totalHomelessInd',
+				 nf:'totalNonClientFamily',
+				 ni:'totalNonClientInd'}
+			// show day USDA
+			if (uDay.length == 1) {
+				// calculate day USDA totals
+        let clientId = parseInt(uDay[0]['clientServedId'])
+				console.log(uDay)
+				for (let key in keyFull) {
+					keyFullName = keyFull[key]
+					dTotal[key] = parseInt(uDay[0][keyFullName])
+					totals['uTotalServices'][key] += dTotal[key]
+					totals['gTotalServices'][key] += dTotal[key]
+				}
+			}
+			if (nDay.length == 1) {
+				// calculate day NonUSDA totals
+        let clientId = parseInt(nDay[0]['clientServedId'])
+        for (let key in dTotal) {
+					keyFullName = keyFull[key]
+
+					totals['nTotalServices'][key] += parseInt(nDay[0][keyFullName])
+					totals['gTotalServices'][key] += parseInt(nDay[0][keyFullName])
+
+				}
+			}
+		}
+	}
+	return totals
 }
 function uiBuildFoodMonthRows(u, n, monthYear, uniqueTotalCounts) {
 	let numDays = moment(monthYear, "YYYY-MM").endOf("month").format("DD")
@@ -2699,7 +2852,134 @@ function clickGenerateDailyReport(btn, targetDiv){
 		uiShowHideReport("show")
 	}, 0)
 };
+function clickGenerateAnnualReport(btn){
+	const year = $('#reportsAnnualYear').val()
+	const reportType = $('#reportsAnnualType').val()
+	const headerInfo = {
+		 targetDiv: 'report',
+		      name: 'FOOD PANTRY',
+		  category: 'ANNUAL REPORT',
+		reportDate: '',
+		   refresh: false,
+		     print: true
+	}
+	uiUpdateButton(btn, 'Gen') // 'Gen' or 'Run'
+	setTimeout(function() {
+		uiLoadReportHeader(headerInfo)
+		uiShowAnnualReportHeader(year, reportType)
+		uiShowAnnualReportRows(year, reportType)
+		uiUpdateButton(btn, 'Run') // 'Gen' or 'Run'
+		uiShowHideReport("show")
+	}, 0)
+}
+function uiBuildQuarterTotal(total, quarter){
+	console.log(total)
+	console.log(quarter)
+	let grid = "#annualGrid"+quarter
+	$(grid).append('<div class="monthTotal">Q'+quarter+' UNIQUES</div>')
+	$(grid).append('<div class="monthTotal">'+total['uTotalUnique']['hh']+'</div>')
+	$(grid).append('<div class="monthTotal">'+total['nTotalUnique']['hh']+'</div>')
+	$(grid).append('<div class="monthTotal">'+total['gTotalUnique']['hh']+'</div>')
+	$(grid).append('<div class="monthTotal">'+total['uTotalUnique']['ind']+'</div>')
+	$(grid).append('<div class="monthTotal">'+total['nTotalUnique']['ind']+'</div>')
+	$(grid).append('<div class="monthTotal">'+total['gTotalUnique']['ind']+'</div>')
+	$(grid).append('<div class="monthTotal">'+total['uTotalUnique']['ch']+'</div>')
+	$(grid).append('<div class="monthTotal">'+total['nTotalUnique']['ch']+'</div>')
+	$(grid).append('<div class="monthTotal">'+total['gTotalUnique']['ch']+'</div>')
+}
+function uiBuildReportTotalRow(total, month, quarter){
+	let grid = "#annualGrid"+quarter
+	$(grid).append('<div class="monthItem">'+month+'</div>')
+	$(grid).append('<div class="monthItem">'+total['uTotalServices']['hh']+'</div>')
+	$(grid).append('<div class="monthItem">'+total['nTotalServices']['hh']+'</div>')
+	$(grid).append('<div class="monthItem">'+total['gTotalServices']['hh']+'</div>')
+	$(grid).append('<div class="monthItem">'+total['uTotalServices']['ind']+'</div>')
+	$(grid).append('<div class="monthItem">'+total['nTotalServices']['ind']+'</div>')
+	$(grid).append('<div class="monthItem">'+total['gTotalServices']['ind']+'</div>')
+	$(grid).append('<div class="monthItem">'+total['uTotalServices']['ch']+'</div>')
+	$(grid).append('<div class="monthItem">'+total['nTotalServices']['ch']+'</div>')
+	$(grid).append('<div class="monthItem">'+total['gTotalServices']['ch']+'</div>')
+}
+function uiShowAnnualReportRows(year, reportType){
+	let data = utilCalcAnnualFoodReport(year)
+  let monthlyTotals = data['byMonth']
+	let quarterlyTotals = data['byQuarter']
+	console.log(monthlyTotals)
+	console.log(quarterlyTotals)
+  let currentRow = 5
+	let currentGrid = 0
+	for (let i = 0; i < monthlyTotals.length; i++){
+		if (i == 0 || i == 3 || i == 6 || i == 9){
+			currentGrid += 1
+			$("#reportBodyDiv").append('<div id="annualGrid'+currentGrid+'" class="quarterRowBox" style="grid-row: '+currentRow+'"></div>')
+			currentRow += 1
+		}
+		uiBuildReportTotalRow(monthlyTotals[i],moment().month(i).format("MMM"),currentGrid)
+		if (i == 2 || i == 5 || i == 8 || i == 11){
+			uiBuildQuarterTotal(quarterlyTotals[currentGrid-1],currentGrid)
+		}
+	}
+	if ((i+1)%3 != 0){
+		uiBuildQuarterTotal(quarterlyTotals[currentGrid-1],currentGrid)
+	}
+	let servicesTotals = sumObjectsByKey(monthlyTotals,false,Math.ceil(monthlyTotals.length/3))
+	let quarterlyUniqueTotals = sumObjectsByKey(quarterlyTotals,true,Math.ceil(monthlyTotals.length/3))
+	console.log(servicesTotals)
+	console.log(quarterlyUniqueTotals)
+	$("#reportBodyDiv").append('<div id="totalAnnualReport" class="foodRowBox" style="grid-row: '+ currentRow +'" ></div>')
+	let grid = "#totalAnnualReport"
+	$(grid).append('<div class="todaySectionHeader" style="grid-column: span 10;">Aggregate Totals</div>')
+	uiBuildAnnualRow(grid, servicesTotals,'Total Services')
+	uiBuildAnnualRow(grid, quarterlyUniqueTotals,'AVG Uniques (QTR)')
 
+
+
+
+}
+function sumObjectsByKey(objs, isUnique, numQuarters) {
+  let result = {
+		"uTotal":{
+			"hh":0,
+			"ind":0,
+			"ch":0
+		},
+		"nTotal":{
+			"hh":0,
+			"ind":0,
+			"ch":0
+		},
+		"gTotal":{
+			"hh":0,
+			"ind":0,
+			"ch":0
+		}
+	}
+	let suffix = "Services"
+	if (isUnique){
+		suffix = "Unique"
+	}
+	console.log(objs)
+	let types = ['nTotal','gTotal','uTotal']
+	let fields = ['hh','ind','ch']
+	for (let i = 0; i < objs.length; i++){
+		for (let j = 0; j < types.length; j++){
+			type = types[j]
+			for (let k = 0; k < fields.length; k++){
+				field = fields[k]
+				if (isUnique){
+					console.log(objs[i])
+					console.log(suffix)
+					console.log(objs[i][type+suffix])
+					result[type][field] += (objs[i][type+suffix][field])/numQuarters
+				}
+				else{
+					result[type][field] += objs[i][type+suffix][field]
+				}
+			}
+		}
+	}
+	return result
+}
 function clickGenerateMonthlyReport(btn){
 	const monthYear = $('#reportsMonthlyMonth').val()
 	const reportType = $('#reportsMonthlyType').val()
@@ -2716,14 +2996,7 @@ function clickGenerateMonthlyReport(btn){
 	setTimeout(function() {
 		uiLoadReportHeader(headerInfo)
 		uiShowMonthlyReportHeader(monthYear, reportType)
-		let uniqueTotalCounts = {
-			uTotalUnique: "",
-    	nTotalUnique: "",
-    	gTotalUnique: ""
-		}
-		for (let key in uniqueTotalCounts){
-	    uniqueTotalCounts[key] = {ids:[],hh:0, ind:0, ch:0, ad:0, sen:0, hf:0, hi:0, nf:0, ni:0}
-	  }
+		let uniqueTotalCounts = utilBuildUniqueTotalCountsObject()
 		uiShowMonthlyReportRows(monthYear, reportType, uniqueTotalCounts)
 		console.log(uniqueTotalCounts)
 		uiUpdateButton(btn, 'Run') // 'Gen' or 'Run'
