@@ -5108,8 +5108,8 @@ function prnPrintClothesReceipt(serviceType) {
 	prnServiceHeader('CLOTHES CLOSET PROGRAM');
 	prnFeed(1);
 	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
-	prnTextLine('ADULTS | ADULTOS\t\t' + client.family.totalAdults);
-	prnTextLine('SENIORS | MAYORES\t\t' + client.family.totalSeniors);
+	prnTextLine('ADULTS | ADULTOS\t\t' +
+		(client.family.totalAdults + client.family.totalSeniors));
 	prnFeed(1);
 	prnTextLine('LIMIT OF ' + serviceType.numberItems + ' ITEMS PER PERSON');
 	prnTextLine('LIMITE ' + serviceType.numberItems + ' ARTÍCULOS POR PERSONA');
@@ -5132,8 +5132,8 @@ function prnPrintFoodReceipt(isUSDA) {
 	prnTextLine('(' + client.zipcode +	')');
 	prnFeed(1);
 	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
-	prnTextLine('ADULTS | ADULTOS\t\t' + client.family.totalAdults);
-	prnTextLine('SENIORS | MAYORES\t\t' + client.family.totalSeniors);
+	prnTextLine('ADULTS | ADULTOS\t\t' +
+		(client.family.totalAdults + client.family.totalSeniors));
 	prnTextLine('FAMILY | FAMILIA:\t\t' + client.family.totalSize);
 	prnFeed(1);
 	prnTextLine('**************************************')
