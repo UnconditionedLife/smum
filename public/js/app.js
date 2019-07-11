@@ -1037,6 +1037,9 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 		return 'failed'
 	}
 	let servicesVouchers = dbGetServicesByIdAndYear(serviceType.serviceTypeId, year)
+
+console.log(servicesVouchers.length)
+
 	if (servicesVouchers.length < 1) {
 		let message = 'No service Records were found!'
 		uiShowHideError('show', 'No Services', message, 'beep')
@@ -1050,7 +1053,7 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 				let nameB= b.clientFamilyName.toLowerCase() + b.clientGivenName.toLowerCase()
 				if (nameA < nameB) return -1
 				if (nameA > nameB) return 1
-			return 0; //default return value (no sorting)
+			  return 0; //default return value (no sorting)
 			})
 		uiBuildVoucherDistroRows(servicesVouchers, targetType)
 	} else { // Count Report
@@ -1068,7 +1071,7 @@ function uiShowVoucherReportRows(year, reportType, targetType, serviceType){
 			]
 			$.each(servicesVouchers, function(i, service){
 				const c = dbGetData(aws+"/clients/" + service.clientServedId).clients
-				const d = c[0].dependents
+				const d = c[0].dependents.filter( obj => obj.isActive == "Active")
 				$.each(d, function(di, dependent){
 					const gradeGroup = utilCalcGradeGrouping(dependent)
 					if (gradeGroup == "Unable to Calculate Grade Level") {
@@ -3876,41 +3879,41 @@ function utilCalcClientFamilyCounts(){
 	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
 };
 
-function utilCalcCurrentGrade(numericGrade,date){
-	const today = moment();
-	let dateEntered = moment(date);
-	const wasSecondSemester = (dateEntered.dayOfYear()<125);
-	const wasFirstSemester = !wasSecondSemester;
-  if (wasSecondSemester){
-		dateEntered = moment().year(dateEntered.subtract(1,'year').year()).month('07').date('01');
-	}
-	else {
-		dateEntered = moment().year(dateEntered.year()).month('07').date('01');
-	}
-	let years = today.diff(dateEntered,'year');
-	let currentGrade = numericGrade+years;
-	return currentGrade;
-};
+// Removed be cause of errors with 12 graders - now only assumes grade entered to be next year's grade
+// function utilCalcCurrentGrade(numericGrade,date){
+// 	const today = moment();
+// 	let dateEntered = moment(date);
+// 	const wasSecondSemester = (dateEntered.dayOfYear()<125);
+// 	const wasFirstSemester = !wasSecondSemester;
+//   if (wasSecondSemester){
+// 		dateEntered = moment().year(dateEntered.subtract(1,'year').year()).month('07').date('01');
+// 	}
+// 	else {
+// 		dateEntered = moment().year(dateEntered.year()).month('07').date('01');
+// 	}
+// 	let years = today.diff(dateEntered,'year');
+// 	let currentGrade = numericGrade+years;
+// 	return currentGrade;
+// };
 
 function utilCalcGradeGrouping(dependent){
-	let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(dependent.grade))
-	let nextYear = currentGrade+1
-	if (nextYear==0){
+	let currentGrade = utilGradeToNumber(dependent.grade)
+	if (currentGrade==0){
 		return "K"
 	}
-	else if  (nextYear>=1 && nextYear<=2){
+	else if  (currentGrade>=1 && currentGrade<=2){
 		return "1-2"
 	}
-	else if (nextYear>=3&&nextYear<=5){
+	else if (currentGrade>=3&&currentGrade<=5){
 		return "3-5"
 	}
-	else if (nextYear>=6&&nextYear<=8){
+	else if (currentGrade>=6&&currentGrade<=8){
 		return "6-8"
 	}
-	else if (nextYear==9){
+	else if (currentGrade==9){
 		return "9"
 	}
-	else if (nextYear>=10 && nextYear<=12){
+	else if (currentGrade>=10 && currentGrade<=12){
 		return "10-12"
 	}
 	else{
@@ -3931,10 +3934,9 @@ function utilCalcValidAgeGrade(gradeOrAge,targetService){
 	for (let j = 0; j < client.dependents.length; j++) {
 		if (gradeOrAge=="grade" &&
 		!(client.dependents[j].grade == undefined || client.dependents[j].grade == "") && client.dependents[j].isActive=="Active"){
-			let currentGrade = utilCalcCurrentGrade(utilGradeToNumber(client.dependents[j].grade),client.dependents[j].gradeDateTime)
-			let nextYear =currentGrade+1
-			if (nextYear>=utilGradeToNumber(targetService['dependents_gradeMin'])
-			&& nextYear<=utilGradeToNumber(targetService['dependents_gradeMax'])){
+			let currentGrade = utilGradeToNumber(client.dependents[j].grade)
+			if (currentGrade>=utilGradeToNumber(targetService['dependents_gradeMin'])
+			&& currentGrade<=utilGradeToNumber(targetService['dependents_gradeMax'])){
 				dependents.push(client.dependents[j])
 			}
 		}
@@ -4852,7 +4854,7 @@ function utilSortDependentsByAge(dependents){
 };
 
 function utilSortDependentsByGrade(dependents){
-	return dependents.sort((a,b) => utilCalcCurrentGrade(utilGradeToNumber(a.grade))-utilCalcCurrentGrade(utilGradeToNumber(b.grade)))
+  return dependents.sort((a,b) => utilGradeToNumber(a.grade) - utilGradeToNumber(b.grade))
 };
 
 function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
