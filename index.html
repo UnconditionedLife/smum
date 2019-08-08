@@ -87,7 +87,7 @@
                   <container id="serviceButtonContainer">
                      <div id="serviceDateTime"></div>
                      <div id="serviceLastVisit"></div>
-                     <div id="servicePrimaryButtons"><div class="bannerDiv"><span class="bannerText">SEARCH FOR A CLIENT</span></div></div>
+                     <div id="servicePrimaryButtons"></div>
                      <div id="serviceSecondaryButtons"></div>
                   </container>
                </section>
@@ -432,40 +432,6 @@
    	    </div>
    	</div> -->
       <div id="loginOverlay" class="popupOverlay">
-         <div class="loginFormDiv">
-            <div class="loginHeader span4">Login to Santa Maria Urban Ministry</div>
-            <div class="span4"></div>
-            <div></div>
-            <div class="lableDiv loginDiv">Username</div>
-            <div class="loginDiv"><input id="loginUserName" type="email" class="inputBox loginForm" tabindex="1"></div>
-            <div class="loginDiv"></div>
-            <div class="loginDiv"></div>
-            <div class="lableDiv loginDiv">Password</div>
-            <div class="loginDiv"><input id="loginPassword" type="password" class="inputBox loginForm" tabindex="2"> <i class="fa fa-eye fa-lg" style="float: right;" aria-hidden="true" onclick='uiShowHidePassword()'></i></div>
-            <div class="lableDiv codeDiv newPasswordDiv">Validation Code</div>
-            <div class="codeDiv newPasswordDiv"><input id="loginCode" type="text" class="inputBox loginForm"></div>
-            <div class="newPasswordDiv"></div>
-            <div class="newPasswordDiv"></div>
-            <div class="lableDiv newPasswordDiv">New Password</div>
-            <div class="newPasswordDiv"><input id="loginNewPassword" type="password" class="inputBox loginForm"> <i class="fa fa-eye fa-lg" style="float: right;" aria-hidden="true" onclick='uiShowHidePassword()'></i></div>
-            <div></div>
-            <div class="span4 codeDiv" style="display: flex; justify-content: center; align-items: center;">
-               <span class="textLink" onclick='cogResendValidationCode()'>Resend Validation Code</span>
-            </div>
-            <div class="span4 loginDiv" style="display: flex; justify-content: center; align-items: center;">
-               <span class="textLink" onclick='cogForgotPassword()' tabindex="4">Forgot Password</span>
-            </div>
-            <div class="span4 loginDiv" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-               <input class="solidButton" onclick="cogLoginUser()" type="button" value="Login" tabindex="3">
-            </div>
-            <div class="span4 codeDiv" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-               <input class="solidButton" onclick="cogUserConfirm()" type="button" value="VALIDATE">
-            </div>
-            <div class="span4 newPasswordDiv" style="display: flex; justify-content: center; height: 60px; align-items: center;">
-               <input class="solidButton" onclick="cogUserConfirmPassword()" type="button" value="SET PASSWORD">
-            </div>
-            <div id="loginError" class="modalError"></div>
-         </div>
       </div>
       <div id="msgOverlay">
          <div id="clientMessageDiv">
@@ -1169,5 +1135,6 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/cuid/1.3.8/browser-cuid.min.js"></script>
    <!-- <script src="js/app.js?v=1.0.5"></script> -->
    <script src="js/fullcalendar.js"></script>
+   <script src="components/main.bundle.js"></script>
    <script src="js/app.js?v=1.0.5"></script>
 </html>
