@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import LoginForm from "./Login/LoginForm";
-import Search from "./Search/Search";
+import SMUMBanner from "./SMUMBanner/SMUMBanner";
 
-ReactDOM.render(<Search />, document.getElementById("servicePrimaryButtons"));
+ReactDOM.render(
+  <SMUMBanner />,
+  document.getElementById("servicePrimaryButtons")
+);
 
 ReactDOM.render(<LoginForm />, document.getElementById("loginOverlay"));

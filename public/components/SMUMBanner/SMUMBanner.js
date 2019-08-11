@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Moment from "react-moment";
 
-function Search() {
+function SMUMBanner() {
   return (
     <React.Fragment>
       <div className="bannerDiv">
@@ -11,4 +11,4 @@ function Search() {
   );
 }
 
-export default Search;
+export default SMUMBanner;
