@@ -1,4 +1,4 @@
-// SMUM CHECKIN APP
+/// SMUM CHECKIN APP
 // This project is thanks to contributions of people like Kush Jain.
 // FUNCTION naming covention Prefix:
 // -->   ui....  interact with User Interface [HTML]
@@ -72,6 +72,7 @@ $("#atabLable7").hide()
 uiShowDailyReportHeader(moment().format(date), 'today', "TODAY")
 document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); clickSearchClients()}
+	// removed password field keybinding check (now in react)
 };
 
 // control the "save button" behaviour
@@ -509,6 +510,9 @@ function uiResetChangePasswordForm(){
 	$(".passwordForm").val("")
 };
 
+// removed UI toggle form validation form (ported UI to react)
+
+
 function uiResetSettingsForm(){
 
 	//TODO Build clear rest form
@@ -695,6 +699,8 @@ function uiShowHideReport(todo){
 };
 
 function uiShowHideLogin(todo){
+	// need this for now until whole app is ported to React
+	// allows for the logout button to work once logged in
 	if (todo === 'show'){
 		$('#loginOverlay').show().css('display', 'flex')
 		$('#loginUserName').focus()
@@ -704,6 +710,8 @@ function uiShowHideLogin(todo){
 		$("#loginError").html('')
 	}
 };
+
+// removed UI show hide password (ported to react)
 
 function uiShowHistory(){
 	uiBuildHistoryTop()
@@ -790,7 +798,7 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 			let btnClass = "btnPrimary"
 			if ((activeServiceTypes[x].serviceCategory == "Administration") || (activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
 			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'";
-			let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png" + ver + "'>";
+			let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='public/images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png" + ver + "'>";
 			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
 		}
 	}
@@ -3293,6 +3301,9 @@ function cogUserChangePassword(){
 	}
 };
 
+// params for fields passed in via React and a callback function that react uses to set HTML (handleCogValue)
+// same callback passed in all cognito functions
+
 function cogUserConfirm(validationCode, userName, handleCogValue){
 	let userData = {
 	 		Username: userName,
@@ -3672,7 +3683,7 @@ function utilGetServiceTypeByID(serviceTypeId){
 function utilBeep(){
 	if (settings.sounds == "YES"){
 		console.log("BAD BEEP")
-    let beep  = new Audio("sounds/beep.wav")
+    let beep  = new Audio("public/sounds/beep.wav")
 		beep.volume = .1
 		beep.loop = false
 		beep.play()
@@ -3681,7 +3692,7 @@ function utilBeep(){
 
 function utilBloop(){
 	if (settings.sounds == "YES"){
-		let bloop  = new Audio("sounds/bloop.wav")
+		let bloop  = new Audio("public/sounds/bloop.wav")
 		bloop.volume= .1
 		bloop.loop = false
 		bloop.play()

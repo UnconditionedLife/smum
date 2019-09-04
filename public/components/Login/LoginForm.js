@@ -27,6 +27,8 @@ function LoginForm() {
   let validationCodeInput = useInput("");
   let newPasswordInput = useInput("");
 
+  // callback function passed into cognito in app.js
+  // takes json object and sets fields based on its attributes 
   function handleCogValue(json) {
     if (json.message) {
       setMessage(json.message);
