@@ -30,3 +30,9 @@ We hope to also integrate the management of service programs offered at SMUM. Sa
 
 #### Community Communication
 Another feature that we are considering adding is the ability to reach out to volunteers and clients via email and SMS. This would provide SMUM the means to inform stakeholders of changes in policies, programs, schedules, and special community events.
+
+### Build Process
+1. Install nodejs on machine
+2. Run npm install to get all the node modules in their correct versions
+3. Run npm run build to install webpack
+4. Open the HTML file (your app should be running!)

@@ -31,3 +31,6 @@ data/spreadsheets/Mar-9-18-service.numbers
 data/spreadsheets/Mar-9-18-food.numbers
 data/spreadsheets/Mar-9-18-dependents.numbers
 data/spreadsheets/Mar-9-18-clients.numbers
+node_modules
+public/components/main.bundle.js
+public/components/main.bundle.js.map

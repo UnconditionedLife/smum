@@ -1,4 +1,4 @@
-// SMUM CHECKIN APP
+/// SMUM CHECKIN APP
 // This project is thanks to contributions of people like Kush Jain.
 // FUNCTION naming covention Prefix:
 // -->   ui....  interact with User Interface [HTML]
@@ -72,7 +72,7 @@ $("#atabLable7").hide()
 uiShowDailyReportHeader(moment().format(date), 'today', "TODAY")
 document.onkeydown = function(e) {
 	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); clickSearchClients()}
-	if ($("#loginPassword").is(":focus")&&e.keyCode==13) {event.preventDefault(); cogLoginUser()}
+	// removed password field keybinding check (now in react)
 };
 
 // control the "save button" behaviour
@@ -490,22 +490,6 @@ function uiInitFullCalendar(){
 	});
 };
 
-function uiLoginFormToggleValidation(todo){
-	// TODO add validation Code to form
-	if (todo == "code") {
-		$('.loginDiv').hide()
-		$('.codeDiv').show("slow")
-	} else if (todo == "newPassword") {
-		$('.loginDiv').hide()
-		$('.codeDiv').hide()
-		$('.newPasswordDiv').show("slow")
-	} else {
-		$('.codeDiv').hide()
-		$('.newPasswordDiv').hide()
-		$('.loginDiv').show("slow")
-	}
-};
-
 function uiOutlineTableRow(table, row){
 	$('#' + table + ' tr:eq('+ row + ')').css('outline', 'var(--blue) 1px dashed').siblings().css('outline', 'none')
 };
@@ -525,6 +509,9 @@ function uiRemoveListItem(type, item){
 function uiResetChangePasswordForm(){
 	$(".passwordForm").val("")
 };
+
+// removed UI toggle form validation form (ported UI to react)
+
 
 function uiResetSettingsForm(){
 
@@ -712,28 +699,19 @@ function uiShowHideReport(todo){
 };
 
 function uiShowHideLogin(todo){
+	// need this for now until whole app is ported to React
+	// allows for the logout button to work once logged in
 	if (todo === 'show'){
 		$('#loginOverlay').show().css('display', 'flex')
-		$('.codeDiv').hide()
-		$('.newPasswordDiv').hide()
 		$('#loginUserName').focus()
 	} else {
 		$('.loginDiv').show()
 		$('#loginOverlay').hide()
-		$('#loginUserName').val('')
-		$('#loginPassword').val('')
-		$('#loginCode').val('')
 		$("#loginError").html('')
 	}
 };
 
-function uiShowHidePassword(){
-	if ($('#loginPassword').attr('type') == 'password') {
-    $('#loginPassword').attr('type', 'text');
-	} else {
-    $('#loginPassword').attr('type', 'password');
-	}
-};
+// removed UI show hide password (ported to react)
 
 function uiShowHistory(){
 	uiBuildHistoryTop()
@@ -820,7 +798,7 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 			let btnClass = "btnPrimary"
 			if ((activeServiceTypes[x].serviceCategory == "Administration") || (activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
 			let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'";
-			let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png" + ver + "'>";
+			let image = "<img id=\'image-" + activeServiceTypes[x].serviceTypeId + "\' src='public/images/PrimaryButton" + activeServiceTypes[x].serviceCategory + ".png" + ver + "'>";
 			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
 		}
 	}
@@ -3323,10 +3301,11 @@ function cogUserChangePassword(){
 	}
 };
 
-function cogUserConfirm(){
-	let validationCode = $('#loginCode').val(),
-		userName = $('#loginUserName').val(),
-		userData = {
+// params for fields passed in via React and a callback function that react uses to set HTML (handleCogValue)
+// same callback passed in all cognito functions
+
+function cogUserConfirm(validationCode, userName, handleCogValue){
+	let userData = {
 	 		Username: userName,
 	 		Pool: userPool
 		}
@@ -3335,7 +3314,9 @@ function cogUserConfirm(){
 			if (err) {
 				console.log("|"+err+"|")
 				if (err == ""){
-					$("#loginError").html("Error Message!")
+					handleCogValue({
+						message: "You're confirmed! Please Login.",
+					})
 					return
 				} else {
 					alert(err);
@@ -3343,15 +3324,16 @@ function cogUserConfirm(){
 				}
 			}
 			utilBloop()
-			uiLoginFormToggleValidation("login")
-			$("#loginError").html("You're confirmed! Please Login.")
 			console.log('call result: ' + result);
+			handleCogValue({
+				message: "You're confirmed! Please Login.",
+				appState: "login"
+			})
 	});
 }
 
-function cogResendValidationCode(){
-	let userName = $('#loginUserName').val(),
-		userData = {
+function cogResendValidationCode(userName, handleCogValue){
+	let	userData = {
 			Username: userName,
 			Pool: userPool
 		}
@@ -3361,15 +3343,13 @@ function cogResendValidationCode(){
 			alert(err);
 			return;
 		}
-		$("#loginError").html("New code has been sent.")
+		handleCogValue({message: "New code has been sent."})
 	});
 };
 
-function cogForgotPassword(){
-	let userName = $("#loginUserName").val()
+function cogForgotPassword(userName, handleCogValue){
 	if (userName == "") {
-		$("#loginError").html("Username is required above!")
-		return
+		handleCogValue({message: "Username is required above!"})
 	}
 	let userData = {
 		Username: userName,
@@ -3380,14 +3360,12 @@ function cogForgotPassword(){
     onSuccess: function (result) {
       console.log('call result: ' + JSON.stringify(result))
 			console.log('sent to: ' + result.CodeDeliveryDetails.Destination)
-			$("#loginError").html("Validation Code sent to: " + result.CodeDeliveryDetails.Destination)
-			uiLoginFormToggleValidation("newPassword")
+			handleCogValue({message: "Validation Code sent to: " + result.CodeDeliveryDetails.Destination, appState:"newPassword"})
     },
     onFailure: function(err) {
 			console.log("|"+err+"|")
 			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time."){
-				$("#loginError").html("Too many requests. Try again later!")
-				return
+				handleCogValue({message: "Too many requests. Try again later!"})
 			} else {
 				alert(err)
 				return
@@ -3396,11 +3374,8 @@ function cogForgotPassword(){
   });
 };
 
-function cogUserConfirmPassword() {
-	let validationCode = $('#loginCode').val(),
-		newPassword = $('#loginNewPassword').val(),
-		userName = $('#loginUserName').val(),
-		userData = {
+function cogUserConfirmPassword(validationCode, newPassword, userName, handleCogValue) {
+	let userData = {
 			Username: userName, //username,
 			Pool: userPool
 		};
@@ -3413,16 +3388,15 @@ function cogUserConfirmPassword() {
 			// uiLoginFormToggleValidation("newPassword")
 			//console.log(callback.inputVerificationCode(data))
 			utilBloop()
-			$("#loginPassword").val("")
-			uiLoginFormToggleValidation("login")
-			$("#loginError").html("New Password set! Please Login.")
+			handleCogValue({message: "New Password set! Please Login.", clearInputs: true, appState: "login"})
 			console.log('call result: ' + result);
+			return;
     },
     onFailure: function(err) {
 			console.log("|"+err+"|")
 			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time."){
-				$("#loginError").html("Too many requests. Try again later!")
-				return
+				handleCogValue({message: "Too many requests. Try again later!"})
+				return;
 			} else {
 				alert(err)
 				return
@@ -3455,10 +3429,8 @@ function cogUpdateAttributes(email, telephone){
   })
 };
 
-function cogLoginUser() {
-	let username = $('#loginUserName').val(),
-			password = $('#loginPassword').val(),
- 			authData = {
+function cogLoginUser(username, password, handleCogValue) {
+	let authData = {
      		Username: username,
      		Password: password
   		};
@@ -3474,13 +3446,14 @@ function cogLoginUser() {
 			user = cognitoUser
 			authorization.accessToken = result.getAccessToken().getJwtToken()
 			authorization.idToken = result.idToken.jwtToken
+			handleCogValue({clearInputs: true})
 			utilLoginUserShowScreens()
 			// logout if user is set to Inactive
 			if (currentUser.isActive == "Inactive") {
 				cogLogoutUser()
 				$('#nav5').html('Login')
 				$('#nav4').html('')
-				$(loginError).html("Sorry, your account is INACTIVE.")
+				handleCogValue({message: "Sorry, your account is INACTIVE."})
 			} else {
 				settings = dbGetAppSettings()
 				prnConnect()
@@ -3490,25 +3463,33 @@ function cogLoginUser() {
 			console.log("COGNITO ERROR")
 			console.log('|'+err+'|');
 			utilBeep()
+			let message = undefined
+			let appState = undefined
+
 			if (err == 'Error: Incorrect username or password.') {
-				$("#loginError").html("Incorrect username or password")
+				message = "Incorrect username or password"
 			} else if (err == 'UserNotFoundException: User does not exist.') {
-				$("#loginError").html("Username does not exist.")
+				message = "Username does not exist."
 			} else if (err == 'NotAuthorizedException: Incorrect username or password.') {
-				$("#loginError").html("Incorrect username or password.")
+				message = "Incorrect username or password."
 			} else if (err == 'UserNotConfirmedException: User is not confirmed.') {
-				uiLoginFormToggleValidation("code")
-				$("#loginError").html("Validation Code is required.")
+				appState = "code"
+				message = "Validation Code is required."
 				// TODO change login flow to deal with confirmation
 				// cogUserConfirm() //userName, verificationCode
 			} else if (err == 'NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED.') {
-				uiLoginFormToggleValidation("login")
-				$("#loginError").html("No longer UNCONFIRMED")
+				appState = "login"
+				message = "No longer UNCONFIRMED"
 			} else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
 				console.log("PasswordResetRequiredException")
-				$("#loginError").html("New Password is required.")
-			} else if (err == 'InvalidParameterException: Missing required parameter USERNAME')
-			$("#loginError").html("Username is required.")
+				message = "New Password is required."
+			} else if (err == 'InvalidParameterException: Missing required parameter USERNAME'){
+			  message = "Username is required."
+			}
+			handleCogValue({
+				message: message,
+				appState: appState
+			})
 		}
 	})
 };
@@ -3702,7 +3683,7 @@ function utilGetServiceTypeByID(serviceTypeId){
 function utilBeep(){
 	if (settings.sounds == "YES"){
 		console.log("BAD BEEP")
-    let beep  = new Audio("sounds/beep.wav")
+    let beep  = new Audio("public/sounds/beep.wav")
 		beep.volume = .1
 		beep.loop = false
 		beep.play()
@@ -3711,7 +3692,7 @@ function utilBeep(){
 
 function utilBloop(){
 	if (settings.sounds == "YES"){
-		let bloop  = new Audio("sounds/bloop.wav")
+		let bloop  = new Audio("public/sounds/bloop.wav")
 		bloop.volume= .1
 		bloop.loop = false
 		bloop.play()
