@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import Moment from "react-moment";
+import Button from '@material-ui/core/Button';
 
 function useInput(initialValue) {
   let [value, setValue] = useState(initialValue);
@@ -28,7 +29,7 @@ function LoginForm() {
   let newPasswordInput = useInput("");
 
   // callback function passed into cognito in app.js
-  // takes json object and sets fields based on its attributes 
+  // takes json object and sets fields based on its attributes
   function handleCogValue(json) {
     if (json.message) {
       setMessage(json.message);
