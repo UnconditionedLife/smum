@@ -6,9 +6,7 @@ function SMUMBanner() {
   return (
       <div className="bannerDiv">
         <span className="bannerText">SEARCH FOR A PERSON</span>
-        <Button variant="contained" color="primary">
-          Hello World
-        </Button>
+        
       </div>
   );
 }

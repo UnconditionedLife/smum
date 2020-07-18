@@ -5,8 +5,8 @@ import SMUMBanner from "./SMUMBanner/SMUMBanner";
 import PrimarySearchAppBar from "./NavigationBar/navbar"
 
 ReactDOM.render(
-  // <SMUMBanner />,
-  <PrimarySearchAppBar />,
+   <SMUMBanner />,
+  
   document.getElementById("servicePrimaryButtons")
 );
 

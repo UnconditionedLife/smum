@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
   clients:{
     width:'100%',
     position:'relative',
-    top:'12px',
+    top:'3.5px',
     fontSize:'15px',
     right:'90px',
 
@@ -40,21 +40,21 @@ const useStyles = makeStyles((theme) => ({
   admin:{
     width:'100%',
     position:'relative',
-    top:'12px',
+    top:'3.5px',
     fontSize:'15px',
     right:'65px',
   },
   username:{
     width:'100%',
     position:'relative',
-    top:'12px',
+    top:'3.5px',
     fontSize:'15px',
-    right:'100px',
+    right:'40px',
   },
-  login:{
+  logout:{
     width:'100%',
     position:'relative',
-    top:'3.5px',
+    top:'3px',
     fontSize:'15px',
     right:'-30px',
   },
@@ -216,18 +216,19 @@ export default function PrimarySearchAppBar() {
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>
 
-          <Typography onClick={() => window.navSwitch('clients')} className={classes.clients} variant="h6" >
+          <Button onClick={() => window.navSwitch('clients')} className={classes.clients} variant="h6" color="inherit">
           Clients
-        </Typography>
+        </Button>
 
-        <Typography onClick={() => window.navSwitch('admin')} className={classes.admin} variant="h6" noWrap>
+        <Button onClick={() => window.navSwitch('admin')} className={classes.admin} variant="h6" color="inherit" noWrap>
           Admin
-        </Typography>
-        <Button className={classes.login} color="inherit">Login</Button>
-            <Typography onClick={() => window.navSwitch('user')} className={classes.username} variant="h6" >
+        </Button>
+        
+        <Button onClick={() => window.navSwitch('user')} className={classes.username} variant="h6" color="inherit" >
           USERNAME
-        </Typography>
-
+        </Button>
+        <Button onClick={() => cogLogoutUser()} className={classes.logout} color="inherit">Logout
+        </Button>
             <IconButton
               edge="end"
               aria-label="account of current user"
