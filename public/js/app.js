@@ -67,7 +67,6 @@ uiFillDate()
 uiShowHideLogin('show')
 navGotoTab("tab1")
 $("#noteEditForm").hide()
-$("#nav3").hide()
 $("#atabLable7").hide()
 uiShowDailyReportHeader(moment().format(date), 'today', "TODAY")
 document.onkeydown = function(e) {
@@ -99,10 +98,10 @@ function navSwitch(link){
 			navGotoTab("tab1")
 			uiShowServicesButtons()
 			break
-		case "newClient":
-			navGotoSec("nav2")
-			addClient()
-			break
+		// case "newClient":
+		// 	navGotoSec("nav2")
+		// 	addClient()
+		// 	break
 		case "admin":
 			navGotoSec("nav3")
 			navGotoTab("aTab1")
@@ -117,14 +116,12 @@ function navSwitch(link){
 			uiShowProfileForm()
 			uiShowChangePasswordForm()
 			break
-		case "logInOut":
-			navGotoSec("nav5")
+		// case "logInOut":
+		// 	navGotoSec("nav5")
 	}
 };
 
 function navGotoSec(nav){
-	for (let i = 0; i < 5; i++) $("#nav"+i).removeClass("navActive")
-	$("#"+nav).addClass("navActive")
 	$("#"+currentNavTab).hide()
 	switch (nav) {
 		case "nav1": // CLIENTS
@@ -141,14 +138,6 @@ function navGotoSec(nav){
 			uiShowUserEdit()
 			currentNavTab = "userDiv"
 			break
-		case "nav5": // LOGINOUT
-			if ($('#nav5').html() === 'Login'){
-				uiShowHideLogin('show')
-			} else {
-				cogLogoutUser()
-				$('#nav5').html('Login')
-				$('#nav4').html('')
-			}
 		}
 	$("#"+currentNavTab).show()
 };
@@ -655,13 +644,10 @@ function uiSetMenusForUser(){
 	// TODO remove TechAmin from dropdown for admins that are not Tech
 	if (currentUser.isActive == "Active") {
 		if (currentUser.userRole == "Admin"){
-			$("#nav3").show()
 			$("#atabLable7").hide()
 		} else if (currentUser.userRole == "TechAdmin"){
-			$("#nav3").show()
 			$("#atabLable7").show()
 		} else if (currentUser.userRole == "Volunteer" || currentUser.userRole == "Staff") {
-			$("#nav3").hide()
 			$("#atabLable7").hide()
 		}
 	}
@@ -2272,8 +2258,6 @@ function dbGetData(uUrl){
 			401: function() {
 console.log("Error: 401")
 				cogLogoutUser()
-				$('#nav5').html('Login')
-				$('#nav4').html('')
 				$(loginError).html("Sorry, your session has expired.")
 				console.log("Unauthorized")
 			},
@@ -2281,8 +2265,6 @@ console.log("Error: 401")
 console.log("Error: 0")
 				console.log("Status code: 0")
 				cogLogoutUser()
-				$('#nav5').html('Login')
-				$('#nav4').html('')
 				$(loginError).html("Sorry, your session has expired.")
 				console.log("Unauthorized")
 			}
@@ -3258,8 +3240,6 @@ function cogCheckSession() {
 	cognitoUser.getSession(function(err, session) {
 		if (err) {
 			cogLogoutUser()
-			$('#nav5').html('Login')
-			$('#nav4').html('')
 			$(loginError).html("Sorry, your session has expired.")
 			return "FAILED"
 		}
@@ -3288,8 +3268,6 @@ function cogUserChangePassword(){
 				uiResetChangePasswordForm()
 				utilBloop()
 				cogLogoutUser()
-				$('#nav5').html('Login')
-				$('#nav4').html('')
 				$(loginError).html("Login with your New Password.")
 				//TODO make utilLogout function takes message as input
 			}
@@ -3446,15 +3424,13 @@ function cogLoginUser(username, password, handleCogValue) {
 			user = cognitoUser
 			authorization.accessToken = result.getAccessToken().getJwtToken()
 			authorization.idToken = result.idToken.jwtToken
-			handleCogValue({clearInputs: true})
 			utilLoginUserShowScreens()
 			// logout if user is set to Inactive
 			if (currentUser.isActive == "Inactive") {
 				cogLogoutUser()
-				$('#nav5').html('Login')
-				$('#nav4').html('')
 				handleCogValue({message: "Sorry, your account is INACTIVE."})
 			} else {
+				handleCogValue({newUser: currentUser, clearInputs: true})
 				settings = dbGetAppSettings()
 				prnConnect()
 			}
@@ -3972,8 +3948,6 @@ function utilGradeToNumber(grade){
 };
 
 function utilLoginUserShowScreens(){
-	$('#nav4').html('<i class="fa fa-user" aria-hidden="true"></i> ' + session.user.username)
-	$('#nav5').html('Logout')
 	uiShowHideLogin('hide')
 	navGotoSec('nav1')
 	cogGetUserAttributes()

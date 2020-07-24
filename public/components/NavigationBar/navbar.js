@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
+import ReactDOM from "react-dom";
 //import PropTypes from "prop-types";
 import { fade, makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
+import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
@@ -15,6 +17,7 @@ import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import Button from '@material-ui/core/Button';
+import LoginForm from "../Login/LoginForm";
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -50,6 +53,7 @@ const useStyles = makeStyles((theme) => ({
     top:'3.5px',
     fontSize:'15px',
     right:'40px',
+    textTransform:'none',
   },
   logout:{
     width:'100%',
@@ -110,13 +114,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function PrimarySearchAppBar() {
+export default function PrimarySearchAppBar(props) {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
+  const [user, setUser] = React.useState(null);
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  useEffect(() => {
+    ReactDOM.render(<LoginForm onLogin={(newUser) => setUser(newUser)}/>, document.getElementById("loginOverlay"));
+  });
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -134,6 +143,70 @@ export default function PrimarySearchAppBar() {
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
+
+  function handleLogout() {
+    window.cogLogoutUser();
+    setUser(null);
+  }
+
+  const appbarControls = (
+    <React.Fragment>
+    <div className={classes.search}>
+      <div className={classes.searchIcon} >
+        <SearchIcon  onClick={() => window.clickSearchClients()} />
+      </div>
+      <InputBase
+        id='searchField'
+        placeholder="Search clients"
+        classes={{
+          root: classes.inputRoot,
+          input: classes.inputInput,
+        }}
+        inputProps={{ 'aria-label': 'search' }}
+      />
+    </div>
+    <div className={classes.grow} />
+    <div className={classes.sectionDesktop}>
+
+      <Button onClick={() => window.navSwitch('clients')} className={classes.clients} variant="h6" color="inherit">
+      Clients
+      </Button>
+
+      {user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin') ?
+      (<Button onClick={() => window.navSwitch('admin')} className={classes.admin} variant="h6" color="inherit" noWrap>
+      Admin
+      </Button>) : null}
+
+      <Button onClick={() => window.navSwitch('user')} className={classes.username} variant="h6" color="inherit" >
+      {user ? user.userName : ''}
+      </Button>
+      <Button onClick={() => handleLogout()} className={classes.logout} color="inherit">
+      Logout
+      </Button>
+      <IconButton
+        edge="end"
+        aria-label="account of current user"
+        aria-controls={menuId}
+        aria-haspopup="true"
+        onClick={handleProfileMenuOpen}
+        color="inherit"
+      >
+
+      </IconButton>
+    </div>
+    <div className={classes.sectionMobile}>
+      <IconButton
+        aria-label="show more"
+        aria-controls={mobileMenuId}
+        aria-haspopup="true"
+        onClick={handleMobileMenuOpen}
+        color="inherit"
+      >
+        <MoreIcon />
+      </IconButton>
+    </div>
+    </React.Fragment>
+  );
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -195,62 +268,12 @@ export default function PrimarySearchAppBar() {
     <div className={classes.grow}>
       <AppBar position="static">
         <Toolbar>
-
+          <Tooltip title={props.version}>
           <Typography className={classes.title} variant="h6" noWrap>
             Santa Maria Urban Ministry
           </Typography>
-          <div className={classes.search}>
-            <div className={classes.searchIcon} >
-              <SearchIcon  onClick={() => window.clickSearchClients()} />
-            </div>
-            <InputBase 
-              id='searchField'
-              placeholder="Search clients"
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput,
-              }}
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </div>
-          <div className={classes.grow} />
-          <div className={classes.sectionDesktop}>
-
-          <Button onClick={() => window.navSwitch('clients')} className={classes.clients} variant="h6" color="inherit">
-          Clients
-        </Button>
-
-        <Button onClick={() => window.navSwitch('admin')} className={classes.admin} variant="h6" color="inherit" noWrap>
-          Admin
-        </Button>
-        
-        <Button onClick={() => window.navSwitch('user')} className={classes.username} variant="h6" color="inherit" >
-          USERNAME
-        </Button>
-        <Button onClick={() => cogLogoutUser()} className={classes.logout} color="inherit">Logout
-        </Button>
-            <IconButton
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
-            >
-
-            </IconButton>
-          </div>
-          <div className={classes.sectionMobile}>
-            <IconButton
-              aria-label="show more"
-              aria-controls={mobileMenuId}
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
-              color="inherit"
-            >
-              <MoreIcon />
-            </IconButton>
-          </div>
+          </Tooltip>
+          {user ? appbarControls : null}
         </Toolbar>
       </AppBar>
       {renderMobileMenu}

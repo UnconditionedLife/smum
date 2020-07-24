@@ -17,7 +17,7 @@ function useInput(initialValue) {
   };
 }
 
-function LoginForm() {
+function LoginForm(props) {
   let [showPrimaryForm, setShowPrimaryForm] = useState(true);
   let [passwordDisplay, setPasswordDisplay] = useState(false);
   let [appState, setAppState] = useState("login");
@@ -36,6 +36,9 @@ function LoginForm() {
     }
     if (json.appState) {
       setAppState(json.appState);
+    }
+    if (json.newUser) {
+      props.onLogin(json.newUser);
     }
     if (json.clearInputs) {
       usernameInput.setValue("");
