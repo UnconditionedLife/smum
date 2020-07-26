@@ -124,7 +124,8 @@ export default function PrimarySearchAppBar(props) {
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
   useEffect(() => {
-    ReactDOM.render(<LoginForm onLogin={(newUser) => setUser(newUser)}/>, document.getElementById("loginOverlay"));
+    ReactDOM.render(<LoginForm onLogin={(newUser) => setUser(newUser)}/>,
+      document.getElementById("loginOverlay"));
   });
 
   const handleProfileMenuOpen = (event) => {
@@ -153,7 +154,7 @@ export default function PrimarySearchAppBar(props) {
     <React.Fragment>
     <div className={classes.search}>
       <div className={classes.searchIcon} >
-        <SearchIcon  onClick={() => window.clickSearchClients()} />
+        <SearchIcon />
       </div>
       <InputBase
         id='searchField'
@@ -163,6 +164,10 @@ export default function PrimarySearchAppBar(props) {
           input: classes.inputInput,
         }}
         inputProps={{ 'aria-label': 'search' }}
+        onKeyDown={event => {
+          if (event.key == "Enter")
+            window.clickSearchClients(document.getElementById('searchField').value);
+        }}
       />
     </div>
     <div className={classes.grow} />

@@ -69,10 +69,6 @@ navGotoTab("tab1")
 $("#noteEditForm").hide()
 $("#atabLable7").hide()
 uiShowDailyReportHeader(moment().format(date), 'today', "TODAY")
-document.onkeydown = function(e) {
-	if ($("#searchField").is(":focus")&&e.keyCode==13) {event.preventDefault(); clickSearchClients()}
-	// removed password field keybinding check (now in react)
-};
 
 // control the "save button" behaviour
 $(document.body).on('change','.clientForm',function(){uiSaveButton('client', 'Save')})
@@ -2561,7 +2557,7 @@ function dbSaveCurrentClient(data){
 		} else {
 			clientId = $('#clientId.clientForm').val()
 			$('#searchField').val(clientId)
-			clickSearchClients()
+			clickSearchClients(clientId)
 		}
 		if (clientData != null) {
 			console.log("REDO CLIENT DATA")
@@ -3123,9 +3119,7 @@ function clickSaveNote(){
 	}
 };
 
-function clickSearchClients() {
-	let str =  $('#searchField').val()
-	$('#searchField').val('')
+function clickSearchClients(str) {
 	if (str === '') {
 		utilBeep()
 		return
