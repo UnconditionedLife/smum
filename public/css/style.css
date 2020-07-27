@@ -1059,12 +1059,12 @@ h4{
 }
 
 .formHeader  {
-	  border: 2px solid
-		border-color: #560E0E white white #560E0E;
+	border: 2px solid;
+	border-color: #560E0E white white #560E0E;
     text-align: center;
-		color: white;
+	color: white;
     padding: 8px;
-		background-color: white;
+	background-color: white;
 }
 
 
