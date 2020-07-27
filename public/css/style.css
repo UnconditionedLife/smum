@@ -14,7 +14,8 @@ ul {
 }
 
 html, body {
-  width: 100vw;
+  width: 100%;
+  max-width: 100;
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -25,12 +26,9 @@ body {
 	color: #555;
 	background: #eee;
 	display: grid;
-  grid-template-columns: 1em auto 1em;
-  grid-template-rows: 48px auto;
-  /*grid-template-columns define columns. It means that both columns will grow to fill the screen, but the content column will always be 3 times as wide as the nav column (provided the nav column stays wider than 200px) fr means free unit or fraction unit.
-
-*/
-  grid-gap: 15px;
+  /* grid-template-columns: 1em auto 1em; */
+  /* grid-template-rows: 48px auto; */
+  /* grid-gap: 15px; */
 }
 
 header{
@@ -369,6 +367,14 @@ main{
   grid-gap: 10px;
 }
 
+#serviceButtonContainerREACT {
+	width: 100%;
+	display: grid;
+	grid-template-columns: 1fr 4fr 4fr 4fr 4fr 1fr;
+	grid-template-rows: 50px 182px 50px 50px 50px;
+	grid-gap: 10px;
+  }
+
 #buttonCenteredContainer {
 	align-content: center;
 	min-width: max-content;
@@ -696,7 +702,26 @@ outline: -webkit-focus-ring-color auto 5px;
 	font-weight: bold;
 }
 
+#serviceDateTimeREACT {
+	display: inline-flex;
+	grid-row: 1;
+	grid-column: 2 / span 2;
+	justify-content: flex-start;
+	font-size: 18px;
+	font-weight: bold;
+}
+
 #serviceLastVisit {
+	display: inline-flex;
+	grid-row: 1;
+	grid-column: span 2;
+	justify-content: flex-end;
+	font-size: 18px;
+	font-weight: bold;
+	color: var(--red);
+}
+
+#serviceLastVisitREACT {
 	display: inline-flex;
 	grid-row: 1;
 	grid-column: span 2;
@@ -713,7 +738,22 @@ outline: -webkit-focus-ring-color auto 5px;
 	justify-content: center;
 }
 
+#servicePrimaryButtonsREACT {
+	display: inline-flex;
+	grid-row: 2;
+	grid-column: 2 / span 4;
+	justify-content: center;
+}
+
 #serviceSecondaryButtons {
+	display: flex;
+	grid-row: 4 / span 2;
+	grid-column: 2 / span 4;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+#serviceSecondaryButtonsREACT {
 	display: flex;
 	grid-row: 4 / span 2;
 	grid-column: 2 / span 4;
@@ -917,20 +957,10 @@ outline: -webkit-focus-ring-color auto 5px;
 	/*width: 100px!important;*/
 }
 .main-div {/*sets the width and position of the main div (used in all pages)*/
-  grid-column: 2 / 3;
-  grid-row: 2 / 3;
+  width: 100vw;
   background-color: white;
-  border-radius: .7em;
   padding: 15px;
-
-	/*margin: auto;
-    max-width: 60%;
-    margin-bottom: 50px;
-		margin-left: 50px;
-    margin-top: 80px;
-    text-align: center;
-		display: inline-flex;
-		flex-direction: column;*/
+  overflow-x: none;
 }
 
 #content1, #content2, #content3, #content4, #content5, #content6 {

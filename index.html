@@ -26,8 +26,7 @@
 
    <body>
       
-     <div id="smum-navbar" class="span3">
-     </div>
+     <div id="smum-navbar" style="width: 100vw;"></div>
       <!-- <nav id="smum-navbar" class="navbar">
          <div class="logo">
             <img src="public/images/smumLogo.png" width="31" height="42" onClick="" alt="SMUM"></a>
@@ -66,10 +65,11 @@
 
    	 <div class="main-div">
          <div id="clientsDiv">
-            <div class="contentHeader">
+            <!-- <div class="contentHeader">
               <div id="clientsTitle" class="contentTitle"></div>
               <div class="sectionName">Clients</div>
-            </div>
+            </div> -->
+            <div class="container" id="NewTabs"></div>
             <div class="container" style="background-color:white;">
                <input id="tab1" class="tabInput" type="radio" name="tabs" checked>
                <label id="tabLable1" for="tab1" onload="fillDate()">Found</label>
@@ -86,10 +86,10 @@
                <input id="tab7" class="tabInput" type="radio" name="tabs">
                <label id="tabLable7" for="tab7">Today</label>
 
-               <section id="content1"> <!-- Found -->
-                  <container id="searchContainer"></container>
-               </section>
-               <section id="content2"> <!-- Services -->
+               <!-- <section id="content1"> Found -->
+                  <!-- <container id="searchContainer"></container> -->
+               <!-- </section> -->
+               <section id="content2">
                   <container id="serviceButtonContainer">
                      <div id="serviceDateTime"></div>
                      <div id="serviceLastVisit"></div>

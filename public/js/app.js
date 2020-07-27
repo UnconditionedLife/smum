@@ -757,35 +757,36 @@ function uiShowHistoryData(clientHistory){
 	);
 };
 
-let uiShowLastServed = function() {
-	let nextService = ""
-	if (client.clientId != undefined){
-		let visitHeader = "FIRST SERVICE VISIT";
-		if (client.lastServed[0] != undefined) {
-			let lastServed = utilCalcLastServedDays()
-			if (lastServed.lowestDays != 10000) {
-				if (lastServed.lowestDays == 0) {
-					visitHeader = 'LAST SERVED TODAY'
-				} else {
-					let servedDate = moment().subtract(lastServed.lowestDays, "days");
-					let displayLastServed = moment(servedDate).fromNow() //lastServedFood[0].serviceDateTime
-					visitHeader = 'LAST SERVED ' + displayLastServed.toUpperCase()
-					let nonUSDAServiceInterval = utilGetFoodInterval("NonUSDA")
-					if (lastServed.lowestDays < nonUSDAServiceInterval){
-						let nextServiceDays = (nonUSDAServiceInterval - lastServed.lowestDays)
-						if (nextServiceDays == 1) {
-							nextService = "<br>" + "Next service is tomorrow!"
-						} else {
-							let nextServiceDate = moment().add(nextServiceDays, "days")
-							nextService = "<br>" + "Next service " + moment(nextServiceDate).format("dddd, MMMM Do") + "!"
-						}
-					}
-				}
-			}
-		}
-		$('#serviceLastVisit').html(visitHeader + nextService)
-	}
-};
+// *** MOVED TO REACT ***
+// let uiShowLastServed = function() {
+// 	let nextService = ""
+// 	if (client.clientId != undefined){
+// 		let visitHeader = "FIRST SERVICE VISIT";
+// 		if (client.lastServed[0] != undefined) {
+// 			let lastServed = utilCalcLastServedDays()
+// 			if (lastServed.lowestDays != 10000) {
+// 				if (lastServed.lowestDays == 0) {
+// 					visitHeader = 'LAST SERVED TODAY'
+// 				} else {
+// 					let servedDate = moment().subtract(lastServed.lowestDays, "days");
+// 					let displayLastServed = moment(servedDate).fromNow() //lastServedFood[0].serviceDateTime
+// 					visitHeader = 'LAST SERVED ' + displayLastServed.toUpperCase()
+// 					let nonUSDAServiceInterval = utilGetFoodInterval("NonUSDA")
+// 					if (lastServed.lowestDays < nonUSDAServiceInterval){
+// 						let nextServiceDays = (nonUSDAServiceInterval - lastServed.lowestDays)
+// 						if (nextServiceDays == 1) {
+// 							nextService = "<br>" + "Next service is tomorrow!"
+// 						} else {
+// 							let nextServiceDate = moment().add(nextServiceDays, "days")
+// 							nextService = "<br>" + "Next service " + moment(nextServiceDate).format("dddd, MMMM Do") + "!"
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 		$('#serviceLastVisit').html(visitHeader + nextService)
+// 	}
+// };
 
 function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
 	let primaryButtons = ""
@@ -1917,10 +1918,10 @@ function uiSetAdminHeader(title){
 	$("#adminTitle").html(title)
 };
 
-function uiShowServicesButtons(){
+function uiShowServicesButtons(){ // TODO DELETE AFTER SERVICE PAGE IS REACTED
 	if ($.isEmptyObject(client)) return
-	uiShowServicesDateTime()
-	uiShowLastServed()
+	// uiShowServicesDateTime() //*** MOVED TO REACT ***
+	// uiShowLastServed()       //*** MOVED TO REACT ***
 	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
 	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
 	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
@@ -2818,7 +2819,7 @@ function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
 			}
 		}
 		prnFlush();
-		uiShowLastServed()
+		// uiShowLastServed() *** Moved to REACT ***
 		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
 	}
 };
@@ -3163,7 +3164,7 @@ function clickSearchClients() {
 		uiClearCurrentClient()
 	} else {
 		let columns = ["clientId","givenName","familyName","dob","street"]
-		uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
+		uiGenSelectHTMLTable('#FoundClientsContainer', clientData, columns,'clientTable')
 		uiResetNotesTab()
 		if (clientData.length == 1){
 			clickSetCurrentClient(0) // go straight to SERVICES
@@ -3699,7 +3700,7 @@ function utilBloop(){
 	}
 };
 
-function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServices, lastServed) {
+function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServices, lastServed) { // TODO DELETE AFTER SERVICES PAGE IS REACTED
 	btnPrimary = [];
 	btnSecondary = [];
   let validDependents = []
@@ -3758,7 +3759,7 @@ function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServic
 	if (buttons == "secondary") return btnSecondary
 };
 
-function utilCalcActiveServiceTypes(){
+function utilCalcActiveServiceTypes(){ // TODO DELETE AFTER SERVICES PAGE IS REACTED
 	// build Active Service Types array of Service Types which cover today's date
 	let activeServiceTypes = []
 	for (let i=0; i<serviceTypes.length; i++){
@@ -4153,7 +4154,7 @@ function utilSetLastServedFood(){
 	client.lastServedFoodDateTime = lastServedFoodDateTime
 };
 
-function utilCalcLastServedDays() {
+function utilCalcLastServedDays() {   // TODO DELETE AFTER SERVICE PAGE IS REACTED
 	// get Last Served Date from client object & calculate number of days
 	let lastServed = {daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000}
 	if (client.lastServed[0] == undefined) return lastServed
@@ -4178,7 +4179,7 @@ function utilCalcLastServedDays() {
 	return lastServed
 };
 
-function utilCalcTargetServices(activeServiceTypes) {
+function utilCalcTargetServices(activeServiceTypes) { // TODO DELETE AFTER MOVING ALL UTILS TO REACT
 	let targets = [];
 	// build list of client target items for each Active Service Type
 	for (let i = 0; i < activeServiceTypes.length; i++) {
