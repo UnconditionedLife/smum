@@ -28,7 +28,7 @@ const smumTheme = createMuiTheme({
 
   ReactDOM.render(
     <ThemeProvider theme={smumTheme}>
-      <PrimarySearchAppBar  version="Version 1.0"/ />
+      <PrimarySearchAppBar  version="Version 1.0" />
     </ThemeProvider>,
     document.getElementById("smum-navbar")
   );

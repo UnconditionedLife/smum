@@ -285,4 +285,4 @@ export default function PrimarySearchAppBar(props) {
       {renderMenu}
     </div>
   );
-}
+};
