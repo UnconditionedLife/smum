@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "test": "\"echo\\\"No tests\\\" && exit 0\"",
-    "build": "webpack --mode production"
+    "build": "webpack --mode development",
+    "builddev": "webpack --mode development",
+    "buildprod": "webpack --mode production"
   },
   "repository": {
     "type": "git",
