@@ -16,11 +16,12 @@ import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import Button from '@material-ui/core/Button';
-import LoginForm from '../Login/LoginForm';
 import SectionsHeader from '../Sections/SectionsHeader.jsx';
-
-import { BrowserRouter } from 'react-router-dom';
-
+import LoginForm from "../Login/LoginForm";
+import AccountCircle from '@material-ui/icons/AccountCircle';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import PeopleIcon from '@material-ui/icons/People';
+import FaceIcon from '@material-ui/icons/Face';
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -112,7 +113,7 @@ const useStyles = makeStyles((theme) => ({
   sectionMobile: {
     display: 'flex',
     [theme.breakpoints.up('md')]: {
-      display: 'flex',
+      display: 'none',
     },
   },
 }));
@@ -126,13 +127,12 @@ export default function PrimarySearchAppBar(props) {
   const [ client, setClient ] = useState(null);
   const [ clientData, setClientData ] = useState(null);
 
- 
+
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
   useEffect(() => {
-    ReactDOM.render(<LoginForm onLogin={(newUser) => setUser(newUser)}/>,
-      document.getElementById("loginOverlay"));
+    ReactDOM.render(<LoginForm onLogin={(newUser) => setUser(newUser)}/>, document.getElementById("loginOverlay"));
   });
 
   const handleClientChange = (newValue) => {
@@ -240,32 +240,36 @@ export default function PrimarySearchAppBar(props) {
 
       {/* Calling App.js : () => window.navSwitch('clients') */}
       <Button onClick={() => handleSectionChange(0)} className={classes.clients} variant="text" color="inherit">
+      <PeopleIcon/>
       Clients
       </Button>
 
       {/* Calling App.js : () => window.navSwitch('admin') */}
       {user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin') ?
       (<Button onClick={() => handleSectionChange(1)} className={classes.admin} variant="text" color="inherit">
+      <FaceIcon/>
       Admin
       </Button>) : null}
 
       {/* Calling App.js : () => window.navSwitch('user') */}
-      <Button onClick={() => handleSectionChange(2)} className={classes.username} variant="text" color="inherit" >
-      {user ? user.userName : ''}
-      </Button>
-      <Button onClick={() => handleLogout()} className={classes.logout} color="inherit">
-      Logout
-      </Button>
+      // <Button onClick={() => handleSectionChange(2)} className={classes.username} variant="text" color="inherit" >
+      // {user ? user.userName : ''}
+      // </Button>
+      // <Button onClick={() => handleLogout()} className={classes.logout} color="inherit">
+      // Logout
+      // </Button>
       <IconButton
-        edge="end"
-        aria-label="account of current user"
-        aria-controls={menuId}
-        aria-haspopup="true"
-        onClick={handleProfileMenuOpen}
-        color="inherit"
-      >
+      edge="end"
+      aria-label="account of current user"
+      aria-controls={menuId}
+      aria-haspopup="true"
+      onClick={handleProfileMenuOpen}
+      color="inherit"
+    >
+      <AccountCircle />
+    </IconButton>
 
-      </IconButton>
+
     </div>
     <div className={classes.sectionMobile}>
       <IconButton
@@ -292,10 +296,12 @@ export default function PrimarySearchAppBar(props) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem onClick={() => window.navSwitch('user')}> <AccountCircle/> {user ? user.userName : ''}</MenuItem>
+      <MenuItem onClick={() => handleLogout()} > <ExitToAppIcon />Logout</MenuItem>
     </Menu>
   );
+
+
 
   const mobileMenuId = 'primary-search-account-menu-mobile';
   const renderMobileMenu = (
@@ -308,32 +314,37 @@ export default function PrimarySearchAppBar(props) {
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
+
       <MenuItem>
-        <IconButton aria-label="show 4 new mails" color="inherit">
-          <Badge badgeContent={4} color="secondary">
-            <MailIcon />
-          </Badge>
+        <IconButton>
+          <PeopleIcon/>
         </IconButton>
-        <p>Messages</p>
+           <p>Clients</p>
       </MenuItem>
-      <MenuItem>
-        <IconButton aria-label="show 11 new notifications" color="inherit">
-          <Badge badgeContent={11} color="secondary">
-            <NotificationsIcon />
-          </Badge>
+
+      {user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin') ?
+      (<MenuItem onClick={() => window.navSwitch('admin')} >
+        <IconButton>
+        <FaceIcon/>
         </IconButton>
-        <p>Notifications</p>
-      </MenuItem>
-      <MenuItem onClick={handleProfileMenuOpen}>
-        <IconButton
-          aria-label="account of current user"
-          aria-controls="primary-search-account-menu"
-          aria-haspopup="true"
-          color="inherit"
-        >
+        <p>Admin</p>
+      </MenuItem>) : null}
+
+      <MenuItem onClick={() => window.navSwitch('user')} >
+        <IconButton>
+        <AccountCircle />
         </IconButton>
-        <p>Profile</p>
+        <p>{user ? user.userName : ''}</p>
       </MenuItem>
+
+      <MenuItem onClick={() => handleLogout()} >
+        <IconButton>
+        <ExitToAppIcon />
+        </IconButton>
+        <p>Logout</p>
+      </MenuItem>
+
+
     </Menu>
   );
 
@@ -354,4 +365,4 @@ export default function PrimarySearchAppBar(props) {
       <SectionsHeader section={ selectedSection } client={ client } clientData={ clientData } />
     </div>
   );
-};
+}

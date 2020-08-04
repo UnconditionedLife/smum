@@ -9,6 +9,7 @@
     "build": "webpack --mode development --watch",
     "builddev": "webpack --mode development --watch",
     "buildprod": "webpack --mode production"
+    
   },
   "repository": {
     "type": "git",
