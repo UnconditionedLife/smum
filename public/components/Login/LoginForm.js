@@ -1,3 +1,5 @@
+// LOOK AT CONVERTING TO THIS CODE: https://react.school/material-ui/templates
+
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import Moment from "react-moment";
@@ -6,6 +8,8 @@ import Button from '@material-ui/core/Button';
 function useInput(initialValue) {
   let [value, setValue] = useState(initialValue);
 
+  // TODO USE useState() to maintain the input field values 
+
   function handleValueChange(e) {
     setValue(e.target.value);
   }
@@ -13,7 +17,7 @@ function useInput(initialValue) {
   return {
     value,
     onChange: handleValueChange,
-    setValue
+    // setValue
   };
 }
 
@@ -41,10 +45,10 @@ function LoginForm(props) {
       props.onLogin(json.newUser);
     }
     if (json.clearInputs) {
-      usernameInput.setValue("");
-      passwordInput.setValue("");
-      validationCodeInput.setValue("");
-      newPasswordInput.setValue("");
+      // usernameInput.setValue("");
+      // passwordInput.setValue("");
+      // validationCodeInput.setValue("");
+      // newPasswordInput.setValue("");
     }
   }
 

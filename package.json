@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "test": "\"echo\\\"No tests\\\" && exit 0\"",
-    "build": "webpack --mode development",
-    "builddev": "webpack --mode development",
+    "build": "webpack --mode development --watch",
+    "builddev": "webpack --mode development --watch",
     "buildprod": "webpack --mode production"
   },
   "repository": {
@@ -29,6 +29,7 @@
     "babel-loader": "^8.1.0",
     "dynamodbexportcsv": "^0.2.7",
     "express": "^4.17.1",
+    "html-to-react": "^1.4.3",
     "moment": "^2.26.0",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",

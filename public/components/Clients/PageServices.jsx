@@ -2,7 +2,8 @@ import React from 'react';
 import PrimaryButtons from "./ServicesPrimaryButtons.jsx";
 // import SecondaryButtons from "./ServicesSecondaryButtons.jsx";
 
-export default function ServicesPage() {
+export default function ServicesPage(props) {
+    const client = props.client
 
     let serviceDateTimeREACT
     let nextService = ""

@@ -63,7 +63,7 @@ let closedEvent = {
 
 // TODO build some selects in forms from data in settings (ie. Categories)
 
-uiFillDate()
+// uiFillDate() Moved to REACT
 uiShowHideLogin('show')
 navGotoTab("tab1")
 $("#noteEditForm").hide()
@@ -599,7 +599,7 @@ function uiToggleButtonColor(action, serviceTypeId, serviceButtons){
 function uiUpdateCurrentClient(index) {
 	uiOutlineTableRow('clientTable', index + 1)
 	uiShowCurrentClientButtons()
-	uiSetClientsHeader("numberAndName")
+	// uiSetClientsHeader("numberAndName") MOVED TO REACT
 	uiShowServicesButtons()
 	uiShowClientEdit(false)
 	navGotoTab("tab2")
@@ -1878,19 +1878,19 @@ function uiRemoveFormErrorBubbles(form) {
 	$('.' + form).removeClass("errorField")
 };
 
-function uiSetClientsHeader(title){
-	if (title == "numberAndName") {
-		let clientNumber = "<div class='clientNumber'>" + client.clientId + "</div>"
-		let clientName = "<div class='clientName'>" + client.givenName + ' ' + client.familyName + "</div>"
-		$("#clientsTitle").html(clientNumber + clientName)
-	} else if (title == "newClient") {
-		let clientNumber = "<div class='clientNumber'>" + $('#clientId.clientForm').val() + "</div>"
-		let clientName = "<div class='clientName'>" + $('#givenName.clientForm').val() + ' ' + $('#familyName.clientForm').val() + "</div>"
-		$("#clientsTitle").html(clientNumber + clientName)
-	} else {
-		$("#clientsTitle").html(title)
-	}
-};
+// function uiSetClientsHeader(title){
+// 	if (title == "numberAndName") {
+// 		let clientNumber = "<div class='clientNumber'>" + client.clientId + "</div>"
+// 		let clientName = "<div class='clientName'>" + client.givenName + ' ' + client.familyName + "</div>"
+// 		$("#clientsTitle").html(clientNumber + clientName)
+// 	} else if (title == "newClient") {
+// 		let clientNumber = "<div class='clientNumber'>" + $('#clientId.clientForm').val() + "</div>"
+// 		let clientName = "<div class='clientName'>" + $('#givenName.clientForm').val() + ' ' + $('#familyName.clientForm').val() + "</div>"
+// 		$("#clientsTitle").html(clientNumber + clientName)
+// 	} else {
+// 		$("#clientsTitle").html(title)
+// 	}
+// };
 
 function uiSetServiceTypeHeader(){
 	$("#adminTitle").html($('#serviceName').val())
@@ -2099,7 +2099,9 @@ function uiGenSelectHTMLTable(selector, data, col, tableID){
 			}
     }
   }
-  $(selector).html(table);
+	console.log("INJECT")
+	$(selector).html(table);
+
 	if (tableID == 'dependentsTable') clickToggleDependentsViewEdit('view');
 }
 
@@ -2201,9 +2203,9 @@ function uiFillUserData(){
 	$('#userTitle').html(session.user.username);
 };
 
-function uiFillDate(){
-	$('.contentTitle').html(moment().format("dddd, MMM DD YYYY"));
-};
+// function uiFillDate(){   // MOVED TO REACT
+// 	$('.contentTitle').html(moment().format("dddd, MMM DD YYYY"));
+// };
 
 function uiResetServiceTypeForm(){
 	uiPopulateForm(serviceType, 'serviceTypeForm')
@@ -2565,7 +2567,7 @@ function dbSaveCurrentClient(data){
 			uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
 			if (clientData.length == 1) clientTableRow = 1
 			uiOutlineTableRow('clientTable', clientTableRow)
-			uiSetClientsHeader("numberAndName")
+			// uiSetClientsHeader("numberAndName") MOVED TO REACT
 		}
 	}
 	$("body").css("cursor", "default");
@@ -2647,6 +2649,7 @@ function dbSearchClients(str, slashCount){
 			clientData = utilRemoveDupClients(d2.concat(d1))
 		}
 	}
+	return clientData
 	// uiShowHideClientMessage('hide')   // close ClientMessage overlay in case it's open
 	// if (clientData==null||clientData.length==0){
 	//  	utilBeep()
@@ -3120,37 +3123,37 @@ function clickSaveNote(){
 	}
 };
 
-function clickSearchClients(str) {
-	if (str === '') {
-		utilBeep()
-		return
-	}
-	if (stateCheckPendingEdit()) return
-	if (currentNavTab !== "clients") navGotoSec("nav1")
-	clientData = null
-	const regex = /[/.]/g
-	const slashCount = (str.match(regex) || []).length
-	dbSearchClients(str, slashCount)
-	uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
-	if (clientData==null||clientData.length==0){
-		utilBeep()
-		uiSetClientsHeader("0 Clients Found")
-		client = {}
-		servicesRendered = []
-		uiClearCurrentClient()
-	} else {
-		let columns = ["clientId","givenName","familyName","dob","street"]
-		uiGenSelectHTMLTable('#FoundClientsContainer', clientData, columns,'clientTable')
-		uiResetNotesTab()
-		if (clientData.length == 1){
-			clickSetCurrentClient(0) // go straight to SERVICES
-			navGotoTab("tab2")
-		} else {
-			uiSetClientsHeader(clientData.length + ' Clients Found')
-			navGotoTab("tab1")
-		}
-	}
-};
+// function clickSearchClients(str) {
+// 	if (str === '') {
+// 		utilBeep()
+// 		return
+// 	}
+// 	if (stateCheckPendingEdit()) return
+// 	if (currentNavTab !== "clients") navGotoSec("nav1")
+// 	clientData = null
+// 	const regex = /[/.]/g
+// 	const slashCount = (str.match(regex) || []).length
+// 	dbSearchClients(str, slashCount)
+// 	uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
+// 	if (clientData==null||clientData.length==0){
+// 		utilBeep()
+// 		// uiSetClientsHeader("0 Clients Found") MOVED TO REACT
+// 		client = {}
+// 		servicesRendered = []
+// 		uiClearCurrentClient()
+// 	} else {
+// 		let columns = ["clientId","givenName","familyName","dob","street"]
+// 		uiGenSelectHTMLTable('#FoundClientsContainer', clientData, columns,'clientTable')
+// 		uiResetNotesTab()
+// 		if (clientData.length == 1){
+// 			clickSetCurrentClient(0) // go straight to SERVICES
+// 			navGotoTab("tab2")
+// 		} else {
+// 			// uiSetClientsHeader(clientData.length + ' Clients Found') MOVED TO REACT
+// 			navGotoTab("tab1")
+// 		}
+// 	}
+// };
 
 function clickSetCurrentAdminUser(index){
 	adminUser = users[index]

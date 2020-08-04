@@ -1,6 +1,5 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from "react-dom";
-//import PropTypes from "prop-types";
 import { fade, makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -11,13 +10,17 @@ import InputBase from '@material-ui/core/InputBase';
 import Badge from '@material-ui/core/Badge';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
-//import MenuIcon from '@material-ui/icons/Menu';
+import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import Button from '@material-ui/core/Button';
-import LoginForm from "../Login/LoginForm";
+import LoginForm from '../Login/LoginForm';
+import SectionsHeader from '../Sections/SectionsHeader.jsx';
+
+import { BrowserRouter } from 'react-router-dom';
+
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -27,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(2),
   },
   title: {
-    displ3ay: 'none',
+    display: 'none',
     [theme.breakpoints.up('sm')]: {
       display: 'block'
     },
@@ -116,10 +119,14 @@ const useStyles = makeStyles((theme) => ({
 
 export default function PrimarySearchAppBar(props) {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-  const [user, setUser] = React.useState(null);
+  const [ anchorEl, setAnchorEl ] = useState(null);
+  const [ mobileMoreAnchorEl, setMobileMoreAnchorEl ] = useState(null);
+  const [ user, setUser ] = useState(null);
+  const [ selectedSection, setSelectedSection ] = useState(0);
+  const [ client, setClient ] = useState(null);
+  const [ clientData, setClientData ] = useState(null);
 
+ 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
@@ -127,6 +134,28 @@ export default function PrimarySearchAppBar(props) {
     ReactDOM.render(<LoginForm onLogin={(newUser) => setUser(newUser)}/>,
       document.getElementById("loginOverlay"));
   });
+
+  const handleClientChange = (newValue) => {
+    console.log("IN CLIENT CHANGE")
+    console.log(newValue)
+    setClient(newValue);
+  };
+
+  const handleClientDataChange = (newValue) => {
+    console.log("IN CLIENTDATA CHANGE")
+    console.log(newValue)
+    setClientData(newValue);
+    if (newValue.length === 1) {
+      const newClient = newValue[0]
+      handleClientChange(newClient)
+    }
+  };
+
+  const handleSectionChange = (newValue) => {
+    console.log("IN SECTION CHANGE")
+    console.log(newValue)
+    setSelectedSection(newValue);
+  };
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -150,6 +179,42 @@ export default function PrimarySearchAppBar(props) {
     setUser(null);
   }
 
+  function startSearch() {
+    console.log("IN SEARCH CLIENTS")
+
+    const str = document.getElementById('searchField').value
+    if (str === '')	return
+    if (window.stateCheckPendingEdit()) return
+    window.clientData = null
+    const regex = /[/.]/g
+    const slashCount = (str.match(regex) || []).length
+    const clientDataTemp = window.dbSearchClients(str, slashCount)
+    window.uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
+    if (clientDataTemp==null||clientDataTemp.length==0){
+      // uiSetClientsHeader("0 Clients Found") MOVED TO REACT
+      window.client = {}
+      window.servicesRendered = []
+      window.uiClearCurrentClient()
+    } else {
+      let columns = ["clientId","givenName","familyName","dob","street"]
+      window.uiGenSelectHTMLTable('#FoundClientsContainer', clientDataTemp, columns,'clientTable')
+      window.uiResetNotesTab()
+      if (clientDataTemp.length == 1){
+        window.clickSetCurrentClient(0) // go straight to SERVICES
+        window.navGotoTab("tab2")
+      } else {
+        // uiSetClientsHeader(clientData.length + ' Clients Found') MOVED TO REACT
+        window.navGotoTab("tab1")
+      }
+    }
+    if (selectedSection !== 0) handleSectionChange(0)
+
+    const clientTemp = window.client // TODO WILL NEED TO GRAB FROM COMPONENT
+    // const clientDataTemp = window.clientData // TODO WILL NEED TO  GRAB FROM COMPONENT
+    handleClientChange(clientTemp)
+    handleClientDataChange(clientDataTemp)
+  };
+
   const appbarControls = (
     <React.Fragment>
     <div className={classes.search}>
@@ -166,23 +231,26 @@ export default function PrimarySearchAppBar(props) {
         inputProps={{ 'aria-label': 'search' }}
         onKeyDown={event => {
           if (event.key == "Enter")
-            window.clickSearchClients(document.getElementById('searchField').value);
+            startSearch()
         }}
       />
     </div>
     <div className={classes.grow} />
     <div className={classes.sectionDesktop}>
 
-      <Button onClick={() => window.navSwitch('clients')} className={classes.clients} variant="h6" color="inherit">
+      {/* Calling App.js : () => window.navSwitch('clients') */}
+      <Button onClick={() => handleSectionChange(0)} className={classes.clients} variant="text" color="inherit">
       Clients
       </Button>
 
+      {/* Calling App.js : () => window.navSwitch('admin') */}
       {user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin') ?
-      (<Button onClick={() => window.navSwitch('admin')} className={classes.admin} variant="h6" color="inherit" noWrap>
+      (<Button onClick={() => handleSectionChange(1)} className={classes.admin} variant="text" color="inherit">
       Admin
       </Button>) : null}
 
-      <Button onClick={() => window.navSwitch('user')} className={classes.username} variant="h6" color="inherit" >
+      {/* Calling App.js : () => window.navSwitch('user') */}
+      <Button onClick={() => handleSectionChange(2)} className={classes.username} variant="text" color="inherit" >
       {user ? user.userName : ''}
       </Button>
       <Button onClick={() => handleLogout()} className={classes.logout} color="inherit">
@@ -274,15 +342,16 @@ export default function PrimarySearchAppBar(props) {
       <AppBar position="static">
         <Toolbar>
           <Tooltip title={props.version}>
-          <Typography className={classes.title} variant="h6" noWrap>
+          <Typography className={classes.title} variant='h6' noWrap>
             Santa Maria Urban Ministry
           </Typography>
           </Tooltip>
           {user ? appbarControls : null}
         </Toolbar>
       </AppBar>
-      {renderMobileMenu}
-      {renderMenu}
+      { renderMobileMenu }
+      { renderMenu }
+      <SectionsHeader section={ selectedSection } client={ client } clientData={ clientData } />
     </div>
   );
 };

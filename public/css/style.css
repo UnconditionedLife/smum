@@ -24,11 +24,7 @@ html, body {
 body {
 	font: 14px/1 'Open Sans', sans-serif;
 	color: #555;
-	background: #eee;
-	display: grid;
-  /* grid-template-columns: 1em auto 1em; */
-  /* grid-template-rows: 48px auto; */
-  /* grid-gap: 15px; */
+	background: #ffffff;
 }
 
 header{
@@ -202,13 +198,13 @@ main{
 .span7{grid-column: span 7;}
 .span8{grid-column: span 8;}
 
-.contentHeader {
+/* .contentHeader {
   display: grid;
   grid-template-columns: 2fr 1fr;
   grid-template-rows: 50px auto;
-}
+} */
 
-.contentTitle {
+/* .contentTitle {
   grid-column: 1;
   grid-row: 1;
   font-size: 1.75em;
@@ -216,9 +212,9 @@ main{
   text-align: left;
   margin-left: 20px;
   line-height: 50px;
-}
+} */
 
-.sectionName {
+/* .sectionName {
   grid-column: 2;
   grid-row: 1;
   font-size: 40px;
@@ -227,7 +223,7 @@ main{
   text-align: right;
   margin-right: 15px;
   line-height: 50px;
-}
+} */
 
 .navbar-nav > li > a {
   display: inline;
@@ -1266,7 +1262,7 @@ checkbox[readonly]{
 }
 
 
-.clientNumber{
+/* .clientNumber{
 	background-color: var(--blue);
 	border-radius: 5px;
 	color: white;
@@ -1274,15 +1270,15 @@ checkbox[readonly]{
 	max-width:  fit-content;
 	line-height: 20px;
 	max-height:  fit-content;
-}
+} */
 
-.clientName{
+/* .clientName{
 	color: var(--blue);
 	padding: 8px;
 	max-width:  fit-content;
 	line-height: 20px;
 	max-height:  fit-content;
-}
+} */
 
 .blueInline{/*blue and inline block text*/
 	color: var(--blue);

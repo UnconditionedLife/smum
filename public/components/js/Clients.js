@@ -17,7 +17,7 @@ export function getButtonData(buttonType) {
     return buttonData
 };
 
-//**** JAVASCRIPT FUNCTIONS FOR USE WITH EXPORTABLE FUNCTIONS ****
+//**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 
 function getLastServedDays() {
 	// get Last Served Date from client object & calculate number of days
@@ -185,3 +185,4 @@ function getActiveServicesButtons(buttons, activeServiceTypes, targetServices, l
 	if (buttons == "primary") return btnPrimary
 	if (buttons == "secondary") return btnSecondary
 };
+
