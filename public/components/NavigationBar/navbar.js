@@ -240,24 +240,24 @@ export default function PrimarySearchAppBar(props) {
 
       {/* Calling App.js : () => window.navSwitch('clients') */}
       <Button onClick={() => handleSectionChange(0)} className={classes.clients} variant="text" color="inherit">
-      <PeopleIcon/>
-      Clients
+        <PeopleIcon/>
+        Clients
       </Button>
 
       {/* Calling App.js : () => window.navSwitch('admin') */}
       {user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin') ?
       (<Button onClick={() => handleSectionChange(1)} className={classes.admin} variant="text" color="inherit">
-      <FaceIcon/>
-      Admin
+        <FaceIcon/>
+        Admin
       </Button>) : null}
 
       {/* Calling App.js : () => window.navSwitch('user') */}
-      // <Button onClick={() => handleSectionChange(2)} className={classes.username} variant="text" color="inherit" >
-      // {user ? user.userName : ''}
-      // </Button>
-      // <Button onClick={() => handleLogout()} className={classes.logout} color="inherit">
-      // Logout
-      // </Button>
+      <Button onClick={() => handleSectionChange(2)} className={classes.username} variant="text" color="inherit" >
+        {user ? user.userName : ''}
+      </Button>
+      <Button onClick={() => handleLogout()} className={classes.logout} color="inherit">
+        Logout
+      </Button>
       <IconButton
       edge="end"
       aria-label="account of current user"
@@ -268,8 +268,6 @@ export default function PrimarySearchAppBar(props) {
     >
       <AccountCircle />
     </IconButton>
-
-
     </div>
     <div className={classes.sectionMobile}>
       <IconButton
