@@ -5,11 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "startdev": "webpack-dev-server --hot --inline --mode=development",
     "test": "\"echo\\\"No tests\\\" && exit 0\"",
     "build": "webpack --mode development --watch",
     "builddev": "webpack --mode development --watch",
     "buildprod": "webpack --mode production"
-    
   },
   "repository": {
     "type": "git",
@@ -35,6 +35,7 @@
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-hot-loader": "^4.12.21",
     "react-moment": "^0.9.7",
     "react-router-dom": "^5.2.0",
     "react-swipeable-views": "^0.13.9",

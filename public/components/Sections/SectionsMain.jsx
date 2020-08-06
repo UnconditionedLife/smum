@@ -1,4 +1,5 @@
 import React from "react";
+import { hot } from 'react-hot-loader'
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import green from '@material-ui/core/colors/green';
 import deepOrange from '@material-ui/core/colors/deepOrange';
@@ -19,7 +20,7 @@ const container = {
     width: '100vw'
 };
 
-export default function SectionsMain(){
+function SectionsMain(){
     return (
         <div style={ container }>
             <ThemeProvider theme={ smumTheme }>
@@ -28,3 +29,5 @@ export default function SectionsMain(){
         </div>
     )
 };
+
+export default hot(module)(SectionsMain);
