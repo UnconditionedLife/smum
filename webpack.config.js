@@ -19,5 +19,8 @@ module.exports = {
   stats: {
     colors: true
   },
+  devServer: {
+    port: 3002
+  },
   devtool: "source-map"
 };
