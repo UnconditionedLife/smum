@@ -41,7 +41,8 @@ const useStyles = makeStyles((theme) => ({
     position:'relative',
     top:'3.5px',
     fontSize:'15px',
-    right:'90px',
+    right:'360px',//used to be 90
+    letterSpacing: '2px',
 
   },
   admin:{
@@ -49,7 +50,10 @@ const useStyles = makeStyles((theme) => ({
     position:'relative',
     top:'3.5px',
     fontSize:'15px',
-    right:'65px',
+    // right:'65px',
+    right:'180px',
+    letterSpacing: '2px',
+
   },
   username:{
     width:'100%',
@@ -57,7 +61,7 @@ const useStyles = makeStyles((theme) => ({
     top:'3.5px',
     fontSize:'15px',
     right:'40px',
-    textTransform:'none',
+    textTransform:'lowercase',
   },
   logout:{
     width:'100%',
@@ -251,23 +255,27 @@ export default function PrimarySearchAppBar(props) {
         Admin
       </Button>) : null}
 
-      {/* Calling App.js : () => window.navSwitch('user') */}
+      {/* Calling App.js : () => window.navSwitch('user') 
       <Button onClick={() => handleSectionChange(2)} className={classes.username} variant="text" color="inherit" >
         {user ? user.userName : ''}
       </Button>
       <Button onClick={() => handleLogout()} className={classes.logout} color="inherit">
         Logout
-      </Button>
-      <IconButton
+      </Button>*/}
+      <Button
       edge="end"
+      style={{textTransform: 'none'}}
       aria-label="account of current user"
       aria-controls={menuId}
       aria-haspopup="true"
       onClick={handleProfileMenuOpen}
       color="inherit"
-    >
+      variant = "text"
+    > 
       <AccountCircle />
-    </IconButton>
+      {user ? user.userName : ''}
+    </  Button>
+    
     </div>
     <div className={classes.sectionMobile}>
       <IconButton
@@ -294,7 +302,7 @@ export default function PrimarySearchAppBar(props) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={() => window.navSwitch('user')}> <AccountCircle/> {user ? user.userName : ''}</MenuItem>
+      <MenuItem onClick={() => window.navSwitch('user')}> <AccountCircle/> Profile</MenuItem>
       <MenuItem onClick={() => handleLogout()} > <ExitToAppIcon />Logout</MenuItem>
     </Menu>
   );
@@ -332,7 +340,7 @@ export default function PrimarySearchAppBar(props) {
         <IconButton>
         <AccountCircle />
         </IconButton>
-        <p>{user ? user.userName : ''}</p>
+        <p>Profile</p>
       </MenuItem>
 
       <MenuItem onClick={() => handleLogout()} >
@@ -340,7 +348,7 @@ export default function PrimarySearchAppBar(props) {
         <ExitToAppIcon />
         </IconButton>
         <p>Logout</p>
-      </MenuItem>
+      </MenuItem>                                                                                                                   
 
 
     </Menu>
@@ -352,7 +360,7 @@ export default function PrimarySearchAppBar(props) {
         <Toolbar>
           <Tooltip title={props.version}>
           <Typography className={classes.title} variant='h6' noWrap>
-            Santa Maria Urban Ministry
+            Santa Maria Urban Ministryewew
           </Typography>
           </Tooltip>
           {user ? appbarControls : null}

@@ -1075,23 +1075,18 @@ table {/*standard table css*/
 		border-collapse: separate;
 }
 
-table tr:nth-child(odd) {background: linear-gradient(white, var(--grey-green), var(--grey-green),white);}
+/* table tr:nth-child(odd) {background: linear-gradient(white, var(--grey-green), var(--grey-green),white);} */
 
-th {/*css for td and th*/
-    /*border: 2px solid white;
-    text-align: center;
-		color: white;
-    padding: 6px; */
-		/* background-color: var(--light-green); */
+/* th {
+		
 		height: 38px;
 		background: linear-gradient(#C4E6C4,white);
-		/* border-width: 1px;
-		border-style: solid; */
+		
 		border-color: var(--light-green);
 		text-align: center;
 		color: var(--blue);
-		padding: 6px;
-}
+		padding: 6px; 
+} */
 
 table tr:first-child td:first-child {
     border-top-left-radius: 5px;

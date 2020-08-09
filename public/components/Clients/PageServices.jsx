@@ -2,7 +2,26 @@ import React from 'react';
 import PrimaryButtons from "./ServicesPrimaryButtons.jsx";
 // import SecondaryButtons from "./ServicesSecondaryButtons.jsx";
 
+
 export default function ServicesPage(props) {
+
+    // const DidMount = props => {
+//     const didMountRef = useRef(false)
+    
+//     console.log("MOUNT")
+//     useEffect(() => {
+//         console.log("EFFECT")
+//         if (clientData !== null) {
+//             if (didMountRef.current) {
+//                 const columns = ["clientId","givenName","familyName","dob","street"]
+//                 window.uiGenSelectHTMLTable("FoundClientsContainer", clientData, columns,'clientTable')
+//             } else didMountRef.current = true
+//         }
+//     })
+// };
+//DidMount()
+// <div ref={clientDataDiv} id ="FoundClientsContainer"></div>
+
     const client = props.client
 
     let serviceDateTimeREACT
