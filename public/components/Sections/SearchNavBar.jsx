@@ -219,6 +219,8 @@ export default function SectionsNavBar(props) {
     handleClientDataChange(clientDataTemp)
   };
 
+  const isAdmin = user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin');
+
   const appbarControls = (
     <React.Fragment>
     <div className={classes.search}>
@@ -243,19 +245,19 @@ export default function SectionsNavBar(props) {
     <div className={classes.sectionDesktop}>
 
       {/* Calling App.js : () => window.navSwitch('clients') */}
-      <Button onClick={() => handleSectionChange(0)} className={classes.clients} variant="text" color="inherit">
-        <PeopleIcon/>
+      <Button onClick={() => handleSectionChange(0)} startIcon={<PeopleIcon/>}
+        className={classes.clients} variant="text" color="inherit"
+      >
         Clients
       </Button>
 
       {/* Calling App.js : () => window.navSwitch('admin') */}
-      {user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin') ?
-      (<Button onClick={() => handleSectionChange(1)} className={classes.admin} variant="text" color="inherit">
-        <FaceIcon/>
+      <Button onClick={() => handleSectionChange(1)} startIcon={<FaceIcon/>}
+        className={classes.admin} disabled={!isAdmin} variant="text" color="inherit">
         Admin
-      </Button>) : null}
+      </Button>
 
-      {/* Calling App.js : () => window.navSwitch('user') 
+      {/* Calling App.js : () => window.navSwitch('user')
       <Button onClick={() => handleSectionChange(2)} className={classes.username} variant="text" color="inherit" >
         {user ? user.userName : ''}
       </Button>
@@ -264,6 +266,7 @@ export default function SectionsNavBar(props) {
       </Button>*/}
       <Button
       edge="end"
+      startIcon={<AccountCircle />}
       style={{textTransform: 'none'}}
       aria-label="account of current user"
       aria-controls={menuId}
@@ -271,11 +274,10 @@ export default function SectionsNavBar(props) {
       onClick={handleProfileMenuOpen}
       color="inherit"
       variant = "text"
-    > 
-      <AccountCircle />
+      >
       {user ? user.userName : ''}
-    </  Button>
-    
+      </Button>
+
     </div>
     <div className={classes.sectionMobile}>
       <IconButton
@@ -302,8 +304,12 @@ export default function SectionsNavBar(props) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={() => window.navSwitch('user')}> <AccountCircle/> Profile</MenuItem>
-      <MenuItem onClick={() => handleLogout()} > <ExitToAppIcon />Logout</MenuItem>
+      <MenuItem onClick={() => window.navSwitch('user')}>
+        <Button startIcon={<AccountCircle/>}>Profile</Button>
+      </MenuItem>
+      <MenuItem onClick={() => handleLogout()} >
+        <Button startIcon={<ExitToAppIcon/>}>Logout</Button>
+      </MenuItem>
     </Menu>
   );
 
@@ -320,37 +326,31 @@ export default function SectionsNavBar(props) {
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-
       <MenuItem>
-        <IconButton>
-          <PeopleIcon/>
-        </IconButton>
-           <p>Clients</p>
+        <Button startIcon={<PeopleIcon/>} onClick={() => handleSectionChange(0)} >
+          Clients
+        </Button>
       </MenuItem>
 
-      {user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin') ?
-      (<MenuItem onClick={() => window.navSwitch('admin')} >
-        <IconButton>
-        <FaceIcon/>
-        </IconButton>
-        <p>Admin</p>
-      </MenuItem>) : null}
+
+      <MenuItem >
+        <Button startIcon={<FaceIcon/>} onClick={() => handleSectionChange(1)}
+         disabled={!isAdmin}>
+        Admin
+        </Button>
+      </MenuItem>
 
       <MenuItem onClick={() => window.navSwitch('user')} >
-        <IconButton>
-        <AccountCircle />
-        </IconButton>
-        <p>Profile</p>
+        <Button startIcon={<AccountCircle />}>
+        Profile
+        </Button>
       </MenuItem>
 
       <MenuItem onClick={() => handleLogout()} >
-        <IconButton>
-        <ExitToAppIcon />
-        </IconButton>
-        <p>Logout</p>
-      </MenuItem>                                                                                                                   
-
-
+        <Button startIcon={<ExitToAppIcon />}>
+        Logout
+        </Button>
+      </MenuItem>
     </Menu>
   );
 

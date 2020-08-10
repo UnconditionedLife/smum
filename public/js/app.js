@@ -34,7 +34,6 @@ let servicesRendered = [] // tally of services as they are clicked
 let client = {} // current client
 let editFlag = {}
 uiClearCurrentClient()
-let user = {} // authenticated
 let currentUser = {}
 let users = [] // all users
 let adminUser = {}
@@ -2217,7 +2216,7 @@ function uiGetTemplate(template){
 };
 
 function uiFillUserData(){
-	$('#userTitle').html(session.user.username);
+	$('#userTitle').html(currentUser.userName);
 };
 
 // function uiFillDate(){   // MOVED TO REACT
@@ -2485,8 +2484,7 @@ function dbSaveUser(context){
 	result = dbPostData(URL, JSON.stringify(userData))
 	if (result == "success") {
 		utilBloop() // TODO move bloop to successful POST ()
-		users = dbGetUsers()
-		utilSetCurrentUser()
+		currentUser = utilGetCurrentUser(currentUser.userName)
 		uiShowUsers()
 		userData.telephone = utilCognitoPhoneFormat(userData.telephone)
 		// check to see if new user or existing
@@ -2514,7 +2512,7 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
 	// define fulfillment vars for non-vouchers
 	let pending = false, fulfillmentDateTime = moment().format(dateTime)
-	let byUserName = session.user.username
+	let byUserName = currentUser.userName
 	let itemCount = servedCounts.itemsServed
 	if (serviceType.fulfillment.type == "Voucher") {
 		pending = true
@@ -3124,7 +3122,7 @@ function clickSaveNote(){
 	tmp.noteText = $("#noteTextArea").val().toString()
 	tmp.createdDateTime = moment().format(dateTime)
 	tmp.updatedDateTime = moment().format(dateTime)
-	tmp.noteByUserName = session.user.username
+	tmp.noteByUserName = currentUser.userName
 	let isImportant = false
 	if ($("#noteIsImportant").is(":checked")) isImportant = true
 	tmp.isImportant = isImportant
@@ -3435,19 +3433,16 @@ function cogLoginUser(username, password, handleCogValue) {
   cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
   cognitoUser.authenticateUser(authDetails, {
     onSuccess: (result) => {
-			session.user = cognitoUser
-			user = cognitoUser
 			authorization.accessToken = result.getAccessToken().getJwtToken()
 			authorization.idToken = result.idToken.jwtToken
-			utilLoginUserShowScreens()
+			currentUser = utilGetCurrentUser(cognitoUser.username)
 			// logout if user is set to Inactive
-			if (currentUser.isActive == "Inactive") {
+			if (currentUser == null || currentUser.isActive == "Inactive") {
 				cogLogoutUser()
 				handleCogValue({message: "Sorry, your account is INACTIVE."})
 			} else {
 				handleCogValue({newUser: currentUser, clearInputs: true})
-				settings = dbGetAppSettings()
-				prnConnect()
+				utilLoginUserShowScreens(cognitoUser.username)
 			}
     },
     onFailure: (err) => {
@@ -3485,18 +3480,18 @@ function cogLoginUser(username, password, handleCogValue) {
 	})
 };
 
-function cogGetUserAttributes(){
-	cognitoUser.getUserAttributes(function(err, result) {
-		if (err) {
-				alert(err);
-				return;
-		}
-		user.username = cognitoUser.username
-		for (i = 0; i < result.length; i++) {
-				user[result[i].getName()] = result[i].getValue()
-		}
-	})
-};
+// function cogGetUserAttributes(){
+// 	cognitoUser.getUserAttributes(function(err, result) {
+// 		if (err) {
+// 				alert(err);
+// 				return;
+// 		}
+// 		user.username = cognitoUser.username
+// 		for (i = 0; i < result.length; i++) {
+// 				user[result[i].getName()] = result[i].getValue()
+// 		}
+// 	})
+// };
 
 function cogUserSignUp(userName, password, email, telephone){
 	var attributeList = [];
@@ -3528,30 +3523,30 @@ function cogUserSignUp(userName, password, email, telephone){
 	})
 };
 
-function cogLoginAdmin(){
-	let authenticationData = {
-		 Username : '',
-		 Password : ''
- 	}
-	let userData = {
-		 Username : '',
-		 Password : '' // your password here
- 	}
-  let authenticationDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authenticationData)
-  let cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
-  cognitoUser.authenticateUser(authenticationDetails, {
-		onSuccess: function (result) {
-			console.log('access token + ' + result.getAccessToken().getJwtToken());
-		},
-		onFailure: function(err) {
-			alert(err);
-		},
-		mfaRequired: function(codeDeliveryDetails) {
-			let verificationCode = prompt('Please input verification code' ,'');
-			cognitoUser.sendMFACode(verificationCode, this);
-		}
- })
-};
+// function cogLoginAdmin(){
+// 	let authenticationData = {
+// 		 Username : '',
+// 		 Password : ''
+//  	}
+// 	let userData = {
+// 		 Username : '',
+// 		 Password : '' // your password here
+//  	}
+//   let authenticationDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authenticationData)
+//   let cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+//   cognitoUser.authenticateUser(authenticationDetails, {
+// 		onSuccess: function (result) {
+// 			console.log('access token + ' + result.getAccessToken().getJwtToken());
+// 		},
+// 		onFailure: function(err) {
+// 			alert(err);
+// 		},
+// 		mfaRequired: function(codeDeliveryDetails) {
+// 			let verificationCode = prompt('Please input verification code' ,'');
+// 			cognitoUser.sendMFACode(verificationCode, this);
+// 		}
+//  })
+// };
 
 // **********************************************************************************************************
 // *********************************************** UTIL FUNCTIONS *******************************************
@@ -3962,15 +3957,15 @@ function utilGradeToNumber(grade){
 	return parseInt(grade);
 };
 
-function utilLoginUserShowScreens(){
+function utilLoginUserShowScreens(username) {
 	uiShowHideLogin('hide')
 	navGotoSec('nav1')
-	cogGetUserAttributes()
+	// cogGetUserAttributes()
 	dbGetServiceTypes()
-	users = dbGetUsers()
-	utilSetCurrentUser()
 	uiSetMenusForUser()
-};
+	settings = dbGetAppSettings()
+	prnConnect()
+}
 
 function utilPadEmptyFields(data){
 	$.each(data, function(key,value){
@@ -4088,7 +4083,7 @@ function utilUpdateService(serviceId){
 	service.totalChildrenServed = $("#histEdit6").val()
 	service.totalIndividualsServed = $("#histEdit7").val()
 	service.totalSeniorsServed = $("#histEdit8").val()
-	service.servicedByUserName = session.user.username
+	service.servicedByUserName = currentUser.userName
 	// make new service ID so ID is unique
 	service.serviceId = cuid()
 	let noEmpties = true
@@ -4446,9 +4441,14 @@ function utilPadTrimString(str, length) {
 	}
 };
 
-function utilSetCurrentUser(){
-	currentUser = users.filter(obj => obj.userName == user.username)[0]
-};
+function utilGetCurrentUser(username) {
+	users = dbGetUsers()
+	userList = users.filter(obj => obj.userName == username)
+	if (userList.length == 1)
+		return userList[0]
+	else
+		return null
+}
 
 function utilToday() {
 	return moment().format(date)
