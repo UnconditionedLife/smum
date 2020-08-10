@@ -1,33 +1,18 @@
 import React from 'react';
-import PrimaryButtons from "./ServicesPrimaryButtons.jsx";
+// import PrimaryButtons from "./ServicesPrimaryButtons.jsx";
 // import SecondaryButtons from "./ServicesSecondaryButtons.jsx";
-
+import { isEmpty } from '../js/Utils.js';
+import { useEffect, useRef } from 'react';
 
 export default function ServicesPage(props) {
-
-    // const DidMount = props => {
-//     const didMountRef = useRef(false)
-    
-//     console.log("MOUNT")
-//     useEffect(() => {
-//         console.log("EFFECT")
-//         if (clientData !== null) {
-//             if (didMountRef.current) {
-//                 const columns = ["clientId","givenName","familyName","dob","street"]
-//                 window.uiGenSelectHTMLTable("FoundClientsContainer", clientData, columns,'clientTable')
-//             } else didMountRef.current = true
-//         }
-//     })
-// };
-//DidMount()
-// <div ref={clientDataDiv} id ="FoundClientsContainer"></div>
-
-    const client = props.client
+    const client = props.client;
+    const servicesPrimaryButtonsDiv = useRef(null);
+    const servicesSecondaryButtonsDiv = useRef(null);
 
     let serviceDateTimeREACT
     let nextService = ""
-    
-    if ( client != undefined) {
+
+    if (!isEmpty(client)) {
 
         console.log("IN THE IF")
 
@@ -64,6 +49,41 @@ export default function ServicesPage(props) {
         console.log(nextService)
     };
 
+    useEffect(() => {
+        console.log("EFFECT")
+        if (!isEmpty(client)) {
+            window.uiShowServicesButtons(servicesPrimaryButtonsDiv.current, 'primary')
+        }
+    })
+
+    useEffect(() => {
+        console.log("EFFECT")
+        if (!isEmpty(client)) {
+            window.uiShowServicesButtons(servicesSecondaryButtonsDiv.current, 'secondary')
+        }
+    })
+
+    return (
+        <div>
+            <div className="serviceButtonContainerREACT">
+                <div className="serviceDateTimeREACT">{ serviceDateTimeREACT }</div>
+                <div className="serviceLastVisitREACT">{ nextService }</div>
+                <div ref={ servicesPrimaryButtonsDiv } className="servicePrimaryButtonsREACT"></div>
+                <div ref={ servicesSecondaryButtonsDiv } className="serviceSecondaryButtonsREACT"></div>
+            </div>
+        </div>
+    );
+};
+
+
+
+export function XServicesPage(props) {
+    const client = props.client
+
+ 
+    
+
+
     return (
         <div>
             <div><br/></div>
@@ -73,7 +93,7 @@ export default function ServicesPage(props) {
                 <div id="serviceButtonContainerREACT">
                     <div id="serviceDateTimeREACT">{ serviceDateTimeREACT }</div>
                     <div id="serviceLastVisitREACT">{ nextService }</div>
-                    {/* <div id="servicePrimaryButtonsREACT">{ <PrimaryButtons /> }</div> */}
+                    <div id="servicePrimaryButtonsREACT">{ <PrimaryButtons /> }</div>
                     {/* <div id="serviceSecondaryButtonsREACT">{ <SecondaryButtons /> }</div> */}
                </div>
              </div>

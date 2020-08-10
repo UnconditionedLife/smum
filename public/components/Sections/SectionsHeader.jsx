@@ -3,6 +3,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import ClientsMain from '../Clients/ClientsMain.jsx';
 import AdminMain from '../Admin/AdminMain.jsx';
 import UserMain from '../User/UserMain.jsx';
+import { isEmpty } from '../js/Utils.js';
+
 
 const useStyles = makeStyles((theme) => ({
     wrapper: {
@@ -74,7 +76,7 @@ export default function SectionsHeader(props) {
     const classes = useStyles();
     const todaysDate = window.moment().format("dddd, MMM DD YYYY")
     
-    if (client !== null) {
+    if (!isEmpty(client)) {
         const parsed = parseInt(client.clientId)
         if (parsed !== headerState) {
             setHeaderState(parsed)

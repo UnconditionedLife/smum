@@ -363,7 +363,7 @@ main{
   grid-gap: 10px;
 }
 
-#serviceButtonContainerREACT {
+.serviceButtonContainerREACT {
 	width: 100%;
 	display: grid;
 	grid-template-columns: 1fr 4fr 4fr 4fr 4fr 1fr;
@@ -698,7 +698,7 @@ outline: -webkit-focus-ring-color auto 5px;
 	font-weight: bold;
 }
 
-#serviceDateTimeREACT {
+.serviceDateTimeREACT {
 	display: inline-flex;
 	grid-row: 1;
 	grid-column: 2 / span 2;
@@ -717,7 +717,7 @@ outline: -webkit-focus-ring-color auto 5px;
 	color: var(--red);
 }
 
-#serviceLastVisitREACT {
+.serviceLastVisitREACT {
 	display: inline-flex;
 	grid-row: 1;
 	grid-column: span 2;
@@ -734,7 +734,7 @@ outline: -webkit-focus-ring-color auto 5px;
 	justify-content: center;
 }
 
-#servicePrimaryButtonsREACT {
+.servicePrimaryButtonsREACT {
 	display: inline-flex;
 	grid-row: 2;
 	grid-column: 2 / span 4;
@@ -749,7 +749,7 @@ outline: -webkit-focus-ring-color auto 5px;
 	flex-wrap: wrap;
 }
 
-#serviceSecondaryButtonsREACT {
+.serviceSecondaryButtonsREACT {
 	display: flex;
 	grid-row: 4 / span 2;
 	grid-column: 2 / span 4;

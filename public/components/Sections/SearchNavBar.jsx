@@ -16,8 +16,8 @@ import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import Button from '@material-ui/core/Button';
-import SectionsHeader from '../Sections/SectionsHeader.jsx';
-import LoginForm from "../Login/LoginForm";
+import SectionsHeader from './SectionsHeader.jsx';
+import LoginForm from "./LoginForm.jsx";
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import PeopleIcon from '@material-ui/icons/People';
@@ -122,14 +122,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function PrimarySearchAppBar(props) {
+export default function SectionsNavBar(props) {
   const classes = useStyles();
   const [ anchorEl, setAnchorEl ] = useState(null);
   const [ mobileMoreAnchorEl, setMobileMoreAnchorEl ] = useState(null);
   const [ user, setUser ] = useState(null);
   const [ selectedSection, setSelectedSection ] = useState(0);
-  const [ client, setClient ] = useState(null);
-  const [ clientData, setClientData ] = useState(null);
+  const [ client, setClient ] = useState({});
+  const [ clientData, setClientData ] = useState([]);
 
 
   const isMenuOpen = Boolean(anchorEl);
@@ -189,7 +189,7 @@ export default function PrimarySearchAppBar(props) {
     const str = document.getElementById('searchField').value
     if (str === '')	return
     if (window.stateCheckPendingEdit()) return
-    window.clientData = null
+    window.clientData = {}
     const regex = /[/.]/g
     const slashCount = (str.match(regex) || []).length
     const clientDataTemp = window.dbSearchClients(str, slashCount)
@@ -360,7 +360,7 @@ export default function PrimarySearchAppBar(props) {
         <Toolbar>
           <Tooltip title={props.version}>
           <Typography className={classes.title} variant='h6' noWrap>
-            Santa Maria Urban Ministryewew
+            Santa Maria Urban Ministry
           </Typography>
           </Tooltip>
           {user ? appbarControls : null}
@@ -371,4 +371,4 @@ export default function PrimarySearchAppBar(props) {
       <SectionsHeader section={ selectedSection } client={ client } clientData={ clientData } />
     </div>
   );
-}
+};

@@ -40,6 +40,9 @@ export default function PrimaryButtons() {
         }
         console.log(buttons)
     }
+
+    // onClick={ service.serviceName }
+
     return (
         <div>
             {buttons.map((service) => {
@@ -48,8 +51,8 @@ export default function PrimaryButtons() {
                         variant="contained" 
                         color="secondary" 
                         size="large"
-                        // className={ classes.margin }
-                        onClick={ service.serviceName }>
+                        className={ classes.margin }
+                        >
                             { service.serviceName }
                     </Button>
                 )

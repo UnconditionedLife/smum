@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { makeStyles, useTheme, createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import PageviewIcon from '@material-ui/icons/Pageview';
+import { AppBar, Tabs, Tab, Container } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+// import Tabs from '@material-ui/core/Tabs';
+// import Tab from '@material-ui/core/Tab';
+// import Container from '@material-ui/core/Container';
+import PageviewIcon from '@material-ui/icons/PageView';
 import RoomServiceIcon from '@material-ui/icons/RoomService';
 import HouseIcon from '@material-ui/icons/House';
 import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
@@ -19,15 +20,14 @@ import NotesPage from './PageNotes.jsx';
 import TodayPage from './PageToday.jsx';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.background.paper,
-    width: "100%"
-  }
+    marginTop: {
+        marginTop: '24px'
+    }
 }));
 
 export default function ClientsMain(props) {
-  const [ selectedTab, setSelectedTab ] = useState(0);
   const classes = useStyles();
+  const [ selectedTab, setSelectedTab ] = useState(0);
   const client = props.client
   const clientData = props.clientData
   
@@ -36,11 +36,7 @@ export default function ClientsMain(props) {
   };
 
   return (
-    <div className={classes.root}>
-        {/* <div className = "contentHeader">
-              <div id = "clientsTitle" className = "contentTitle">{todaysDate}</div>
-              <div className = "sectionName">{sectionName}</div>
-        </div> */}
+    <div>
       <AppBar position="static" color="default">
         <Tabs
           value={selectedTab}
@@ -58,13 +54,15 @@ export default function ClientsMain(props) {
           <Tab icon={<AssessmentIcon />} label="Today" />
         </Tabs>
       </AppBar>
-      {selectedTab === 0 && <FoundPage clientData={ clientData } />}
-      {selectedTab === 1 && <ServicesPage client={ client } />}
-      {selectedTab === 2 && <ClientPage client={ client } />}
-      {selectedTab === 3 && <DependentsPage client={ client } />}
-      {selectedTab === 4 && <HistoryPage client={ client } />}
-      {selectedTab === 5 && <NotesPage client={ client } />}
-      {selectedTab === 6 && <TodayPage client={ client } />}
+      <Container className={ classes.marginTop }>
+        {selectedTab === 0 && <FoundPage clientData={ clientData } />}
+        {selectedTab === 1 && <ServicesPage client={ client } />}
+        {selectedTab === 2 && <ClientPage client={ client } />}
+        {selectedTab === 3 && <DependentsPage client={ client } />}
+        {selectedTab === 4 && <HistoryPage client={ client } />}
+        {selectedTab === 5 && <NotesPage client={ client } />}
+        {selectedTab === 6 && <TodayPage/>}
+      </Container>
     </div>
   );
 };

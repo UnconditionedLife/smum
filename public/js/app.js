@@ -241,7 +241,7 @@ function uiBuildHistoryBottom(){
 	//$("#historyBottom").append("<div class='historyLoadButton solidButton' onClick='dbLoadServiceHistory()'>Load History</div>")
 };
 
-function uiBuildHistoryTop(){
+function uiBuildHistoryTop(reactDiv){ // Changed for port to REACT: original function did not have an atttribute
   columns = ["createdDateTime", "updatedDateTime", "firstSeenDate", "lastServedFoodDateTime", "familyIdCheckedDate"]
 	utilSetLastServedFood()
 	let historyArray = []
@@ -252,7 +252,8 @@ function uiBuildHistoryTop(){
 	historyFields.lastServedFoodDateTime = client.lastServedFoodDateTime
 	historyFields.familyIdCheckedDate = client.familyIdCheckedDate
 	historyArray.push(historyFields)
-	uiGenSelectHTMLTable('#historyTop', historyArray, columns,'historyTable')
+	uiGenSelectHTMLTable(reactDiv, historyArray, columns,'historyTable')
+	// Changed for port to REACT: orginal div was #historyTop instead of reactDiv
 };
 
 function uiClearAllErrorBubbles(){
@@ -770,7 +771,8 @@ function uiShowHistoryData(clientHistory){
 // 	}
 // };
 
-function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) {
+// Added primaryReactDiv as part of REACT migration
+function uiShowPrimaryServiceButtons(primaryReactDiv, btnPrimary, lastVisit, activeServiceTypes) {
 	let primaryButtons = ""
 	if (btnPrimary == "-1") { // dependents grades requirement
 		let btnClass = "btnAlert"
@@ -785,7 +787,9 @@ function uiShowPrimaryServiceButtons(btnPrimary, lastVisit, activeServiceTypes) 
 			primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
 		}
 	}
-	$('#servicePrimaryButtons').html(primaryButtons)
+	// replaced servicePrimaryButtons with primaryReactDiv
+	$(primaryReactDiv).html(primaryButtons)
+	
 };
 
 function uiShowReports(){
@@ -1681,6 +1685,13 @@ function uiShowTodayTotals(serviceTotal, grid) {
 	}
 };
 
+// created this function to call directly from REACT durring transition
+function uiShowServicesDateTimeREACT(reactDiv) {
+	if (client.clientId != undefined){
+		$(reactDiv).html(moment().format(longDate))
+	}
+};
+
 let uiShowServicesDateTime = function() {
 	if (client.clientId != undefined){
 		$('#serviceDateTime').html(moment().format(longDate))
@@ -1706,9 +1717,10 @@ function uiShowChangePasswordForm(){
 	$('#userPasswordFormContainer').html(uiGetTemplate('#changePasswordForm'))
 };
 
-function uiShowClientEdit(isEdit){
+function uiShowClientEdit(reactDiv, isEdit){
 	uiShowNotes("Client Notes")
-	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
+	// replaced 'clientFormContainer' with reactDiv for migration
+	$(reactDiv).html(uiGetTemplate('#clientForm'))
 	$('#clientSaveButton.newOnly').remove()
 	uiPopulateForm(client, 'clientForm')
 	if (isEdit){
@@ -1792,14 +1804,15 @@ function uiShowNewClientForm(){
 	navGotoTab("tab3")
 };
 
-function uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTypes){
+function uiShowSecondaryServiceButtons(secondaryReactDiv, btnSecondary, lastServed, activeServiceTypes){
 	if (emergencyFood) return
 	$('#serviceSecondaryButtons').html("")
 	for (let i=0; i < btnSecondary.length; i++){
 		let x = btnSecondary[i];
 		let attribs = "\'" + activeServiceTypes[x].serviceTypeId + "\', \'" + activeServiceTypes[x].serviceCategory + "\', \'" + activeServiceTypes[x].serviceButtons + "\'"
 		let service = '<div id="btn-' + activeServiceTypes[x].serviceTypeId +'\" class="btnSecondary" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "</div>"
-		$('#serviceSecondaryButtons').append(service)
+		// replaced 'serviceSecondaryButtons' with serviceSecondaryButtons for REACT migration
+		$(secondaryReactDiv).append(service)
 	}
 	// let service = '<div class="btnSecondary" id="btn-test" onclick="clickPrintTestSingle()">Printer Test</div>';
 	// $('#serviceSecondaryButtons').append(service);
@@ -1900,7 +1913,8 @@ function uiSetAdminHeader(title){
 	$("#adminTitle").html(title)
 };
 
-function uiShowServicesButtons(){ // TODO DELETE AFTER SERVICE PAGE IS REACTED
+// Added primaryReactDiv and secondaryReactDiv as part of REACT migration
+function uiShowServicesButtons(ReactDiv, buttonsCalled){ // TODO DELETE AFTER SERVICE PAGE IS REACTED
 	if ($.isEmptyObject(client)) return
 	// uiShowServicesDateTime() //*** MOVED TO REACT ***
 	// uiShowLastServed()       //*** MOVED TO REACT ***
@@ -1909,8 +1923,11 @@ function uiShowServicesButtons(){ // TODO DELETE AFTER SERVICE PAGE IS REACTED
 	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
 	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
 	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
-	uiShowPrimaryServiceButtons(btnPrimary, lastServed, activeServiceTypes)
-	uiShowSecondaryServiceButtons(btnSecondary, lastServed, activeServiceTypes)
+	if (buttonsCalled === 'primary') {
+		uiShowPrimaryServiceButtons(ReactDiv, btnPrimary, lastServed, activeServiceTypes)
+	} else {
+		uiShowSecondaryServiceButtons(ReactDiv, btnSecondary, lastServed, activeServiceTypes)
+	}
 };
 
 function uiShowServiceTypeForm(){
