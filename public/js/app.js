@@ -64,7 +64,7 @@ let closedEvent = {
 
 // uiFillDate() Moved to REACT
 uiShowHideLogin('show')
-navGotoTab("tab1")
+// navGotoTab("tab1") Moved to REACT
 $("#noteEditForm").hide()
 $("#atabLable7").hide()
 uiShowDailyReportHeader(moment().format(date), 'today', "TODAY")
@@ -231,11 +231,11 @@ function uiAddListOfVoucherServiceTypes(voucherServiceTypes){
 
 };
 
-function uiBuildHistoryBottom(){
+function uiBuildHistoryBottom(reactDiv){
 	const headerLabels = ["Served", "Service", "Client", "Homeless", "# Items", "# Adults", "# Children", "# Individuals", "# Seniors", "Serviced By"]
-	$("#historyBottom").html("")
+	$(reactDiv).html("") // changed for React migration #historyBottom"
 	for (var i = 0; i < headerLabels.length; i++) {
-		$("#historyBottom").append("<div class='historyHeader'>" + headerLabels[i] + "</div>")
+		$(reactDiv).append("<div class='historyHeader'>" + headerLabels[i] + "</div>") // changed for React migration #historyBottom"
 	}
 	//$("#historyBottom").append("<div class='historyLoadButton solidButton' onClick='dbLoadServiceHistory()'>Load History</div>")
 };
@@ -252,7 +252,7 @@ function uiBuildHistoryTop(reactDiv){ // Changed for port to REACT: original fun
 	historyFields.familyIdCheckedDate = client.familyIdCheckedDate
 	historyArray.push(historyFields)
 	uiGenSelectHTMLTable(reactDiv, historyArray, columns,'historyTable')
-	// Changed for port to REACT: orginal div was #historyTop instead of reactDiv
+	// Changed for port to REACT: orginal target div was '#historyTop' instead of 'reactDiv'
 };
 
 function uiClearAllErrorBubbles(){
@@ -261,7 +261,7 @@ function uiClearAllErrorBubbles(){
 };
 
 function uiClearCurrentClient(){
-	let blank = "<div class='bannerDiv'><span class='bannerText'>SEARCH FOR CLIENT</span></div>"
+	let blank = ""// "<div class='bannerDiv'><span class='bannerText'>SEARCH FOR CLIENT</span></div>"
 	$("#searchContainer").html(blank)
 	$("#clientFormContainer").html(blank)
 		$("#clientLeftSlider").hide()
@@ -282,12 +282,13 @@ function uiClearCurrentClient(){
 		$("#tabLable6").css("color", "#bbb")
 };
 
-function uiShowNotes(pageName){ /**Displays notes table for a given page**/
+function uiShowNotes(reactDiv, pageName){ /**Displays notes table for a given page**/
 	//setMainSideDiv()
 	const tableStr = '<table class="notes"></table>'
-	$('#notesContainer').html(tableStr)
+	$(reactDiv).html(tableStr)
 	const headerRow = '<tr><td class="notesHeader">Created</td><td class="notesHeader">Note</td><td class="notesHeader">Created By</td><td class="notesHeader">Important</td></tr>'
 	$('.notes').append(headerRow)
+	$("#noteEditForm").hide()
 };
 
 function uiShowEditHistoryPopup(serviceId, rowNum){
@@ -700,8 +701,8 @@ function uiShowHistory(){
 	uiBuildHistoryBottom()
 };
 
-function uiShowHistoryData(clientHistory){
-	uiBuildHistoryBottom()
+function uiShowHistoryData(reactDiv, clientHistory){
+	// uiBuildHistoryBottom() hidden beacuse of REACT migration
 	// $(".historyLoadButton").hide()
 	const rowFields = ["servicedDateTime", "serviceName", "clientStatus", "homeless", "itemsServed", "totalAdultsServed", "totalChildrenServed", "totalIndividualsServed", "totalSeniorsServed", "servicedByUserName"]
 	for (var i = 0; i < clientHistory.length; i++) {
@@ -725,7 +726,7 @@ function uiShowHistoryData(clientHistory){
 				}
 			}
 		}
-		$("#historyBottom").append(newRow)
+		$(reactDiv).append(newRow) // changed for REACT migration from "#historyBottom"
 	}
 	// show higlighting on hovering
 	$(".historyRow").hover(
@@ -803,9 +804,10 @@ function uiShowReports(){
 
 function uiRefreshReport(targetDiv){
 	let title = 'TODAY'
-	if (targetDiv == 'report') {
-		title = 'DAILY'
-	}
+	// temp fix during REACT migration - will need to be fixed for Admin/Reports
+	// if (targetDiv == 'report') {
+	// 	title = 'DAILY'
+	// }
 	uiShowDailyReportHeader(moment().format(dateTime), targetDiv, title)
 	uiShowDailyReportRows(moment().format(date), targetDiv)
 };
@@ -819,7 +821,9 @@ function uiShowDailyReportHeader(reportDate, targetDiv, name){
 		   refresh: false,
 		     print: true
 	}
-	if (targetDiv == 'today') { headerInfo.refresh = true }
+	// removed for REACT migration will need to be fixed for Admin Reports
+	//if (targetDiv == 'today') { headerInfo.refresh = true }
+	headerInfo.refresh = true // hard coded for REACT migration
 	uiLoadReportHeader(headerInfo)
 	uiSetPrintBodyTemplate('#dailyReportHeader', targetDiv)
 };
@@ -1107,6 +1111,13 @@ console.log(servicesVouchers.length)
 		uiBuildVoucherCountRows(count, targetType)
 	}
 };
+
+function utilUpdateClientGlobals() {
+	client = window.client
+	clientData = window.clientData
+	console.log(clientData)
+}
+
 function utilGetServicesInMonth(monthYear){
 	const currentMonth = moment().format("YYYY-MM")
 	let daysInMonth = moment(monthYear, "YYYY-MM").daysInMonth()
@@ -2115,7 +2126,6 @@ function uiGenSelectHTMLTable(selector, data, col, tableID){
 			}
     }
   }
-	console.log("INJECT")
 	$(selector).html(table);
 
 	if (tableID == 'dependentsTable') clickToggleDependentsViewEdit('view');
@@ -2385,11 +2395,11 @@ function dbGetUsers(){
 	return dbGetData(aws+"/users").users
 };
 
-function dbLoadServiceHistory(){
+function dbLoadServiceHistory(reactDIV){
 	let clientHistory = dbGetClientActiveServiceHistory()
 	clientHistory = clientHistory
 		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
-	uiShowHistoryData(clientHistory)
+	uiShowHistoryData(reactDIV, clientHistory)
 };
 
 function dbPostData(URL,data){
@@ -2580,6 +2590,9 @@ function dbSaveCurrentClient(data){
 		if (clientData != null) {
 			console.log("REDO CLIENT DATA")
 			uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
+			
+			console.log(clientData)
+			
 			if (clientData.length == 1) clientTableRow = 1
 			uiOutlineTableRow('clientTable', clientTableRow)
 			// uiSetClientsHeader("numberAndName") MOVED TO REACT
@@ -2629,16 +2642,7 @@ function dbSaveSettingsForm(){
 };
 
 function dbSearchClients(str, slashCount){
-	// let str =  $('#searchField').val()
-	// $('#searchField').val('')
-	// if (str === '') {
-	// 	utilBeep()
-	// 	return
-	// }
-	// if (currentNavTab !== "clients") navGotoSec("nav1")
-	// clientData = null
-	// const regex = /[/.]/g
- 	// const slashCount = (str.match(regex) || []).length
+	clientData = []
 	if (slashCount == 2){
 		str = utilCleanUpDate(str)
 		str = moment(str, uiDate).format(date)
@@ -2665,27 +2669,7 @@ function dbSearchClients(str, slashCount){
 		}
 	}
 	return clientData
-	// uiShowHideClientMessage('hide')   // close ClientMessage overlay in case it's open
-	// if (clientData==null||clientData.length==0){
-	//  	utilBeep()
-	//  	uiSetClientsHeader("0 Clients Found")
-	// 	client = {}
-	// 	servicesRendered = []
-	// 	uiClearCurrentClient()
-	//  	// TODO clear current client
-  // } else {
-	//  	let columns = ["clientId","givenName","familyName","dob","street"]
-	//  	uiGenSelectHTMLTable('#searchContainer', clientData, columns,'clientTable')
-	// 	uiResetNotesTab()
-	// 	if (clientData.length == 1){
-	// 		clickSetCurrentClient(0) // go straight to SERVICES
-	// 		navGotoTab("tab2")
-	// 	} else {
-	// 		uiSetClientsHeader(clientData.length + ' Clients Found')
-	// 		navGotoTab("tab1")
-	// 	}
-	// }
-}
+};
 
 // **********************************************************************************************************
 // *********************************************** DATE FUNCTIONS *******************************************
@@ -3216,7 +3200,10 @@ function clickToggleDependentsViewEdit(side){
 };
 
 function clickToggleNoteForm(todo, index){
+
+	console.log("MadeIT!")
 	if (todo == "show"){
+		console.log("IN SHOW!")
 		editFlag.notes = true
 		$("#newNoteButton").hide()
 		$("#noteEditForm").show()
@@ -3229,6 +3216,8 @@ function clickToggleNoteForm(todo, index){
 			}
 		}
 	} else {
+
+		console.log("IN HIDE!")
 		// check for edit mode
 		editFlag.notes = false
 		$("#newNoteButton").show()

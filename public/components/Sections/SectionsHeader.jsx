@@ -72,37 +72,63 @@ export default function SectionsHeader(props) {
     const name = sectionNames[ props.section ]
     const client = props.client
     const clientData = props.clientData
-    const [ headerState, setHeaderState ] = useState('date');
-    const classes = useStyles();
+    const searchState = props.searchState
     const todaysDate = window.moment().format("dddd, MMM DD YYYY")
+    const [ headerMessage, setHeaderMessage ] = useState(todaysDate)
+    const classes = useStyles();
+    let titleType = 'nonclient';
     
     if (!isEmpty(client)) {
+        titleType = 'client'
         const parsed = parseInt(client.clientId)
-        if (parsed !== headerState) {
-            setHeaderState(parsed)
+        if (parsed !== headerMessage) {
+            setHeaderMessage(parsed)
         }
+    } else {
+        titleType = 'nonclient'
+        if (searchState === 'search') {
+            const count = clientData.length;
+            if (count === 1) {
+                if (headerMessage !== '1 Client Found') { 
+                    setHeaderMessage('1 Client Found');
+                }
+            } else {
+                const msg = count + ' Clients Found'
+                if (headerMessage !== msg ) {
+                    setHeaderMessage(count + ' Clients Found');
+                }
+            }
+        } else {
+            if (headerMessage !== todaysDate) {
+                setHeaderMessage(todaysDate);
+            }
+        };
     };
 
     return (
         <div className={ classes.wrapper }>
             <div className = { classes.container }>
-                    { headerState === 'date' && 
+                    { titleType === 'nonclient' && 
                         <div className={ classes.pageTitle }>
                             <div className={ classes.twoColumns }>
-                            { todaysDate }
+                            { headerMessage }
                             </div>
                         </div> 
                     }
                     {/* { headerState === 'new-client' && { "NEW CLIENT" } } //TODO WIRE TO NEW CLIENT PAGE */}
-                    { (Number.isInteger(headerState) && parseInt(client.clientId) === headerState ) && 
+                    { titleType === 'client' && 
                         <div className={ classes.pageTitle }>
-                            <div className= { classes.clientNumber }>{ client.clientId }</div>
+                            <div className= { classes.clientNumber }>{ headerMessage }</div>
                             <div className= { classes.clientName }>{ client.givenName } { client.familyName }</div>
                         </div> 
                     }
                     <div className={ classes.sectionName }>{ name }</div>
             </div>
-            {props.section === 0 && <ClientsMain client={ client } clientData={ clientData } />}
+            {props.section === 0 && 
+                <ClientsMain 
+                    client={ client } 
+                    clientData={ clientData }
+                />}
             {props.section === 1 && <AdminMain />}
             {props.section === 2 && <UserMain/>}
         </div> 

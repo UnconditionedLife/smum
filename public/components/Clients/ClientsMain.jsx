@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppBar, Tabs, Tab, Container } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-// import Tabs from '@material-ui/core/Tabs';
-// import Tab from '@material-ui/core/Tab';
-// import Container from '@material-ui/core/Container';
 import PageviewIcon from '@material-ui/icons/PageView';
 import RoomServiceIcon from '@material-ui/icons/RoomService';
 import HouseIcon from '@material-ui/icons/House';
@@ -30,7 +27,7 @@ export default function ClientsMain(props) {
   const [ selectedTab, setSelectedTab ] = useState(0);
   const client = props.client
   const clientData = props.clientData
-  
+
   const handleChange = (event, newValue) => {
     setSelectedTab(newValue);
   };

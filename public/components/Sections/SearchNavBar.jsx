@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from "react-dom";
-import { fade, makeStyles } from '@material-ui/core/styles';
+import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
+import theme from './Theme.jsx';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -130,7 +131,7 @@ export default function SectionsNavBar(props) {
   const [ selectedSection, setSelectedSection ] = useState(0);
   const [ client, setClient ] = useState({});
   const [ clientData, setClientData ] = useState([]);
-
+  const [ searchState, setSearchState ] = useState(null);
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -149,6 +150,7 @@ export default function SectionsNavBar(props) {
     console.log("IN CLIENTDATA CHANGE")
     console.log(newValue)
     setClientData(newValue);
+    window.clientData = newValue
     if (newValue.length === 1) {
       const newClient = newValue[0]
       handleClientChange(newClient)
@@ -181,42 +183,50 @@ export default function SectionsNavBar(props) {
   function handleLogout() {
     window.cogLogoutUser();
     setUser(null);
-  }
+  };
+
+  function handleSearchState(state) {
+    if (searchState !== 'search') {
+      setSearchState(state);
+    }
+  };
 
   function startSearch() {
-    console.log("IN SEARCH CLIENTS")
-
+    handleSearchState('search')
     const str = document.getElementById('searchField').value
     if (str === '')	return
     if (window.stateCheckPendingEdit()) return
     window.clientData = {}
+    handleClientDataChange({})
     const regex = /[/.]/g
     const slashCount = (str.match(regex) || []).length
-    const clientDataTemp = window.dbSearchClients(str, slashCount)
+    let clientDataTemp = window.dbSearchClients(str, slashCount)
     window.uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
     if (clientDataTemp==null||clientDataTemp.length==0){
-      // uiSetClientsHeader("0 Clients Found") MOVED TO REACT
-      window.client = {}
       window.servicesRendered = []
       window.uiClearCurrentClient()
     } else {
       let columns = ["clientId","givenName","familyName","dob","street"]
       window.uiGenSelectHTMLTable('#FoundClientsContainer', clientDataTemp, columns,'clientTable')
       window.uiResetNotesTab()
-      if (clientDataTemp.length == 1){
-        window.clickSetCurrentClient(0) // go straight to SERVICES
-        window.navGotoTab("tab2")
-      } else {
-        // uiSetClientsHeader(clientData.length + ' Clients Found') MOVED TO REACT
-        window.navGotoTab("tab1")
+      if (clientDataTemp.length === 1) {
+        window.client = clientDataTemp[0]
       }
-    }
+    };
     if (selectedSection !== 0) handleSectionChange(0)
-
-    const clientTemp = window.client // TODO WILL NEED TO GRAB FROM COMPONENT
+    let clientTemp = window.client // TODO WILL NEED TO GRAB FROM PROPS
     // const clientDataTemp = window.clientData // TODO WILL NEED TO  GRAB FROM COMPONENT
+    console.log("Before Datasetting")
+    if (clientTemp == undefined || clientTemp == null) {
+      clientTemp = {}
+    }
+    if (clientDataTemp == undefined || clientDataTemp == null) {
+      clientDataTemp = []
+    }
+    console.log(clientDataTemp)
     handleClientChange(clientTemp)
     handleClientDataChange(clientDataTemp)
+    window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
   };
 
   const isAdmin = user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin');
@@ -313,8 +323,6 @@ export default function SectionsNavBar(props) {
     </Menu>
   );
 
-
-
   const mobileMenuId = 'primary-search-account-menu-mobile';
   const renderMobileMenu = (
     <Menu
@@ -368,7 +376,14 @@ export default function SectionsNavBar(props) {
       </AppBar>
       { renderMobileMenu }
       { renderMenu }
-      <SectionsHeader section={ selectedSection } client={ client } clientData={ clientData } />
+      <ThemeProvider theme={ theme }>
+        <SectionsHeader 
+          section={ selectedSection } 
+          client={ client } 
+          clientData={ clientData } 
+          searchState={ searchState }
+        />
+      </ThemeProvider>
     </div>
   );
 };
