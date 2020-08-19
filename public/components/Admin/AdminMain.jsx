@@ -19,7 +19,7 @@ import AllUsersPage from './PageAllUsers.jsx';
 import UserPage from './PageUser.jsx';
 import SettingsPage from './PageSettings.jsx';
 import ImportPage from './PageImport.jsx';
-import SectionsHeader from '../Sections/SectionsHeader.jsx'
+// import SectionsHeader from '../Clients/ClientsHeader.jsx'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -36,8 +36,6 @@ export default function AdminMain() {
   const handleChange = (event, newValue) => {
     setSelectedTab(newValue);
   };
-
-  const client = window.client // TODO WILL NEED TO PASS CLIENT AS PROP FROM PAGE-MAIN
 
   return (
     <div className={classes.root}>

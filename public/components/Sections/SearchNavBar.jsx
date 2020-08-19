@@ -17,12 +17,14 @@ import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import Button from '@material-ui/core/Button';
-import SectionsHeader from './SectionsHeader.jsx';
-import LoginForm from "./LoginForm.jsx";
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import PeopleIcon from '@material-ui/icons/People';
 import FaceIcon from '@material-ui/icons/Face';
+import LoginForm from "./LoginForm.jsx";
+import ClientsMain from '../Clients/ClientsMain.jsx';
+import AdminMain from '../Admin/AdminMain.jsx';
+import UserMain from '../User/UserMain.jsx';
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -129,9 +131,8 @@ export default function SectionsNavBar(props) {
   const [ mobileMoreAnchorEl, setMobileMoreAnchorEl ] = useState(null);
   const [ user, setUser ] = useState(null);
   const [ selectedSection, setSelectedSection ] = useState(0);
-  const [ client, setClient ] = useState({});
-  const [ clientData, setClientData ] = useState([]);
-  const [ searchState, setSearchState ] = useState(null);
+  const [ searchTerm, setSearchTerm ] = useState('');
+  const [ typedSearchTerm, setTypedSearchTerm ] = useState('')
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -139,23 +140,6 @@ export default function SectionsNavBar(props) {
   useEffect(() => {
     ReactDOM.render(<LoginForm onLogin={(newUser) => setUser(newUser)}/>, document.getElementById("loginOverlay"));
   });
-
-  const handleClientChange = (newValue) => {
-    console.log("IN CLIENT CHANGE")
-    console.log(newValue)
-    setClient(newValue);
-  };
-
-  const handleClientDataChange = (newValue) => {
-    console.log("IN CLIENTDATA CHANGE")
-    console.log(newValue)
-    setClientData(newValue);
-    window.clientData = newValue
-    if (newValue.length === 1) {
-      const newClient = newValue[0]
-      handleClientChange(newClient)
-    }
-  };
 
   const handleSectionChange = (newValue) => {
     console.log("IN SECTION CHANGE")
@@ -185,48 +169,10 @@ export default function SectionsNavBar(props) {
     setUser(null);
   };
 
-  function handleSearchState(state) {
-    if (searchState !== 'search') {
-      setSearchState(state);
+  function handleSearchTermChange(newValue) {
+    if (searchTerm !== newValue) {
+      setSearchTerm(newValue);
     }
-  };
-
-  function startSearch() {
-    handleSearchState('search')
-    const str = document.getElementById('searchField').value
-    if (str === '')	return
-    if (window.stateCheckPendingEdit()) return
-    window.clientData = {}
-    handleClientDataChange({})
-    const regex = /[/.]/g
-    const slashCount = (str.match(regex) || []).length
-    let clientDataTemp = window.dbSearchClients(str, slashCount)
-    window.uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
-    if (clientDataTemp==null||clientDataTemp.length==0){
-      window.servicesRendered = []
-      window.uiClearCurrentClient()
-    } else {
-      let columns = ["clientId","givenName","familyName","dob","street"]
-      window.uiGenSelectHTMLTable('#FoundClientsContainer', clientDataTemp, columns,'clientTable')
-      window.uiResetNotesTab()
-      if (clientDataTemp.length === 1) {
-        window.client = clientDataTemp[0]
-      }
-    };
-    if (selectedSection !== 0) handleSectionChange(0)
-    let clientTemp = window.client // TODO WILL NEED TO GRAB FROM PROPS
-    // const clientDataTemp = window.clientData // TODO WILL NEED TO  GRAB FROM COMPONENT
-    console.log("Before Datasetting")
-    if (clientTemp == undefined || clientTemp == null) {
-      clientTemp = {}
-    }
-    if (clientDataTemp == undefined || clientDataTemp == null) {
-      clientDataTemp = []
-    }
-    console.log(clientDataTemp)
-    handleClientChange(clientTemp)
-    handleClientDataChange(clientDataTemp)
-    window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
   };
 
   const isAdmin = user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin');
@@ -245,9 +191,16 @@ export default function SectionsNavBar(props) {
           input: classes.inputInput,
         }}
         inputProps={{ 'aria-label': 'search' }}
-        onKeyDown={event => {
-          if (event.key == "Enter")
-            startSearch()
+        value={ typedSearchTerm }
+        onChange= { event => { 
+          setTypedSearchTerm(event.target.value)
+        }}
+        onKeyPress={ event => {
+          if (event.key == "Enter") { 
+            if (selectedSection !== 0) handleSectionChange(0)
+            setSearchTerm(typedSearchTerm)
+            setTypedSearchTerm('')
+          }
         }}
       />
     </div>
@@ -377,12 +330,13 @@ export default function SectionsNavBar(props) {
       { renderMobileMenu }
       { renderMenu }
       <ThemeProvider theme={ theme }>
-        <SectionsHeader 
-          section={ selectedSection } 
-          client={ client } 
-          clientData={ clientData } 
-          searchState={ searchState }
-        />
+          {selectedSection === 0 && 
+            <ClientsMain 
+                searchTerm={ searchTerm }
+                handleSearchTermChange = { handleSearchTermChange }
+            />}
+          {selectedSection === 1 && <AdminMain />}
+          {selectedSection === 2 && <UserMain/>}
       </ThemeProvider>
     </div>
   );

@@ -9,21 +9,21 @@ import Switch from '@material-ui/core/Switch';
 
 export default function ClientPage(props) {
     const client = props.client;
+    const isNewClient = props.isNewClient;
     const clientFormDiv = useRef(null);
 
     useEffect(() => {
         if (!isEmpty(client)) {
-            const isEdit = true;
-            uiShowClientEdit(clientFormDiv.current, isEdit)
-            // window.uiGenSelectHTMLTable(clientDiv.current,client.dependents,["givenName","familyName",'relationship','gender', "dob","age", "grade","isActive"],'dependentsTable')
+            uiShowClientEdit(clientFormDiv.current, false)
+        } else if (isNewClient) {
+            uiShowClientEdit(clientFormDiv.current, true)
         }
     })
 
     return (
         <div>
             <div className="topFormButtonsDiv">
-                <Button variant="contained" size="small" color="primary" >New Client</Button>
-                {/* onClick="window.clickShowNewClientForm()" */}
+
                 {/* <input id="newClientButton" className="solidButton viewOnly" onclick="clickShowNewClientForm()" type="button" value="New Client"> */}
                 {/* <input id="clientLeftSlider" className="leftSlider sliderActive" onclick="clickToggleClientViewEdit('view')" type="button" value="View">
                 <input id="clientRightSlider" className="rightSlider" onclick="clickToggleClientViewEdit('edit')" type="button" value="Edit"> */}

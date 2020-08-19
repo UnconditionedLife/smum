@@ -1115,7 +1115,7 @@ console.log(servicesVouchers.length)
 function utilUpdateClientGlobals() {
 	client = window.client
 	clientData = window.clientData
-	console.log(clientData)
+	servicesRendered = window.servicesRendered
 }
 
 function utilGetServicesInMonth(monthYear){
@@ -1786,8 +1786,6 @@ function uiShowNote(index, dateTime, text, user, important){
 }
 
 function uiShowNewClientForm(){
-	client = {}
-	servicesRendered = []
 	uiClearCurrentClient()
 	$("#clientsTitle").html("New Client")
 	$('#clientFormContainer').html(uiGetTemplate('#clientForm'))
@@ -1811,7 +1809,6 @@ function uiShowNewClientForm(){
 	$("[id='family.totalOtherDependents']").val(0)
 	$("[id='family.totalSeniors']").val(0)
 	$("[id='family.totalSize']").val(0)
-	navGotoTab("tab3")
 };
 
 function uiShowSecondaryServiceButtons(secondaryReactDiv, btnSecondary, lastServed, activeServiceTypes){

@@ -1,13 +1,31 @@
 import React from 'react';
 // import PrimaryButtons from "./ServicesPrimaryButtons.jsx";
 // import SecondaryButtons from "./ServicesSecondaryButtons.jsx";
+import { makeStyles, ThemeProvider } from '@material-ui/core/styles';
+import theme from '../Sections/Theme.jsx';
 import { isEmpty } from '../js/Utils.js';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import ServiceNotes from './ServiceNotes.jsx';
+
+const useStyles = makeStyles({
+    container: {
+        display: 'flex',
+        minWidth: '100%',
+        alignContent: 'stretch',
+    },
+    serviceContainer: {
+        minWidth: '',
+        flex: 1,
+    },
+  });
 
 export default function ServicesPage(props) {
     const client = props.client;
     const servicesPrimaryButtonsDiv = useRef(null);
     const servicesSecondaryButtonsDiv = useRef(null);
+    const classes = useStyles();
+
+
 
     let serviceDateTimeREACT
     let nextService = ""
@@ -64,12 +82,17 @@ export default function ServicesPage(props) {
     })
 
     return (
-        <div>
-            <div className="serviceButtonContainerREACT">
-                <div className="serviceDateTimeREACT">{ serviceDateTimeREACT }</div>
-                <div className="serviceLastVisitREACT">{ nextService }</div>
-                <div ref={ servicesPrimaryButtonsDiv } className="servicePrimaryButtonsREACT"></div>
-                <div ref={ servicesSecondaryButtonsDiv } className="serviceSecondaryButtonsREACT"></div>
+        <div className={ classes.container }>
+            <div className={ classes.serviceContainer }>
+                <div className="serviceButtonContainerREACT">
+                    <div className="serviceDateTimeREACT">{ serviceDateTimeREACT }</div>
+                    <div className="serviceLastVisitREACT">{ nextService }</div>
+                    <div ref={ servicesPrimaryButtonsDiv } className="servicePrimaryButtonsREACT"></div>
+                    <div ref={ servicesSecondaryButtonsDiv } className="serviceSecondaryButtonsREACT"></div>
+                </div>
+            </div>
+            <div className={ classes.noteContainer }>
+                <ServiceNotes client={ client } />
             </div>
         </div>
     );

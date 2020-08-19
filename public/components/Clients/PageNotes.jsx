@@ -2,6 +2,8 @@ import React from 'react';
 import { isEmpty } from '../js/Utils.js';
 import { useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import NotesDisplay from './NotesDisplay.jsx';
+import NoteEdit from './NoteEdit.jsx';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 
@@ -23,15 +25,15 @@ export default function PageNotes(props) {
     useEffect(() => {
         if (!isEmpty(client)) {
             const isEdit = true;
-            // uiShowClientEdit(notesDiv.current, isEdit)
             window.uiShowNotes(notesDiv.current, 'Notes Page')
             window.uiShowExistingNotes()
-            // window.uiGenSelectHTMLTable(notesDiv.current,client.dependents,["givenName","familyName",'relationship','gender', "dob","age", "grade","isActive"],'dependentsTable')
         }
     })
 
     return (
         <div>
+            {/* <NoteEdit client={ client } /> */}
+            <NotesDisplay client={ client } />
             <div id="newNoteButton" className="topFormButtonsDiv">
                 <Button variant="contained" color="primary" onClick={ () => window.clickToggleNoteForm('show','') } >New Note</Button>
                 {/* <input className="solidButton" onClick={ window.clickToggleNoteForm('show','') } type="button" value="New Note" /> */}

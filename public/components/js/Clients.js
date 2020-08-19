@@ -1,6 +1,7 @@
 //************************************************
 //***** CLIENTS SECTION JAVASCRIPT FUNCTIONS *****
 //************************************************
+import { isEmpty } from '../js/Utils.js';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -8,13 +9,27 @@ export function getButtonData(buttonType) {
 
 	console.log(buttonType)	
 
-	if ($.isEmptyObject(client)) return
+	if (isEmpty(client)) return
     let buttonData = {}
     buttonData.lastServed = getLastServedDays() // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
     buttonData.activeServiceTypes = getActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
     const targetServices = getTargetServices(buttonData.activeServiceTypes); // list of target properties for each serviceType
     buttonData[buttonType] = getActiveServicesButtons(buttonType, buttonData.activeServiceTypes, targetServices, buttonData.lastServed);
     return buttonData
+};
+
+export function searchClients(str) {
+    const regex = /[/.]/g
+    const slashCount = (str.match(regex) || []).length
+    let clientsFoundTemp = window.dbSearchClients(str, slashCount)
+    
+    if (clientsFoundTemp == undefined || clientsFoundTemp==null || clientsFoundTemp.length==0){
+      clientsFoundTemp = []
+      window.servicesRendered = [] // used temporarily to keep global vars in sync
+      window.uiClearCurrentClient()
+    } 
+
+    return clientsFoundTemp
 };
 
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
