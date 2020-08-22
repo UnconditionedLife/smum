@@ -4,22 +4,9 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import Moment from "react-moment";
 import Button from '@material-ui/core/Button';
+import { cogSetupUser, cogSetupAuthDetails } from '../js/Cognito.js';
+import {useInput} from '../Utilities/UseInput.jsx';
 
-function useInput(initialValue) {
-  let [value, setValue] = useState(initialValue);
-
-  // TODO USE useState() to maintain the input field values 
-
-  function handleValueChange(e) {
-    setValue(e.target.value);
-  }
-
-  return {
-    value,
-    onChange: handleValueChange,
-    // setValue
-  };
-}
 
 function LoginForm(props) {
   let [showPrimaryForm, setShowPrimaryForm] = useState(true);
@@ -32,24 +19,57 @@ function LoginForm(props) {
   let validationCodeInput = useInput("");
   let newPasswordInput = useInput("");
 
-  // callback function passed into cognito in app.js
-  // takes json object and sets fields based on its attributes
-  function handleCogValue(json) {
-    if (json.message) {
-      setMessage(json.message);
-    }
-    if (json.appState) {
-      setAppState(json.appState);
-    }
-    if (json.newUser) {
-      props.onLogin(json.newUser);
-    }
-    if (json.clearInputs) {
-      // usernameInput.setValue("");
-      // passwordInput.setValue("");
-      // validationCodeInput.setValue("");
-      // newPasswordInput.setValue("");
-    }
+  function doLogin(username, password) {
+    let cogUser = cogSetupUser(username);
+    let authDetails = cogSetupAuthDetails(username, password);
+    cogUser.authenticateUser(authDetails, {
+      onSuccess: (result) => {
+        let authorization = {};
+        authorization.accessToken = result.getAccessToken().getJwtToken()
+        authorization.idToken = result.idToken.jwtToken
+        window.utilInitAuth(authorization)
+        let user = window.utilGetCurrentUser(username)
+        // logout if user is set to Inactive
+        if (user == null || user.isActive == "Inactive") {
+          cogUser.signOut();
+          setMessage("Sorry, your account is INACTIVE.");
+        } else {
+          props.onLogin({user: user, auth: authorization, cogUser: cogUser});
+          usernameInput.reset();
+          passwordInput.reset();
+          validationCodeInput.reset();
+          newPasswordInput.reset();
+          window.utilInitSession(user, cogUser);
+        }
+      },
+      onFailure: (err) => {
+        let message = undefined
+        let appState = undefined
+
+        if (err == 'Error: Incorrect username or password.') {
+          message = "Incorrect username or password"
+        } else if (err == 'UserNotFoundException: User does not exist.') {
+          message = "Username does not exist."
+        } else if (err == 'NotAuthorizedException: Incorrect username or password.') {
+          message = "Incorrect username or password."
+        } else if (err == 'UserNotConfirmedException: User is not confirmed.') {
+          appState = "code"
+          message = "Validation Code is required."
+          // TODO change login flow to deal with confirmation
+          // cogUserConfirm() //userName, verificationCode
+        } else if (err == 'NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED.') {
+          appState = "login"
+          message = "No longer UNCONFIRMED"
+        } else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
+          message = "New Password is required."
+        } else if (err == 'InvalidParameterException: Missing required parameter USERNAME'){
+          message = "Username is required."
+        }
+        setMessage(message);
+        if (appState)
+          setAppState(appState);
+      }
+    })
   }
 
   function showViewPasswordIcon() {
@@ -83,12 +103,15 @@ function LoginForm(props) {
           <div className="span4 codeDiv" style={loginDivStyleFixedHeight}>
             <span
               className="textLink"
-              onClick={() =>
-                window.cogResendValidationCode(
-                  usernameInput.value,
-                  handleCogValue
-                )
-              }
+              onClick={() => {
+                let cogUser = cogSetupUser(usernameInput.value);
+              	cogUser.resendConfirmationCode(function(err, result) {
+              		if (err)
+                    setMessage(err.toString());
+              		else
+                    setMessage("New code has been sent.");
+              	});
+              }}
             >
               Resend Validation Code
             </span>
@@ -101,7 +124,22 @@ function LoginForm(props) {
                 className="textLink"
                 onClick={() => {
                   setPasswordDisplay(false);
-                  window.cogForgotPassword(usernameInput.value, handleCogValue);
+                	if (usernameInput.value == "") {
+                    setMessage("Username is required.");
+                	}
+                	let cogUser = cogSetupUser(usernameInput.value);
+                	cogUser.forgotPassword({
+                    onSuccess: function (result) {
+                      setMessage("Validation Code sent to: " + result.CodeDeliveryDetails.Destination);
+                      setAppState("newPassword");
+                    },
+                    onFailure: function(err) {
+                			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.")
+                        setMessage("Too many requests. Try again later!");
+                			else
+                        setMessage(err.toString());
+                    }
+                  });
                 }}
                 tabIndex="4"
               >
@@ -112,11 +150,7 @@ function LoginForm(props) {
               <input
                 className="solidButton"
                 onClick={() => {
-                  window.cogLoginUser(
-                    usernameInput.value,
-                    passwordInput.value,
-                    handleCogValue
-                  );
+                  doLogin(usernameInput.value, passwordInput.value);
                 }}
                 type="button"
                 value="Login"
@@ -129,13 +163,18 @@ function LoginForm(props) {
           <div className="span4 codeDiv" style={loginDivStyleFixedHeight}>
             <input
               className="solidButton"
-              onClick={() =>
-                window.cogUserConfirm(
-                  validationCodeInput.value,
-                  usernameInput.value,
-                  handleCogValue
-                )
-              }
+              onClick={() => {
+                let cogUser = cogSetupUser(usernameInput.value);
+                cogUser.confirmRegistration(validationCodeInput.value, true,
+                  function(err, result) {
+                    if (err)
+                      setMessage(err.toString());
+                    else {
+                      setMessage("You're confirmed! Please Login.");
+                      setAppState("login");
+                    }
+                  })
+              }}
               type="button"
               value="VALIDATE"
             />
@@ -150,12 +189,24 @@ function LoginForm(props) {
               className="solidButton"
               onClick={() => {
                 setPasswordDisplay(false);
-                window.cogUserConfirmPassword(
-                  validationCodeInput.value,
-                  newPasswordInput.value,
-                  usernameInput.value,
-                  handleCogValue
-                );
+                let cogUser = cogSetupUser(usernameInput.value);
+              	cogUser.confirmPassword(validationCodeInput.value, newPasswordInput.value, {
+                  onSuccess: function (result) {
+                    setMessage("New Password set! Please Login.");
+                    setAppState("login");
+                    usernameInput.reset();
+                    passwordInput.reset();
+                    validationCodeInput.reset();
+                    newPasswordInput.reset();
+                  },
+                  onFailure: function(err) {
+              			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.") {
+                      setMessage("Too many requests. Try again later!");
+              			} else {
+                      setMessage(err.toString());
+              			}
+                  }
+              	});
               }}
               type="button"
               value="SET PASSWORD"
@@ -179,7 +230,7 @@ function LoginForm(props) {
             <div className="lableDiv loginDiv">Username</div>
             <div className="loginDiv">
               <input
-                {...usernameInput}
+                {...usernameInput.bind}
                 id="loginUserName"
                 type="email"
                 className="inputBox loginForm"
@@ -191,18 +242,14 @@ function LoginForm(props) {
             <div className="lableDiv loginDiv">Password</div>
             <div className="loginDiv">
               <input
-                {...passwordInput}
+                {...passwordInput.bind}
                 id="loginPassword"
                 type={passwordDisplay ? "text" : "password"}
                 className="inputBox loginForm"
                 tabIndex="2"
                 onKeyDown={event => {
                   if (event.key == "Enter")
-                    window.cogLoginUser(
-                      usernameInput.value,
-                      passwordInput.value,
-                      handleCogValue
-                    );
+                    doLogin(usernameInput.value, passwordInput.value);
                 }}
               />{" "}
               {showViewPasswordIcon()}
@@ -216,7 +263,7 @@ function LoginForm(props) {
             </div>
             <div className="codeDiv newPasswordDiv">
               <input
-                {...validationCodeInput}
+                {...validationCodeInput.bind}
                 id="loginCode"
                 type="text"
                 className="inputBox loginForm"
@@ -231,7 +278,7 @@ function LoginForm(props) {
             <div className="lableDiv newPasswordDiv">New Password</div>
             <div className="newPasswordDiv">
               <input
-                {...newPasswordInput}
+                {...newPasswordInput.bind}
                 id="loginNewPassword"
                 type={passwordDisplay ? "text" : "password"}
                 className="inputBox loginForm"

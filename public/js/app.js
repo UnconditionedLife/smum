@@ -789,7 +789,7 @@ function uiShowPrimaryServiceButtons(primaryReactDiv, btnPrimary, lastVisit, act
 	}
 	// replaced servicePrimaryButtons with primaryReactDiv
 	$(primaryReactDiv).html(primaryButtons)
-	
+
 };
 
 function uiShowReports(){
@@ -2587,9 +2587,9 @@ function dbSaveCurrentClient(data){
 		if (clientData != null) {
 			console.log("REDO CLIENT DATA")
 			uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
-			
+
 			console.log(clientData)
-			
+
 			if (clientData.length == 1) clientTableRow = 1
 			uiOutlineTableRow('clientTable', clientTableRow)
 			// uiSetClientsHeader("numberAndName") MOVED TO REACT
@@ -3236,14 +3236,14 @@ function cogLogoutUser(){
 };
 
 function cogCheckSession() {
-	cognitoUser.getSession(function(err, session) {
-		if (err) {
-			cogLogoutUser()
-			$(loginError).html("Sorry, your session has expired.")
-			return "FAILED"
-		}
-		return session
-	})
+	// cognitoUser.getSession(function(err, session) {
+	// 	if (err) {
+	// 		cogLogoutUser()
+	// 		$(loginError).html("Sorry, your session has expired.")
+	// 		return "FAILED"
+	// 	}
+	// 	return session
+	// })
 };
 
 function cogUserChangePassword(){
@@ -3281,106 +3281,106 @@ function cogUserChangePassword(){
 // params for fields passed in via React and a callback function that react uses to set HTML (handleCogValue)
 // same callback passed in all cognito functions
 
-function cogUserConfirm(validationCode, userName, handleCogValue){
-	let userData = {
-	 		Username: userName,
-	 		Pool: userPool
-		}
-	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
-	cognitoUser.confirmRegistration(validationCode, true, function(err, result) {
-			if (err) {
-				console.log("|"+err+"|")
-				if (err == ""){
-					handleCogValue({
-						message: "You're confirmed! Please Login.",
-					})
-					return
-				} else {
-					alert(err);
-					return;
-				}
-			}
-			utilBloop()
-			console.log('call result: ' + result);
-			handleCogValue({
-				message: "You're confirmed! Please Login.",
-				appState: "login"
-			})
-	});
-}
+// function cogUserConfirm(validationCode, userName, handleCogValue){
+// 	let userData = {
+// 	 		Username: userName,
+// 	 		Pool: userPool
+// 		}
+// 	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+// 	cognitoUser.confirmRegistration(validationCode, true, function(err, result) {
+// 			if (err) {
+// 				console.log("|"+err+"|")
+// 				if (err == ""){
+// 					handleCogValue({
+// 						message: "You're confirmed! Please Login.",
+// 					})
+// 					return
+// 				} else {
+// 					alert(err);
+// 					return;
+// 				}
+// 			}
+// 			utilBloop()
+// 			console.log('call result: ' + result);
+// 			handleCogValue({
+// 				message: "You're confirmed! Please Login.",
+// 				appState: "login"
+// 			})
+// 	});
+// }
 
-function cogResendValidationCode(userName, handleCogValue){
-	let	userData = {
-			Username: userName,
-			Pool: userPool
-		}
-	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
-	cognitoUser.resendConfirmationCode(function(err, result) {
-		if (err) {
-			alert(err);
-			return;
-		}
-		handleCogValue({message: "New code has been sent."})
-	});
-};
+// function cogResendValidationCode(userName, handleCogValue){
+// 	let	userData = {
+// 			Username: userName,
+// 			Pool: userPool
+// 		}
+// 	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+// 	cognitoUser.resendConfirmationCode(function(err, result) {
+// 		if (err) {
+// 			alert(err);
+// 			return;
+// 		}
+// 		handleCogValue({message: "New code has been sent."})
+// 	});
+// };
 
-function cogForgotPassword(userName, handleCogValue){
-	if (userName == "") {
-		handleCogValue({message: "Username is required above!"})
-	}
-	let userData = {
-		Username: userName,
-		Pool: userPool
-	};
-	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData)
-	cognitoUser.forgotPassword({
-    onSuccess: function (result) {
-      console.log('call result: ' + JSON.stringify(result))
-			console.log('sent to: ' + result.CodeDeliveryDetails.Destination)
-			handleCogValue({message: "Validation Code sent to: " + result.CodeDeliveryDetails.Destination, appState:"newPassword"})
-    },
-    onFailure: function(err) {
-			console.log("|"+err+"|")
-			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time."){
-				handleCogValue({message: "Too many requests. Try again later!"})
-			} else {
-				alert(err)
-				return
-			}
-    }
-  });
-};
+// function cogForgotPassword(userName, handleCogValue){
+// 	if (userName == "") {
+// 		handleCogValue({message: "Username is required above!"})
+// 	}
+// 	let userData = {
+// 		Username: userName,
+// 		Pool: userPool
+// 	};
+// 	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData)
+// 	cognitoUser.forgotPassword({
+//     onSuccess: function (result) {
+//       console.log('call result: ' + JSON.stringify(result))
+// 			console.log('sent to: ' + result.CodeDeliveryDetails.Destination)
+// 			handleCogValue({message: "Validation Code sent to: " + result.CodeDeliveryDetails.Destination, appState:"newPassword"})
+//     },
+//     onFailure: function(err) {
+// 			console.log("|"+err+"|")
+// 			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time."){
+// 				handleCogValue({message: "Too many requests. Try again later!"})
+// 			} else {
+// 				alert(err)
+// 				return
+// 			}
+//     }
+//   });
+// };
 
-function cogUserConfirmPassword(validationCode, newPassword, userName, handleCogValue) {
-	let userData = {
-			Username: userName, //username,
-			Pool: userPool
-		};
-	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
-	cognitoUser.confirmPassword(validationCode, newPassword, {
-    onSuccess: function (result) {
-      // console.log('call result: ' + JSON.stringify(result))
-			// console.log('sent to: ' + result.CodeDeliveryDetails.Destination)
-			// $("#loginError").html("Validation Code sent to: " + result.CodeDeliveryDetails.Destination)
-			// uiLoginFormToggleValidation("newPassword")
-			//console.log(callback.inputVerificationCode(data))
-			utilBloop()
-			handleCogValue({message: "New Password set! Please Login.", clearInputs: true, appState: "login"})
-			console.log('call result: ' + result);
-			return;
-    },
-    onFailure: function(err) {
-			console.log("|"+err+"|")
-			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time."){
-				handleCogValue({message: "Too many requests. Try again later!"})
-				return;
-			} else {
-				alert(err)
-				return
-			}
-    }
-	})
-};
+// function cogUserConfirmPassword(validationCode, newPassword, userName, handleCogValue) {
+// 	let userData = {
+// 			Username: userName, //username,
+// 			Pool: userPool
+// 		};
+// 	let cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+// 	cognitoUser.confirmPassword(validationCode, newPassword, {
+//     onSuccess: function (result) {
+//       // console.log('call result: ' + JSON.stringify(result))
+// 			// console.log('sent to: ' + result.CodeDeliveryDetails.Destination)
+// 			// $("#loginError").html("Validation Code sent to: " + result.CodeDeliveryDetails.Destination)
+// 			// uiLoginFormToggleValidation("newPassword")
+// 			//console.log(callback.inputVerificationCode(data))
+// 			utilBloop()
+// 			handleCogValue({message: "New Password set! Please Login.", clearInputs: true, appState: "login"})
+// 			console.log('call result: ' + result);
+// 			return;
+//     },
+//     onFailure: function(err) {
+// 			console.log("|"+err+"|")
+// 			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time."){
+// 				handleCogValue({message: "Too many requests. Try again later!"})
+// 				return;
+// 			} else {
+// 				alert(err)
+// 				return
+// 			}
+//     }
+// 	})
+// };
 
 function cogUpdateAttributes(email, telephone){
 	let attributeList = [];
@@ -3406,65 +3406,68 @@ function cogUpdateAttributes(email, telephone){
   })
 };
 
-function cogLoginUser(username, password, handleCogValue) {
-	let authData = {
-     		Username: username,
-     		Password: password
-  		};
-  let authDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authData);
-  let userData = {
-     Username: username,
-     Pool: userPool
-  };
-  cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
-  cognitoUser.authenticateUser(authDetails, {
-    onSuccess: (result) => {
-			authorization.accessToken = result.getAccessToken().getJwtToken()
-			authorization.idToken = result.idToken.jwtToken
-			currentUser = utilGetCurrentUser(cognitoUser.username)
-			// logout if user is set to Inactive
-			if (currentUser == null || currentUser.isActive == "Inactive") {
-				cogLogoutUser()
-				handleCogValue({message: "Sorry, your account is INACTIVE."})
-			} else {
-				handleCogValue({newUser: currentUser, clearInputs: true})
-				utilLoginUserShowScreens(cognitoUser.username)
-			}
-    },
-    onFailure: (err) => {
-			console.log("COGNITO ERROR")
-			console.log('|'+err+'|');
-			utilBeep()
-			let message = undefined
-			let appState = undefined
-
-			if (err == 'Error: Incorrect username or password.') {
-				message = "Incorrect username or password"
-			} else if (err == 'UserNotFoundException: User does not exist.') {
-				message = "Username does not exist."
-			} else if (err == 'NotAuthorizedException: Incorrect username or password.') {
-				message = "Incorrect username or password."
-			} else if (err == 'UserNotConfirmedException: User is not confirmed.') {
-				appState = "code"
-				message = "Validation Code is required."
-				// TODO change login flow to deal with confirmation
-				// cogUserConfirm() //userName, verificationCode
-			} else if (err == 'NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED.') {
-				appState = "login"
-				message = "No longer UNCONFIRMED"
-			} else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
-				console.log("PasswordResetRequiredException")
-				message = "New Password is required."
-			} else if (err == 'InvalidParameterException: Missing required parameter USERNAME'){
-			  message = "Username is required."
-			}
-			handleCogValue({
-				message: message,
-				appState: appState
-			})
-		}
-	})
-};
+// function cogLoginUser(username, password, handleCogValue) {
+// 	let authData = {
+//      		Username: username,
+//      		Password: password
+//   		};
+//   let authDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authData);
+//   let userData = {
+//      Username: username,
+//      Pool: userPool
+//   };
+//   cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+//   cognitoUser.authenticateUser(authDetails, {
+//     onSuccess: (result) => {
+// 			authorization.accessToken = result.getAccessToken().getJwtToken()
+// 			authorization.idToken = result.idToken.jwtToken
+// 			currentUser = utilGetCurrentUser(cognitoUser.username)
+// 			// logout if user is set to Inactive
+// 			if (currentUser == null || currentUser.isActive == "Inactive") {
+// 				cogLogoutUser()
+// 				handleCogValue({message: "Sorry, your account is INACTIVE."})
+// 			} else {
+// 				handleCogValue(
+// 					{newUser: {user: currentUser, auth: authorization, cogUser: cognitoUser},
+// 					clearInputs: true})
+// 				// utilLoginUserShowScreens(cognitoUser.username)
+// 				utilInitSession(currentUser, cognitoUser);
+// 			}
+//     },
+//     onFailure: (err) => {
+// 			console.log("COGNITO ERROR")
+// 			console.log('|'+err+'|');
+// 			utilBeep()
+// 			let message = undefined
+// 			let appState = undefined
+//
+// 			if (err == 'Error: Incorrect username or password.') {
+// 				message = "Incorrect username or password"
+// 			} else if (err == 'UserNotFoundException: User does not exist.') {
+// 				message = "Username does not exist."
+// 			} else if (err == 'NotAuthorizedException: Incorrect username or password.') {
+// 				message = "Incorrect username or password."
+// 			} else if (err == 'UserNotConfirmedException: User is not confirmed.') {
+// 				appState = "code"
+// 				message = "Validation Code is required."
+// 				// TODO change login flow to deal with confirmation
+// 				// cogUserConfirm() //userName, verificationCode
+// 			} else if (err == 'NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED.') {
+// 				appState = "login"
+// 				message = "No longer UNCONFIRMED"
+// 			} else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
+// 				console.log("PasswordResetRequiredException")
+// 				message = "New Password is required."
+// 			} else if (err == 'InvalidParameterException: Missing required parameter USERNAME'){
+// 			  message = "Username is required."
+// 			}
+// 			handleCogValue({
+// 				message: message,
+// 				appState: appState
+// 			})
+// 		}
+// 	})
+// };
 
 // function cogGetUserAttributes(){
 // 	cognitoUser.getUserAttributes(function(err, result) {
@@ -3943,7 +3946,17 @@ function utilGradeToNumber(grade){
 	return parseInt(grade);
 };
 
-function utilLoginUserShowScreens(username) {
+function utilInitAuth(auth) {
+	authorization = auth;
+}
+
+function utilInitSession(user, cogUser) {
+	currentUser = user;
+	cognitoUser = cogUser;
+	utilLoginUserShowScreens();
+}
+
+function utilLoginUserShowScreens() {
 	uiShowHideLogin('hide')
 	navGotoSec('nav1')
 	// cogGetUserAttributes()
@@ -4249,26 +4262,26 @@ function utilErrorHandler(errMessage, status, error, type) {
 
 // TODO manage AWS & CODE Errors
 
-	if (type == "aws") {
-		// if (message.indexOf("XMLHttpRequest")
-		cogLogoutUser()
-		const title = "Login Expired"
-		const message =  "Login again to continue."
-		uiShowHideError("show", title, message, 'beep')
-		cogLoginUser
-	} else if (type == "code" ) {
-		if (error == "argument count") {
-			const title = errMessage
-			const message =  status
-			uiShowHideError("show", title, message, 'beep')
-		}
-	} else if (type == "cognito") {
-
-
-
-	}
-		utilBeep()
-	 	uiShowHideError("show")
+	// if (type == "aws") {
+	// 	// if (message.indexOf("XMLHttpRequest")
+	// 	cogLogoutUser()
+	// 	const title = "Login Expired"
+	// 	const message =  "Login again to continue."
+	// 	uiShowHideError("show", title, message, 'beep')
+	// 	cogLoginUser
+	// } else if (type == "code" ) {
+	// 	if (error == "argument count") {
+	// 		const title = errMessage
+	// 		const message =  status
+	// 		uiShowHideError("show", title, message, 'beep')
+	// 	}
+	// } else if (type == "cognito") {
+	//
+	//
+	//
+	// }
+	// 	utilBeep()
+	//  	uiShowHideError("show")
 }
 
 function utilFormToJSON(form){

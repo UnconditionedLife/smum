@@ -129,7 +129,7 @@ export default function SectionsNavBar(props) {
   const classes = useStyles();
   const [ anchorEl, setAnchorEl ] = useState(null);
   const [ mobileMoreAnchorEl, setMobileMoreAnchorEl ] = useState(null);
-  const [ user, setUser ] = useState(null);
+  const [ session, setSession ] = useState(null);
   const [ selectedSection, setSelectedSection ] = useState(0);
   const [ searchTerm, setSearchTerm ] = useState('');
   const [ typedSearchTerm, setTypedSearchTerm ] = useState('')
@@ -138,7 +138,8 @@ export default function SectionsNavBar(props) {
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
   useEffect(() => {
-    ReactDOM.render(<LoginForm onLogin={(newUser) => setUser(newUser)}/>, document.getElementById("loginOverlay"));
+    ReactDOM.render(<LoginForm onLogin={(x) => setSession(x)}/>,
+      document.getElementById("loginOverlay"));
   });
 
   const handleSectionChange = (newValue) => {
@@ -165,8 +166,10 @@ export default function SectionsNavBar(props) {
   };
 
   function handleLogout() {
-    window.cogLogoutUser();
-    setUser(null);
+    session.cogUser.signOut();
+    window.uiShowHideLogin('show');
+    window.utilInitAuth(null);
+    setSession(null);
   };
 
   function handleSearchTermChange(newValue) {
@@ -175,7 +178,8 @@ export default function SectionsNavBar(props) {
     }
   };
 
-  const isAdmin = user && (user.userRole == 'Admin' || user.userRole == 'TechAdmin');
+  const isAdmin = session &&
+    (session.user.userRole == 'Admin' || session.user.userRole == 'TechAdmin');
 
   const appbarControls = (
     <React.Fragment>
@@ -238,7 +242,7 @@ export default function SectionsNavBar(props) {
       color="inherit"
       variant = "text"
       >
-      {user ? user.userName : ''}
+      {session ? session.user.userName : ''}
       </Button>
 
     </div>
@@ -324,7 +328,7 @@ export default function SectionsNavBar(props) {
             Santa Maria Urban Ministry
           </Typography>
           </Tooltip>
-          {user ? appbarControls : null}
+          {session ? appbarControls : null}
         </Toolbar>
       </AppBar>
       { renderMobileMenu }
