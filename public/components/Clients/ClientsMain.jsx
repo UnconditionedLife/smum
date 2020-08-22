@@ -109,6 +109,7 @@ console.log(client)
           indicatorColor="secondary"
           textColor="primary"
           selectionFollowsFocus
+          centered
         >
           <Tab icon={<PageviewIcon />} label="Found" />
           <Tab icon={<RoomServiceIcon />} label="Services" />

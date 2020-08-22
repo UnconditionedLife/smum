@@ -8,16 +8,23 @@ import NoteEdit from './NoteEdit.jsx';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import Fade from '@material-ui/core/Fade';
+import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles({
     noteContainer: {
-        maxWidth: '300px',
+        maxWidth: 300,
         flex: 1,
         alignContent: 'stretch',
     },
     fabMargin: {
-        marginLeft: '50px',
-        marginBottom: '15px',
+        marginLeft: 15,
+        float: 'right',
+    },
+    header: {
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: 15,
+        marginTop: -10,
     }
   });
 
@@ -50,9 +57,13 @@ export default function ServiceNotes(props) {
     },[]);
 
     function handleNotesChange(value){
+        console.log('Change Notes')
         if (value !== notes){
             setNotes(value)
+            console.log(notes)
         }
+        console.log(notes)
+        console.log(notes)
     };
     
     function handleIsEditNoteChange(value){
@@ -60,27 +71,28 @@ export default function ServiceNotes(props) {
             setIsEditNote(value)
         }
     };
-    if (!isEmpty(notes)) {
-        return (
-            <Fragment>
-                <div className="serviceDateTimeREACT">
-                    SERVICE NOTES
-                    { isEditNote === false && <Fab size="small" className={classes.fabMargin} onClick={() => handleIsEditNoteChange(true)}><AddIcon /></Fab> }
-                </div>
-                { isEditNote === true && 
-                    <Fade timeout={20000}>
-                        <NoteEdit
-                            notes={ notes } 
-                            isEditNote={ isEditNote } 
-                            handleIsEditNoteChange={ handleIsEditNoteChange } 
-                            handleNotesChange={ handleNotesChange }
-                        /> 
-                    </Fade>
-                }       
-                <NotesDisplay notes={ notes } />
-            </Fragment>
-        )
-    } else {
-        return null
-    }  
+    return (
+        <Fragment>
+            <div className={ classes.header }>
+            <Typography className={classes.title} variant='subtitle1' noWrap>
+                SERVICE NOTES
+            </Typography>    
+                { isEditNote === false && <Fab size="small" className={classes.fabMargin} onClick={() => handleIsEditNoteChange(true)}><AddIcon /></Fab> }
+            </div>
+            { isEditNote === true && 
+                <Fade timeout={20000}>
+                    <NoteEdit
+                        notes={ notes } 
+                        isEditNote={ isEditNote } 
+                        handleIsEditNoteChange={ handleIsEditNoteChange } 
+                        handleNotesChange={ handleNotesChange }
+                    /> 
+                </Fade>
+            }       
+            <NotesDisplay 
+                notes={ notes }
+                handleNotesChange={ handleNotesChange } />
+        </Fragment>
+    )
+
 };

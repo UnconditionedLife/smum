@@ -45,7 +45,7 @@ const useStyles = makeStyles({
     },
     paper: {
         marginBottom: 8,
-        padding: 10,
+        padding: 8,
     }
   });
 
@@ -88,7 +88,7 @@ export default function NoteEdit(props) {
     return (
         <Paper variant="outlined" className={ classes.paper}>
             <div>
-                <TextField label="Service Note" multiline rows={4} variant="outlined" 
+                <TextField label="New Note" multiline rows={4} variant="outlined" 
                     className={ classes.textField} onChange={ event => { handleTextFieldChange(event.target.value) }}>
                     { noteText }
                 </TextField>

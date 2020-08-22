@@ -42,13 +42,19 @@ const useStyles = makeStyles({
         paddingTop: 0,
     },
     fabMargin: {
-        marginRight: 14,
-        marginBottom: 10,
+        // marginRight: 20,
+        // marginBottom: 10,
+    },
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: 15,
     }
   });
 
 export default function NotesDisplay(props) {
     const notes = props.notes;
+    const handleNotesChange = props.handleNotesChange;
     const classes = useStyles();
     const selectedNote = null
 
@@ -58,29 +64,42 @@ export default function NotesDisplay(props) {
 
     }
 
+    function handleDeleteNote(noteId) {
+        console.log('DeleteNote')
+        const temp = notes
+        temp.splice(noteId, 1)
+        handleNotesChange(temp)
+    }
+
     return (
         <ThemeProvider theme={ theme }>
             {notes.map((row) => ( 
                 <Card key={row.noteId} className={classes.root} variant="elevation" elevation={4}>
                     <CardContent>
-                        {row.isImportant === "true" && <Fab color="secondary" size="small" className={classes.fabMargin} ><NotificationImportantIcon /></Fab> }
-                        {row.isImportant === "false" && <Fab size="small" className={classes.fabMargin}><NoteIcon /></Fab> }
-                        <Typography variant="caption" color="textSecondary" gutterBottom>
-                            {window.moment(row.createdDateTime).fromNow()} by: {row.noteByUserName}
-                        </Typography>
-                        {row.isImportant === "true" && <Typography variant="subtitle2" color="secondary"> {row.noteText}</Typography> }
-                        {row.isImportant === "false" && <Typography variant="subtitle2" > {row.noteText}</Typography> }
+                        <div className={classes.header} >                            
+                            {row.isImportant === "true" && <div><Fab color="secondary" size="small" ><NotificationImportantIcon /></Fab></div> }        
+                            <div>
+                                <Typography variant="caption" color="textSecondary" gutterBottom>
+                                    {window.moment(row.createdDateTime).fromNow()} by: {row.noteByUserName}
+                                </Typography>
+                            </div>
+                            <div>
+                                <IconButton size="small" 
+                                    className={classes.margin}
+                                    onClick={() => handleDeleteNote(row.noteId)}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                                <IconButton size="small" className={classes.margin}>
+                                    <EditIcon />
+                                </IconButton>
+                            </div>
+                        </div>
+                        <div>
+                            {row.isImportant === "true" && <Typography variant="subtitle2" color="secondary"> {row.noteText}</Typography> }
+                            {row.isImportant === "false" && <Typography variant="subtitle2" > {row.noteText}</Typography> }
+                        </div>
                     </CardContent>
-                    <CardActions className={classes.padding}>
-                        <IconButton className={classes.margin}>
-                            <DeleteIcon />
-                        </IconButton>
-                        <IconButton className={classes.margin}>
-                            <EditIcon />
-                        </IconButton>
-                        {/* <Button size="small">remove</Button> */}
-                        {/* <Button size="small">edit</Button> */}
-                    </CardActions>
                 </Card>
             ))}
         </ThemeProvider>
