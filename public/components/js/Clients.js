@@ -5,19 +5,6 @@ import { isEmpty } from '../js/Utils.js';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
-export function getButtonData(buttonType) {
-
-	console.log(buttonType)	
-
-	if (isEmpty(client)) return
-    let buttonData = {}
-    buttonData.lastServed = getLastServedDays() // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
-    buttonData.activeServiceTypes = getActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
-    const targetServices = getTargetServices(buttonData.activeServiceTypes); // list of target properties for each serviceType
-    buttonData[buttonType] = getActiveServicesButtons(buttonType, buttonData.activeServiceTypes, targetServices, buttonData.lastServed);
-    return buttonData
-};
-
 export function searchClients(str) {
     const regex = /[/.]/g
     const slashCount = (str.match(regex) || []).length
@@ -27,9 +14,35 @@ export function searchClients(str) {
       clientsFoundTemp = []
       window.servicesRendered = [] // used temporarily to keep global vars in sync
       window.uiClearCurrentClient()
-    } 
+    }
 
     return clientsFoundTemp
+};
+
+export function arrayAddIds(array, id) {
+	// Check if notes & dependents arrays already have ids
+	if (typeof array[0] !== "undefined") {
+		if (typeof array[0][id] === "undefined" ) {
+			let newArray = []
+			array.forEach((item) => {
+				item[id] = window.cuid();
+				newArray.push(item);
+			})
+			return newArray
+		}
+	} else {
+		return array
+	}
+};
+
+export function getButtonData(buttonType) {
+	if (isEmpty(client)) return
+    let buttonData = {}
+    buttonData.lastServed = getLastServedDays() // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
+    buttonData.activeServiceTypes = getActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
+    const targetServices = getTargetServices(buttonData.activeServiceTypes); // list of target properties for each serviceType
+    buttonData[buttonType] = getActiveServicesButtons(buttonType, buttonData.activeServiceTypes, targetServices, buttonData.lastServed);
+    return buttonData
 };
 
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
@@ -200,4 +213,3 @@ function getActiveServicesButtons(buttons, activeServiceTypes, targetServices, l
 	if (buttons == "primary") return btnPrimary
 	if (buttons == "secondary") return btnSecondary
 };
-

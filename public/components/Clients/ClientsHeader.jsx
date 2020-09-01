@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import { isEmpty } from '../js/Utils.js';
+import Tooltip from '@material-ui/core/Tooltip';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 
@@ -66,7 +67,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-export default function SectionsHeader(props) {
+export default function clientsHeader(props) {
     const client = props.client
     const clientsFounds = props.clientsFound
     const isNewClient = props.isNewClient
@@ -79,7 +80,6 @@ export default function SectionsHeader(props) {
     function handleNewClient() {
         handleIsNewClientChange(true)
     }
-
 
     if (!isEmpty(client)) {
         titleType = 'client'
@@ -121,9 +121,11 @@ export default function SectionsHeader(props) {
                 </div> 
             }
             <div className={ classes.sectionName }>
-                <Fab onClick={() => handleNewClient()}  size="medium" className={ classes.roundButton } color='default' >
-                    <AddIcon />
-                </Fab>
+                <Tooltip title= 'Add Client'>
+                    <Fab onClick={() => handleNewClient()}  size="small" className={ classes.roundButton } color='default' >
+                        <AddIcon />
+                    </Fab>
+                </Tooltip>
                 Clients
             </div>
         </div>

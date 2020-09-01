@@ -3,7 +3,7 @@ import { isEmpty } from '../js/Utils.js';
 import { useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import NotesDisplay from './NotesDisplay.jsx';
-import NoteEdit from './NoteEdit.jsx';
+import NoteEdit from './NoteForm.jsx';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 

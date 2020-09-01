@@ -29,6 +29,7 @@ import UserMain from '../User/UserMain.jsx';
 const useStyles = makeStyles((theme) => ({
   grow: {
     flexGrow: 1,
+    maxHeight: '100vh',
   },
   menuButton: {
     marginRight: theme.spacing(2),
@@ -321,7 +322,7 @@ export default function SectionsNavBar(props) {
 
   return (
     <div className={classes.grow}>
-      <AppBar position="static">
+      <AppBar position="fixed">
         <Toolbar>
           <Tooltip title={props.version}>
           <Typography className={classes.title} variant='h6' noWrap>

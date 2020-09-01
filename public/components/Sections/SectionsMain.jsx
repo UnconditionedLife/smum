@@ -5,7 +5,10 @@ import theme from './Theme.jsx'
 import SearchNavBar from "./SearchNavBar.jsx";
 
 const container = {
-    width: '100%'
+    width: '100%',
+    maxHeight: '100vh',
+    overflowY: 'none',
+    marginTop: 70,
 };
 
 function SectionsMain(){

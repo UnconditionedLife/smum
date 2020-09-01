@@ -1,39 +1,22 @@
 import React from 'react';
-import { isEmpty } from '../js/Utils.js';
-import { useEffect, useRef } from 'react';
 import { makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import theme from '../Sections/Theme.jsx';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
+import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
-import NoteIcon from '@material-ui/icons/Note';
 import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
 import Fab from '@material-ui/core/Fab';
-
-
-// const useStyles = makeStyles((theme) => ({
-//     checkboxDiv: {
-//         padding: "12px"
-//     },
-//     buttonDiv: {
-//         paddingTop: "8px"
-//     }
-
-// }));
+import NoteForm from './NoteForm.jsx';
+import Fade from '@material-ui/core/Fade';
 
 const useStyles = makeStyles({
-    root: {
-        minWidth: 300,
-        maxWidth: 300,
+    card: {
+        width: 300,
         marginBottom: 8,
+        paddingBottom: -10,
     },
     margin: {
         margin: 0,
@@ -41,67 +24,122 @@ const useStyles = makeStyles({
     padding: {
         paddingTop: 0,
     },
-    fabMargin: {
-        // marginRight: 20,
-        // marginBottom: 10,
-    },
     header: {
         display: 'flex',
         justifyContent: 'space-between',
         marginBottom: 15,
+    },
+    important: {
+        marginRight: 10,
     }
   });
 
 export default function NotesDisplay(props) {
-    const notes = props.notes;
-    const handleNotesChange = props.handleNotesChange;
+    const client = props.client;
+    const handleClientChange = props.handleClientChange;
+    const noteCount = props.noteCount
+    const handleNoteCountChange = props.handleNoteCountChange;
+    const editNote = props.editNote
+    const handleEditNoteChange = props.handleEditNoteChange;
+    const editMode = props.editMode;
+    const handleEditModeChange = props.handleEditModeChange;
+    const noteText = props.noteText;
+    const handleTextFieldChange = props.handleTextFieldChange;
+    const noteImportant = props.noteImportant
+    const handleNoteImportantChange = props.handleNoteImportantChange
     const classes = useStyles();
-    const selectedNote = null
-
-    console.log(notes)
-
-    function notesSortImportant(){
-
-    }
 
     function handleDeleteNote(noteId) {
-        console.log('DeleteNote')
-        const temp = notes
-        temp.splice(noteId, 1)
-        handleNotesChange(temp)
-    }
+        let tempClient = client
+        const notes = client.notes
+        const filteredNotes = notes.filter(note => note.noteId !== noteId)
+        tempClient.notes = filteredNotes
+        handleClientChange(tempClient)
+        handleNoteCountChange(client.notes.length)
+        const result = window.dbSaveCurrentClient(client)
+        if (result !== "success") {
+            alert("Client did not save properly");
+        }
+    };
 
+    function handleEditNote(noteId) {
+        const notes = client.notes
+        const editNote = notes.filter(note => note.noteId === noteId)
+        handleEditNoteChange(editNote[0])
+        handleEditModeChange('edit')
+        
+    };
+
+    function display(type, noteId) {
+        const show = (type === 'form')
+        if (editMode === 'edit' && editNote.noteId === noteId) return show
+        return !show
+    };
+    
     return (
-        <ThemeProvider theme={ theme }>
-            {notes.map((row) => ( 
-                <Card key={row.noteId} className={classes.root} variant="elevation" elevation={4}>
-                    <CardContent>
-                        <div className={classes.header} >                            
-                            {row.isImportant === "true" && <div><Fab color="secondary" size="small" ><NotificationImportantIcon /></Fab></div> }        
-                            <div>
-                                <Typography variant="caption" color="textSecondary" gutterBottom>
-                                    {window.moment(row.createdDateTime).fromNow()} by: {row.noteByUserName}
-                                </Typography>
+        <div>
+            {client.notes.map((row) => ( 
+                <Card key={row.noteId} className={classes.card} variant="elevation" elevation={4}> 
+                    { display('note', row.noteId) &&
+                        <CardContent>
+                            <div className={classes.header} >                            
+                                {row.isImportant === "true" && <div><Fab className={classes.important} color="secondary" size="small" ><NotificationImportantIcon /></Fab></div> }        
+                                <div>
+                                    <Typography variant="caption" color="textSecondary" gutterBottom>
+                                        Added { window.moment(row.createdDateTime).fromNow() }
+                                        <br/><b>{row.noteByUserName}</b>
+                                        { row.createdDateTime !== row.updatedDateTime &&
+                                            <Tooltip title= { window.moment(row.updatedDateTime).fromNow() } >
+                                                <span> (Edited)</span>
+                                            </Tooltip>   
+                                        }
+                                    </Typography>
+                                </div>
+                                <div>
+                                    <IconButton size="small" 
+                                        className={classes.margin}
+                                        onClick={() => handleDeleteNote(row.noteId)}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                    { editMode !== 'add' && 
+                                        <IconButton size="small" 
+                                            className={classes.margin}
+                                            onClick={() => handleEditNote(row.noteId)}
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
+                                    }
+                                </div>
                             </div>
                             <div>
-                                <IconButton size="small" 
-                                    className={classes.margin}
-                                    onClick={() => handleDeleteNote(row.noteId)}
-                                >
-                                    <DeleteIcon />
-                                </IconButton>
-                                <IconButton size="small" className={classes.margin}>
-                                    <EditIcon />
-                                </IconButton>
+                                {row.isImportant === "true" && <Typography variant="subtitle2" color="secondary"> {row.noteText}</Typography> }
+                                {row.isImportant === "false" && <Typography variant="subtitle2" > {row.noteText}</Typography> }
                             </div>
-                        </div>
-                        <div>
-                            {row.isImportant === "true" && <Typography variant="subtitle2" color="secondary"> {row.noteText}</Typography> }
-                            {row.isImportant === "false" && <Typography variant="subtitle2" > {row.noteText}</Typography> }
-                        </div>
-                    </CardContent>
+                        </CardContent>
+                    }
+                    { display('form', row.noteId) &&
+                        <Fade in={ display('form', row.noteId) }  timeout={ 1000 }>
+                            <CardContent>
+                                <NoteForm
+                                    client = { client } 
+                                    handleClientChange = { handleClientChange }
+                                    noteCount = { noteCount }
+                                    handleNoteCountChange = { handleNoteCountChange }
+                                    editNote = { editNote }
+                                    handleEditNoteChange = { handleEditNoteChange }
+                                    editMode={ editMode }
+                                    handleEditModeChange = { handleEditModeChange }
+                                    noteText={ noteText }
+                                    handleTextFieldChange ={ handleTextFieldChange }
+                                    noteImportant={ noteImportant }
+                                    handleNoteImportantChange={ handleNoteImportantChange }
+                                /> 
+                            </CardContent>                               
+                        </Fade>
+                    }
                 </Card>
             ))}
-        </ThemeProvider>
+        </div>
     )
-}
+};

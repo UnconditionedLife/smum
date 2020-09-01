@@ -10,7 +10,7 @@ import CommentIcon from '@material-ui/icons/Comment';
 import AssessmentIcon from '@material-ui/icons/Assessment';
 import theme from '../Sections/Theme.jsx';
 import { isEmpty } from '../js/Utils.js';
-import { searchClients } from '../js/Clients.js';
+import { searchClients, arrayAddIds } from '../js/Clients.js';
 import ClientsHeader from './ClientsHeader.jsx';
 import FoundPage from './PageFound.jsx';
 import ServicesPage from './PageServices.jsx';
@@ -21,8 +21,12 @@ import NotesPage from './PageNotes.jsx';
 import TodayPage from './PageToday.jsx';
 
 const useStyles = makeStyles((theme) => ({
-    marginTop: {
-        marginTop: '24px'
+    container: {
+        height: 'calc(100vh - 230px)',
+        maxHeight:  'calc(100vh - 230px)',
+        marginTop: 20,
+        paddingTop: 20,
+        overflowY:  'scroll',
     },
     wrapper: {
         width: '100vw',
@@ -49,8 +53,8 @@ export default function ClientsMain(props) {
     }
   });
 
-  const handleTabChange = (event, newValue) => {
-    setSelectedTab(newValue);
+  function handleTabChange(event, newTab) {
+    setSelectedTab(newTab);
   };
 
   const handleClientsFoundChange = (newValue) => {
@@ -60,10 +64,10 @@ export default function ClientsMain(props) {
       window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
       if (newValue.length === 1) {
         handleClientChange(newValue[0])
-        handleTabChange(0,1)
+        handleTabChange('event', 1)
       } else {
         handleClientChange({})
-        handleTabChange(0,0)
+        handleTabChange('event', 0)
       }
     }
   };
@@ -74,12 +78,17 @@ export default function ClientsMain(props) {
       window.servicesRendered = [] // used temporarily to keep global vars in sync
       window.uiResetNotesTab() // used temporarily to keep global vars in sync
       window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
+
+      // TODO client should be sorted and have ids for nested arrays saved to the database
+      newClient.dependents.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
+      newClient.dependents = arrayAddIds(newClient.dependents, 'depId')
+      newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
+      newClient.notes = arrayAddIds(newClient.notes, 'noteId')
+      
       setClient(newClient);
 
-console.log(client)
-
       if (!isEmpty(client)) { 
-        handleTabChange(0,1) 
+        handleTabChange('event', 1) 
       }
     }
   };
@@ -90,7 +99,7 @@ console.log(client)
       handleClientChange({})
       handleClientsFoundChange([])
       setIsNewClient(true)
-      handleTabChange(0,2)
+      handleTabChange('event', 2)
     }
   };
   
@@ -105,7 +114,7 @@ console.log(client)
       <AppBar position="static" color="default">
         <Tabs
           value={selectedTab}
-          onChange={handleTabChange}
+          onChange= { handleTabChange }
           indicatorColor="secondary"
           textColor="primary"
           selectionFollowsFocus
@@ -116,23 +125,23 @@ console.log(client)
           <Tab icon={<HouseIcon />} label="Client" />
           <Tab icon={<SupervisorAccountIcon />} label="Dependents" />
           <Tab icon={<HistoryIcon />} label="History" />
-          {/* <Tab icon={<CommentIcon />} label="Notes" /> */}
-          {/* <Tab icon={<AssessmentIcon />} label="Today" /> */}
         </Tabs>
       </AppBar>
-      <Container className={ classes.marginTop }>
+      <Container className={ classes.container }>
         {selectedTab === 0 && <FoundPage 
           clientsFound = { clientsFound }
-          client={ client }
-          handleClientChange={ handleClientChange }
+          client = { client }
+          handleClientChange = { handleClientChange }
           isNewClient = { isNewClient }
         />} 
-        {selectedTab === 1 && <ServicesPage client={ client } isNewClient = { isNewClient } />}
+        {selectedTab === 1 && <ServicesPage 
+          client={ client } 
+          isNewClient = { isNewClient }
+          handleClientChange =  { handleClientChange } 
+        />}
         {selectedTab === 2 && <ClientPage client={ client } isNewClient = { isNewClient } />}
         {selectedTab === 3 && <DependentsPage client={ client } isNewClient = { isNewClient } />}
         {selectedTab === 4 && <HistoryPage client={ client } isNewClient = { isNewClient } />}
-        {/* {selectedTab === 5 && <NotesPage client={ client } isNewClient = { isNewClient } />} */}
-        {/* {selectedTab === 6 && <TodayPage/>} */}
       </Container>
     </div>
   );

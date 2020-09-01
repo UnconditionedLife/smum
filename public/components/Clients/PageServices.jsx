@@ -2,7 +2,6 @@ import React from 'react';
 // import PrimaryButtons from "./ServicesPrimaryButtons.jsx";
 // import SecondaryButtons from "./ServicesSecondaryButtons.jsx";
 import { makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import theme from '../Sections/Theme.jsx';
 import { isEmpty } from '../js/Utils.js';
 import { useEffect, useRef, useState } from 'react';
 import ServiceNotes from './ServiceNotes.jsx';
@@ -21,26 +20,18 @@ const useStyles = makeStyles({
 
 export default function ServicesPage(props) {
     const client = props.client;
+    const handleClientChange = props.handleClientChange;
     const servicesPrimaryButtonsDiv = useRef(null);
     const servicesSecondaryButtonsDiv = useRef(null);
     const classes = useStyles();
-
-
 
     let serviceDateTimeREACT
     let nextService = ""
 
     if (!isEmpty(client)) {
-
-        console.log("IN THE IF")
-
         serviceDateTimeREACT = window.moment().format(longDate) //update date & time in upper left
         let visitHeader = "FIRST SERVICE VISIT"; // uppdate the last served info in upper right
         
-        console.log("BEFORE CLIENT")
-
-        console.log(client)
-
         if (client.lastServed[0] != undefined) {
             let lastServed = window.utilCalcLastServedDays()
             if (lastServed.lowestDays != 10000) {
@@ -64,18 +55,15 @@ export default function ServicesPage(props) {
             }
         }
         nextService = visitHeader + nextService
-        console.log(nextService)
     };
 
     useEffect(() => {
-        console.log("EFFECT")
         if (!isEmpty(client)) {
             window.uiShowServicesButtons(servicesPrimaryButtonsDiv.current, 'primary')
         }
     })
 
     useEffect(() => {
-        console.log("EFFECT")
         if (!isEmpty(client)) {
             window.uiShowServicesButtons(servicesSecondaryButtonsDiv.current, 'secondary')
         }
@@ -92,19 +80,19 @@ export default function ServicesPage(props) {
                 </div>
             </div>
             <div className={ classes.noteContainer }>
-                <ServiceNotes client={ client } />
+                <ServiceNotes 
+                    client={ client }
+                    handleClientChange = { handleClientChange }  
+                />
             </div>
         </div>
     );
 };
 
 
-
+// code below is work in progress for migrating service buttons to REACT
 export function XServicesPage(props) {
     const client = props.client
-
- 
-    
 
 
     return (
