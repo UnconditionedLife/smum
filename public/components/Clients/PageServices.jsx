@@ -69,6 +69,8 @@ export default function ServicesPage(props) {
         }
     })
 
+    if (isEmpty(client)) return null
+
     return (
         <div className={ classes.container }>
             <div className={ classes.serviceContainer }>
