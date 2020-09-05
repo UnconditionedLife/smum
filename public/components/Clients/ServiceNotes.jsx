@@ -28,7 +28,7 @@ const useStyles = makeStyles({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 15,
-        marginTop: -10,
+        // marginTop: -10,
     },
     badge: {
         marginTop: 0,
@@ -36,6 +36,7 @@ const useStyles = makeStyles({
   });
 
 export default function ServiceNotes(props) {
+    const session = props.session;
     const client = props.client;
     const handleClientChange = props.handleClientChange;
     const [ noteCount, setNoteCount ] = useState(0);
@@ -115,6 +116,7 @@ export default function ServiceNotes(props) {
             <NotesDisplay 
                 client={ client }
                 handleClientChange = { handleClientChange }
+                session = { session }
                 handleNoteCountChange = { handleNoteCountChange }
                 editNote = { editNote }
                 handleEditNoteChange = { handleEditNoteChange }

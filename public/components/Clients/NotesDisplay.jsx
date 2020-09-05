@@ -35,6 +35,7 @@ const useStyles = makeStyles({
   });
 
 export default function NotesDisplay(props) {
+    const session = props.session;
     const client = props.client;
     const handleClientChange = props.handleClientChange;
     const noteCount = props.noteCount
@@ -48,6 +49,8 @@ export default function NotesDisplay(props) {
     const noteImportant = props.noteImportant
     const handleNoteImportantChange = props.handleNoteImportantChange
     const classes = useStyles();
+
+    const userName = session.user.userName
 
     function handleDeleteNote(noteId) {
         let tempClient = client
@@ -102,7 +105,7 @@ export default function NotesDisplay(props) {
                                     >
                                         <DeleteIcon />
                                     </IconButton>
-                                    { editMode !== 'add' && 
+                                    { editMode !== 'add' && userName === row.noteByUserName && 
                                         <IconButton size="small" 
                                             className={classes.margin}
                                             onClick={() => handleEditNote(row.noteId)}

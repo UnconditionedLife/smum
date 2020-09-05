@@ -1,29 +1,18 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+// import React from 'react';
 // import PrimaryButtons from "./ServicesPrimaryButtons.jsx";
 // import SecondaryButtons from "./ServicesSecondaryButtons.jsx";
-import { makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import { isEmpty } from '../js/Utils.js';
-import { useEffect, useRef, useState } from 'react';
-import ServiceNotes from './ServiceNotes.jsx';
-
-const useStyles = makeStyles({
-    container: {
-        display: 'flex',
-        minWidth: '100%',
-        alignContent: 'stretch',
-    },
-    serviceContainer: {
-        minWidth: '',
-        flex: 1,
-    },
-  });
+// import { useEffect, useRef, useState } from 'react';
+import { Box } from '@material-ui/core'
+import { ServiceNotes } from '../Clients';
 
 export default function ServicesPage(props) {
     const client = props.client;
     const handleClientChange = props.handleClientChange;
+    const session = props.session;
     const servicesPrimaryButtonsDiv = useRef(null);
     const servicesSecondaryButtonsDiv = useRef(null);
-    const classes = useStyles();
 
     let serviceDateTimeREACT
     let nextService = ""
@@ -72,22 +61,23 @@ export default function ServicesPage(props) {
     if (isEmpty(client)) return null
 
     return (
-        <div className={ classes.container }>
-            <div className={ classes.serviceContainer }>
+        <Box display="flex" justifyContent="center" flexWrap="wrap">
+            <Box maxWidth="800px" mt={ 5 } pt={ 0 }>
                 <div className="serviceButtonContainerREACT">
                     <div className="serviceDateTimeREACT">{ serviceDateTimeREACT }</div>
                     <div className="serviceLastVisitREACT">{ nextService }</div>
                     <div ref={ servicesPrimaryButtonsDiv } className="servicePrimaryButtonsREACT"></div>
                     <div ref={ servicesSecondaryButtonsDiv } className="serviceSecondaryButtonsREACT"></div>
                 </div>
-            </div>
-            <div className={ classes.noteContainer }>
+            </Box>
+            <Box maxWidth="500px" mt={ 3 } justifyContent="center">
                 <ServiceNotes 
                     client={ client }
                     handleClientChange = { handleClientChange }  
+                    session = { session }
                 />
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 };
 

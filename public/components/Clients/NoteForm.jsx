@@ -1,53 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
+import { Box, Checkbox, FormControlLabel } from '@material-ui/core';
+import { NotificationImportant } from '@material-ui/icons';
+import { Button, TextField } from '../System';
+
 import { isEmpty } from '../js/Utils.js';
-import { useEffect, useRef, useState } from 'react';
-import { makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import theme from '../Sections/Theme.jsx';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Paper from '@material-ui/core/Paper';
 
-const useStyles = makeStyles({
-    root: {
-        width: 300,
-        marginBottom: 8,
-    },
-    button: {
-      marginLeft: 30,
-      marginTop: -5,
-      marginRight: 0,
-      minWidth: 95,
-    },
-    textField: {
-        width: 270,
-        marginTop: 5,
-    },
-    importantIcon: {
-        marginTop: 10,
-        marginRight: -10,
-        marginLeft: 70,
-        maxWidth: 30,
-    },
-    flexbox: {
-        display: 'flex',
-        minWidth: 280,
-        maxWidth: 280,
-        alignContent: 'center',
-    }, 
-    checkbox: {
-        marginTop: -10,
-    },
-    paper: {
-        marginBottom: 8,
-        padding: 8,
-    }
-  });
-
-export default function NoteEdit(props) {
+export default function NoteForm(props) {
     const client = props.client;
     const handleClientChange = props.handleClientChange;
     const noteCount = props.noteCount
@@ -62,9 +20,8 @@ export default function NoteEdit(props) {
     const noteImportant = props.noteImportant
     const handleNoteImportantChange = props.handleNoteImportantChange
     const [ stopEffect, setStopEffect ] = useState(false)
-    const classes = useStyles();
     
-    const textLable = isEmpty(editNote) ? "Add Note" : "Edit Note";
+    const textLabel = isEmpty(editNote) ? "Add Note" : "Edit Note";
 
     useEffect(() => {
         if (!isEmpty(editNote) && !stopEffect) {
@@ -122,33 +79,26 @@ export default function NoteEdit(props) {
     };
 
     return (
-        // <Paper variant="outlined" className={ classes.paper}>
-        <div>
-            <div>
-                <TextField label={ textLable } multiline rows={2} variant="outlined" value= { noteText }
-                    className={ classes.textField} onChange={ event => { handleTextFieldChange(event.target.value) }}
-                />
-            </div>
-            <div className={ classes.flexbox }>
-                <div className={ classes.importantIcon }>
-                    <NotificationImportantIcon color="secondary"
-                        onClick={ event => { handleNoteImportantChange(event.target.value) }}/>
-                </div>
-                <div className={ classes.checkbox }>
-                    <FormControlLabel
-                        control={ 
+        <Fragment>
+            <TextField width={ 1 } label={ textLabel } multiline rows={ 2 } variant="outlined" value= { noteText }
+                onChange={ event => { handleTextFieldChange(event.target.value) }} />
+            <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center" alignItems="center">
+                <Box ml= { 4 } mr= { -2 } >
+                    <NotificationImportant color="secondary"
+                        onClick={ event => { handleNoteImportantChange(event.target.value) }} />
+                </Box>
+                <FormControlLabel
+                    control={ 
                         <Checkbox checked={ noteImportant }
                         onChange={ event => { handleNoteImportantChange(event.target.checked) }} /> }
-                        label="Important" 
-                    />
-                </div>
-            </div>
-            <div className={ classes.flexbox }>
-                <Button variant="contained" color="primary" className={ classes.button } 
+                    label="Important" />
+            </Box>
+            <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
+                <Button variant="contained" color="primary"
                     onClick={ event => { handleNoteSave(event.target.value) }}>Save</Button>
-                <Button variant="outlined" color="secondary" className={ classes.button } 
+                <Button variant="outlined" color="secondary"
                     onClick={ event => { handleNoteCancel(event.target.value) }}>Cancel</Button>
-            </div>
-        </div>
+            </Box>
+        </Fragment>
     )
 };

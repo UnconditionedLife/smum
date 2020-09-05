@@ -1,5 +1,5 @@
-import React from 'react';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { isEmpty } from '../js/Utils.js';
 
@@ -38,10 +38,10 @@ export default function PageHistory(props) {
     })
 
     return (
-        <div>
+        <Box mt={ 4 }>
             <div ref={ historyDivTop }></div>
             <div><br/></div>
             <div className={classes.tableHeader} ref={ historyDivBottom }></div>
-        </div>
+        </Box>
     );
 };

@@ -339,6 +339,7 @@ export default function SectionsNavBar(props) {
             <ClientsMain 
                 searchTerm={ searchTerm }
                 handleSearchTermChange = { handleSearchTermChange }
+                session = { session }
             />}
           {selectedSection === 1 && <AdminMain />}
           {selectedSection === 2 && <UserMain/>}

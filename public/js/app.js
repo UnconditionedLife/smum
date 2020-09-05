@@ -1728,7 +1728,7 @@ function uiShowChangePasswordForm(){
 };
 
 function uiShowClientEdit(reactDiv, isEdit){
-	uiShowNotes("Client Notes")
+	// removed for REACT uiShowNotes("Client Notes")
 	// replaced 'clientFormContainer' with reactDiv for migration
 	$(reactDiv).html(uiGetTemplate('#clientForm'))
 	$('#clientSaveButton.newOnly').remove()
@@ -1739,7 +1739,7 @@ function uiShowClientEdit(reactDiv, isEdit){
 		uiToggleClientViewEdit('view')
 	}
 	uiShowDependents(isEdit)
-	uiShowExistingNotes("loading")
+	// uiShowExistingNotes("loading")
 	// dbLoadNotes(client.clientId)
 };
 
@@ -4243,18 +4243,19 @@ function utilCleanUpDate(a) {
 	return date
 };
 
-function utilDeleteNote(index){
-	let notes = client.notes
-	let tempNotes = notes
-	notes.splice(index, 1)
-	client.notes = notes
-	const result = dbSaveCurrentClient(client)
-	if (result == "success") {
-		uiShowExistingNotes("refresh")
-	} else {
-		client.notes = tempNotes
-	}
-}
+// Replaced by REACT
+// function utilDeleteNote(index){
+// 	let notes = client.notes
+// 	let tempNotes = notes
+// 	notes.splice(index, 1)
+// 	client.notes = notes
+// 	const result = dbSaveCurrentClient(client)
+// 	if (result == "success") {
+// 		uiShowExistingNotes("refresh")
+// 	} else {
+// 		client.notes = tempNotes
+// 	}
+// }
 
 function utilErrorHandler(errMessage, status, error, type) {
 
