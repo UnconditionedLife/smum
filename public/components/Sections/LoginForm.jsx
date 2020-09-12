@@ -6,7 +6,21 @@ import Moment from "react-moment";
 import Button from '@material-ui/core/Button';
 import { cogSetupUser, cogSetupAuthDetails } from '../js/Cognito.js';
 import {useInput} from '../Utilities/UseInput.jsx';
-
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
+import Avatar from '@material-ui/core/Avatar';
+import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import { green } from "@material-ui/core/colors";
+import theme from './Theme.jsx';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@material-ui/core/IconButton';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import Grid from '@material-ui/core/Grid';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import Box from '@material-ui/core/Box';
 
 function LoginForm(props) {
   let [showPrimaryForm, setShowPrimaryForm] = useState(true);
@@ -84,207 +98,266 @@ function LoginForm(props) {
   }
 
   function displaySubmitButtons() {
-    const loginDivStyleFixedHeight = {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "60px"
-    };
-
-    const loginDivStyle = {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center"
-    };
-
     return (
       <React.Fragment>
         {appState == "code" ? (
-          <div className="span4 codeDiv" style={loginDivStyleFixedHeight}>
-            <span
-              className="textLink"
-              onClick={() => {
-                let cogUser = cogSetupUser(usernameInput.value);
-              	cogUser.resendConfirmationCode(function(err, result) {
-              		if (err)
-                    setMessage(err.toString());
-              		else
-                    setMessage("New code has been sent.");
-              	});
-              }}
-            >
-              Resend Validation Code
+          <div className="span4 codeDiv">
+            <span  >
+            <Button className="textLink" onClick={() => {
+              let cogUser = cogSetupUser(usernameInput.value);
+              cogUser.resendConfirmationCode(function(err, result) {
+                if (err)
+                  setMessage(err.toString());
+                else
+                  setMessage("New code has been sent.");
+              });
+            }} variant="outlined" color="primary" style={{ textTransform: "none" }}>Resend Validation Code</Button>
             </span>
           </div>
+
         ) : null}
         {appState == "login" ? (
-          <React.Fragment>
-            <div className="span4 loginDiv" style={loginDivStyle}>
-              <span
-                className="textLink"
-                onClick={() => {
-                  setPasswordDisplay(false);
-                	if (usernameInput.value == "") {
-                    setMessage("Username is required.");
-                	}
-                	let cogUser = cogSetupUser(usernameInput.value);
-                	cogUser.forgotPassword({
-                    onSuccess: function (result) {
-                      setMessage("Validation Code sent to: " + result.CodeDeliveryDetails.Destination);
-                      setAppState("newPassword");
-                    },
-                    onFailure: function(err) {
-                			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.")
-                        setMessage("Too many requests. Try again later!");
-                			else
-                        setMessage(err.toString());
-                    }
-                  });
-                }}
-                tabIndex="4"
-              >
-                Forgot Password
-              </span>
-            </div>
-            <div className="span4 loginDiv" style={loginDivStyleFixedHeight}>
-              <input
-                className="solidButton"
-                onClick={() => {
-                  doLogin(usernameInput.value, passwordInput.value);
-                }}
-                type="button"
-                value="Login"
-                tabIndex="3"
-              />
-            </div>{" "}
-          </React.Fragment>
-        ) : null}
+          <div className="span4 codeDiv">
+            <span  >
+            <Button className="textLink" onClick={() => {
+              doLogin(usernameInput.value, passwordInput.value);
+            }} variant="outlined" color="primary" style={{ textTransform: "none" }}>Login</Button>
+            </span>
+          </div>
+        
+          )
+        : null}
+
         {appState == "code" ? (
-          <div className="span4 codeDiv" style={loginDivStyleFixedHeight}>
-            <input
-              className="solidButton"
-              onClick={() => {
-                let cogUser = cogSetupUser(usernameInput.value);
-                cogUser.confirmRegistration(validationCodeInput.value, true,
-                  function(err, result) {
-                    if (err)
-                      setMessage(err.toString());
-                    else {
-                      setMessage("You're confirmed! Please Login.");
-                      setAppState("login");
-                    }
-                  })
-              }}
-              type="button"
-              value="VALIDATE"
-            />
-          </div>
-        ) : null}
-        {appState == "newPassword" ? (
-          <div
-            className="span4 newPasswordDiv"
-            style={loginDivStyleFixedHeight}
-          >
-            <input
-              className="solidButton"
-              onClick={() => {
-                setPasswordDisplay(false);
-                let cogUser = cogSetupUser(usernameInput.value);
-              	cogUser.confirmPassword(validationCodeInput.value, newPasswordInput.value, {
-                  onSuccess: function (result) {
-                    setMessage("New Password set! Please Login.");
+          <div className="span4 codeDiv">
+            <span  >
+            <Button className="textLink" onClick={() => {
+              let cogUser = cogSetupUser(usernameInput.value);
+              cogUser.confirmRegistration(validationCodeInput.value, true,
+                function(err, result) {
+                  if (err)
+                    setMessage(err.toString());
+                  else {
+                    setMessage("You're confirmed! Please Login.");
                     setAppState("login");
-                    usernameInput.reset();
-                    passwordInput.reset();
-                    validationCodeInput.reset();
-                    newPasswordInput.reset();
-                  },
-                  onFailure: function(err) {
-              			if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.") {
-                      setMessage("Too many requests. Try again later!");
-              			} else {
-                      setMessage(err.toString());
-              			}
                   }
-              	});
-              }}
-              type="button"
-              value="SET PASSWORD"
-            />
+                })
+            }} variant="outlined" color="primary" style={{ textTransform: "none" }}>VALIDATE</Button>
+            </span>
           </div>
+
+        ) : null}
+
+        {appState == "newPassword" ? (
+
+          <div className="span4 codeDiv">
+            <span  >
+            <Button className = "textLink" onClick={() => {
+              setPasswordDisplay(false);
+              let cogUser = cogSetupUser(usernameInput.value);
+              cogUser.confirmPassword(validationCodeInput.value, newPasswordInput.value, {
+                onSuccess: function (result) {
+                  setMessage("New Password set! Please Login.");
+                  setAppState("login");
+                  usernameInput.reset();
+                  passwordInput.reset();
+                  validationCodeInput.reset();
+                  newPasswordInput.reset();
+                },
+                onFailure: function(err) {
+                  if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.") {
+                    setMessage("Too many requests. Try again later!");
+                  } else {
+                    setMessage(err.toString());
+                  }
+                }
+              });
+            }} variant="outlined" color="primary" style={{ textTransform: "none" }}>SET PASSWORD</Button>
+            </span>
+          </div>
+
         ) : null}
       </React.Fragment>
     );
   }
 
-  function displayLoginForms() {
+  const useStyles = makeStyles((theme) => ({
+    paper: {
+      marginTop: theme.spacing(-1.5),
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    avatar: {
+      margin: theme.spacing(1),
+      backgroundColor: theme.palette.primary.main,
+    },
+    form: {
+      width: '100%', // Fix IE 11 issue.
+      marginTop: theme.spacing(1),
+    },
+    submit: {
+      margin: theme.spacing(3, 0, 2),
+    },
+  }));
+
+const classes = useStyles();
+function displayLoginForms() {
+
+  
     return (
       <React.Fragment>
-        <div className="loginHeader span4">
-          Login to Santa Maria Urban Ministry
-        </div>
-        <div className="span4" />
-        <div />
+    {/*<div className="loginHeader span4">
+        Login to Santa Maria Urban Ministry
+        </div> */} 
+
         {appState == "login" ? (
           <React.Fragment>
-            <div className="lableDiv loginDiv">Username</div>
-            <div className="loginDiv">
-              <input
-                {...usernameInput.bind}
-                id="loginUserName"
-                type="email"
-                className="inputBox loginForm"
-                tabIndex="1"
-              />
-            </div>
-            <div className="loginDiv" />
-            <div className="loginDiv" />
-            <div className="lableDiv loginDiv">Password</div>
-            <div className="loginDiv">
-              <input
-                {...passwordInput.bind}
-                id="loginPassword"
-                type={passwordDisplay ? "text" : "password"}
-                className="inputBox loginForm"
-                tabIndex="2"
-                onKeyDown={event => {
-                  if (event.key == "Enter")
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              {...usernameInput.bind}
+              autoFocus
+            />
+            <TextField
+            InputProps = {{
+            endAdornment:(
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setPasswordDisplay(!passwordDisplay)}
+                  onMouseDown={() => setPasswordDisplay(!passwordDisplay)}
+                  edge="end"
+                >
+                  {passwordDisplay ? <Visibility /> : <VisibilityOff />}
+                </IconButton>
+              </InputAdornment>
+            )}}
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type={passwordDisplay ? "text" : "password"}
+              id="password"
+              autoComplete="current-password"
+              {...passwordInput.bind}
+              onKeyDown={event => {
+                if (event.key == "Enter")
                     doLogin(usernameInput.value, passwordInput.value);
-                }}
-              />{" "}
-              {showViewPasswordIcon()}
-            </div>
+                  }}
+            />
+            <Grid container alignItems="center" justify="space-between">
+                        <Grid item>
+                          <a onClick={() => {
+                            setPasswordDisplay(false);
+                            if (usernameInput.value == "") {
+                              setMessage("Username is required.");
+                            }
+                            let cogUser = cogSetupUser(usernameInput.value);
+                            cogUser.forgotPassword({
+                              onSuccess: function (result) {
+                                setMessage("Validation Code sent to: " + result.CodeDeliveryDetails.Destination);
+                                setAppState("newPassword");
+                              },
+                              onFailure: function(err) {
+                                if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.")
+                                  setMessage("Too many requests. Try again later!");
+                                else
+                                  setMessage(err.toString());
+                              }
+                            });
+                          }} class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-body2 MuiTypography-colorPrimary" href="#">Forgot password?</a>
+                        </Grid>
+                    </Grid>
           </React.Fragment>
+        
+          // <React.Fragment>
+          //   < div className="lableDiv loginDiv">Username</div>
+          //   <div className="loginDiv">
+          //     <input
+          //       {...usernameInput.bind}
+          //       id="loginUserName"
+          //       type="email"
+          //       className="inputBox loginForm"
+          //       tabIndex="1"
+          //     />
+          //   </div>
+          //   <div className="loginDiv" />
+          //   <div className="loginDiv" />
+          //   <div className="lableDiv loginDiv">Password</div>
+          //   <div className="loginDiv">
+          //     <input
+          //       {...passwordInput.bind}
+          //       id="loginPassword"
+          //       type={passwordDisplay ? "text" : "password"}
+          //       className="inputBox loginForm"
+          //       tabIndex="2"
+          //       onKeyDown={event => {
+          //         if (event.key == "Enter")
+          //           doLogin(usernameInput.value, passwordInput.value);
+          //       }}
+          //     />{" "}
+          //     {showViewPasswordIcon()}
+          //   </div>
+          // </React.Fragment>
         ) : null}
         {appState == "code" || appState == "newPassword" ? (
-          <React.Fragment>
-            <div className="lableDiv codeDiv newPasswordDiv">
-              Validation Code
-            </div>
-            <div className="codeDiv newPasswordDiv">
-              <input
-                {...validationCodeInput.bind}
-                id="loginCode"
-                type="text"
-                className="inputBox loginForm"
-              />
-            </div>
+          <React.Fragment>                
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              id="loginCode"
+              label="Login Code"
+              name="loginCode"
+              autoComplete="loginCode"
+              {...validationCodeInput.bind}
+              autoFocus
+            />
           </React.Fragment>
         ) : null}
+        
         {appState == "newPassword" ? (
           <React.Fragment>
-            <div className="newPasswordDiv" />
-            <div className="newPasswordDiv" />
-            <div className="lableDiv newPasswordDiv">New Password</div>
-            <div className="newPasswordDiv">
-              <input
-                {...newPasswordInput.bind}
-                id="loginNewPassword"
-                type={passwordDisplay ? "text" : "password"}
-                className="inputBox loginForm"
-              />{" "}
-              {showViewPasswordIcon()}
-            </div>
+          <TextField
+          InputProps = {{
+          endAdornment:(
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="toggle password visibility"
+                onClick={() => setPasswordDisplay(!passwordDisplay)}
+                onMouseDown={() => setPasswordDisplay(!passwordDisplay)}
+                edge="end"
+              >
+                {passwordDisplay ? <Visibility /> : <VisibilityOff />}
+              </IconButton>
+            </InputAdornment>
+          )}}
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="newPassword"
+            label="New Password"
+            type={passwordDisplay ? "text" : "password"}
+            id="newPassword"
+            autoComplete="newPassword"
+            {...newPasswordInput.bind}
+            onKeyDown={event => {
+              if (event.key == "Enter")
+                  doLogin(usernameInput.value, passwordInput.value);
+                }}
+          />  
+          
           </React.Fragment>
         ) : null}
       </React.Fragment>
@@ -293,12 +366,29 @@ function LoginForm(props) {
 
   return (
     <React.Fragment>
-      <div className="loginFormDiv">
-        {displayLoginForms()}
-        {displaySubmitButtons()}
-        <div id="loginError" className="modalError">
+        <div className="loginFormDivNikhil">
+        <div className={classes.paper}>
+            
+        <Avatar className={classes.avatar}>
+        <LockOutlinedIcon />
+
+
+      </Avatar>
+
+      <Typography className="span2" component="h2" variant="h6">
+      Login to Santa Maria Urban Ministry
+      </Typography>
+
+      <div className="span4" />
+      <div />
+      <form className={classes.form}
+      noValidate> {displayLoginForms()} </form>
+      </div>
+      {displaySubmitButtons()}
+        <Box 
+        color="var(--red)" fontSize ="16px">
           {message}
-        </div>
+        </Box>
       </div>
     </React.Fragment>
   );

@@ -20,12 +20,13 @@ import Button from '@material-ui/core/Button';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import PeopleIcon from '@material-ui/icons/People';
+import TodayIcon from '@material-ui/icons/Today';
 import FaceIcon from '@material-ui/icons/Face';
 import LoginForm from "./LoginForm.jsx";
 import ClientsMain from '../Clients/ClientsMain.jsx';
 import AdminMain from '../Admin/AdminMain.jsx';
 import UserMain from '../User/UserMain.jsx';
-
+import PageToday from '../Clients/PageToday.jsx';
 const useStyles = makeStyles((theme) => ({
   grow: {
     flexGrow: 1,
@@ -36,27 +37,28 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     display: 'none',
-    [theme.breakpoints.up('sm')]: {
+      [theme.breakpoints.up('sm')]: {
       display: 'block'
     },
   },
   clients:{
     width:'100%',
     position:'relative',
-    top:'3.5px',
+    top:'2px',
     fontSize:'15px',
-    right:'360px',//used to be 90
+    right:'370px',//used to be 90
     letterSpacing: '2px',
 
   },
   admin:{
     width:'100%',
     position:'relative',
-    top:'3.5px',
+    top:'2px',
     fontSize:'15px',
     // right:'65px',
-    right:'180px',
+    right:'200px',
     letterSpacing: '2px',
+    // position: 'sticky',
 
   },
   username:{
@@ -73,6 +75,14 @@ const useStyles = makeStyles((theme) => ({
     top:'3px',
     fontSize:'15px',
     right:'-30px',
+  },
+  today:{
+    width:'100%',
+    position:'relative',
+    top:'2px',
+    fontSize:'15px',
+    right:'60px',
+    letterSpacing: '2px',
   },
   search: {
     position: 'relative',
@@ -139,7 +149,9 @@ export default function SectionsNavBar(props) {
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
   useEffect(() => {
-    ReactDOM.render(<LoginForm onLogin={(x) => setSession(x)}/>,
+    ReactDOM.render(<ThemeProvider theme={ theme }>
+      <LoginForm onLogin={(x) => setSession(x)}/>
+  </ThemeProvider>,
       document.getElementById("loginOverlay"));
   });
 
@@ -151,6 +163,7 @@ export default function SectionsNavBar(props) {
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
+
   };
 
   const handleMobileMenuClose = () => {
@@ -167,6 +180,7 @@ export default function SectionsNavBar(props) {
   };
 
   function handleLogout() {
+    handleMenuClose();
     session.cogUser.signOut();
     window.uiShowHideLogin('show');
     window.utilInitAuth(null);
@@ -232,6 +246,12 @@ export default function SectionsNavBar(props) {
       <Button onClick={() => handleLogout()} className={classes.logout} color="inherit">
         Logout
       </Button>*/}
+
+      <Button onClick={() => handleSectionChange(2)} startIcon={<TodayIcon/>}
+      className={classes.today} disabled={!isAdmin} variant="text" color="inherit">
+      Today
+      </Button>
+
       <Button
       edge="end"
       startIcon={<AccountCircle />}
@@ -306,13 +326,19 @@ export default function SectionsNavBar(props) {
         </Button>
       </MenuItem>
 
+      <MenuItem onClick={() => handleSectionChange(2)}>
+        <Button startIcon={<TodayIcon/>}>
+        Today
+        </Button>
+      </MenuItem>
+
       <MenuItem onClick={() => window.navSwitch('user')} >
         <Button startIcon={<AccountCircle />}>
         Profile
         </Button>
       </MenuItem>
 
-      <MenuItem onClick={() => handleLogout()} >
+       <MenuItem onClick={() => handleLogout()} >
         <Button startIcon={<ExitToAppIcon />}>
         Logout
         </Button>
@@ -326,7 +352,7 @@ export default function SectionsNavBar(props) {
         <Toolbar>
           <Tooltip title={props.version}>
           <Typography className={classes.title} variant='h6' noWrap>
-            Santa Maria Urban Ministry
+          Santa Maria Urban Ministry
           </Typography>
           </Tooltip>
           {session ? appbarControls : null}
@@ -342,7 +368,7 @@ export default function SectionsNavBar(props) {
                 session = { session }
             />}
           {selectedSection === 1 && <AdminMain />}
-          {selectedSection === 2 && <UserMain/>}
+          {selectedSection === 2 && <PageToday/>}
       </ThemeProvider>
     </div>
   );

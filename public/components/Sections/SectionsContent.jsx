@@ -3,7 +3,7 @@ import React from "react";
 import Container from '@material-ui/core/Container';
 import ClientsMain from '../Clients/ClientsMain.jsx';
 import AdminMain from '../Admin/AdminMain.jsx';
-import UserMain from '../User/UserMain.jsx';
+import PageToday from '../Clients/PageToday.jsx';
 import SectionsHeader from './SectionsHeader.jsx';
 
 // const useStyles = makeStyles((theme) => ({
@@ -26,7 +26,8 @@ console.log(props)
             <SectionsHeader section = { props.section } />
             {props.section === 0 && <ClientsMain />}
             {props.section === 1 && <AdminMain />}
-            {props.section === 2 && <UserMain/>}
+            {props.section === 2 && <PageToday/>}
+
       </Container>
     );
 };

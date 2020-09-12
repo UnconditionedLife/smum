@@ -130,6 +130,17 @@ main{
 	background-color: rgba(0,0,0,0.35);
 }
 
+.loginFormDivNikhil {
+	position: inherit;
+	width: 400px;
+  height: 370px;
+	background-color: white;
+  font-size: 12px;
+  overflow: hidden;
+	border-radius: 5px;
+	padding:20px;
+}
+
 .loginFormDiv {
   position: inherit;
 	display: grid;
@@ -166,7 +177,7 @@ main{
 }
 
 .loginHeader{
-	background-color: var(--blue);
+	background-color: var(--green);
 	color: white;
 	font-size: 18px;
 	font-weight: bold;
@@ -546,7 +557,7 @@ main{
 .textLink {
 	font-size: 14px;
 	font-weight: bold;
-	color: var(--blue);
+	color: var(--green);
 	line-height: 28px;
 	cursor: pointer;
 }
