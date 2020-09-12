@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { isEmpty } from '../js/Utils.js';
+import { isEmpty } from '../System/js/Utils.js';
 
 const useStyles = makeStyles((theme) => ({
     tableHeader: {

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@material-ui/core';
 
-import { isEmpty } from '../js/Utils.js';
+import { isEmpty } from '../System/js/Utils.js';
 
 import { makeStyles } from '@material-ui/core/styles';
 // import Accordion from '@material-ui/core/Accordion';

@@ -201,11 +201,11 @@ export default function SectionsNavBar(props) {
         }}
         inputProps={{ 'aria-label': 'search' }}
         value={ typedSearchTerm }
-        onChange= { event => { 
+        onChange= { event => {
           setTypedSearchTerm(event.target.value)
         }}
         onKeyPress={ event => {
-          if (event.key == "Enter") { 
+          if (event.key == "Enter") {
             if (selectedSection !== 0) handleSectionChange(0)
             setSearchTerm(typedSearchTerm)
             setTypedSearchTerm('')
@@ -282,7 +282,7 @@ export default function SectionsNavBar(props) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={() => window.navSwitch('user')}>
+      <MenuItem onClick={() => { handleSectionChange(3); }}>
         <Button startIcon={<AccountCircle/>}>Profile</Button>
       </MenuItem>
       <MenuItem onClick={() => handleLogout()} >
@@ -308,7 +308,6 @@ export default function SectionsNavBar(props) {
         </Button>
       </MenuItem>
 
-
       <MenuItem >
         <Button startIcon={<FaceIcon/>} onClick={() => handleSectionChange(1)}
          disabled={!isAdmin}>
@@ -322,7 +321,7 @@ export default function SectionsNavBar(props) {
         </Button>
       </MenuItem>
 
-      <MenuItem onClick={() => window.navSwitch('user')} >
+      <MenuItem onClick={() => { handleSectionChange(3); } } >
         <Button startIcon={<AccountCircle />}>
         Profile
         </Button>
@@ -351,14 +350,15 @@ export default function SectionsNavBar(props) {
       { renderMobileMenu }
       { renderMenu }
       <ThemeProvider theme={ theme }>
-          {selectedSection === 0 && 
-            <ClientsMain 
+          {selectedSection === 0 &&
+            <ClientsMain
                 searchTerm={ searchTerm }
                 handleSearchTermChange = { handleSearchTermChange }
                 session = { session }
             />}
           {selectedSection === 1 && <AdminMain />}
           {selectedSection === 2 && <PageToday/>}
+          {selectedSection === 3 && <UserMain user={session.user}/>}
       </ThemeProvider>
     </div>
   );

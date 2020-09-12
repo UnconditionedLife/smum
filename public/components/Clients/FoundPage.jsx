@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import { isEmpty } from '../js/Utils.js';
+import { isEmpty } from '../System/js/Utils.js';
 
 export default function FoundPage(props) {
     const clientsFound = props.clientsFound

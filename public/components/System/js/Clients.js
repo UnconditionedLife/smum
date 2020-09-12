@@ -1,7 +1,7 @@
 //************************************************
 //***** CLIENTS SECTION JAVASCRIPT FUNCTIONS *****
 //************************************************
-import { isEmpty } from '../js/Utils.js';
+import { isEmpty } from './Utils.js';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 

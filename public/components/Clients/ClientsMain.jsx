@@ -5,8 +5,8 @@ import { Pageview, RoomService, House, History } from '@material-ui/icons';
 import { ClientsHeader, FoundPage, ServicesPage, ClientPage, HistoryPage } from '../Clients';
 import { Container } from '../System';
 
-import { isEmpty } from '../js/Utils.js';
-import { searchClients, arrayAddIds } from '../js/Clients.js';
+import { isEmpty } from '../System/js/Utils.js';
+import { searchClients, arrayAddIds } from '../System/js/Clients.js';
 
 
 export default function ClientsMain(props) {

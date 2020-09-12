@@ -14,6 +14,12 @@ const theme = createMuiTheme({
                 minWidth: 96,
             }
             
+        },
+        MuiInput: {
+            root: {
+                margin: 8,
+            }
+            
         }
 
     }
