@@ -26,7 +26,7 @@ import LoginForm from "./LoginForm.jsx";
 import ClientsMain from '../Clients/ClientsMain.jsx';
 import AdminMain from '../Admin/AdminMain.jsx';
 import UserMain from '../User/UserMain.jsx';
-import PageToday from '../Clients/PageToday.jsx';
+import PageToday from '../Sections/PageToday.jsx';
 const useStyles = makeStyles((theme) => ({
   grow: {
     flexGrow: 1,
