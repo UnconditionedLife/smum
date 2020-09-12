@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from "react-dom";
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import theme from './Theme.jsx';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
-import InputBase from '@material-ui/core/InputBase';
-import Badge from '@material-ui/core/Badge';
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
-import MenuIcon from '@material-ui/icons/Menu';
+import { AppBar, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu} from '@material-ui/core';
+
 import SearchIcon from '@material-ui/icons/Search';
-import MailIcon from '@material-ui/icons/Mail';
-import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import Button from '@material-ui/core/Button';
 import AccountCircle from '@material-ui/icons/AccountCircle';
@@ -22,11 +11,13 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import PeopleIcon from '@material-ui/icons/People';
 import TodayIcon from '@material-ui/icons/Today';
 import FaceIcon from '@material-ui/icons/Face';
+import theme from './Theme.jsx';
 import LoginForm from "./LoginForm.jsx";
 import ClientsMain from '../Clients/ClientsMain.jsx';
 import AdminMain from '../Admin/AdminMain.jsx';
 import UserMain from '../User/UserMain.jsx';
 import PageToday from '../Sections/PageToday.jsx';
+
 const useStyles = makeStyles((theme) => ({
   grow: {
     flexGrow: 1,
@@ -163,7 +154,6 @@ export default function SectionsNavBar(props) {
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
-
   };
 
   const handleMobileMenuClose = () => {
