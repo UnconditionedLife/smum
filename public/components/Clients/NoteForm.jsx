@@ -2,19 +2,15 @@ import React, { useEffect, useState, Fragment } from 'react';
 import { Box, Checkbox, FormControlLabel } from '@material-ui/core';
 import { NotificationImportant } from '@material-ui/icons';
 import { Button, TextField } from '../System';
-
 import { isEmpty } from '../System/js/Utils.js';
 
 export default function NoteForm(props) {
     const client = props.client;
     const handleClientChange = props.handleClientChange;
-    const noteCount = props.noteCount
     const handleNoteCountChange = props.handleNoteCountChange;
-    const handleEditNoteChange = props.handleEditNoteChange;
     const editMode = props.editMode;
     const handleEditModeChange = props.handleEditModeChange;
     const editNote = props.editNote;
-    const handleNotesChange = props.handleNotesChange;
     const noteText = props.noteText;
     const handleTextFieldChange = props.handleTextFieldChange;
     const noteImportant = props.noteImportant

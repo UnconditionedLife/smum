@@ -82,7 +82,7 @@ export default function ServiceNotes(props) {
         <ThemeProvider theme={ theme }>
             <div className={ classes.header }>
                 <Badge className={ classes.badge } badgeContent={ noteCount } color="secondary">
-                    <Typography className={classes.title} variant='h6' noWrap>
+                    <Typography variant='h6' noWrap>
                         SERVICE NOTES&nbsp;
                     </Typography>
                 </Badge>  

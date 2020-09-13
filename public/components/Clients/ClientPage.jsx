@@ -1,15 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@material-ui/core';
 
-import { isEmpty } from '../System/js/Utils.js';
-
 import { makeStyles } from '@material-ui/core/styles';
-// import Accordion from '@material-ui/core/Accordion';
-// import AccordionDetails from '@material-ui/core/AccordionDetails';
-// import AccordionSummary from '@material-ui/core/AccordionSummary';
-// import Typography from '@material-ui/core/Typography';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
+import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay } from '../Clients';
+import { isEmpty } from '../System/js/Utils.js';
 
 const useStyles = makeStyles((theme) => ({
     heading: {
@@ -45,7 +41,7 @@ export default function ClientPage(props) {
     return (
         <Box mt={ 4 } width={ 1 }>
             <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} id="panel1bh-header" >
+                <AccordionSummary expandIcon={<ExpandMore />} id="panel1bh-header" >
                     <Typography className={classes.heading}><b>Client Info</b></Typography>
                     <Typography className={classes.secondaryHeading}>Name, Gender, DOB, etc.</Typography>
                 </AccordionSummary>
@@ -56,7 +52,7 @@ export default function ClientPage(props) {
                 </AccordionDetails>
             </Accordion>
             <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} id="panel2bh-header" >
+                <AccordionSummary expandIcon={<ExpandMore />} id="panel2bh-header" >
                     <Typography className={classes.heading}><b>Address {'&'} Contact Info</b></Typography>
                     <Typography className={classes.secondaryHeading}>Street Address, Telephone, and Email</Typography>
                 </AccordionSummary>
@@ -68,7 +64,7 @@ export default function ClientPage(props) {
       </Accordion>
       <Accordion expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
         <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
+          expandIcon={<ExpandMore />}
           aria-controls="panel3bh-content"
           id="panel3bh-header"
         >
@@ -81,7 +77,7 @@ export default function ClientPage(props) {
       </Accordion>
       <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
         <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
+          expandIcon={<ExpandMore />}
           aria-controls="panel4bh-content"
           id="panel4bh-header"
         >
@@ -95,7 +91,7 @@ export default function ClientPage(props) {
       </Accordion>
       <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
         <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
+          expandIcon={<ExpandMore />}
           aria-controls="panel4bh-content"
           id="panel4bh-header"
         >

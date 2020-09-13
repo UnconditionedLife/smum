@@ -45,6 +45,14 @@ export function getButtonData(buttonType) {
     return buttonData
 };
 
+export function getServiceHistory(){
+	let clientHistory = window.dbGetClientActiveServiceHistory()
+	clientHistory = clientHistory
+		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+	//uiShowHistoryData(reactDIV, clientHistory)
+	return clientHistory
+};
+
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 
 function getLastServedDays() {

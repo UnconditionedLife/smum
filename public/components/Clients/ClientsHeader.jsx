@@ -1,134 +1,92 @@
-import React, { useState } from "react";
+import React from "react";
 import { makeStyles } from '@material-ui/core/styles';
-import { isEmpty } from '../System/js/Utils.js';
-import Tooltip from '@material-ui/core/Tooltip';
-import Fab from '@material-ui/core/Fab';
-import AddIcon from '@material-ui/icons/Add';
+import { Add, Pageview, RoomService, House, History } from '@material-ui/icons';
+import { AppBar, Box, CardContent, Fab, Tab, Tabs, Tooltip, Typography } from '@material-ui/core';
+import { Card } from '../System';
+import { HeaderTitle } from '../Clients';
 
 const useStyles = makeStyles((theme) => ({
-    container: {
-        width: "100%",
-        display: 'grid',
-        gridTemplateColumns: '2fr 1fr',
-        gridTemplateRows: '50px auto',
-        lineHeight: '50px',
-        color: theme.palette.primary.dark,
-        paddingBottom: '8px'
-    },
-    pageTitle: {
-        gridColumn: 1,
-        gridRow: 1,
-        fontSize: '1.75em',
-        fontWeight: 'bold',
-        textAlign: 'left',
-        marginLeft: '20px',
-        lineHeight: '50px',
-        display: 'grid',
-        gridTemplateColumns: '1fr 7fr',
+    card: {
+        backgroundColor: "#f5f5f5",
     },
     sectionName: {
         gridColumn: 2,
         gridRow: 1,
         fontSize: '40px',
         fontWeight: 'bold',
+        backgroundColor: "#f5f5f5",
         color: theme.palette.primary.light,
-        textAlign: 'right',
-        marginRight: '15px',
-        lineHeight: '50px'
-    },
-    clientNumber: {
-        gridColumn: 1,
-        gridRow: 1,
-        color: 'white',
-        backgroundColor: theme.palette.primary.dark,
-        borderRadius: '5px',
-        padding: '8px',
-        maxWidth: 'fit-content',
-        lineHeight: '20px',
-        maxHeight: 'fit-content',
-        margin: '8px'
-    },
-    clientName: {
-        gridColumn: 2,
-        gridRow: 1,
-        color: theme.palette.primary.dark,
-        padding: '8px',
-        maxWidth:  'fit-content',
-        lineHeight: '34px',
-        maxHeight:  'fit-content',
-    },
-    twoColumns: {
-        gridColumn: '1 / span 2',
-        gridRow: 1
+        textAlign: 'center',
+        lineHeight: '56px'
     },
     roundButton: {
-        margingTop: '-8px',
-        marginRight: '15px'
+        margingTop: '-28px',
+        marginRight: '15px',
+        marginBottom: '10px'
     }
 }));
 
 export default function clientsHeader(props) {
     const client = props.client
-    const clientsFounds = props.clientsFound
+    const clientsFound = props.clientsFound
     const isNewClient = props.isNewClient
     const handleIsNewClientChange = props.handleIsNewClientChange
-    const todaysDate = window.moment().format("dddd, MMM DD YYYY")
-    const [ headerMessage, setHeaderMessage ] = useState(todaysDate)
+    const selectedTab = props.selectedTab
+    const handleTabChange = props.handleTabChange
     const classes = useStyles();
-    let titleType = 'nonclient';
 
     function handleNewClient() {
         handleIsNewClientChange(true)
     }
 
-    if (!isEmpty(client)) {
-        titleType = 'client'
-        const parsed = parseInt(client.clientId)
-        if (parsed !== headerMessage) setHeaderMessage(parsed)
-    } else {
-        titleType = 'nonclient'
-        if (isNewClient) {
-            if (headerMessage !== 'New Client') setHeaderMessage('New Client');
-        } else {
-            if (!isEmpty(clientsFounds)) {
-                const count = clientsFounds.length;
-                if (count === 1) {
-                    if (headerMessage !== '1 Client Found') setHeaderMessage('1 Client Found');
-                } else {
-                    const msg = count + ' Clients Found'
-                    if (headerMessage !== msg ) setHeaderMessage(msg);
-                }
-            } else {
-                if (headerMessage !== todaysDate ) setHeaderMessage(todaysDate);
-            }
-        }
-    }; 
-
     return (
-        <div className = { classes.container }>
-            { titleType === 'nonclient' && 
-                <div className={ classes.pageTitle }>
-                    <div className={ classes.twoColumns }>
-                    { headerMessage }
-                    </div>
-                </div> 
-            }
-            {/* { headerState === 'new-client' && { "NEW CLIENT" } } //TODO WIRE TO NEW CLIENT PAGE */}
-            { titleType === 'client' && 
-                <div className={ classes.pageTitle }>
-                    <div className= { classes.clientNumber }>{ headerMessage }</div>
-                    <div className= { classes.clientName }>{ client.givenName } { client.familyName }</div>
-                </div> 
-            }
-            <div className={ classes.sectionName }>
-                <Tooltip title= 'Add Client'>
-                    <Fab onClick={() => handleNewClient()}  size="small" className={ classes.roundButton } color='default' >
-                        <AddIcon />
-                    </Fab>
-                </Tooltip>
-                Clients
-            </div>
-        </div>
-    
+        <Box width={ 1 } display="flex" >
+            <Box flexGrow="1"  mr={ 1 }>
+                <Card height="72px" width={ 1 } elevation={ 4 } className={ classes.card } >
+                    <CardContent>
+                        <HeaderTitle 
+                            client={ client }
+                            clientsFound={ clientsFound }
+                            handleIsNewClientChange={ handleIsNewClientChange }
+                            isNewClient = { isNewClient }
+                            selectedTab = { selectedTab }
+                        />
+                    </CardContent>
+                </Card>
+            </Box>
+            <Box flexGrow="2"  mr={ 1 }>
+                <AppBar position="static" color="default">
+                    <Tabs
+                    value={selectedTab}
+                    onChange= { handleTabChange }
+                    indicatorColor="secondary"
+                    textColor="primary"
+                    selectionFollowsFocus
+                    centered
+                    >
+                    <Tab icon={<Pageview />} label="Found" />
+                    <Tab icon={<RoomService />} label="Services" />
+                    <Tab icon={<House />} label="Client" />
+                    <Tab icon={<History />} label="History" />
+                    </Tabs>
+                </AppBar>
+            </Box>
+            <Box flexGrow="1">
+                <Card height="72px" elevation={ 4 } className={ classes.sectionName } >
+                    <CardContent>
+                        <Box width={ 1 } display='flex' justifyContent='center'>
+                            <Tooltip title= 'Add Client'>
+                                <Fab onClick={() => handleNewClient()}  size="small" className={ classes.roundButton } color='default' >
+                                    <Add />
+                                </Fab>
+                            </Tooltip>
+                            <Typography color='primary' align='center' variant='h4' noWrap>
+                                <b>Clients</b>
+                            </Typography>
+                        </Box>
+                    </CardContent>
+                </Card>
+            </Box>
+        </Box>
     )
 };

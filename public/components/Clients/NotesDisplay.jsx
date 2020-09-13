@@ -1,44 +1,13 @@
-import React from 'react';
-import { makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Tooltip from '@material-ui/core/Tooltip';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
-import NotificationImportantIcon from '@material-ui/icons/NotificationImportant';
-import Fab from '@material-ui/core/Fab';
-import NoteForm from './NoteForm.jsx';
-import Fade from '@material-ui/core/Fade';
-
-const useStyles = makeStyles({
-    card: {
-        width: 300,
-        marginBottom: 8,
-        paddingBottom: -10,
-    },
-    margin: {
-        margin: 0,
-    },
-    padding: {
-        paddingTop: 0,
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginBottom: 15,
-    },
-    important: {
-        marginRight: 10,
-    }
-  });
+import React, { Fragment } from 'react';
+import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
+import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
+import { Card, IconButton } from '../System';
+import { NoteForm } from '../Clients';
 
 export default function NotesDisplay(props) {
     const session = props.session;
     const client = props.client;
     const handleClientChange = props.handleClientChange;
-    const noteCount = props.noteCount
     const handleNoteCountChange = props.handleNoteCountChange;
     const editNote = props.editNote
     const handleEditNoteChange = props.handleEditNoteChange;
@@ -48,7 +17,6 @@ export default function NotesDisplay(props) {
     const handleTextFieldChange = props.handleTextFieldChange;
     const noteImportant = props.noteImportant
     const handleNoteImportantChange = props.handleNoteImportantChange
-    const classes = useStyles();
 
     const userName = session.user.userName
 
@@ -80,14 +48,18 @@ export default function NotesDisplay(props) {
     };
     
     return (
-        <div>
-            {client.notes.map((row) => ( 
-                <Card key={row.noteId} className={classes.card} variant="elevation" elevation={4}> 
+        <Fragment>
+            { client.notes.map((row) => ( 
+                <Card key={ row.noteId } width="300px" mb={ 1 } pb={ 1.25 } variant="elevation" elevation={ 4 }> 
                     { display('note', row.noteId) &&
                         <CardContent>
-                            <div className={classes.header} >                            
-                                {row.isImportant === "true" && <div><Fab className={classes.important} color="secondary" size="small" ><NotificationImportantIcon /></Fab></div> }        
-                                <div>
+                            <Box display='flex' mb={ 2 } justifyContent='space-between'>                            
+                                { row.isImportant === "true" && 
+                                    <Box mr={ 1.25 }>
+                                        <Fab color="secondary" size="small" ><NotificationImportant /></Fab>
+                                    </Box> 
+                                }        
+                                <Box>
                                     <Typography variant="caption" color="textSecondary" gutterBottom>
                                         Added { window.moment(row.createdDateTime).fromNow() }
                                         <br/><b>{row.noteByUserName}</b>
@@ -97,44 +69,36 @@ export default function NotesDisplay(props) {
                                             </Tooltip>   
                                         }
                                     </Typography>
-                                </div>
-                                <div>
-                                    <IconButton size="small" 
-                                        className={classes.margin}
-                                        onClick={() => handleDeleteNote(row.noteId)}
-                                    >
-                                        <DeleteIcon />
+                                </Box>
+                                <Box>
+                                    <IconButton size="small" m={ 0 } onClick={ () => handleDeleteNote(row.noteId) }>
+                                        <Delete />
                                     </IconButton>
                                     { editMode !== 'add' && userName === row.noteByUserName && 
-                                        <IconButton size="small" 
-                                            className={classes.margin}
-                                            onClick={() => handleEditNote(row.noteId)}
-                                        >
-                                            <EditIcon />
+                                        <IconButton size="small"  m={ 0 } onClick={ () => handleEditNote(row.noteId) }>
+                                            <Edit />
                                         </IconButton>
                                     }
-                                </div>
-                            </div>
-                            <div>
+                                </Box>
+                            </Box>
+                            <Box>
                                 {row.isImportant === "true" && <Typography variant="subtitle2" color="secondary"> {row.noteText}</Typography> }
                                 {row.isImportant === "false" && <Typography variant="subtitle2" > {row.noteText}</Typography> }
-                            </div>
+                            </Box>
                         </CardContent>
                     }
                     { display('form', row.noteId) &&
                         <Fade in={ display('form', row.noteId) }  timeout={ 1000 }>
                             <CardContent>
                                 <NoteForm
-                                    client = { client } 
-                                    handleClientChange = { handleClientChange }
-                                    noteCount = { noteCount }
-                                    handleNoteCountChange = { handleNoteCountChange }
-                                    editNote = { editNote }
-                                    handleEditNoteChange = { handleEditNoteChange }
+                                    client={ client } 
+                                    handleClientChange={ handleClientChange }
+                                    handleNoteCountChange={ handleNoteCountChange }
+                                    editNote={ editNote }
                                     editMode={ editMode }
-                                    handleEditModeChange = { handleEditModeChange }
+                                    handleEditModeChange={ handleEditModeChange }
                                     noteText={ noteText }
-                                    handleTextFieldChange ={ handleTextFieldChange }
+                                    handleTextFieldChange={ handleTextFieldChange }
                                     noteImportant={ noteImportant }
                                     handleNoteImportantChange={ handleNoteImportantChange }
                                 /> 
@@ -143,6 +107,6 @@ export default function NotesDisplay(props) {
                     }
                 </Card>
             ))}
-        </div>
+        </Fragment>
     )
 };
