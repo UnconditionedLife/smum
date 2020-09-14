@@ -129,15 +129,12 @@ const useStyles = makeStyles((theme) => ({
 
 export default function SectionsNavBar(props) {
   const classes = useStyles();
-  const [ anchorEl, setAnchorEl ] = useState(null);
-  const [ mobileMoreAnchorEl, setMobileMoreAnchorEl ] = useState(null);
+  const [ userMenuAnchor, setUserMenuAnchor ] = useState(null);
+  const [ mobileMenuAnchor, setMobileMenuAnchor ] = useState(null);
   const [ session, setSession ] = useState(null);
   const [ selectedSection, setSelectedSection ] = useState(0);
   const [ searchTerm, setSearchTerm ] = useState('');
   const [ typedSearchTerm, setTypedSearchTerm ] = useState('')
-
-  const isMenuOpen = Boolean(anchorEl);
-  const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
   useEffect(() => {
     ReactDOM.render(<ThemeProvider theme={ theme }>
@@ -152,25 +149,23 @@ export default function SectionsNavBar(props) {
     setSelectedSection(newValue);
   };
 
-  const handleProfileMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMobileMenuClose = () => {
-    setMobileMoreAnchorEl(null);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    handleMobileMenuClose();
+  const handleUserMenuOpen = (event) => {
+    setUserMenuAnchor(event.currentTarget);
   };
 
   const handleMobileMenuOpen = (event) => {
-    setMobileMoreAnchorEl(event.currentTarget);
+    setMobileMenuAnchor(event.currentTarget);
   };
 
+  function closeUserMenu() {
+      setUserMenuAnchor(null);
+  }
+
+  function closeMobileMenu() {
+      setMobileMenuAnchor(null);
+  }
+
   function handleLogout() {
-    handleMenuClose();
     session.cogUser.signOut();
     window.uiShowHideLogin('show');
     window.utilInitAuth(null);
@@ -223,22 +218,13 @@ export default function SectionsNavBar(props) {
         Clients
       </Button>
 
-      {/* Calling App.js : () => window.navSwitch('admin') */}
       <Button onClick={() => handleSectionChange(1)} startIcon={<FaceIcon/>}
         className={classes.admin} disabled={!isAdmin} variant="text" color="inherit">
         Admin
       </Button>
 
-      {/* Calling App.js : () => window.navSwitch('user')
-      <Button onClick={() => handleSectionChange(2)} className={classes.username} variant="text" color="inherit" >
-        {user ? user.userName : ''}
-      </Button>
-      <Button onClick={() => handleLogout()} className={classes.logout} color="inherit">
-        Logout
-      </Button>*/}
-
       <Button onClick={() => handleSectionChange(2)} startIcon={<TodayIcon/>}
-      className={classes.today} disabled={!isAdmin} variant="text" color="inherit">
+      className={classes.today} variant="text" color="inherit">
       Today
       </Button>
 
@@ -249,7 +235,7 @@ export default function SectionsNavBar(props) {
       aria-label="account of current user"
       aria-controls={menuId}
       aria-haspopup="true"
-      onClick={handleProfileMenuOpen}
+      onClick={handleUserMenuOpen}
       color="inherit"
       variant = "text"
       >
@@ -274,18 +260,18 @@ export default function SectionsNavBar(props) {
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
     <Menu
-      anchorEl={anchorEl}
+      anchorEl={userMenuAnchor}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       id={menuId}
       keepMounted
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      open={isMenuOpen}
-      onClose={handleMenuClose}
+      open={Boolean(userMenuAnchor)}
+      onClose={() => { closeUserMenu(); }}
     >
-      <MenuItem onClick={() => { handleSectionChange(3); }}>
+      <MenuItem onClick={() => { closeUserMenu(); handleSectionChange(3); }}>
         <Button startIcon={<AccountCircle/>}>Profile</Button>
       </MenuItem>
-      <MenuItem onClick={() => handleLogout()} >
+      <MenuItem onClick={() => { closeUserMenu(); handleLogout(); }} >
         <Button startIcon={<ExitToAppIcon/>}>Logout</Button>
       </MenuItem>
     </Menu>
@@ -294,40 +280,41 @@ export default function SectionsNavBar(props) {
   const mobileMenuId = 'primary-search-account-menu-mobile';
   const renderMobileMenu = (
     <Menu
-      anchorEl={mobileMoreAnchorEl}
+      anchorEl={mobileMenuAnchor}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       id={mobileMenuId}
       keepMounted
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      open={isMobileMenuOpen}
-      onClose={handleMobileMenuClose}
+      open={Boolean(mobileMenuAnchor)}      
+      onClose={() => { closeMobileMenu(); }}
+
     >
       <MenuItem>
-        <Button startIcon={<PeopleIcon/>} onClick={() => handleSectionChange(0)} >
+        <Button startIcon={<PeopleIcon/>} onClick={() => { closeMobileMenu(); handleSectionChange(0); }} >
           Clients
         </Button>
       </MenuItem>
 
       <MenuItem >
-        <Button startIcon={<FaceIcon/>} onClick={() => handleSectionChange(1)}
+        <Button startIcon={<FaceIcon/>} onClick={() => { closeMobileMenu(); handleSectionChange(1); }}
          disabled={!isAdmin}>
         Admin
         </Button>
       </MenuItem>
 
-      <MenuItem onClick={() => handleSectionChange(2)}>
+      <MenuItem onClick={() => { closeMobileMenu(); handleSectionChange(2); }}>
         <Button startIcon={<TodayIcon/>}>
         Today
         </Button>
       </MenuItem>
 
-      <MenuItem onClick={() => { handleSectionChange(3); } } >
+      <MenuItem onClick={() => { closeMobileMenu(); handleSectionChange(3); }} >
         <Button startIcon={<AccountCircle />}>
         Profile
         </Button>
       </MenuItem>
 
-       <MenuItem onClick={() => handleLogout()} >
+       <MenuItem onClick={() => { closeMobileMenu(); handleLogout(); }} >
         <Button startIcon={<ExitToAppIcon />}>
         Logout
         </Button>

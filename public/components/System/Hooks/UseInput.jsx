@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export function useInput(initialValue) {
+function useInput(initialValue) {
   let [value, setValue] = useState(initialValue);
 
   function handleValueChange(e) {
@@ -18,3 +18,5 @@ export function useInput(initialValue) {
     bind: {value, onChange: handleValueChange} // HTML input properties
   };
 }
+
+export default useInput;

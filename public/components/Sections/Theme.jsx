@@ -33,6 +33,14 @@ theme.overrides = {
             ...theme.root,
             backgroundColor: theme.palette.primary.light,
         }
+    },
+    MuiTextField: {
+        ...theme.MuiTextField,
+        root: {
+            ...theme.root,
+            margin: 8,
+            variant: 'outlined',
+        }
     }
 };
 
