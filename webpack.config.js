@@ -20,7 +20,8 @@ module.exports = {
     colors: true
   },
   devServer: {
-    port: 3002
+    port: 3002,
+    historyApiFallback: true
   },
   devtool: "source-map"
 };

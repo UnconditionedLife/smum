@@ -3,8 +3,10 @@ import React from "react";
 import Container from '@material-ui/core/Container';
 import ClientsMain from '../Clients/ClientsMain.jsx';
 import AdminMain from '../Admin/AdminMain.jsx';
-import PageToday from '../Clients/PageToday.jsx';
-import SectionsHeader from './SectionsHeader.jsx';
+import UserMain from '../User/UserMain.jsx';
+
+// import SectionsHeader from './SectionsHeader.jsx';
+import {Route} from "react-router-dom";
 
 // const useStyles = makeStyles((theme) => ({
 //     container: {
@@ -22,11 +24,21 @@ console.log(props)
 
     return (
         <Container> 
-        // div className={ classes.container }
-            <SectionsHeader section = { props.section } />
-            {props.section === 0 && <ClientsMain />}
-            {props.section === 1 && <AdminMain />}
-            {props.section === 2 && <PageToday/>}
+            {/* <SectionsHeader section = { props.section } /> */}
+            <Route path="/clients">
+                <ClientsMain
+                    searchTerm={props.searchTerm}
+                    handleSearchTermChange={props.handleSearchTermChange}
+                    session={props.session}
+                />
+            </Route>
+
+            <Route path="/admin">
+                <AdminMain />
+            </Route>
+            <Route path="/user">
+                <UserMain />
+            </Route>
 
       </Container>
     );

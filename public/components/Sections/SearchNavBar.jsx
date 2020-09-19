@@ -13,9 +13,7 @@ import TodayIcon from '@material-ui/icons/Today';
 import FaceIcon from '@material-ui/icons/Face';
 import theme from './Theme.jsx';
 import LoginForm from "./LoginForm.jsx";
-import ClientsMain from '../Clients/ClientsMain.jsx';
-import AdminMain from '../Admin/AdminMain.jsx';
-import UserMain from '../User/UserMain.jsx';
+import SectionsContent from "./SectionsContent.jsx";
 import PageToday from '../Sections/PageToday.jsx';
 
 const useStyles = makeStyles((theme) => ({
@@ -131,12 +129,19 @@ export default function SectionsNavBar(props) {
   const classes = useStyles();
   const [ userMenuAnchor, setUserMenuAnchor ] = useState(null);
   const [ mobileMenuAnchor, setMobileMenuAnchor ] = useState(null);
+  const checkSectionURL = props.checkSectionURL;
+  const updateRoute = props.updateRoute;
   const [ session, setSession ] = useState(null);
   const [ selectedSection, setSelectedSection ] = useState(0);
   const [ searchTerm, setSearchTerm ] = useState('');
   const [ typedSearchTerm, setTypedSearchTerm ] = useState('')
 
   useEffect(() => {
+    const newSection = checkSectionURL(selectedSection);
+    console.log(newSection);
+    if (newSection != -1) {
+      handleSectionChange(newSection)
+    }
     ReactDOM.render(<ThemeProvider theme={ theme }>
       <LoginForm onLogin={(x) => setSession(x)}/>
   </ThemeProvider>,
@@ -147,6 +152,7 @@ export default function SectionsNavBar(props) {
     console.log("IN SECTION CHANGE")
     console.log(newValue)
     setSelectedSection(newValue);
+    updateRoute(newValue);
   };
 
   const handleUserMenuOpen = (event) => {
@@ -337,15 +343,11 @@ export default function SectionsNavBar(props) {
       { renderMobileMenu }
       { renderMenu }
       <ThemeProvider theme={ theme }>
-          {selectedSection === 0 &&
-            <ClientsMain
-                searchTerm={ searchTerm }
-                handleSearchTermChange = { handleSearchTermChange }
-                session = { session }
-            />}
-          {selectedSection === 1 && <AdminMain />}
-          {selectedSection === 2 && <PageToday/>}
-          {selectedSection === 3 && <UserMain user={session.user}/>}
+        <SectionsContent
+            searchTerm={ searchTerm }
+            handleSearchTermChange = { handleSearchTermChange }
+            session = { session }
+        />
       </ThemeProvider>
     </div>
   );
