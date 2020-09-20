@@ -3,13 +3,13 @@ import { Box } from '@material-ui/core';
 import Button from '../Core/Button.jsx';
 
 // Props
-//  onClick - Callback function(isSave). Argument indicates which button was pressed
-//      (true = Save, false = Cancel) 
-//  saveLabel - Label for affirmative button (default "Save")
-//  cancelLabel - Label for negative buttion (default "Cancel")
-//  saveDisabled - Disable affirmative button (default false)
-//  cancelDisabled - Disable negative button (default false)
-//  disabled - Disable both buttons (default false)
+//      onClick - Callback function(isSave). Argument indicates which button
+//          was pressed (true = Save, false = Cancel) 
+//      saveLabel - Label for affirmative button (default "Save")
+//      cancelLabel - Label for negative buttion (default "Cancel")
+//      saveDisabled - Disable affirmative button (default false)
+//      cancelDisabled - Disable negative button (default false)
+//      disabled - Disable both buttons (default false)
 
 function SaveCancel(props) {
     let saveLabel = props.saveLabel || "Save";
@@ -24,7 +24,6 @@ function SaveCancel(props) {
         cancelDisabled = props.cancelDisabled;
     else if ('disabled' in props)
         cancelDisabled = props.disabled;
-
 
     return (
         <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">

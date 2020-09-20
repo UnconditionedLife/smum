@@ -343,9 +343,9 @@ export default function SectionsNavBar(props) {
                 handleSearchTermChange = { handleSearchTermChange }
                 session = { session }
             />}
-          {selectedSection === 1 && <AdminMain />}
-          {selectedSection === 2 && <PageToday/>}
-          {selectedSection === 3 && <UserMain user={session.user}/>}
+          {selectedSection === 1 && <AdminMain session={ session } />}
+          {selectedSection === 2 && <PageToday session={ session } />}
+          {selectedSection === 3 && <UserMain session={ session } />}
       </ThemeProvider>
     </div>
   );
