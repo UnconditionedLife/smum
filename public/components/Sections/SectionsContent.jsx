@@ -1,12 +1,12 @@
 import React from "react";
 // import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import ClientsMain from '../Clients/ClientsMain.jsx';
+import ClientsMainContainer from '../Clients/ClientsMainContainer.jsx';
 import AdminMain from '../Admin/AdminMain.jsx';
 import UserMain from '../User/UserMain.jsx';
 
 // import SectionsHeader from './SectionsHeader.jsx';
-import {Route} from "react-router-dom";
+import { Route } from "react-router-dom";
 
 // const useStyles = makeStyles((theme) => ({
 //     container: {
@@ -20,13 +20,13 @@ import {Route} from "react-router-dom";
 export default function SectionsContent(props) {
     // const classes = useStyles();
 
-console.log(props)
+    console.log(props)
 
     return (
-        <Container> 
+        <Container>
             {/* <SectionsHeader section = { props.section } /> */}
             <Route path="/clients">
-                <ClientsMain
+                <ClientsMainContainer
                     searchTerm={props.searchTerm}
                     handleSearchTermChange={props.handleSearchTermChange}
                     session={props.session}
@@ -40,6 +40,6 @@ console.log(props)
                 <UserMain />
             </Route>
 
-      </Container>
+        </Container>
     );
 };
