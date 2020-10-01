@@ -1,6 +1,7 @@
 import React from "react";
 import { hot } from 'react-hot-loader'
 import { ThemeProvider } from '@material-ui/core/styles';
+import { CookiesProvider } from 'react-cookie';
 import theme from './Theme.jsx'
 import SearchNavBarContainer from "./SearchNavBarContainer.jsx";
 import {BrowserRouter as Router} from "react-router-dom";
@@ -17,7 +18,9 @@ function SectionsMain(){
         <div style={ container }>
             <ThemeProvider theme={ theme }>
                 <Router>
-                    <SearchNavBarContainer />
+                    <CookiesProvider>
+                        <SearchNavBarContainer />
+                    </CookiesProvider>
                 </Router>
             </ThemeProvider>
         </div>

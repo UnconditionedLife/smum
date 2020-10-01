@@ -3,12 +3,14 @@ import ReactDOM from "react-dom";
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import { AppBar, Button, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu } from '@material-ui/core';
 import {
-  Search as SearchIcon, More as MoreIcon, AccountCircle, ExitToApp as ExitToAppIcon, People as PeopleIcon,
+  Search as SearchIcon, MoreVert as MoreIcon, AccountCircle, ExitToApp as ExitToAppIcon, People as PeopleIcon,
   Today as TodayIcon, Face as FaceIcon
 } from '@material-ui/icons';
+import { useCookies } from 'react-cookie';
 import theme from './Theme.jsx';
 import LoginForm from "./LoginForm.jsx";
 import SectionsContent from "./SectionsContent.jsx";
+import { cogSetupUser, cogSetupSession } from '../System/js/Cognito.js';
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -123,23 +125,56 @@ export default function SectionsNavBar(props) {
   const classes = useStyles();
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+  const [cogUser, setCogUser] = useState(null);
+
   const checkSectionURL = props.checkSectionURL;
   const updateRoute = props.updateRoute;
-  const [session, setSession] = useState(null);
+  const [cookies, setCookie, removeCookie] = useCookies(['user']);
+  const session = cookies.user && cookies.auth ? 
+          {user:cookies.user,auth:cookies.auth, cogUser: cogUser} : null;
+  
+  const setSession = (newSession) => {
+    setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
+    setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
+    setCookie("cogUser", JSON.stringify(newSession.cogUser),  { path: '/' })
+  }
+  const removeSession = () => {
+    removeCookie("user")
+    removeCookie("auth")
+    setCogUser(null)
+
+  }
   const [selectedSection, setSelectedSection] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [typedSearchTerm, setTypedSearchTerm] = useState('')
 
   useEffect(() => {
     const newSection = checkSectionURL(selectedSection);
-    console.log(newSection);
     if (newSection != -1) {
       setSelectedSection(newSection)
     }
-    ReactDOM.render(<ThemeProvider theme={theme}>
-      <LoginForm onLogin={(x) => setSession(x)} />
-    </ThemeProvider>,
-      document.getElementById("loginOverlay"));
+    if (session != null) {
+      let tempUser = cogSetupUser(cookies.user.userName)
+      tempUser.getSession(function (err, cogSession) { 
+        if (err || !cogSession.isValid()) {
+          removeSession()
+        }
+        else {
+          if (cogUser == null) {
+            setCogUser(tempUser)
+          }
+          window.utilInitAuth(cookies.auth)
+          window.utilInitSession(cookies.user, tempUser);
+          window.uiShowHideLogin('hide');
+        }
+      });
+    }
+    else {
+      ReactDOM.render(<ThemeProvider theme={theme}>
+        <LoginForm onLogin={(x) => setSession(x)} />
+      </ThemeProvider>,
+        document.getElementById("loginOverlay"));
+    }
   });
 
   const handleSectionChange = (newValue) => {
@@ -169,7 +204,7 @@ export default function SectionsNavBar(props) {
     session.cogUser.signOut();
     window.uiShowHideLogin('show');
     window.utilInitAuth(null);
-    setSession(null);
+    removeSession();
   };
 
   function handleSearchTermChange(newValue) {
@@ -177,7 +212,6 @@ export default function SectionsNavBar(props) {
       setSearchTerm(newValue);
     }
   };
-
   const isAdmin = session &&
     (session.user.userRole == 'Admin' || session.user.userRole == 'TechAdmin');
 

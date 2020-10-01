@@ -8,8 +8,10 @@ import { HeaderTitle } from '../Clients';
 const useStyles = makeStyles((theme) => ({
     card: {
         backgroundColor: "#f5f5f5",
+        margin: 0,
     },
     sectionName: {
+        margin: 0,
         gridColumn: 2,
         gridRow: 1,
         fontSize: '40px',

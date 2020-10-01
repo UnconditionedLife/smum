@@ -6,27 +6,37 @@ const theme = createMuiTheme({
         primary: { main: green[600] },
         secondary: { main: deepOrange[900] },
     },
-    overrides: {
-        MuiButton: {
-            root: {
-                marginLeft: 12,
-                marginRight: 12,
-                minWidth: 96,
-            }
-            
+    props: {
+        MuiCard: {
+            variant: 'elevation',
+            elevation: 4,
         },
-        MuiInput: {
-            root: {
-                margin: 8,
-            }
-            
-        }
-
-    }
+        MuiTextField: {
+            variant: 'outlined',
+        },
+    },
 });
 
 theme.overrides = {
     ...theme.overrides,
+    MuiButton: {
+        ...theme.MuiButton,
+        root: {
+            ...theme.root,
+            marginTop: theme.spacing(1),
+            marginBottom: theme.spacing(1),
+            marginLeft: theme.spacing(1.5),
+            marginRight: theme.spacing(1.5),
+            minWidth: theme.spacing(12),
+        }
+    },
+    MuiCard: {
+        ...theme.MuiCard,
+        root: {
+            ...theme.root,
+            margin: theme.spacing(1),
+        }
+    },
     MuiTableHead: {
         ...theme.MuiTableHead,
         root: {
@@ -38,10 +48,9 @@ theme.overrides = {
         ...theme.MuiTextField,
         root: {
             ...theme.root,
-            margin: 8,
-            variant: 'outlined',
+            margin: theme.spacing(1),
         }
-    }
+    },
 };
 
 export default theme

@@ -31,9 +31,13 @@ export default function SearchNavBarContainer(props) {
     }
 
     const updateRoute = (newValue) => {
+        const url = route.pathname;
+
         switch (newValue) {
           case 0:
-            history.push("/clients");
+            if (!matchPath(url, { path: "/clients", exact: false, strict: false })) {
+                history.push("/clients");
+            }
             break;
           case 1:
             history.push("/admin");

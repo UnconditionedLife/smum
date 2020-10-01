@@ -274,7 +274,7 @@ function displayLoginForms() {
                                   setMessage(err.toString());
                               }
                             });
-                          }} class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-body2 MuiTypography-colorPrimary" href="#">Forgot password?</a>
+                          }} className="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-body2 MuiTypography-colorPrimary" href="#">Forgot password?</a>
                         </Grid>
                     </Grid>
           </React.Fragment>

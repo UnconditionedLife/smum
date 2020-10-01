@@ -18,6 +18,11 @@ export function cogSetupUser(username) {
   return new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
 }
 
+export function cogSetupSession(auth) {
+  let cogAuth = {"IdToken": auth.idToken, "AccessToken":auth.accessToken}
+  return new AWSCognito.CognitoIdentityServiceProvider.CognitoUserSession(cogAuth);
+}
+
 export function cogSetupAuthDetails(username, password) {
   let authData = {
         Username: username,

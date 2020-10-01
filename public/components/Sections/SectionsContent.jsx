@@ -18,28 +18,27 @@ import { Route } from "react-router-dom";
 // }));
 
 export default function SectionsContent(props) {
-    // const classes = useStyles();
+    if (props.session == null) {
+        return null;
+    } else {
+        return (
+            <Container>
+                {/* <SectionsHeader section = { props.section } /> */}
+                <Route path="/clients">
+                    <ClientsMainContainer
+                        searchTerm={props.searchTerm}
+                        handleSearchTermChange={props.handleSearchTermChange}
+                        session={props.session}
+                    />
+                </Route>
 
-    console.log(props)
-
-    return (
-        <Container>
-            {/* <SectionsHeader section = { props.section } /> */}
-            <Route path="/clients">
-                <ClientsMainContainer
-                    searchTerm={props.searchTerm}
-                    handleSearchTermChange={props.handleSearchTermChange}
-                    session={props.session}
-                />
-            </Route>
-
-            <Route path="/admin">
-                <AdminMain />
-            </Route>
-            <Route path="/user">
-                <UserMain />
-            </Route>
-
-        </Container>
-    );
+                <Route path="/admin">
+                    <AdminMain />
+                </Route>
+                <Route path="/user">
+                    <UserMain session={props.session}/>
+                </Route>
+            </Container>
+        );
+    }
 };
