@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import Button from '../Core/Button.jsx';
 
@@ -12,27 +13,34 @@ import Button from '../Core/Button.jsx';
 //      disabled - Disable both buttons (default false)
 
 function SaveCancel(props) {
-    let saveLabel = props.saveLabel || "Save";
-    let cancelLabel = props.cancelLabel || "Cancel";
-    let saveDisabled = false;
-    if ('saveDisabled' in props)
-        saveDisabled = props.saveDisabled;
-    else if ('disabled' in props)
-        saveDisabled = props.disabled;
-    let cancelDisabled = false;
-    if ('cancelDisabled' in props)
-        cancelDisabled = props.cancelDisabled;
-    else if ('disabled' in props)
-        cancelDisabled = props.disabled;
+    const saveDisabled = props.saveDisabled || props.disabled;
+    const cancelDisabled = props.cancelDisabled || props.disabled;
 
     return (
         <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
             <Button variant="contained" color="primary"
-                disabled={ saveDisabled } onClick={ () => props.onClick(true) }>{ saveLabel }</Button>
+                disabled={ saveDisabled } onClick={ () => props.onClick(true) }>{ props.saveLabel }</Button>
             <Button variant="outlined" color="secondary"
-                disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ cancelLabel }</Button>
+                disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ props.cancelLabel }</Button>
         </Box>
     )
+}
+
+SaveCancel.propTypes = {
+    onClick: PropTypes.func.isRequired,
+    saveLabel: PropTypes.string,
+    cancelLabel: PropTypes.string,
+    saveDisabled: PropTypes.bool,
+    cancelDisabled: PropTypes.bool,
+    disabled: PropTypes.bool,
+}
+
+SaveCancel.defaultProps = {
+    saveLabel: 'Save',
+    cancelLabel: 'Cancel',
+    saveDisabled: false,
+    cancelDisabled: false,
+    disabled: false,
 }
 
 export default SaveCancel;

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Container, CardContent, CardHeader } from '@material-ui/core';
 import { Card } from '../System';
 import { UserForm, PasswordForm } from '../User';
@@ -20,4 +21,8 @@ export default function UserMain(props) {
             </Card>
         </Container>
     )
-};
+}
+
+UserMain.propTypes = {
+    session: PropTypes.object.isRequired,
+}
