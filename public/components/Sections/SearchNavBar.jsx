@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from "react-dom";
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { AppBar, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu} from '@material-ui/core';
-
-import SearchIcon from '@material-ui/icons/Search';
-import MoreIcon from '@material-ui/icons/MoreVert';
-import Button from '@material-ui/core/Button';
-import AccountCircle from '@material-ui/icons/AccountCircle';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import PeopleIcon from '@material-ui/icons/People';
-import TodayIcon from '@material-ui/icons/Today';
-import FaceIcon from '@material-ui/icons/Face';
+import { AppBar, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
+import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '@material-ui/icons';
+import { Button } from '../System';
 import theme from './Theme.jsx';
 import LoginForm from "./LoginForm.jsx";
 import ClientsMain from '../Clients/ClientsMain.jsx';
@@ -19,89 +12,38 @@ import UserMain from '../User/UserMain.jsx';
 import PageToday from '../Sections/PageToday.jsx';
 
 const useStyles = makeStyles((theme) => ({
-  grow: {
-    flexGrow: 1,
-    maxHeight: '100vh',
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
   title: {
     display: 'none',
-      [theme.breakpoints.up('sm')]: {
-      display: 'block'
+    [theme.breakpoints.up('sm')]: {
+      display: 'block',
+      fontSize: '20px',
+    },
+    [theme.breakpoints.up('lg')]: {
+
     },
   },
-  clients:{
-    width:'100%',
-    position:'relative',
-    top:'2px',
-    fontSize:'15px',
-    right:'370px',//used to be 90
-    letterSpacing: '2px',
-
-  },
-  admin:{
-    width:'100%',
-    position:'relative',
-    top:'2px',
-    fontSize:'15px',
-    // right:'65px',
-    right:'200px',
-    letterSpacing: '2px',
-    // position: 'sticky',
-
-  },
-  username:{
-    width:'100%',
-    position:'relative',
-    top:'3.5px',
-    fontSize:'15px',
-    right:'40px',
-    textTransform:'lowercase',
-  },
-  logout:{
-    width:'100%',
-    position:'relative',
-    top:'3px',
-    fontSize:'15px',
-    right:'-30px',
-  },
-  today:{
-    width:'100%',
-    position:'relative',
-    top:'2px',
-    fontSize:'15px',
-    right:'60px',
-    letterSpacing: '2px',
+  bar: {
+    position: 'relative',
+    flexShrink: 3,
+    width: '100%',
+    [theme.breakpoints.up('lg')]: {
+      marginLeft: theme.spacing(3),
+      width: 'auto',
+    },
   },
   search: {
-    position: 'relative',
     borderRadius: theme.shape.borderRadius,
     backgroundColor: fade(theme.palette.common.white, 0.15),
     '&:hover': {
       backgroundColor: fade(theme.palette.common.white, 0.25),
     },
-    marginRight: theme.spacing(2),
-    marginLeft:20,
-    width: '100%',
     [theme.breakpoints.up('sm')]: {
       marginLeft: theme.spacing(3),
-      width: 'auto',
     },
-  },
-  searchIcon: {
-    padding: theme.spacing(0, 2),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   inputRoot: {
     color: 'inherit',
-    marginLeft: '10px'
+    width: '300px',
   },
   inputInput: {
     padding: theme.spacing(1, 1, 1, 0),
@@ -117,10 +59,10 @@ const useStyles = makeStyles((theme) => ({
     display: 'none',
     [theme.breakpoints.up('md')]: {
       display: 'flex',
+      justifyContent: 'flex-end',
     },
   },
   sectionMobile: {
-    display: 'flex',
     [theme.breakpoints.up('md')]: {
       display: 'none',
     },
@@ -129,17 +71,18 @@ const useStyles = makeStyles((theme) => ({
 
 export default function SectionsNavBar(props) {
   const classes = useStyles();
-  const [ userMenuAnchor, setUserMenuAnchor ] = useState(null);
-  const [ mobileMenuAnchor, setMobileMenuAnchor ] = useState(null);
-  const [ session, setSession ] = useState(null);
-  const [ selectedSection, setSelectedSection ] = useState(0);
-  const [ searchTerm, setSearchTerm ] = useState('');
-  const [ typedSearchTerm, setTypedSearchTerm ] = useState('')
+
+  const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+  const [session, setSession] = useState(null);
+  const [selectedSection, setSelectedSection] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typedSearchTerm, setTypedSearchTerm] = useState('')
 
   useEffect(() => {
-    ReactDOM.render(<ThemeProvider theme={ theme }>
-      <LoginForm onLogin={(x) => setSession(x)}/>
-  </ThemeProvider>,
+    ReactDOM.render(<ThemeProvider theme={theme}>
+      <LoginForm onLogin={(x) => setSession(x)} />
+    </ThemeProvider>,
       document.getElementById("loginOverlay"));
   });
 
@@ -158,11 +101,11 @@ export default function SectionsNavBar(props) {
   };
 
   function closeUserMenu() {
-      setUserMenuAnchor(null);
+    setUserMenuAnchor(null);
   }
 
   function closeMobileMenu() {
-      setMobileMenuAnchor(null);
+    setMobileMenuAnchor(null);
   }
 
   function handleLogout() {
@@ -183,78 +126,82 @@ export default function SectionsNavBar(props) {
 
   const appbarControls = (
     <React.Fragment>
-    <div className={classes.search}>
-      <div className={classes.searchIcon} >
-        <SearchIcon />
-      </div>
-      <InputBase
-        id='searchField'
-        placeholder="Search clients"
-        classes={{
-          root: classes.inputRoot,
-          input: classes.inputInput,
-        }}
-        inputProps={{ 'aria-label': 'search' }}
-        value={ typedSearchTerm }
-        onChange= { event => {
-          setTypedSearchTerm(event.target.value)
-        }}
-        onKeyPress={ event => {
-          if (event.key == "Enter") {
-            if (selectedSection !== 0) handleSectionChange(0)
-            setSearchTerm(typedSearchTerm)
-            setTypedSearchTerm('')
-          }
-        }}
-      />
-    </div>
-    <div className={classes.grow} />
-    <div className={classes.sectionDesktop}>
 
-      {/* Calling App.js : () => window.navSwitch('clients') */}
-      <Button onClick={() => handleSectionChange(0)} startIcon={<PeopleIcon/>}
-        className={classes.clients} variant="text" color="inherit"
-      >
-        Clients
-      </Button>
+      <Box className={classes.search} mr={2} ml={2.5} flexGrow={1}>
+        <Box position="absolute" alignItems='center' pointerEvents='none' display='flex' pl={1} pt={0.75}>
+          <Search />
+        </Box>
+        <InputBase
+          id='searchField'
+          placeholder="Search clients"
+          classes={{
+            root: classes.inputRoot,
+            input: classes.inputInput,
+          }}
+          inputProps={{ 'aria-label': 'search' }}
+          value={typedSearchTerm}
+          onChange={event => {
+            setTypedSearchTerm(event.target.value)
+          }}
+          onKeyPress={event => {
+            if (event.key == "Enter") {
+              if (selectedSection !== 0) handleSectionChange(0)
+              setSearchTerm(typedSearchTerm)
+              setTypedSearchTerm('')
+            }
+          }}
+        />
+      </Box>
 
-      <Button onClick={() => handleSectionChange(1)} startIcon={<FaceIcon/>}
-        className={classes.admin} disabled={!isAdmin} variant="text" color="inherit">
-        Admin
-      </Button>
+      <Box className={classes.bar} mr={2} ml={2.5} justifyContent="flex-end" flexGrow={1}>
+        <Box className={classes.sectionDesktop}>
+          {/* Calling App.js : () => window.navSwitch('clients') */}
+          <Button onClick={() => handleSectionChange(0)} startIcon={<People />}
+            variant="text" color="inherit"
+          >
+            Clients
+        </Button>
 
-      <Button onClick={() => handleSectionChange(2)} startIcon={<TodayIcon/>}
-      className={classes.today} variant="text" color="inherit">
-      Today
-      </Button>
+          {/* Calling App.js : () => window.navSwitch('admin') */}
+          <Button onClick={() => handleSectionChange(1)} startIcon={<Face />}
+            disabled={!isAdmin} variant="text" color="inherit">
+            Admin
+        </Button>
 
-      <Button
-      edge="end"
-      startIcon={<AccountCircle />}
-      style={{textTransform: 'none'}}
-      aria-label="account of current user"
-      aria-controls={menuId}
-      aria-haspopup="true"
-      onClick={handleUserMenuOpen}
-      color="inherit"
-      variant = "text"
-      >
-      {session ? session.user.userName : ''}
-      </Button>
+          <Button onClick={() => handleSectionChange(2)} startIcon={<Today />}
+            disabled={!isAdmin} variant="text" color="inherit">
+            Today
+        </Button>
 
-    </div>
-    <div className={classes.sectionMobile}>
-      <IconButton
-        aria-label="show more"
-        aria-controls={mobileMenuId}
-        aria-haspopup="true"
-        onClick={handleMobileMenuOpen}
-        color="inherit"
-      >
-        <MoreIcon />
-      </IconButton>
-    </div>
-    </React.Fragment>
+          <Button
+            edge="end"
+            startIcon={<AccountCircle />}
+            style={{ textTransform: 'none' }}
+            aria-label="account of current user"
+            aria-controls={menuId}
+            aria-haspopup="true"
+            onClick={handleUserMenuOpen}
+            color="inherit"
+            variant="text"
+          >
+            {session ? session.user.userName : ''}
+          </Button>
+        </Box>
+
+
+        <Box justifyContent="flex-end" display="flex" className={classes.sectionMobile}>
+          <IconButton
+            aria-label="show more"
+            aria-controls={mobileMenuId}
+            aria-haspopup="true"
+            onClick={handleMobileMenuOpen}
+            color="inherit"
+          >
+            <MoreVert />
+          </IconButton>
+        </Box>
+      </Box >
+    </React.Fragment >
   );
 
   const menuId = 'primary-search-account-menu';
@@ -269,10 +216,11 @@ export default function SectionsNavBar(props) {
       onClose={() => { closeUserMenu(); }}
     >
       <MenuItem onClick={() => { closeUserMenu(); handleSectionChange(3); }}>
-        <Button startIcon={<AccountCircle/>}>Profile</Button>
+        <Button startIcon={<AccountCircle />}>Profile</Button>
       </MenuItem>
       <MenuItem onClick={() => { closeUserMenu(); handleLogout(); }} >
-        <Button startIcon={<ExitToAppIcon/>}>Logout</Button>
+        <Button startIcon={<ExitToApp />}>Logout</Button>
+
       </MenuItem>
     </Menu>
   );
@@ -285,68 +233,70 @@ export default function SectionsNavBar(props) {
       id={mobileMenuId}
       keepMounted
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      open={Boolean(mobileMenuAnchor)}      
+      open={Boolean(mobileMenuAnchor)}
       onClose={() => { closeMobileMenu(); }}
 
     >
       <MenuItem>
-        <Button startIcon={<PeopleIcon/>} onClick={() => { closeMobileMenu(); handleSectionChange(0); }} >
+        <Button startIcon={<People />} onClick={() => { closeMobileMenu(); handleSectionChange(0); }} >
           Clients
         </Button>
       </MenuItem>
 
       <MenuItem >
-        <Button startIcon={<FaceIcon/>} onClick={() => { closeMobileMenu(); handleSectionChange(1); }}
-         disabled={!isAdmin}>
-        Admin
+
+        <Button startIcon={<Face />} onClick={() => { closeMobileMenu(); handleSectionChange(1); }}
+          disabled={!isAdmin}>
+          Admin
         </Button>
       </MenuItem>
 
       <MenuItem onClick={() => { closeMobileMenu(); handleSectionChange(2); }}>
-        <Button startIcon={<TodayIcon/>}>
-        Today
+        <Button startIcon={<Today />}>
+          Today
+
         </Button>
       </MenuItem>
 
       <MenuItem onClick={() => { closeMobileMenu(); handleSectionChange(3); }} >
         <Button startIcon={<AccountCircle />}>
-        Profile
+          Profile
         </Button>
       </MenuItem>
 
-       <MenuItem onClick={() => { closeMobileMenu(); handleLogout(); }} >
-        <Button startIcon={<ExitToAppIcon />}>
-        Logout
+      <MenuItem onClick={() => { closeMobileMenu(); handleLogout(); }} >
+        <Button startIcon={<ExitToApp />}>
+          Logout
         </Button>
       </MenuItem>
     </Menu>
   );
 
   return (
-    <div className={classes.grow}>
+    <Box flexGrow={1} >
       <AppBar position="fixed">
         <Toolbar>
           <Tooltip title={props.version}>
-          <Typography className={classes.title} variant='h6' noWrap>
-          Santa Maria Urban Ministry
+            <Typography className={classes.title} variant='h6' noWrap>
+              Santa Maria Urban Ministry
           </Typography>
           </Tooltip>
           {session ? appbarControls : null}
         </Toolbar>
       </AppBar>
-      { renderMobileMenu }
-      { renderMenu }
-      <ThemeProvider theme={ theme }>
-          {selectedSection === 0 &&
-            <ClientsMain
-                searchTerm={ searchTerm }
-                handleSearchTermChange = { handleSearchTermChange }
-                session = { session }
-            />}
-          {selectedSection === 1 && <AdminMain session={ session } />}
-          {selectedSection === 2 && <PageToday session={ session } />}
-          {selectedSection === 3 && <UserMain session={ session } />}
+      { renderMobileMenu}
+      { renderMenu}
+      <ThemeProvider theme={theme}>
+        {selectedSection === 0 &&
+          <ClientsMain
+            searchTerm={searchTerm}
+            handleSearchTermChange={handleSearchTermChange}
+            session={session}
+          />}
+        {selectedSection === 1 && <AdminMain session={session} />}
+        {selectedSection === 2 && <PageToday session={session} />}
+        {selectedSection === 3 && <UserMain session={session} />}
       </ThemeProvider>
-    </div>
+    </Box>
   );
 };

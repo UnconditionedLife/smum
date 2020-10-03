@@ -3,24 +3,13 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import Moment from "react-moment";
-import Button from '@material-ui/core/Button';
 import { cogSetupUser, cogSetupAuthDetails } from '../System/js/Cognito.js';
 import { useInput } from '../System';
-import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
-import Avatar from '@material-ui/core/Avatar';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import { green } from "@material-ui/core/colors";
 import theme from './Theme.jsx';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import IconButton from '@material-ui/core/IconButton';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import Grid from '@material-ui/core/Grid';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Box from '@material-ui/core/Box';
+import { Visibility, Error, VisibilityOff, LockOutlined } from '@material-ui/icons';
+import { Box, Grid, IconButton, InputAdornment, Typography, Avatar, Card, Link } from '@material-ui/core';
+import { Button, TextField } from '../System';
 
 function LoginForm(props) {
   let [showPrimaryForm, setShowPrimaryForm] = useState(true);
@@ -39,6 +28,7 @@ function LoginForm(props) {
     cogUser.authenticateUser(authDetails, {
       onSuccess: (result) => {
         let authorization = {};
+        setMessage("");
         authorization.accessToken = result.getAccessToken().getJwtToken()
         authorization.idToken = result.idToken.jwtToken
         window.utilInitAuth(authorization)
@@ -48,7 +38,7 @@ function LoginForm(props) {
           cogUser.signOut();
           setMessage("Sorry, your account is INACTIVE.");
         } else {
-          props.onLogin({user: user, auth: authorization, cogUser: cogUser});
+          props.onLogin({ user: user, auth: authorization, cogUser: cogUser });
           usernameInput.reset();
           passwordInput.reset();
           validationCodeInput.reset();
@@ -76,7 +66,7 @@ function LoginForm(props) {
           message = "No longer UNCONFIRMED"
         } else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
           message = "New Password is required."
-        } else if (err == 'InvalidParameterException: Missing required parameter USERNAME'){
+        } else if (err == 'InvalidParameterException: Missing required parameter USERNAME') {
           message = "Username is required."
         }
         setMessage(message);
@@ -101,40 +91,38 @@ function LoginForm(props) {
     return (
       <React.Fragment>
         {appState == "code" ? (
-          <div className="span4 codeDiv">
-            <span  >
-            <Button className="textLink" onClick={() => {
-              let cogUser = cogSetupUser(usernameInput.value);
-              cogUser.resendConfirmationCode(function(err, result) {
-                if (err)
-                  setMessage(err.toString());
-                else
-                  setMessage("New code has been sent.");
-              });
-            }} variant="outlined" color="primary" style={{ textTransform: "none" }}>Resend Validation Code</Button>
-            </span>
-          </div>
+
+
+          <Button className="textLink" onClick={() => {
+            let cogUser = cogSetupUser(usernameInput.value);
+            cogUser.resendConfirmationCode(function (err, result) {
+              if (err)
+                setMessage(err.toString());
+              else
+                setMessage("New code has been sent.");
+            });
+          }} variant="contained" color="primary" style={{ textTransform: "none" }}>Resend Validation Code</Button>
+
 
         ) : null}
         {appState == "login" ? (
-          <div className="span4 codeDiv">
-            <span  >
-            <Button className="textLink" onClick={() => {
+          <Box ml={16}>
+            <Button onClick={() => {
               doLogin(usernameInput.value, passwordInput.value);
-            }} variant="outlined" color="primary" style={{ textTransform: "none" }}>Login</Button>
-            </span>
-          </div>
-        
-          )
-        : null}
+            }} variant="contained" color="primary" style={{ textTransform: "none" }}>Login</Button>
+            <Box mt={1}>
+            </Box>
+          </Box>
+
+        )
+          : null}
 
         {appState == "code" ? (
-          <div className="span4 codeDiv">
-            <span  >
+          <span  >
             <Button className="textLink" onClick={() => {
               let cogUser = cogSetupUser(usernameInput.value);
               cogUser.confirmRegistration(validationCodeInput.value, true,
-                function(err, result) {
+                function (err, result) {
                   if (err)
                     setMessage(err.toString());
                   else {
@@ -143,16 +131,14 @@ function LoginForm(props) {
                   }
                 })
             }} variant="outlined" color="primary" style={{ textTransform: "none" }}>VALIDATE</Button>
-            </span>
-          </div>
+          </span>
 
         ) : null}
 
         {appState == "newPassword" ? (
 
-          <div className="span4 codeDiv">
-            <span  >
-            <Button className = "textLink" onClick={() => {
+          <span  >
+            <Button className="textLink" onClick={() => {
               setPasswordDisplay(false);
               let cogUser = cogSetupUser(usernameInput.value);
               cogUser.confirmPassword(validationCodeInput.value, newPasswordInput.value, {
@@ -164,7 +150,7 @@ function LoginForm(props) {
                   validationCodeInput.reset();
                   newPasswordInput.reset();
                 },
-                onFailure: function(err) {
+                onFailure: function (err) {
                   if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.") {
                     setMessage("Too many requests. Try again later!");
                   } else {
@@ -173,8 +159,7 @@ function LoginForm(props) {
                 }
               });
             }} variant="outlined" color="primary" style={{ textTransform: "none" }}>SET PASSWORD</Button>
-            </span>
-          </div>
+          </span>
 
         ) : null}
       </React.Fragment>
@@ -182,34 +167,18 @@ function LoginForm(props) {
   }
 
   const useStyles = makeStyles((theme) => ({
-    paper: {
-      marginTop: theme.spacing(-1.5),
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-    },
     avatar: {
-      margin: theme.spacing(1),
       backgroundColor: theme.palette.primary.main,
-    },
-    form: {
-      width: '100%', // Fix IE 11 issue.
-      marginTop: theme.spacing(1),
-    },
-    submit: {
-      margin: theme.spacing(3, 0, 2),
     },
   }));
 
-const classes = useStyles();
-function displayLoginForms() {
-
-  
+  const classes = useStyles();
+  function displayLoginForms() {
     return (
       <React.Fragment>
-    {/*<div className="loginHeader span4">
+        {/*<div className="loginHeader span4">
         Login to Santa Maria Urban Ministry
-        </div> */} 
+        </div> */}
 
         {appState == "login" ? (
           <React.Fragment>
@@ -226,19 +195,20 @@ function displayLoginForms() {
               autoFocus
             />
             <TextField
-            InputProps = {{
-            endAdornment:(
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="toggle password visibility"
-                  onClick={() => setPasswordDisplay(!passwordDisplay)}
-                  onMouseDown={() => setPasswordDisplay(!passwordDisplay)}
-                  edge="end"
-                >
-                  {passwordDisplay ? <Visibility /> : <VisibilityOff />}
-                </IconButton>
-              </InputAdornment>
-            )}}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setPasswordDisplay(!passwordDisplay)}
+                      onMouseDown={() => setPasswordDisplay(!passwordDisplay)}
+                      edge="end"
+                    >
+                      {passwordDisplay ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
               variant="outlined"
               margin="normal"
               required
@@ -251,66 +221,40 @@ function displayLoginForms() {
               {...passwordInput.bind}
               onKeyDown={event => {
                 if (event.key == "Enter")
-                    doLogin(usernameInput.value, passwordInput.value);
-                  }}
+                  doLogin(usernameInput.value, passwordInput.value);
+              }}
             />
-            <Grid container alignItems="center" justify="space-between">
-                        <Grid item>
-                          <a onClick={() => {
-                            setPasswordDisplay(false);
-                            if (usernameInput.value == "") {
-                              setMessage("Username is required.");
-                            }
-                            let cogUser = cogSetupUser(usernameInput.value);
-                            cogUser.forgotPassword({
-                              onSuccess: function (result) {
-                                setMessage("Validation Code sent to: " + result.CodeDeliveryDetails.Destination);
-                                setAppState("newPassword");
-                              },
-                              onFailure: function(err) {
-                                if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.")
-                                  setMessage("Too many requests. Try again later!");
-                                else
-                                  setMessage(err.toString());
-                              }
-                            });
-                          }} class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-body2 MuiTypography-colorPrimary" href="#">Forgot password?</a>
-                        </Grid>
-                    </Grid>
+
+            <Box ml={1}>
+              <Grid item>
+                <Link onClick={() => {
+                  setPasswordDisplay(false);
+                  if (usernameInput.value == "") {
+                    setMessage("Username is required.");
+                  }
+                  let cogUser = cogSetupUser(usernameInput.value);
+                  cogUser.forgotPassword({
+                    onSuccess: function (result) {
+                      setMessage("Validation Code sent to: " + result.CodeDeliveryDetails.Destination);
+                      setAppState("newPassword");
+                    },
+                    onFailure: function (err) {
+                      if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.")
+                        setMessage("Too many requests. Try again later!");
+                      else
+                        setMessage(err.toString());
+                    }
+                  });
+                }} href="#" variant="body2">Forgot password?</Link>
+              </Grid>
+            </Box>
+
           </React.Fragment>
-        
-          // <React.Fragment>
-          //   < div className="lableDiv loginDiv">Username</div>
-          //   <div className="loginDiv">
-          //     <input
-          //       {...usernameInput.bind}
-          //       id="loginUserName"
-          //       type="email"
-          //       className="inputBox loginForm"
-          //       tabIndex="1"
-          //     />
-          //   </div>
-          //   <div className="loginDiv" />
-          //   <div className="loginDiv" />
-          //   <div className="lableDiv loginDiv">Password</div>
-          //   <div className="loginDiv">
-          //     <input
-          //       {...passwordInput.bind}
-          //       id="loginPassword"
-          //       type={passwordDisplay ? "text" : "password"}
-          //       className="inputBox loginForm"
-          //       tabIndex="2"
-          //       onKeyDown={event => {
-          //         if (event.key == "Enter")
-          //           doLogin(usernameInput.value, passwordInput.value);
-          //       }}
-          //     />{" "}
-          //     {showViewPasswordIcon()}
-          //   </div>
-          // </React.Fragment>
+
+
         ) : null}
         {appState == "code" || appState == "newPassword" ? (
-          <React.Fragment>                
+          <React.Fragment>
             <TextField
               variant="outlined"
               margin="normal"
@@ -325,39 +269,40 @@ function displayLoginForms() {
             />
           </React.Fragment>
         ) : null}
-        
+
         {appState == "newPassword" ? (
           <React.Fragment>
-          <TextField
-          InputProps = {{
-          endAdornment:(
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={() => setPasswordDisplay(!passwordDisplay)}
-                onMouseDown={() => setPasswordDisplay(!passwordDisplay)}
-                edge="end"
-              >
-                {passwordDisplay ? <Visibility /> : <VisibilityOff />}
-              </IconButton>
-            </InputAdornment>
-          )}}
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            name="newPassword"
-            label="New Password"
-            type={passwordDisplay ? "text" : "password"}
-            id="newPassword"
-            autoComplete="newPassword"
-            {...newPasswordInput.bind}
-            onKeyDown={event => {
-              if (event.key == "Enter")
+            <TextField
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setPasswordDisplay(!passwordDisplay)}
+                      onMouseDown={() => setPasswordDisplay(!passwordDisplay)}
+                      edge="end"
+                    >
+                      {passwordDisplay ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="newPassword"
+              label="New Password"
+              type={passwordDisplay ? "text" : "password"}
+              id="newPassword"
+              autoComplete="newPassword"
+              {...newPasswordInput.bind}
+              onKeyDown={event => {
+                if (event.key == "Enter")
                   doLogin(usernameInput.value, passwordInput.value);
-                }}
-          />  
-          
+              }}
+            />
+
           </React.Fragment>
         ) : null}
       </React.Fragment>
@@ -366,30 +311,32 @@ function displayLoginForms() {
 
   return (
     <React.Fragment>
-        <div className="loginFormDivNikhil">
-        <div className={classes.paper}>
-            
-        <Avatar className={classes.avatar}>
-        <LockOutlinedIcon />
+      <Card className="loginFormDivNikhil">
 
+        <Box mt={-1.5} display="flex" flexDirection="column" alignItems="center" className={classes.paper}>
+          <Box m={1} >
+            <Avatar className={classes.avatar} >
+              <LockOutlined />
+            </Avatar>
+          </Box>
 
-      </Avatar>
+          <Typography component="h2" variant="h6">
+            Login to Santa Maria Urban Ministry
+        </Typography>
 
-      <Typography className="span2" component="h2" variant="h6">
-      Login to Santa Maria Urban Ministry
-      </Typography>
-
-      <div className="span4" />
-      <div />
-      <form className={classes.form}
-      noValidate> {displayLoginForms()} </form>
-      </div>
-      {displaySubmitButtons()}
-        <Box 
-        color="var(--red)" fontSize ="16px">
-          {message}
+          <Box />
+    
+          <form
+            noValidate> {displayLoginForms()} </form>
         </Box>
-      </div>
+        {displaySubmitButtons()}
+        <Box m={1} mr={1} mt={1.75}>
+          <Typography color="error" style={{ fontSize: 12 }}>
+            {message ? <Error style={{ fontSize: 15 }} /> : ""}
+            {message}
+          </Typography>
+        </Box>
+      </Card>
     </React.Fragment>
   );
 }
