@@ -1,8 +1,8 @@
 import React, { useState, Fragment } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import { HistoryButtons } from '../Clients';
-import { isEmpty } from '../System/js/Utils';
-import { getServiceHistory } from '../System/js/Clients';
+import { HistoryButtons } from '../../Clients';
+import { isEmpty } from '../../System/js/Utils';
+import { getServiceHistory } from '../../System/js/Clients';
 
 export default function HistoryHeader(props) {
     const client = props.client;
@@ -55,7 +55,7 @@ export default function HistoryHeader(props) {
                             key={row.serviceId}
                             onClick= { (event) => handleSelectedService(event, row.serviceId)}
                             selected= { row.serviceId == selectedService } >
-                            <TableCell align="center">{ window.moment(row.servicedDateTime).format("MMM Do, YYYY  |  LT") }</TableCell>
+                            <TableCell align="center">{ window.moment(row.servicedDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
                             <TableCell align="center">{ row.serviceName }</TableCell>
                             <TableCell align="center">{ row.clientStatus }</TableCell>
                             <TableCell align="center">{ row.homeless }</TableCell>

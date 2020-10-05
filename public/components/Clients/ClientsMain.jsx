@@ -3,7 +3,7 @@ import { Box } from '@material-ui/core';
 import { ClientsHeader, FoundPage, ServicesPage, ClientPage, HistoryPage } from '../Clients';
 import { Container } from '../System';
 import { isEmpty } from '../System/js/Utils.js';
-import { searchClients, arrayAddIds } from '../System/js/Clients.js';
+import { searchClients, arrayAddIds, calcClientFamilyCounts, calcClientDependentsAges } from '../System/js/Clients.js';
 
     export default function ClientsMain(props) {
         const searchTerm = props.searchTerm
@@ -45,18 +45,20 @@ import { searchClients, arrayAddIds } from '../System/js/Clients.js';
       
         const handleClientChange = (newClient) => {
           if (newClient !== client) {
-            window.client = newClient // used temporarily to keep global vars in sync
-            window.servicesRendered = [] // used temporarily to keep global vars in sync
-            window.uiResetNotesTab() // used temporarily to keep global vars in sync
-            window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
-      
             if (!isEmpty(newClient)){
               // TODO client should be sorted and have ids for nested arrays saved to the database
               newClient.dependents.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
               newClient.dependents = arrayAddIds(newClient.dependents, 'depId')
+              newClient.dependents = calcClientDependentsAges(newClient)
               newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
               newClient.notes = arrayAddIds(newClient.notes, 'noteId')
+              newClient.family = calcClientFamilyCounts(newClient)
             }
+            
+            window.client = newClient // used temporarily to keep global vars in sync
+            window.servicesRendered = [] // used temporarily to keep global vars in sync
+            window.uiResetNotesTab() // used temporarily to keep global vars in sync
+            window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
             
             setClient(newClient);
             handleTabChange('event', 1);

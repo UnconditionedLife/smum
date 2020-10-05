@@ -1,7 +1,7 @@
 import React, { useState, Fragment } from 'react';
 import { Box,  Tooltip } from '@material-ui/core';
 import { Delete, Edit, Cancel } from '@material-ui/icons';
-import { IconButton } from '../System';
+import { IconButton } from '../../System';
 
 export default function HistoryButtons(props) {
     const editMode = props.editMode;

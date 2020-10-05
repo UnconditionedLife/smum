@@ -53,6 +53,120 @@ export function getServiceHistory(){
 	return clientHistory
 };
 
+export function calcClientDependentsAges(client){
+	// age TODO Move this to other Function
+	if (client.dependents == undefined) client.dependents = []
+	for (var i = 0; i < client.dependents.length; i++) {
+		utilCalcDependentAge(i)
+	}
+	return client.dependents
+}
+
+export function calcClientFamilyCounts(client){
+	if (client.family == undefined) client.family = {}
+	// dependents age & family counts
+	let fam = {totalAdults:0, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:0}
+	// client individual --- clients must be 18 or older
+	++fam.totalSize
+	if (client.age >= settings.seniorAge) {
+		++fam.totalSeniors
+	} else {
+		++fam.totalAdults
+	}
+	// client dependents
+	for (let i = 0; i < client.dependents.length; i++) {
+		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
+		if (client.dependents[i].isActive == "Active") {
+			if (client.dependents[i].age >= settings.seniorAge) {
+				++fam.totalSeniors
+			} else if (client.dependents[i].age < 18) {
+				++fam.totalChildren
+			} else {
+				++fam.totalAdults
+			}
+			if (client.dependents[i].relationship == "Other") {
+				++fam.totalOtherDependents
+			}
+			++fam.totalSize
+		}
+	}
+	client.family.totalAdults = fam.totalAdults
+	client.family.totalChildren = fam.totalChildren
+	client.family.totalOtherDependents = fam.totalOtherDependents
+	client.family.totalSeniors = fam.totalSeniors
+	client.family.totalSize = fam.totalSize
+	// TODO REACT FamilyCounts
+	//uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
+	return client.family
+}
+
+export function addService(serviceTypeId, serviceCategory, serviceButtons){
+	let serviceType = utilGetServiceTypeByID(serviceTypeId)
+	let serviceId = "" // new service
+	let serviceValid = true
+	// graydout button so undo service
+	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
+		const serviceItem = servicesRendered.filter(obj => obj.serviceTypeId == serviceTypeId)
+		serviceValid = false
+		serviceId = serviceItem[0].serviceId
+	}
+	// save service record
+	const servedCounts = utilCalcServiceFamilyCounts(serviceTypeId)
+	const serviceRecord = utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid)
+	const result = dbSaveServiceRecord(serviceRecord)
+	if (serviceType.serviceButtons == "Primary" && result == "success"){
+		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
+	}
+	if (serviceId != "" && result == "success") {
+		// ungrayout button
+		uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
+		if (serviceButtons == "Primary") {
+			$("#image-"+serviceTypeId).removeClass("imageGrayOut")
+		}
+	} else if (serviceId == "" && result == "success") {
+		if (serviceCategory == 'Food_Pantry') {
+			// TODO Use function here
+			let service = serviceTypes.filter(function( obj ) {
+					return obj.serviceTypeId == serviceTypeId
+				})[0]
+			prnPrintFoodReceipt(service.isUSDA)
+			if (client.isActive == 'Client') {
+				prnPrintReminderReceipt()
+			}
+		} else if (serviceCategory == 'Clothes_Closet') {
+			prnPrintClothesReceipt(serviceType)
+		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+			const targetService = utilCalcTargetServices([serviceType])
+			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
+			// TODO use function here
+			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+			prnPrintVoucherReceipt(serviceType, dependents, 'grade');
+			prnPrintVoucherReceipt(serviceType, dependents, 'grade');
+		} else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+			const targetService = utilCalcTargetServices([serviceType])
+			// TODO use function here
+			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+			prnPrintVoucherReceipt(service)
+			prnPrintVoucherReceipt(service)
+		} else if (serviceCategory == 'Christmas' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+			const targetService = utilCalcTargetServices([serviceType])
+			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+			if (targetService[0].family_totalChildren == "Greater Than 0") {
+				const dependents = utilCalcValidAgeGrade("age", targetService[0])
+				prnPrintVoucherReceipt(serviceType, dependents, 'age');
+				prnPrintVoucherReceipt(serviceType, dependents, 'age');
+			} else {
+				prnPrintVoucherReceipt(service);
+				prnPrintVoucherReceipt(service);
+			}
+		}
+		prnFlush();
+		// uiShowLastServed() *** Moved to REACT ***
+		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
+	}
+};
+
+
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 
 function getLastServedDays() {
@@ -163,9 +277,10 @@ function getActiveServicesButtons(buttons, activeServiceTypes, targetServices, l
 	
 	console.log(buttons)
 	
-	btnPrimary = [];
-	btnSecondary = [];
-  let validDependents = []
+	let	btnPrimary = [];
+	let btnSecondary = [];
+	let validDependents = []
+	  
 	for (let i = 0; i < activeServiceTypes.length; i++) {
 		let display = true;
 		// check for not a valid service based on interval between services
