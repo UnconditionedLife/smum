@@ -73,6 +73,6 @@ export default function ClientsMainContainer(props) {
         <ClientsMain {...props}
             checkClientsURL={checkClientsURL}
             selectedTab={selectedTab} url={url}
-            updateURL={updateURL} setSelectedTab={setSelectedTab}/>
+            updateURL={updateURL} />
     );
 };

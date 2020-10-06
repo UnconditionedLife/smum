@@ -5,7 +5,6 @@ import { isEmpty } from '../System/js/Utils.js';
 export default function FoundPage(props) {
     const clientsFound = props.clientsFound
     const client = props.client
-    const setSelectedTab = props.setSelectedTab
     const updateURL = props.updateURL
 
     const handleClientChange = props.handleClientChange
@@ -19,7 +18,6 @@ export default function FoundPage(props) {
         if (clientId !== newClientId) {
             const newClient = clientsFound.filter(obj => obj.clientId == newClientId)
             handleClientChange(newClient[0])
-            setSelectedTab(1); 
             updateURL(newClient[0].clientId, 1);
         }
     };

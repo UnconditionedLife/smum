@@ -33,7 +33,6 @@ export default function clientsHeader(props) {
     const clientsFound = props.clientsFound
     const isNewClient = props.isNewClient
     const selectedTab = props.selectedTab
-    const setSelectedTab = props.setSelectedTab
     const updateURL = props.updateURL
     const classes = useStyles();
 
@@ -55,7 +54,7 @@ export default function clientsHeader(props) {
                 <AppBar position="static" color="default">
                     <Tabs
                     value={selectedTab}
-                    onChange={(event, newValue) => {setSelectedTab(newValue); updateURL(client.clientId, newValue);}}
+                    onChange={(event, newValue) => {updateURL(client.clientId, newValue);}}
                     indicatorColor="secondary"
                     textColor="primary"
                     selectionFollowsFocus

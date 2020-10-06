@@ -136,13 +136,16 @@ export default function SectionsNavBar(props) {
   const setSession = (newSession) => {
     setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
     setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
-    setCookie("cogUser", JSON.stringify(newSession.cogUser),  { path: '/' })
+    setCogUser(newSession.cogUser)
+    // setCookie("cogUser", JSON.stringify(newSession.cogUser),  { path: '/' })
   }
   const removeSession = () => {
     removeCookie("user")
     removeCookie("auth")
     setCogUser(null)
+    // removeCookie("cogUser")
 
+    setCogUser(null)
   }
   const [selectedSection, setSelectedSection] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
@@ -180,7 +183,7 @@ export default function SectionsNavBar(props) {
   const handleSectionChange = (newValue) => {
     console.log("IN SECTION CHANGE")
     console.log(newValue)
-    setSelectedSection(newValue);
+    // setSelectedSection(newValue);
     updateRoute(newValue);
   };
 

@@ -14,7 +14,6 @@ export default function ClientsContent(props) {
                         clientsFound={props.clientsFound}
                         client={props.client}
                         handleClientChange={props.handleClientChange}
-                        setSelectedTab={props.setSelectedTab}
                         updateURL={props.updateURL}
                         isNewClient={props.isNewClient}
                     />

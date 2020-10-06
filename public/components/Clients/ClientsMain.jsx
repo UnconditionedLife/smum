@@ -9,7 +9,6 @@ export default function ClientsMain(props) {
   const session = props.session
   const selectedTab = props.selectedTab
   const checkClientsURL = props.checkClientsURL
-  const setSelectedTab = props.setSelectedTab
   const updateURL = props.updateURL
   const url = props.url
 
@@ -17,7 +16,7 @@ export default function ClientsMain(props) {
   const [client, setClient] = useState({});
   const [isNewClient, setIsNewClient] = useState(false);
 
-  useEffect(() => { if (session != null && !isEmpty(session)) { setTimeout(checkClientsURL, 100); } }, [session, url])
+  useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(); } }, [session, url])
 
   useEffect(() => {
     if (searchTerm !== '') {
@@ -35,11 +34,9 @@ export default function ClientsMain(props) {
       window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
       if (newValue.length === 1) {
         handleClientChange(newValue[0])
-        setSelectedTab(1)
         updateURL(newValue[0].clientId, 1)
       } else {
         handleClientChange({})
-        setSelectedTab(0)
         updateURL(null, 0)
       }
     }
@@ -71,7 +68,6 @@ export default function ClientsMain(props) {
         clientsFound={clientsFound}
         isNewClient={isNewClient}
         selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
         updateURL={updateURL}
       />
       <ClientsContent
@@ -79,7 +75,6 @@ export default function ClientsMain(props) {
         clientsFound={clientsFound}
         handleClientChange={handleClientChange}
         isNewClient={isNewClient}
-        setSelectedTab={setSelectedTab}
         updateURL={updateURL}
         session={session}
       />
