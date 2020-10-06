@@ -49,7 +49,7 @@ export default function ClientsMainContainer(props) {
         else if (matchPath(url, { path: "/clients/services/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/services", exact: true, strict: false })) {
             checkClient(1);
         }
-        else if (matchPath(url, { path: "/clients/client/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/services", exact: true, strict: false })) {
+        else if (matchPath(url, { path: "/clients/client/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/client", exact: true, strict: false })) {
             checkClient(2);
         }
         else if (matchPath(url, { path: "/clients/history/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/history", exact: true, strict: false })) {
@@ -65,7 +65,6 @@ export default function ClientsMainContainer(props) {
         }
         if (selectedTab != tabId) {
             setSelectedTab(tabId);
-            updateURL(clientId, tabId);
         }
     }
 

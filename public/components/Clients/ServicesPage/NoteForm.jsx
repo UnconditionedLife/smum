@@ -1,8 +1,8 @@
 import React, { useEffect, useState, Fragment } from 'react';
 import { Box, Checkbox, FormControlLabel } from '@material-ui/core';
 import { NotificationImportant } from '@material-ui/icons';
-import { Button, TextField } from '../System';
-import { isEmpty } from '../System/js/Utils.js';
+import { Button, TextField } from '../../System';
+import { isEmpty } from '../../System/js/Utils.js';
 
 export default function NoteForm(props) {
     const client = props.client;

@@ -24,7 +24,7 @@ export default function FoundPage(props) {
 
     if (!isEmpty(clientsFound)){
         return (
-            <Box mt={ 4 }>
+            <Box mt={ 7 }>
                 <TableContainer > 
                     <Table >
                     <TableHead>

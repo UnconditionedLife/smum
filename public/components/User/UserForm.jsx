@@ -1,4 +1,5 @@
 import React, { Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box } from '@material-ui/core';
 import { FormField, SaveCancel } from '../System';
@@ -8,6 +9,9 @@ export default function UserForm(props) {
     let defValues = { ...props.user };
     defValues.zipcode = packZipcode(props.user.zipcode, props.user.zipSuffix);
     const { handleSubmit, reset, control, errors, formState } = useForm({
+        mode: 'onBlur',
+        reValidateMode: 'onChange',
+        shouldFocusError: true,
         defaultValues: defValues, 
     });
 
@@ -56,4 +60,9 @@ export default function UserForm(props) {
             <SaveCancel disabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : reset() } } />
         </Fragment>
     );
+}
+
+UserForm.propTypes = {
+    session: PropTypes.object.isRequired,
+    user: PropTypes.object,
 }

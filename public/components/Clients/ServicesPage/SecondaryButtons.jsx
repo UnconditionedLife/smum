@@ -1,8 +1,9 @@
-import React from 'react';
-import Button from '@material-ui/core';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
+import React, { Fragment } from 'react';
+// import Button from '@material-ui/core';
+import {  } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { getButtonData } from '../System/js/Clients'
+import { getButtonData } from '../../System/js/Clients'
+import { Button } from '../../System';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -52,20 +53,16 @@ export default function SecondaryButtons() {
         }
     }
     return (
-        <ButtonGroup color="primary">
-            { console.log("IN RETURN") }
-            {buttons.map((buttonData) => {
+        // <ButtonGroup color="primary">
+        <Fragment>
+            {buttons.map((service) => {
                 return (
-                    <div>
-                        <Button color="primary" size="small" className={ classes.margin }>
-                            abc
-                        {/* <Button color="primary" size="small" onClick= {buttonData.serviceName}> */}
-                                {/* {buttonData.serviceName} */}
-                        </Button>
-                    </div>
+                    <Button key={ service.serviceTypeId } variant="outlined" color="primary" size="medium" minWidth="168px">
+                    {/* onClick= {buttonData.serviceName}> */}
+                        { service.serviceName }
+                    </Button>
                 )
             })}
-            { console.log("END RETURN") }
-        </ButtonGroup>
+        </Fragment>
     );
 };

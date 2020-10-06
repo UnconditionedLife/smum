@@ -4,6 +4,7 @@ import Container from '@material-ui/core/Container';
 import ClientsMainContainer from '../Clients/ClientsMainContainer.jsx';
 import AdminMain from '../Admin/AdminMain.jsx';
 import UserMain from '../User/UserMain.jsx';
+import PageToday from '../Sections/PageToday.jsx';
 
 // import SectionsHeader from './SectionsHeader.jsx';
 import { Route } from "react-router-dom";
@@ -37,6 +38,9 @@ export default function SectionsContent(props) {
                 </Route>
                 <Route path="/user">
                     <UserMain session={props.session}/>
+                </Route>
+                <Route path="/today">
+                    <PageToday session={props.session}/>
                 </Route>
             </Container>
         );

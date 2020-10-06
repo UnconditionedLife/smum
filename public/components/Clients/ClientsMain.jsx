@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { ClientsHeader, ClientsContent } from '../Clients';
 import { isEmpty } from '../System/js/Utils.js';
-import { searchClients, arrayAddIds } from '../System/js/Clients.js';
+import { searchClients, arrayAddIds, calcClientFamilyCounts, calcClientDependentsAges } from '../System/js/Clients.js';
 
 export default function ClientsMain(props) {
   const searchTerm = props.searchTerm
@@ -44,20 +45,32 @@ export default function ClientsMain(props) {
 
   const handleClientChange = (newClient) => {
     if (newClient !== client) {
+      if (!isEmpty(newClient)){
+        // TODO client should be sorted and have ids for nested arrays saved to the database
+        newClient.dependents.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
+        newClient.dependents = arrayAddIds(newClient.dependents, 'depId')
+        newClient.dependents = calcClientDependentsAges(newClient)
+        newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
+        newClient.notes = arrayAddIds(newClient.notes, 'noteId')
+        newClient.family = calcClientFamilyCounts(newClient)
+      }
+      
       window.client = newClient // used temporarily to keep global vars in sync
       window.servicesRendered = [] // used temporarily to keep global vars in sync
       window.uiResetNotesTab() // used temporarily to keep global vars in sync
       window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
-
-      if (!isEmpty(newClient)) {
-        // TODO client should be sorted and have ids for nested arrays saved to the database
-        newClient.dependents.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
-        newClient.dependents = arrayAddIds(newClient.dependents, 'depId')
-        newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
-        newClient.notes = arrayAddIds(newClient.notes, 'noteId')
-      }
-
+      
       setClient(newClient);
+    };
+  }
+
+  const handleIsNewClientChange = () => {
+    if (isNewClient !== true) {
+      window.clickShowNewClientForm() // used temporarily - remove once clientPage forms have been converted
+      handleClientChange({})
+      handleClientsFoundChange([])
+      setIsNewClient(true)
+      updateURL(null, 2)
     }
   };
 
@@ -67,6 +80,7 @@ export default function ClientsMain(props) {
         client={client}
         clientsFound={clientsFound}
         isNewClient={isNewClient}
+        handleIsNewClientChange={ handleIsNewClientChange }
         selectedTab={selectedTab}
         updateURL={updateURL}
       />
@@ -80,4 +94,12 @@ export default function ClientsMain(props) {
       />
     </Box>
   );
+  
 };
+
+ClientsMain.propTypes = {
+  session: PropTypes.object.isRequired,
+  searchTerm: PropTypes.string.isRequired,
+  handleSearchTermChange: PropTypes.func.isRequired,
+};
+

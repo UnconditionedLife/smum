@@ -20,13 +20,16 @@ export default function SearchNavBarContainer(props) {
                 return 1;
             }
         }
-        else if (matchPath(url, { path: "/user", exact: false, strict: false })) {
+        else if (matchPath(url, { path: "/today", exact: false, strict: false })) {
             if (selectedSection != 2) {
                 return 2;
             }
         }
-        console.log("returning -1");
-
+        else if (matchPath(url, { path: "/user", exact: false, strict: false })) {
+            if (selectedSection != 3) {
+                return 3;
+            }
+        }
         return -1;
     }
 
@@ -43,6 +46,9 @@ export default function SearchNavBarContainer(props) {
             history.push("/admin");
             break;
           case 2:
+            history.push("/today");
+            break;
+          case 3:
             history.push("/user");
             break;
         }

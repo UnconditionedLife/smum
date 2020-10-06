@@ -3794,6 +3794,8 @@ function utilCalcAgeGrouping(dependent){
 	}
 };
 
+
+// MOVED TO REACT
 function utilCalcClientFamilyCounts(){
 	// age TODO Move this to other Function
 	if (client.dependents == undefined) client.dependents = []
@@ -3835,7 +3837,7 @@ function utilCalcClientFamilyCounts(){
 	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
 };
 
-// Removed be cause of errors with 12 graders - now only assumes grade entered to be next year's grade
+// Removed because of errors with 12 graders - now only assumes grade entered to be next year's grade
 // function utilCalcCurrentGrade(numericGrade,date){
 // 	const today = moment();
 // 	let dateEntered = moment(date);

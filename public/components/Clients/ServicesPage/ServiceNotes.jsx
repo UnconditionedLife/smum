@@ -1,7 +1,7 @@
 import React,  { Fragment } from 'react';
 import { makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import theme from '../Sections/Theme.jsx';
-import { isEmpty } from '../System/js/Utils.js';
+import theme from '../../Sections/Theme.jsx';
+import { isEmpty } from '../../System/js/Utils.js';
 import { useState, useEffect } from 'react';
 import Tooltip from '@material-ui/core/Tooltip';
 import Badge from '@material-ui/core/Badge';
@@ -45,7 +45,6 @@ export default function ServiceNotes(props) {
     const [ noteText, setNoteText ] = useState('')
     const [ noteImportant, setNoteImportant ] = useState(false)
     const classes = useStyles();
-    
 
     useEffect(() => {
         if (!isEmpty(client)) setNoteCount(client.notes.length)
@@ -83,7 +82,7 @@ export default function ServiceNotes(props) {
             <div className={ classes.header }>
                 <Badge className={ classes.badge } badgeContent={ noteCount } color="secondary">
                     <Typography variant='h6' noWrap>
-                        SERVICE NOTES&nbsp;
+                        NOTES&nbsp;
                     </Typography>
                 </Badge>  
                 { editMode === 'none' && 

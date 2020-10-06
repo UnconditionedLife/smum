@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, Fragment } from 'react';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { isEmpty } from '../System/js/Utils.js';
-import { HistoryHeader, HistoryDisplay } from '../Clients';
+import { isEmpty } from '../../System/js/Utils.js';
+import { HistoryHeader, HistoryDisplay } from '../../Clients';
 
 const useStyles = makeStyles((theme) => ({
     tableHeader: {
@@ -32,10 +32,10 @@ export default function PageHistory(props) {
     })
 
     return (
-        <Fragment >
+        <Box width={ 1 } mt={ 7 } >
             <Box mt={ 4 }><HistoryHeader client={ client } /></Box>
             <Box mt={ 4 }><HistoryDisplay client={ client } /></Box>
             <div className={classes.tableHeader} ref={ historyDivBottom }></div>
-        </Fragment>
+        </Box>
     );
 };

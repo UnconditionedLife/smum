@@ -1,8 +1,8 @@
 import React, { Fragment } from 'react';
 import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
 import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
-import { Card, IconButton } from '../System';
-import { NoteForm } from '../Clients';
+import { Card, IconButton } from '../../System';
+import { NoteForm } from '../../Clients';
 
 export default function NotesDisplay(props) {
     const session = props.session;

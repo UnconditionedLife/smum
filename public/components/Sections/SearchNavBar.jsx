@@ -1,101 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from "react-dom";
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { AppBar, Button, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu } from '@material-ui/core';
-import {
-  Search as SearchIcon, MoreVert as MoreIcon, AccountCircle, ExitToApp as ExitToAppIcon, People as PeopleIcon,
-  Today as TodayIcon, Face as FaceIcon
-} from '@material-ui/icons';
-import { useCookies } from 'react-cookie';
+import { AppBar, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
+import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '@material-ui/icons';
+import { Button } from '../System';
 import theme from './Theme.jsx';
 import LoginForm from "./LoginForm.jsx";
 import SectionsContent from "./SectionsContent.jsx";
+import { useCookies } from 'react-cookie';
 import { cogSetupUser, cogSetupSession } from '../System/js/Cognito.js';
 
 const useStyles = makeStyles((theme) => ({
-  grow: {
-    flexGrow: 1,
-    maxHeight: '100vh',
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
   title: {
     display: 'none',
     [theme.breakpoints.up('sm')]: {
-      display: 'block'
+      display: 'block',
+      fontSize: '20px',
+    },
+    [theme.breakpoints.up('lg')]: {
+
     },
   },
-  clients: {
-    width: '100%',
+  bar: {
     position: 'relative',
-    top: '2px',
-    fontSize: '15px',
-    right: '370px',//used to be 90
-    letterSpacing: '2px',
-
-  },
-  admin: {
+    flexShrink: 3,
     width: '100%',
-    position: 'relative',
-    top: '2px',
-    fontSize: '15px',
-    // right:'65px',
-    right: '200px',
-    letterSpacing: '2px',
-    // position: 'sticky',
-
-  },
-  username: {
-    width: '100%',
-    position: 'relative',
-    top: '3.5px',
-    fontSize: '15px',
-    right: '40px',
-    textTransform: 'lowercase',
-  },
-  logout: {
-    width: '100%',
-    position: 'relative',
-    top: '3px',
-    fontSize: '15px',
-    right: '-30px',
-  },
-  today: {
-    width: '100%',
-    position: 'relative',
-    top: '2px',
-    fontSize: '15px',
-    right: '60px',
-    letterSpacing: '2px',
+    [theme.breakpoints.up('lg')]: {
+      marginLeft: theme.spacing(3),
+      width: 'auto',
+    },
   },
   search: {
-    position: 'relative',
     borderRadius: theme.shape.borderRadius,
     backgroundColor: fade(theme.palette.common.white, 0.15),
     '&:hover': {
       backgroundColor: fade(theme.palette.common.white, 0.25),
     },
-    marginRight: theme.spacing(2),
-    marginLeft: 20,
-    width: '100%',
     [theme.breakpoints.up('sm')]: {
       marginLeft: theme.spacing(3),
-      width: 'auto',
     },
-  },
-  searchIcon: {
-    padding: theme.spacing(0, 2),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   inputRoot: {
     color: 'inherit',
-    marginLeft: '10px'
+    width: '300px',
   },
   inputInput: {
     padding: theme.spacing(1, 1, 1, 0),
@@ -111,10 +58,10 @@ const useStyles = makeStyles((theme) => ({
     display: 'none',
     [theme.breakpoints.up('md')]: {
       display: 'flex',
+      justifyContent: 'flex-end',
     },
   },
   sectionMobile: {
-    display: 'flex',
     [theme.breakpoints.up('md')]: {
       display: 'none',
     },
@@ -129,25 +76,28 @@ export default function SectionsNavBar(props) {
 
   const checkSectionURL = props.checkSectionURL;
   const updateRoute = props.updateRoute;
-  const [cookies, setCookie, removeCookie] = useCookies(['user']);
+  const [cookies, setCookie, removeCookie] = useCookies(['user','auth']);
   const session = cookies.user && cookies.auth ? 
           {user:cookies.user,auth:cookies.auth, cogUser: cogUser} : null;
   
   const setSession = (newSession) => {
-    setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
-    setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
-    setCogUser(newSession.cogUser)
+    if (newSession.user != null && newSession.auth != null) {
+      setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
+      setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
+      setCogUser(newSession.cogUser)
+    }
+    else {
+      removeSession()
+    }
     // setCookie("cogUser", JSON.stringify(newSession.cogUser),  { path: '/' })
   }
   const removeSession = () => {
-    removeCookie("user")
-    removeCookie("auth")
+    removeCookie("user", { path: '/' })
+    removeCookie("auth", { path: '/' })
     setCogUser(null)
     // removeCookie("cogUser")
-
-    setCogUser(null)
   }
-  const [selectedSection, setSelectedSection] = useState(0);
+  const [selectedSection, setSelectedSection] = useState(-1);
   const [searchTerm, setSearchTerm] = useState('');
   const [typedSearchTerm, setTypedSearchTerm] = useState('')
 
@@ -181,8 +131,6 @@ export default function SectionsNavBar(props) {
   });
 
   const handleSectionChange = (newValue) => {
-    console.log("IN SECTION CHANGE")
-    console.log(newValue)
     // setSelectedSection(newValue);
     updateRoute(newValue);
   };
@@ -220,10 +168,10 @@ export default function SectionsNavBar(props) {
 
   const appbarControls = (
     <React.Fragment>
-      <div className={classes.search}>
-        <div className={classes.searchIcon} >
-          <SearchIcon />
-        </div>
+      <Box className={classes.search} mr={2} ml={2.5} flexGrow={1}>
+        <Box position="absolute" alignItems='center' pointerEvents='none' display='flex' pl={1} pt={0.75}>
+          <Search />
+        </Box>
         <InputBase
           id='searchField'
           placeholder="Search clients"
@@ -238,60 +186,63 @@ export default function SectionsNavBar(props) {
           }}
           onKeyPress={event => {
             if (event.key == "Enter") {
-              handleSectionChange(0)
+              if (selectedSection !== 0) handleSectionChange(0)
               setSearchTerm(typedSearchTerm)
               setTypedSearchTerm('')
             }
           }}
         />
-      </div>
-      <div className={classes.grow} />
-      <div className={classes.sectionDesktop}>
+      </Box>
 
-        {/* Calling App.js : () => window.navSwitch('clients') */}
-        <Button onClick={() => handleSectionChange(0)} startIcon={<PeopleIcon />}
-          className={classes.clients} variant="text" color="inherit"
-        >
-          Clients
-      </Button>
-
-        <Button onClick={() => handleSectionChange(1)} startIcon={<FaceIcon />}
-          className={classes.admin} disabled={!isAdmin} variant="text" color="inherit">
-          Admin
-      </Button>
-
-        <Button onClick={() => handleSectionChange(2)} startIcon={<TodayIcon />}
-          className={classes.today} variant="text" color="inherit">
-          Today
-      </Button>
-
-        <Button
-          edge="end"
-          startIcon={<AccountCircle />}
-          style={{ textTransform: 'none' }}
-          aria-label="account of current user"
-          aria-controls={menuId}
-          aria-haspopup="true"
-          onClick={handleUserMenuOpen}
-          color="inherit"
-          variant="text"
-        >
-          {session ? session.user.userName : ''}
+      <Box className={classes.bar} mr={2} ml={2.5} justifyContent="flex-end" flexGrow={1}>
+        <Box className={classes.sectionDesktop}>
+          {/* Calling App.js : () => window.navSwitch('clients') */}
+          <Button onClick={() => handleSectionChange(0)} startIcon={<People />}
+            variant="text" color="inherit"
+          >
+            Clients
         </Button>
 
-      </div>
-      <div className={classes.sectionMobile}>
-        <IconButton
-          aria-label="show more"
-          aria-controls={mobileMenuId}
-          aria-haspopup="true"
-          onClick={handleMobileMenuOpen}
-          color="inherit"
-        >
-          <MoreIcon />
-        </IconButton>
-      </div>
-    </React.Fragment>
+          {/* Calling App.js : () => window.navSwitch('admin') */}
+          <Button onClick={() => handleSectionChange(1)} startIcon={<Face />}
+            disabled={!isAdmin} variant="text" color="inherit">
+            Admin
+        </Button>
+
+          <Button onClick={() => handleSectionChange(2)} startIcon={<Today />}
+            disabled={!isAdmin} variant="text" color="inherit">
+            Today
+        </Button>
+
+          <Button
+            edge="end"
+            startIcon={<AccountCircle />}
+            style={{ textTransform: 'none' }}
+            aria-label="account of current user"
+            aria-controls={menuId}
+            aria-haspopup="true"
+            onClick={handleUserMenuOpen}
+            color="inherit"
+            variant="text"
+          >
+            {session ? session.user.userName : ''}
+          </Button>
+        </Box>
+
+
+        <Box justifyContent="flex-end" display="flex" className={classes.sectionMobile}>
+          <IconButton
+            aria-label="show more"
+            aria-controls={mobileMenuId}
+            aria-haspopup="true"
+            onClick={handleMobileMenuOpen}
+            color="inherit"
+          >
+            <MoreVert />
+          </IconButton>
+        </Box>
+      </Box >
+    </React.Fragment >
   );
 
   const menuId = 'primary-search-account-menu';
@@ -309,7 +260,8 @@ export default function SectionsNavBar(props) {
         <Button startIcon={<AccountCircle />}>Profile</Button>
       </MenuItem>
       <MenuItem onClick={() => { closeUserMenu(); handleLogout(); }} >
-        <Button startIcon={<ExitToAppIcon />}>Logout</Button>
+        <Button startIcon={<ExitToApp />}>Logout</Button>
+
       </MenuItem>
     </Menu>
   );
@@ -327,21 +279,23 @@ export default function SectionsNavBar(props) {
 
     >
       <MenuItem>
-        <Button startIcon={<PeopleIcon />} onClick={() => { closeMobileMenu(); handleSectionChange(0); }} >
+        <Button startIcon={<People />} onClick={() => { closeMobileMenu(); handleSectionChange(0); }} >
           Clients
         </Button>
       </MenuItem>
 
       <MenuItem >
-        <Button startIcon={<FaceIcon />} onClick={() => { closeMobileMenu(); handleSectionChange(1); }}
+
+        <Button startIcon={<Face />} onClick={() => { closeMobileMenu(); handleSectionChange(1); }}
           disabled={!isAdmin}>
           Admin
         </Button>
       </MenuItem>
 
       <MenuItem onClick={() => { closeMobileMenu(); handleSectionChange(2); }}>
-        <Button startIcon={<TodayIcon />}>
+        <Button startIcon={<Today />}>
           Today
+
         </Button>
       </MenuItem>
 
@@ -352,7 +306,7 @@ export default function SectionsNavBar(props) {
       </MenuItem>
 
       <MenuItem onClick={() => { closeMobileMenu(); handleLogout(); }} >
-        <Button startIcon={<ExitToAppIcon />}>
+        <Button startIcon={<ExitToApp />}>
           Logout
         </Button>
       </MenuItem>
@@ -360,7 +314,7 @@ export default function SectionsNavBar(props) {
   );
 
   return (
-    <div className={classes.grow}>
+    <Box flexGrow={1} >
       <AppBar position="fixed">
         <Toolbar>
           <Tooltip title={props.version}>
@@ -380,6 +334,6 @@ export default function SectionsNavBar(props) {
           session={session}
         />
       </ThemeProvider>
-    </div>
+    </Box>
   );
 };

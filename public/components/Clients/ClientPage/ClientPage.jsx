@@ -4,8 +4,8 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '
 import { makeStyles } from '@material-ui/core/styles';
 
 import { ExpandMore } from '@material-ui/icons';
-import { DependentsDisplay } from '../Clients';
-import { isEmpty } from '../System/js/Utils.js';
+import { DependentsDisplay } from '../';
+import { isEmpty } from '../../System/js/Utils.js';
 
 const useStyles = makeStyles((theme) => ({
     heading: {
@@ -39,22 +39,22 @@ export default function ClientPage(props) {
     })
 
     return (
-        <Box mt={ 4 } width={ 1 }>
-            <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
+        <Box mt={ 7 } width={ 1 }>
+            <Accordion defaultExpanded='true' onChange={handleChange('panel1')}>
                 <AccordionSummary expandIcon={<ExpandMore />} id="panel1bh-header" >
                     <Typography className={classes.heading}><b>Client Info</b></Typography>
-                    <Typography className={classes.secondaryHeading}>Name, Gender, DOB, etc.</Typography>
+                    {/* <Typography className={classes.secondaryHeading}>Name, Gender, DOB, etc.</Typography> */}
                 </AccordionSummary>
                 <AccordionDetails>
-                    <div id="clientFormWrap">
+                    <Box id="clientFormWrap">
                         <div ref={ clientFormDiv }></div>
-                    </div>
+                    </Box>
                 </AccordionDetails>
             </Accordion>
             <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
                 <AccordionSummary expandIcon={<ExpandMore />} id="panel2bh-header" >
                     <Typography className={classes.heading}><b>Address {'&'} Contact Info</b></Typography>
-                    <Typography className={classes.secondaryHeading}>Street Address, Telephone, and Email</Typography>
+                    {/* <Typography className={classes.secondaryHeading}>Street Address, Telephone, and Email</Typography> */}
                 </AccordionSummary>
         <AccordionDetails>
         <Typography>
@@ -69,7 +69,7 @@ export default function ClientPage(props) {
           id="panel3bh-header"
         >
           <Typography className={classes.heading}><b>Dependents</b></Typography>
-          <Typography className={classes.secondaryHeading}>List of dependents (spouse, children, other dependents)</Typography>
+          {/* <Typography className={classes.secondaryHeading}>List of dependents (spouse, children, other dependents)</Typography> */}
         </AccordionSummary>
         <AccordionDetails>
             <DependentsDisplay client= { client } />
@@ -81,7 +81,7 @@ export default function ClientPage(props) {
           aria-controls="panel4bh-content"
           id="panel4bh-header"
         >
-          <Typography className={classes.heading}>Family Totals</Typography>
+          <Typography className={classes.heading}><b>Family Totals</b></Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
@@ -95,7 +95,7 @@ export default function ClientPage(props) {
           aria-controls="panel4bh-content"
           id="panel4bh-header"
         >
-          <Typography className={classes.heading}>Financial Information</Typography>
+          <Typography className={classes.heading}><b>Financial Information</b></Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
