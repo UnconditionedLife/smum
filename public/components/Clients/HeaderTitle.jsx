@@ -1,7 +1,8 @@
-import React, { Fragment, useState } from "react"
-import { Box, Typography } from '@material-ui/core'
-import { HeaderDateTime } from '../Clients'
-import { isEmpty } from '../System/js/Utils.js'
+import React, { Fragment, useState } from "react";
+import PropTypes from 'prop-types';
+import { Box, Typography } from '@material-ui/core';
+import { HeaderDateTime } from '../Clients';
+import { isEmpty } from '../System/js/Utils.js';
 
 export default function HeaderTitle(props) {
     const client = props.client
@@ -69,3 +70,9 @@ export default function HeaderTitle(props) {
         </Fragment>   
     )
 }
+
+HeaderTitle.propTypes = {
+    client: PropTypes.object.isRequired,
+    isNewClient: PropTypes.object.isRequired,
+    clientsFound: PropTypes.object.isRequired,
+  }

@@ -18,8 +18,8 @@ import { Controller } from 'react-hook-form';
 function FormField(props) {
     return (
         <Box flexDirection="column">
-            <Controller as={TextField} { ...props } />
-            <Typography ml={1} mb={1} variant='body2' color='error'>
+            <Controller as={ TextField } { ...props } />
+            <Typography ml={ 1.5 } mb={ 1 } mt={ -1 } variant='body2' color='error'>
                 { props.error ? props.error.message : '' }
             </Typography>
         </Box>
