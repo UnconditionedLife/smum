@@ -1,7 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
-import TextField from '../Core/TextField.jsx';
+import Select from '../Core/Select.jsx';
 import Typography from '../Core/Typography.jsx';
 import { Controller } from 'react-hook-form';
 
@@ -16,10 +15,10 @@ import { Controller } from 'react-hook-form';
 // Additional props are passed through to the Controller component. 
 // See the API documentation for Controller for full details.
 
-function FormField(props) {
+function FormSelect(props) {
     return (
         <Box display="flex" flexDirection="column">
-            <Controller as={ TextField } { ...props } />
+            <Controller as={ Select } { ...props } />
             <Typography ml={ 1.5 } mb={ 1 } mt={ -1 } variant='body2' color='error'>
                 { props.error ? props.error.message : '' }
             </Typography>
@@ -27,13 +26,4 @@ function FormField(props) {
     )
 }
 
-FormField.propTypes = {
-    name: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    type: PropTypes.string,
-    control: PropTypes.object.isRequired,
-    rules: PropTypes.object,
-    error: PropTypes.object.isRequired,
-}
-
-export default FormField;
+export default FormSelect;

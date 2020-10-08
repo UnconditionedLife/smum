@@ -1,29 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@material-ui/core';
-
-import { makeStyles } from '@material-ui/core/styles';
-
 import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay } from '../';
 import { isEmpty } from '../../System/js/Utils.js';
-
-const useStyles = makeStyles((theme) => ({
-    heading: {
-      fontSize: theme.typography.pxToRem(15),
-      flexBasis: '33.33%',
-      flexShrink: 0,
-    },
-    secondaryHeading: {
-      fontSize: theme.typography.pxToRem(15),
-      color: theme.palette.text.secondary,
-    },
-}));
 
 export default function ClientPage(props) {
     const client = props.client;
     const isNewClient = props.isNewClient;
     const clientFormDiv = useRef(null);
-    const classes = useStyles();
     const [expanded, setExpanded] = useState(false);
   
     const handleChange = (panel) => (event, isExpanded) => {
@@ -41,9 +26,8 @@ export default function ClientPage(props) {
     return (
         <Box mt={ 7 } width={ 1 }>
             <Accordion defaultExpanded='true' onChange={handleChange('panel1')}>
-                <AccordionSummary expandIcon={<ExpandMore />} id="panel1bh-header" >
-                    <Typography className={classes.heading}><b>Client Info</b></Typography>
-                    {/* <Typography className={classes.secondaryHeading}>Name, Gender, DOB, etc.</Typography> */}
+                <AccordionSummary expandIcon={ <ExpandMore /> } id="panel1bh-header" >
+                    <Typography variant='button' >Client Info</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <Box id="clientFormWrap">
@@ -52,60 +36,41 @@ export default function ClientPage(props) {
                 </AccordionDetails>
             </Accordion>
             <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
-                <AccordionSummary expandIcon={<ExpandMore />} id="panel2bh-header" >
-                    <Typography className={classes.heading}><b>Address {'&'} Contact Info</b></Typography>
-                    {/* <Typography className={classes.secondaryHeading}>Street Address, Telephone, and Email</Typography> */}
+                <AccordionSummary expandIcon={ <ExpandMore /> } id="panel2bh-header">
+                    <Typography variant='button' ><b>Dependents</b></Typography>
                 </AccordionSummary>
-        <AccordionDetails>
-        <Typography>
-            This will show the address and contact parts of the client form
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
-        <AccordionSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="panel3bh-content"
-          id="panel3bh-header"
-        >
-          <Typography className={classes.heading}><b>Dependents</b></Typography>
-          {/* <Typography className={classes.secondaryHeading}>List of dependents (spouse, children, other dependents)</Typography> */}
-        </AccordionSummary>
-        <AccordionDetails>
-            <DependentsDisplay client= { client } />
-        </AccordionDetails>
-      </Accordion>
-      <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
-        <AccordionSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="panel4bh-content"
-          id="panel4bh-header"
-        >
-          <Typography className={classes.heading}><b>Family Totals</b></Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            This will show the family totals section (calculated counts)
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
-        <AccordionSummary
-          expandIcon={<ExpandMore />}
-          aria-controls="panel4bh-content"
-          id="panel4bh-header"
-        >
-          <Typography className={classes.heading}><b>Financial Information</b></Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            This will show the financial info that currently only displays on edit
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-    </Box>
-  );
-};
+                <AccordionDetails>
+                    <DependentsDisplay client= { client } />
+                </AccordionDetails>
+            </Accordion>
+            <Accordion expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
+                <AccordionSummary expandIcon={ <ExpandMore /> }id="panel3bh-header">
+                    <Typography variant='button' ><b>Family Totals</b></Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <Typography>
+                        This will show the family totals section (calculated counts)
+                    </Typography>
+                </AccordionDetails>
+            </Accordion>
+            <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
+                <AccordionSummary expandIcon={ <ExpandMore /> } id="panel4bh-header">
+                    <Typography variant='button' ><b>Financial Information</b></Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <Typography>
+                        This will show the financial info that currently only displays on edit
+                    </Typography>
+                </AccordionDetails>
+            </Accordion>
+        </Box>
+    );
+}
+
+ClientPage.propTypes = {
+    client: PropTypes.object.isRequired,
+    isNewClient: PropTypes.object.isRequired,
+}
 
         // <div>
             // <div className="topFormButtonsDiv">

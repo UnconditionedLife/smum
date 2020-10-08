@@ -31,7 +31,7 @@ export default function NotesDisplay(props) {
         if (result !== "success") {
             alert("Client did not save properly");
         }
-    };
+    }
 
     function handleEditNote(noteId) {
         const notes = client.notes
@@ -39,13 +39,13 @@ export default function NotesDisplay(props) {
         handleEditNoteChange(editNote[0])
         handleEditModeChange('edit')
         
-    };
+    }
 
     function display(type, noteId) {
         const show = (type === 'form')
         if (editMode === 'edit' && editNote.noteId === noteId) return show
         return !show
-    };
+    }
     
     return (
         <Fragment>
@@ -109,4 +109,4 @@ export default function NotesDisplay(props) {
             ))}
         </Fragment>
     )
-};
+}
