@@ -5,6 +5,7 @@ import { isEmpty } from '../System/js/Utils.js';
 
 export default function ClientsMainContainer(props) {
     const handleSearchTermChange = props.handleSearchTermChange;
+    const client = props.client;
     const history = useHistory();
     const route = useLocation();
     const url = route.pathname;
@@ -33,7 +34,7 @@ export default function ClientsMainContainer(props) {
         }
     }
 
-    const checkClientsURL = () => {
+    const checkClientsURL = (client) => {
         console.log("Checking url: "+url)
         if (matchPath(url, { path: "/clients/found/:term", exact: true, strict: false }) || matchPath(url, { path: "/clients/found", exact: true, strict: false })) {
             const splitUrl = url.split("/");
@@ -47,17 +48,17 @@ export default function ClientsMainContainer(props) {
 
         }
         else if (matchPath(url, { path: "/clients/services/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/services", exact: true, strict: false })) {
-            checkClient(1);
+            checkClient(client, 1);
         }
         else if (matchPath(url, { path: "/clients/client/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/client", exact: true, strict: false })) {
-            checkClient(2);
+            checkClient(client, 2);
         }
         else if (matchPath(url, { path: "/clients/history/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/history", exact: true, strict: false })) {
-            checkClient(3);
+            checkClient(client, 3);
         }
     }
 
-    const checkClient = (tabId) => {
+    const checkClient = (client, tabId) => {
         const splitUrl = url.split("/");
         const clientId = splitUrl.length == 4 ? splitUrl[3] : "";
         if (isEmpty(client) || (client.clientId != clientId)) {

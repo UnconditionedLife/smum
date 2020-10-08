@@ -17,7 +17,7 @@ export default function ClientsMain(props) {
   const [client, setClient] = useState({});
   const [isNewClient, setIsNewClient] = useState(false);
 
-  useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(); } }, [session, url])
+  useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(client); } }, [session, url])
 
   useEffect(() => {
     if (searchTerm !== '') {
