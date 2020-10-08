@@ -43,9 +43,8 @@ export default function TestForm(props) {
                         control={ control } rules={ {required: 'Given name is required'}} />
                     <FormField name="familyName" label="Family Name" error={ errors.familyName } 
                         control={ control } rules={ {required: 'Family name is required'}} />
-                    <InputLabel id="demo-simple-select-outlined-label">Gender</InputLabel>
                     <FormSelect name="gender" label="Gender" error={ errors.givenName } 
-                        control={ control } labelId="demo-simple-select-outlined-label" >
+                        control={ control }>
                             <option value=''>None</option>
                             <option value='Female'>Female</option>
                             <option value='Male'>Male</option>
