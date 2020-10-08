@@ -156,13 +156,14 @@ export default function SectionsNavBar(props) {
     window.uiShowHideLogin('show');
     window.utilInitAuth(null);
     removeSession();
-  };
+  }
 
   function handleSearchTermChange(newValue) {
     if (searchTerm !== newValue) {
       setSearchTerm(newValue);
     }
-  };
+  }
+
   const isAdmin = session &&
     (session.user.userRole == 'Admin' || session.user.userRole == 'TechAdmin');
 
@@ -196,21 +197,18 @@ export default function SectionsNavBar(props) {
 
       <Box className={classes.bar} mr={2} ml={2.5} justifyContent="flex-end" flexGrow={1}>
         <Box className={classes.sectionDesktop}>
-          {/* Calling App.js : () => window.navSwitch('clients') */}
           <Button onClick={() => handleSectionChange(0)} startIcon={<People />}
-            variant="text" color="inherit"
-          >
+            variant="text" color="inherit">
             Clients
-        </Button>
+          </Button>
 
-          {/* Calling App.js : () => window.navSwitch('admin') */}
           <Button onClick={() => handleSectionChange(1)} startIcon={<Face />}
             disabled={!isAdmin} variant="text" color="inherit">
             Admin
-        </Button>
+          </Button>
 
           <Button onClick={() => handleSectionChange(2)} startIcon={<Today />}
-            disabled={!isAdmin} variant="text" color="inherit">
+            variant="text" color="inherit">
             Today
         </Button>
 
@@ -295,7 +293,6 @@ export default function SectionsNavBar(props) {
       <MenuItem onClick={() => { closeMobileMenu(); handleSectionChange(2); }}>
         <Button startIcon={<Today />}>
           Today
-
         </Button>
       </MenuItem>
 
@@ -336,4 +333,4 @@ export default function SectionsNavBar(props) {
       </ThemeProvider>
     </Box>
   );
-};
+}

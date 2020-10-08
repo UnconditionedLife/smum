@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
 import { ClientsMain } from '../Clients';
-import { isEmpty } from '../System';
+import { isEmpty } from '../System/js/Utils.js';
 
 export default function ClientsMainContainer(props) {
     const handleSearchTermChange = props.handleSearchTermChange;
@@ -74,4 +74,4 @@ export default function ClientsMainContainer(props) {
             selectedTab={selectedTab} url={url}
             updateURL={updateURL} />
     );
-};
+}

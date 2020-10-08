@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import TextField from '../Core/TextField.jsx';
 import Typography from '../Core/Typography.jsx';
@@ -24,6 +25,15 @@ function FormField(props) {
             </Typography>
         </Box>
     )
+}
+
+FormField.propTypes = {
+    name: PropTypes.string.isRequired,
+    label: PropTypes.string.isRequired,
+    type: PropTypes.string,
+    control: PropTypes.object.isRequired,
+    rules: PropTypes.object,
+    error: PropTypes.object.isRequired,
 }
 
 export default FormField;

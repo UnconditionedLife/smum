@@ -33,7 +33,7 @@ export function validState(state) {
 
 export function validPhone(phone) {
     let digits = phone.replace(/[^+\d]/g, ''); // Leave only + and digits
-    if (digits.match(/^(\+1)?\d{10}$/)) // Optional +1 followed by 10 digits
+    if (digits.match(/^(\+1)?[1-9]\d{9}$/)) // Optional +1 followed by 10 digits
         return true;
     else
         return false;

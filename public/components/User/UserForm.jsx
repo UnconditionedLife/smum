@@ -10,8 +10,6 @@ export default function UserForm(props) {
     defValues.zipcode = packZipcode(props.user.zipcode, props.user.zipSuffix);
     const { handleSubmit, reset, control, errors, formState } = useForm({
         mode: 'onBlur',
-        reValidateMode: 'onChange',
-        shouldFocusError: true,
         defaultValues: defValues, 
     });
 
