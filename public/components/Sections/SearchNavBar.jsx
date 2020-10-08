@@ -128,7 +128,7 @@ export default function SectionsNavBar(props) {
       </ThemeProvider>,
         document.getElementById("loginOverlay"));
     }
-  });
+  }, []);
 
   const handleSectionChange = (newValue) => {
     // setSelectedSection(newValue);
@@ -156,6 +156,10 @@ export default function SectionsNavBar(props) {
     window.uiShowHideLogin('show');
     window.utilInitAuth(null);
     removeSession();
+    ReactDOM.render(<ThemeProvider theme={theme}>
+      <LoginForm onLogin={(x) => setSession(x)} />
+    </ThemeProvider>,
+      document.getElementById("loginOverlay"));
   }
 
   function handleSearchTermChange(newValue) {
