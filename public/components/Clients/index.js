@@ -15,6 +15,7 @@ import NotesDisplay from '../Clients/ServicesPage/NotesDisplay.jsx';
 import ServiceNotes from '../Clients/ServicesPage/ServiceNotes.jsx';
 import PrimaryButtons from '../Clients/ServicesPage/PrimaryButtons.jsx';
 import SecondaryButtons from '../Clients/ServicesPage/SecondaryButtons.jsx';
+import SelectTestForm from '../Clients/ClientPage/SelectTestForm.jsx';
 import ServicesPage from '../Clients/ServicesPage/ServicesPage.jsx';
 import ClientsMainContainer from '../Clients/ClientsMainContainer.jsx';
 import ClientsContent from '../Clients/ClientsContent.jsx';
@@ -23,5 +24,5 @@ export  {
             ClientPage, ClientsHeader, ClientsContent, ClientsMain, ClientsMainContainer, 
             DependentsDisplay, FoundPage, HeaderDateTime, HeaderTitle, HistoryButtons, 
             HistoryDisplay, HistoryHeader, HistoryPage, LastServed, NoteForm, 
-            NotesDisplay, PrimaryButtons, SecondaryButtons, ServiceNotes, ServicesPage 
+            NotesDisplay, PrimaryButtons, SecondaryButtons, SelectTestForm, ServiceNotes, ServicesPage 
         }

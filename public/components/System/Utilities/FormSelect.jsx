@@ -18,7 +18,7 @@ import { Controller } from 'react-hook-form';
 function FormSelect(props) {
     return (
         <Box display="flex" flexDirection="column">
-            <Controller as={ Select } { ...props } />
+            <Controller as={ Select } { ...props } native m={ 1 } />
             <Typography ml={ 1.5 } mb={ 1 } mt={ -1 } variant='body2' color='error'>
                 { props.error ? props.error.message : '' }
             </Typography>

@@ -14,6 +14,9 @@ const theme = createMuiTheme({
         MuiTextField: {
             variant: 'outlined',
         },
+        MuiSelect: {
+            variant: 'outlined',
+        },
     },
 });
 
@@ -51,6 +54,6 @@ theme.overrides = {
             margin: theme.spacing(1),
         }
     },
-};
+}
 
 export default theme

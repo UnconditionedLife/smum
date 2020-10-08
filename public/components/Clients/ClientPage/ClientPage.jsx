@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
-import { DependentsDisplay } from '../';
+import { DependentsDisplay, SelectTestForm } from '../';
 import { isEmpty } from '../../System/js/Utils.js';
 
 export default function ClientPage(props) {
@@ -60,6 +60,7 @@ export default function ClientPage(props) {
                 <AccordionDetails>
                     <Typography>
                         This will show the financial info that currently only displays on edit
+                        <SelectTestForm client={ client }/>
                     </Typography>
                 </AccordionDetails>
             </Accordion>
