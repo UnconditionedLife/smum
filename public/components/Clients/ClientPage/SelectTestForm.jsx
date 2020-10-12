@@ -1,12 +1,8 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
-import { Box } from '@material-ui/core';
-import { FormField, FormSelect, SaveCancel, Select } from '../../System';
-
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-
+import { Box, MenuItem } from '@material-ui/core';
+import { FormTextField, FormSelect, SaveCancel } from '../../System';
 
 export default function TestForm(props) {
     let defValues = { ...props.client };
@@ -14,8 +10,6 @@ export default function TestForm(props) {
         mode: 'onBlur',
         defaultValues: defValues, 
     });
-
-    console.log(control)
 
     function doSave(values) {
         // let userData = Object.assign({}, props.user);
@@ -25,30 +19,25 @@ export default function TestForm(props) {
         // Object.assign(userData, unpackZipcode(values.zipcode));
         // reset(values);
         // alert("Changes saved (not really!)");
+        alert('Saving: ' + JSON.stringify(values))
     }
 
     const submitForm = handleSubmit(doSave);
-
-    const genderOptions = [ 
-        {value: 'female', label: 'Female'},
-        {value: 'male', label: 'Male'},
-        {value: 'undefined', label: 'Undefined'}
-    ]
 
     return (
         <Fragment>
             <form>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormField name="givenName" label="Given Name" error={ errors.givenName } 
+                    <FormTextField name="givenName" label="Given Name" error={ errors.givenName } 
                         control={ control } rules={ {required: 'Given name is required'}} />
-                    <FormField name="familyName" label="Family Name" error={ errors.familyName } 
+                    <FormTextField name="familyName" label="Family Name" error={ errors.familyName } 
                         control={ control } rules={ {required: 'Family name is required'}} />
-                    <FormSelect name="gender" label="Gender" error={ errors.givenName } 
-                        control={ control }>
-                            <option value=''>None</option>
-                            <option value='Female'>Female</option>
-                            <option value='Male'>Male</option>
-                            <option value='Undefined'>Undefined</option>
+                    <FormSelect name="gender" label="Gender" width="100px" error={ errors.gender } 
+                        control={ control } rules={ {required: 'Gender is required'} }>
+                            <MenuItem value=''>None</MenuItem>
+                            <MenuItem value='Female'>Female</MenuItem>
+                            <MenuItem value='Male'>Male</MenuItem>
+                            <MenuItem value='Undefined'>Undefined</MenuItem>
                     </FormSelect>
 
                     {/* Possible solution for using Select with RFH:
@@ -56,18 +45,6 @@ export default function TestForm(props) {
                 </Box>
             </form>
             <SaveCancel disabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : reset() } } />
-            {/* <Box>
-                <FormControl>
-                    <InputLabel id="demo-simple-select-outlined-label">Age</InputLabel>
-                    <Select native label='Gender' value={ props.client.gender }
-                        inputProps={{ name: 'gender' }} labelId="demo-simple-select-outlined-label">
-                        <option value=''>None</option>
-                        <option value='Female'>Female</option>
-                        <option value='Male'>Male</option>
-                        <option value='Undefined'>Undefined</option>
-                    </Select>
-                </FormControl>
-            </Box> */}
         </Fragment>
     );
 }

@@ -10,14 +10,12 @@ The most important arguments and return values from `useForm()` are as follows:
 - `formState` is an object containing the overall form state.
 
 ## Form Fields
-Most controls within a 
-form are text fields implemented using the internal `FormField` component, which wraps a Material UI `TextField`
-with a `Typography` component to display the field validation error, if any. For other types of form
-fields, such as radio buttons or checkboxes, we would need a similar wrapper to display validation errors.
-However, it seems unlikely that this will be necessary because form controls other than text fields
-ask the user to select from a set of predetermined options, all of which are valid.
+Controls within a form use an internal `FormTextField` or `FormSelect` component, which wraps a Material UI
+`TextField` or `Select` with a `Typography` component to display the field validation error, if any. 
+For other types of form fields, such as radio buttons or checkboxes, we would need a similar wrapper
+to display validation errors.
 
-The following props are required for the `FormField` component:
+The following props are required for the `FormTextField` component:
 - `name` - Name of the field within the object containing the form data
 - `label` - Human-readable label for the field to be displayed
 - `control` - Same as the `control` value returned from `useForm()`
@@ -29,13 +27,13 @@ The following props are required for the `FormField` component:
 An initial value for the field can be specified with the `defaultValue` prop, but this is not
 recommended because it *will not* override a value in the overall `defaultValues` object.
 
-These and any additional props are passed to the underlying `TextField` component. Note that the 
-`error` prop contains the validation message that will be displayed by the `FormField` component, but
-the prop name is carefully chosen so that, when it is passed to the underlying `TextField`,
-it will also cause the text field to be displayed in red if it contains a non-null value.
+These and any additional props are passed to the underlying `TextField` or `Select` component. Note that the 
+`error` prop contains the validation message that will be displayed by the `FormTextField` component, but
+the prop name is carefully chosen so that, when it is passed to an underlying `TextField`,
+it will also cause the text field to be displayed in red if `error` contains a non-null value.
 
 ## Form Validation
-Individual fields are validated according to the `rules` specified for the `FormField` as described above.
+Individual fields are validated according to the `rules` specified for the `FormTextField` as described above.
 Form-level validation, for example comparing two fields to ensure that they have matching values
 must be done when the form is submitted by clicking `Save`. If an error is found, it can be
 marked on the appropriate field using `setError()`.

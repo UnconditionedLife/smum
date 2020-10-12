@@ -47,8 +47,8 @@ theme.overrides = {
             backgroundColor: theme.palette.primary.light,
         }
     },
-    MuiTextField: {
-        ...theme.MuiTextField,
+    MuiFormControl: {
+        ...theme.MuiFormControl,
         root: {
             ...theme.root,
             margin: theme.spacing(1),

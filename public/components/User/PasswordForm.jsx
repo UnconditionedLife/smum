@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Button } from '@material-ui/core';
-import { FormField } from '../System';
+import { FormTextField } from '../System';
 
 export default function PasswordForm(props) {
     const { reset, handleSubmit, control, formState, errors, setError } = useForm({
@@ -25,13 +25,13 @@ export default function PasswordForm(props) {
         <Fragment>
             <form>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormField name="oldPassword" label="Current Password" error= {errors.oldPassword} type="password" 
+                    <FormTextField name="oldPassword" label="Current Password" error= {errors.oldPassword} type="password" 
                         control={ control } rules={ {required: 'Current password is required'} }/>
                 </Box>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormField name="newPassword1" label="New Password" type="password" 
+                    <FormTextField name="newPassword1" label="New Password" type="password" 
                         control={ control } error= {errors.newPassword1} rules={ {required: 'New password is required'} }/>
-                    <FormField name="newPassword2" label="Confirm Password" error= {errors.newPassword2} type="password"
+                    <FormTextField name="newPassword2" label="Confirm Password" error= {errors.newPassword2} type="password"
                         control={ control } rules={ {required: 'New password is required'} }/>
                 </Box>
             </form>
