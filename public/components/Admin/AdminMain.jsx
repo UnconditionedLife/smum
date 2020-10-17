@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { makeStyles, useTheme, createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
-import Box from '@material-ui/core/Box';
 import ListAltIcon from '@material-ui/icons/ListAlt';
 import RoomServiceIcon from '@material-ui/icons/RoomService';
 import AccountBoxIcon from '@material-ui/icons/AccountBox';
@@ -28,14 +27,20 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function AdminMain() {
+export default function AdminMain(props) {
   const classes = useStyles();
   // const theme = {theme} // useTheme();
   const [ selectedTab, setSelectedTab ] = React.useState(0);
+  const [selectedUser, setSelectedUser] = useState('');
 
   const handleChange = (event, newValue) => {
     setSelectedTab(newValue);
   };
+
+  function onSelectUser(userName) {
+      setSelectedUser(userName);
+      setSelectedTab(4);
+  }
 
   return (
     <div className={classes.root}>
@@ -47,22 +52,26 @@ export default function AdminMain() {
           textColor="primary"
           selectionFollowsFocus
         >
-          <Tab icon={<ListAltIcon />} label="Services" />
-          <Tab icon={<RoomServiceIcon />} label="Service Type" />
-          <Tab icon={<AssessmentIcon />} label="Reports" />
-          <Tab icon={<AccountBoxIcon />} label="Users" />
-          <Tab icon={<AccountCircleIcon />} label="User" />
-          <Tab icon={<SettingsApplicationsIcon />} label="Settings" />
-          <Tab icon={<InputIcon />} label="Import" />
+          <Tab icon={<ListAltIcon/>} label="Services" />
+          <Tab icon={<RoomServiceIcon/>} label="Service Type" />
+          <Tab icon={<AssessmentIcon/>} label="Reports" />
+          <Tab icon={<AccountBoxIcon/>} label="Users" />
+          <Tab icon={<AccountCircleIcon/>} label="User" />
+          <Tab icon={<SettingsApplicationsIcon/>} label="Settings" />
+          <Tab icon={<InputIcon/>} label="Import" />
         </Tabs>
       </AppBar>
-      {selectedTab === 0 && <AdminServicesPage />}
-      {selectedTab === 1 && <ServiceTypePage />}
-      {selectedTab === 2 && <ReportsPage />}
-      {selectedTab === 3 && <AllUsersPage />}
-      {selectedTab === 4 && <UserPage />}
-      {selectedTab === 5 && <SettingsPage />}
-      {selectedTab === 6 && <ImportPage />}
+      {selectedTab === 0 && <AdminServicesPage session={ props.session } />}
+      {selectedTab === 1 && <ServiceTypePage session={ props.session } />}
+      {selectedTab === 2 && <ReportsPage session={ props.session } />}
+      {selectedTab === 3 && <AllUsersPage session={ props.session } onSelect={ onSelectUser }/>}
+      {selectedTab === 4 && <UserPage session={ props.session } userName={ selectedUser }/>}
+      {selectedTab === 5 && <SettingsPage session={ props.session } />}
+      {selectedTab === 6 && <ImportPage session={ props.session } />}
     </div>
   );
-};
+}
+
+AdminMain.propTypes = {
+    session: PropTypes.object.isRequired,
+}

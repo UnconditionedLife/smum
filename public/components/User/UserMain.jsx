@@ -10,7 +10,7 @@ export default function UserMain(props) {
             <Card>
                 <CardHeader title="User Profile" />
                 <CardContent>
-                    <UserForm { ...props } user={ props.session.user } />
+                    <UserForm { ...props } user={ props.session.user } selfEdit />
                 </CardContent>
             </Card>
             <Card>

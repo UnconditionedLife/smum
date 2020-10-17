@@ -1,8 +1,8 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
-import { Box } from '@material-ui/core';
-import { FormTextField, SaveCancel } from '../System';
+import { Box, MenuItem } from '@material-ui/core';
+import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
 
 export default function UserForm(props) {
@@ -28,6 +28,24 @@ export default function UserForm(props) {
     return (
         <Fragment>
             <form>
+                { !props.selfEdit && 
+                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                    <FormTextField name="userName" label="Username" disabled error={ errors.userName } 
+                        control={ control } rules={ {required: 'Username is required'}} />
+                    <FormSelect name="userRole" label="Role" error={ errors.userRole } 
+                        control={ control } rules={ {required: 'User role is required'}} >
+                            <MenuItem value="Volunteer">Volunteer</MenuItem>
+                            <MenuItem value="Admin">Admin</MenuItem>
+                            <MenuItem value="TechAdmin">TechAdmin</MenuItem>
+
+                    </FormSelect>
+                    <FormSelect name="isActive" label="Status" error={ errors.isActive }
+                        control={ control } rules={ {required: 'User status is required'}} >
+                            <MenuItem value="Active">Active</MenuItem>
+                            <MenuItem value="Inactive">Inactive</MenuItem>
+                    </FormSelect>
+                </Box>
+                }
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
                     <FormTextField name="givenName" label="Given Name" error={ errors.givenName } 
                         control={ control } rules={ {required: 'Given name is required'}} />
@@ -63,4 +81,5 @@ export default function UserForm(props) {
 UserForm.propTypes = {
     session: PropTypes.object.isRequired,
     user: PropTypes.object,
+    selfEdit: PropTypes.bool,
 }

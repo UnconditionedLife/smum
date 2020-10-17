@@ -34,7 +34,7 @@ export default function SectionsContent(props) {
                 </Route>
 
                 <Route path="/admin">
-                    <AdminMain />
+                    <AdminMain session={props.session}/>
                 </Route>
                 <Route path="/user">
                     <UserMain session={props.session}/>
@@ -45,4 +45,4 @@ export default function SectionsContent(props) {
             </Container>
         );
     }
-};
+}
