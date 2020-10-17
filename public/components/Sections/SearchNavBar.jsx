@@ -99,7 +99,6 @@ export default function SectionsNavBar(props) {
   }
   const [selectedSection, setSelectedSection] = useState(-1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [typedSearchTerm, setTypedSearchTerm] = useState('')
 
   useEffect(() => {
     const newSection = checkSectionURL(selectedSection);
@@ -185,15 +184,10 @@ export default function SectionsNavBar(props) {
             input: classes.inputInput,
           }}
           inputProps={{ 'aria-label': 'search' }}
-          value={typedSearchTerm}
-          onChange={event => {
-            setTypedSearchTerm(event.target.value)
-          }}
           onKeyPress={event => {
             if (event.key == "Enter") {
-              if (selectedSection !== 0) handleSectionChange(0)
-              setSearchTerm(typedSearchTerm)
-              setTypedSearchTerm('')
+            if (selectedSection !== 0) handleSectionChange(0)
+            setSearchTerm(event.target.value)
             }
           }}
         />
