@@ -1,12 +1,18 @@
 //************************************************
-//***** CLIENTS SECTION JAVASCRIPT FUNCTIONS *****
+//***** DATABASE SECTION JAVASCRIPT FUNCTIONS *****
 //************************************************
 
-const aws = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/prod';
+const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
+let dbUrl = '';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
+
+export function dbSetUrl(instance) {
+    dbUrl = dbBase + instance;
+}
+
 export function dbGetAllUsers(session) {
-	return window.dbGetData(aws+"/users").users;
+	return window.dbGetData(dbUrl+"/users").users;
 }
 
 export function dbGetUser(session, userName) {
@@ -16,4 +22,11 @@ export function dbGetUser(session, userName) {
         return userList[0];
     else
         return null;
+}
+
+export function dbSetModifiedTime(obj, isNew) {
+    const now = moment().format('YYYY-MM-DDTHH:mm');
+    obj.updatedDateTime = now;
+    if (isNew)
+        obj.createdDateTime = now;
 }

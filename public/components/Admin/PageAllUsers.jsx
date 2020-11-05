@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Table, TableBody,
-     TableCell, TableContainer, TableHead, TableRow, Typography } from '@material-ui/core';
-import { ExpandMore } from '@material-ui/icons';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Table, TableBody,
+     TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@material-ui/core';
+import { Add, ExpandMore } from '@material-ui/icons';
 import { dbGetAllUsers } from '../System/js/database.js';
 
 
@@ -23,7 +23,7 @@ function UserList(props) {
                     {props.list.map((row) => (
                     <TableRow 
                         key={ row.userName }
-                        onClick={ (event) => props.onSelect(row.userName) }
+                        onClick={ () => props.onSelect(row.userName) }
                     >
                         <TableCell component="th" scope="row">{row.userName}</TableCell>
                         <TableCell align="center">{row.givenName}</TableCell>
@@ -48,6 +48,11 @@ export default function AllUsersPage(props) {
 
     return (
         <Box mt={ 7 }>
+            <Tooltip title= 'Add User'>
+                <Fab onClick={() => props.onSelect('')}  size="small" color='default' >
+                    <Add />
+                </Fab>
+            </Tooltip>
             <Accordion defaultExpanded='true'>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
                     <Typography variant='button' >Active Users</Typography>

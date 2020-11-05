@@ -46,12 +46,17 @@ the function to call to submit the form. Therefore, we include a line like
     const submitForm = handleSubmit(doSave);
 
 to get the function `submitForm()` to call when the user presses `Save`. If the validation
-of individual fields is successful, it will invoke the callback function `doSave()`, which
-should perform any necessary form-level validation and then save the form contents if 
-the validation is successful. If desired, this function can also convert form values
-to a canonical form, such as converting state abbreviations to upper case, before
-saving the data. After saving the form data successfully, `doSave()` should
-call `reset(values)` to update the form default values to the current values.
+of individual fields is successful, it will invoke the callback function `doSave()`.
+
+The save function should perform the following steps:
+1. Perform any necessary form-level validation. If there are any errors, mark them with
+`setError()` and return.
+2. Convert form values to a canonical form, such as converting state abbreviations to upper case.
+3. Overwrite fields of the original data structure with form data fields using `Object.assign()`.
+Note that this may leave some fields in the original data structure unchanged.
+4. For most data structures, set the created and modified times using `dbSetModifiedTime()`.
+5. Save the updated data structure using `dbSaveData()`.
+6. Call `reset(formValues)` to update the form default values to the current values.
 
 Resetting the form when the user presses `Cancel` just requires a call to `reset()`. The 
 `isDirty` field of `formState` can be used to enable the buttons of the `SaveCancel`

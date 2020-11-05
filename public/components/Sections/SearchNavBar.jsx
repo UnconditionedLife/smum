@@ -6,6 +6,7 @@ import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '
 import { Button } from '../System';
 import theme from './Theme.jsx';
 import LoginForm from "./LoginForm.jsx";
+import DbSwitch from './DbSwitch.jsx';
 import SectionsContent from "./SectionsContent.jsx";
 import { useCookies } from 'react-cookie';
 import { cogSetupUser, cogSetupSession } from '../System/js/Cognito.js';
@@ -323,6 +324,7 @@ export default function SectionsNavBar(props) {
       { renderMobileMenu}
       { renderMenu}
       <ThemeProvider theme={theme}>
+        <DbSwitch />
         <SectionsContent
           searchTerm={searchTerm}
           handleSearchTermChange={handleSearchTermChange}

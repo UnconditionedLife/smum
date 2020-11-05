@@ -4,23 +4,51 @@ import { useForm } from "react-hook-form";
 import { Box, MenuItem } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
+import { dbGetUser, dbSetModifiedTime } from '../System/js/database';
+
+UserForm.propTypes = {
+    session: PropTypes.object.isRequired,
+    user: PropTypes.object,     // null to create new user
+    selfEdit: PropTypes.bool,   // true if editing current session user
+}
 
 export default function UserForm(props) {
-    let defValues = { ...props.user };
-    defValues.zipcode = packZipcode(props.user.zipcode, props.user.zipSuffix);
-    const { handleSubmit, reset, control, errors, formState } = useForm({
+    const isNewUser = (props.user == null);
+    let initValues;
+    let userData;
+    if (isNewUser) {
+        userData = {userName: '', isActive: 'Active', userRole: 'Volunteer',
+            givenName: '', familyName: '', dob: '2000-01-01',
+            street: '', city: '', state: '', zipcode: '', zipSuffix: 0,
+            telephone: '', email: '', notes: [],
+        };
+    } else {
+        userData = Object.assign({}, props.user);
+    }
+    initValues = { ...userData };
+    initValues.zipcode = packZipcode(userData.zipcode, userData.zipSuffix);
+
+    const { handleSubmit, reset, control, errors, setError, formState } = useForm({
         mode: 'onBlur',
-        defaultValues: defValues, 
+        defaultValues: initValues, 
     });
 
-    function doSave(values) {
-        let userData = Object.assign({}, props.user);
-        values.state = values.state.toUpperCase();
-        values.telephone = formatPhone(values.telephone);
-        Object.assign(userData, values);
-        Object.assign(userData, unpackZipcode(values.zipcode));
-        reset(values);
-        alert("Changes saved (not really!)");
+    function doSave(formValues) {
+        // Validate form contents
+        if (isNewUser && dbGetUser(props.session, formValues.userName) != null) {
+            setError('userName', {type: 'manual', message: 'Username is already in use'});
+        } else {
+            // Convert form values to canonical format
+            formValues.state = formValues.state.toUpperCase();
+            formValues.telephone = formatPhone(formValues.telephone);
+            // Overwrite user data structure with form values
+            Object.assign(userData, formValues);
+            Object.assign(userData, unpackZipcode(formValues.zipcode));
+            // Save user data and reset form state to new values
+            dbSetModifiedTime(userData, isNewUser);
+            reset(formValues);
+            alert("Changes saved (not really!)\n"+JSON.stringify(userData));
+        }
     }
 
     const submitForm = handleSubmit(doSave);
@@ -30,14 +58,13 @@ export default function UserForm(props) {
             <form>
                 { !props.selfEdit && 
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField name="userName" label="Username" disabled error={ errors.userName } 
+                    <FormTextField name="userName" label="Username" disabled={ !isNewUser } error={ errors.userName } 
                         control={ control } rules={ {required: 'Username is required'}} />
                     <FormSelect name="userRole" label="Role" error={ errors.userRole } 
                         control={ control } rules={ {required: 'User role is required'}} >
                             <MenuItem value="Volunteer">Volunteer</MenuItem>
                             <MenuItem value="Admin">Admin</MenuItem>
                             <MenuItem value="TechAdmin">TechAdmin</MenuItem>
-
                     </FormSelect>
                     <FormSelect name="isActive" label="Status" error={ errors.isActive }
                         control={ control } rules={ {required: 'User status is required'}} >
@@ -76,10 +103,4 @@ export default function UserForm(props) {
             <SaveCancel disabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : reset() } } />
         </Fragment>
     );
-}
-
-UserForm.propTypes = {
-    session: PropTypes.object.isRequired,
-    user: PropTypes.object,
-    selfEdit: PropTypes.bool,
 }

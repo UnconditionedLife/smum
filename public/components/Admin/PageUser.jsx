@@ -8,19 +8,16 @@ import { UserForm } from '../User';
 export default function UserPage(props) {
     const user = dbGetUser(props.session, props.userName);
 
-    if (user == null)
-        return <Typography>No user selected</Typography>
-    else
-        return (
-            <Container maxWidth='md'>
-                <Card>
-                    <CardHeader title="User Account" />
-                    <CardContent>
-                        <UserForm session={ props.session } user={ user } />
-                    </CardContent>
-                </Card>
-            </Container>
-        );
+    return (
+        <Container maxWidth='md'>
+            <Card>
+                <CardHeader title="User Account" />
+                <CardContent>
+                    <UserForm session={ props.session } user={ user } />
+                </CardContent>
+            </Card>
+        </Container>
+    );
 }
 
 UserPage.propTypes = {
