@@ -1,12 +1,12 @@
 import React from 'react';
 
-export default function ServiceTypePage() {
+export default function ReportsPage() {
 
     return (
         <div>
             <div><br/></div>
-            <div>SERVICE TYPE PAGE</div>
+            <div>REPORTS PAGE</div>
             <div><br/><br/></div>
         </div>
         )
-};
+}

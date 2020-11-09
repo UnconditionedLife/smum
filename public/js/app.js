@@ -2280,8 +2280,8 @@ function dbGetData(uUrl){
 			401: function() {
 console.log("Error: 401")
 				cogLogoutUser()
-				$(loginError).html("Sorry, your session has expired.")
-				console.log("Unauthorized")
+				//$(loginError).html("Sorry, your session has expired.")
+				console.log("Session Expired")
 			},
 			0: function() {
 console.log("Error: 0")
@@ -2320,9 +2320,11 @@ console.log("Error: 0")
     console.log("status", jqXHR.status)
 		if (jqXHR.status == 0) {
 
-		}
-		console.log("errorThrown", errorThrown)
-		console.log("errorThrown", JSON.parse(errorThrown))
+        }
+        if (errorThrown) {
+	    	console.log("errorThrown", errorThrown)
+            console.log("errorThrown", JSON.parse(errorThrown))
+        }
 
 		// if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
 		// 	console.log("ACCESS ERROR") // force logon
@@ -5076,7 +5078,7 @@ function prnPickupTimes(fromDateTime, toDateTime) {
 
 function prnPrintClothesReceipt(serviceType) {
 	const numArticles = client.family.totalSize * serviceType.numberItems;
-	const timeLimit = 15; // TODO get from service properties
+	const timeLimit = 10; // TODO get from service properties
 
 	prnStartReceipt();
 	prnServiceHeader('CLOTHES CLOSET PROGRAM');

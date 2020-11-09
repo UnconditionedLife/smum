@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/core/styles';
-import theme from '../../Sections/Theme.jsx';
+import theme from '../../Theme.jsx';
 import { isEmpty } from '../../System/js/Utils.js';
 
 export default function DependentsDisplay(props) {

@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, useLocation, Switch, Redirect, Route, Link, useHistory, matchPath, useRouteMatch, useParams } from "react-router-dom";
-
-import SearchNavBar from "./SearchNavBar.jsx";
+import { HeaderBar } from "./";
 
 export default function SearchNavBarContainer(props) {
     const route = useLocation();
     const history = useHistory();
-
     const checkSectionURL = (selectedSection) => {
         const url = route.pathname;
-        if (matchPath(url, { path: "/clients", exact: false, strict: false })) {
+        console.log(url)
+
+        if (matchPath(url, { path: "/", exact: false, strict: false })) {
+            if (selectedSection != 0) {
+                return 0;
+            }
+        }
+        else if (matchPath(url, { path: "/clients", exact: false, strict: false })) {
             if (selectedSection != 0) {
                 return 0;
             }
@@ -35,7 +40,6 @@ export default function SearchNavBarContainer(props) {
 
     const updateRoute = (newValue) => {
         const url = route.pathname;
-
         switch (newValue) {
           case 0:
             if (!matchPath(url, { path: "/clients", exact: false, strict: false })) {
@@ -55,6 +59,6 @@ export default function SearchNavBarContainer(props) {
     }
 
     return (
-        <SearchNavBar updateRoute={updateRoute} checkSectionURL={checkSectionURL} version="Version 1.0" />
+        <HeaderBar updateRoute={ updateRoute } checkSectionURL={ checkSectionURL } version="Version 1.0" />
     );
-};
+}

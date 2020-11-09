@@ -5,9 +5,12 @@ import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay, SelectTestForm } from '../';
 import { isEmpty } from '../../System/js/Utils.js';
 
+ClientPage.propTypes = {
+    client: PropTypes.object.isRequired,
+}
+
 export default function ClientPage(props) {
     const client = props.client;
-    const isNewClient = props.isNewClient;
     const clientFormDiv = useRef(null);
     const [expanded, setExpanded] = useState(false);
   
@@ -18,7 +21,7 @@ export default function ClientPage(props) {
     useEffect(() => {
         if (!isEmpty(client)) {
             uiShowClientEdit(clientFormDiv.current, false)
-        } else if (isNewClient) {
+        } else {
             uiShowClientEdit(clientFormDiv.current, true)
         }
     })
@@ -68,10 +71,6 @@ export default function ClientPage(props) {
     );
 }
 
-ClientPage.propTypes = {
-    client: PropTypes.object.isRequired,
-    isNewClient: PropTypes.object.isRequired,
-}
 
         // <div>
             // <div className="topFormButtonsDiv">

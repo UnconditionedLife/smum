@@ -1,12 +1,16 @@
 import React, { Fragment, useState } from "react";
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@material-ui/core';
-import { HeaderDateTime } from '../Clients';
-import { isEmpty } from '../System/js/Utils.js';
+import { HeaderDateTime } from '../../Clients';
+import { isEmpty } from '../../System/js/Utils.js';
+
+HeaderTitle.propTypes = {
+    client: PropTypes.object.isRequired,
+    clientsFound: PropTypes.array.isRequired,
+}
 
 export default function HeaderTitle(props) {
     const client = props.client
-    const isNewClient = props.isNewClient
     const clientsFound = props.clientsFound
     const todaysDate = window.moment().format("dddd, MMM DD YYYY")
     const [ headerMessage, setHeaderMessage ] = useState(todaysDate)
@@ -18,7 +22,7 @@ export default function HeaderTitle(props) {
         if (parsed !== headerMessage) setHeaderMessage(parsed)
     } else {
         titleType = 'nonclient'
-        if (isNewClient) {
+        if (client === {}) {
             if (headerMessage !== 'New Client') setHeaderMessage('New Client');
         } else {
             if (!isEmpty(clientsFound)) {
@@ -70,9 +74,3 @@ export default function HeaderTitle(props) {
         </Fragment>   
     )
 }
-
-HeaderTitle.propTypes = {
-    client: PropTypes.object.isRequired,
-    isNewClient: PropTypes.bool.isRequired,
-    clientsFound: PropTypes.array.isRequired,
-  }

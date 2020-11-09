@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
-import SectionsMain from './Sections/SectionsMain.jsx'
+import HeaderMain from './Header/HeaderMain.jsx'
 
 ReactDOM.render(
-    <SectionsMain />,
+    <HeaderMain />,
 document.getElementById("app")
 );

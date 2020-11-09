@@ -9,4 +9,4 @@ export default function SettingsPage() {
             <div><br/><br/></div>
         </div>
         )
-};
+}

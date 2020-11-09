@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import { isEmpty } from '../System/js/Utils.js';
+import { isEmpty } from '../../System/js/Utils.js';
 
 export default function FoundPage(props) {
     const clientsFound = props.clientsFound
@@ -20,7 +20,7 @@ export default function FoundPage(props) {
             handleClientChange(newClient[0])
             updateURL(newClient[0].clientId, 1);
         }
-    };
+    }
 
     if (!isEmpty(clientsFound)){
         return (
@@ -58,4 +58,4 @@ export default function FoundPage(props) {
     } else {
         return null
     }  
-};
+}

@@ -1,6 +1,6 @@
 import React,  { Fragment } from 'react';
 import { makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import theme from '../../Sections/Theme.jsx';
+import theme from '../../Theme.jsx';
 import { isEmpty } from '../../System/js/Utils.js';
 import { useState, useEffect } from 'react';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -28,7 +28,6 @@ const useStyles = makeStyles({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 15,
-        // marginTop: -10,
     },
     badge: {
         marginTop: 0,
@@ -52,7 +51,7 @@ export default function ServiceNotes(props) {
 
     function handleNoteCountChange(count){
         if (count !== noteCount) setNoteCount(count)
-    };
+    }
     
     function handleEditModeChange(newEditMode){
         if (newEditMode !== editMode) {
@@ -63,19 +62,19 @@ export default function ServiceNotes(props) {
             }
             setEditMode(newEditMode)
         }
-    };
+    }
 
     function handleEditNoteChange(newNote){
         if (newNote !== editNote) setEditNote(newNote)
-    };
+    }
 
     function handleTextFieldChange(text){
         if (noteText !== text) setNoteText(text)
-    };
+    }
 
     function handleNoteImportantChange(checked){
         if (noteImportant !== checked) setNoteImportant(checked)
-    };
+    }
 
     return (
         <ThemeProvider theme={ theme }>

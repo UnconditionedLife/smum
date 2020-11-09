@@ -131,14 +131,14 @@ main{
 }
 
 .loginFormDivNikhil {
-	position: inherit;
-	width: 400px;
-  height: 370px;
-	background-color: white;
-  font-size: 12px;
-  overflow: hidden;
-	border-radius: 5px;
-	padding:20px;
+	/* position: inherit; */
+	/* width: 400px; */
+  /* height: 370px; */
+	/* background-color: white; */
+  /* font-size: 12px; */
+  /* overflow: hidden; */
+	/* border-radius: 5px; */
+	/* padding:20px; */
 }
 
 .loginFormDiv {

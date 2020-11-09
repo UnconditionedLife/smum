@@ -3,12 +3,16 @@ import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Table, TableBody,
      TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@material-ui/core';
 import { Add, ExpandMore } from '@material-ui/icons';
-import { dbGetAllUsers } from '../System/js/database.js';
+import { dbGetAllUsers } from '../../System/js/database.js';
 
+UserList.propTypes = {
+    list: PropTypes.array.isRequired,
+    onSelect: PropTypes.func.isRequired,
+}
 
 function UserList(props) {
     return (
-        <Box>
+        <Box width='100%' mx={ 2 }>
             <TableContainer> 
                 <Table>
                 <TableHead>
@@ -38,8 +42,8 @@ function UserList(props) {
     );
 }
 
-UserList.propTypes = {
-    list: PropTypes.array.isRequired,
+AllUsersPage.propTypes = {
+    session: PropTypes.object.isRequired,
     onSelect: PropTypes.func.isRequired,
 }
 
@@ -77,9 +81,4 @@ export default function AllUsersPage(props) {
             </Accordion>
         </Box>
     );
-}
-
-AllUsersPage.propTypes = {
-    session: PropTypes.object.isRequired,
-    onSelect: PropTypes.func.isRequired,
 }

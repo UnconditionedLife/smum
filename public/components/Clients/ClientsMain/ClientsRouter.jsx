@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
-import { ClientsMain } from '../Clients';
-import { isEmpty } from '../System/js/Utils.js';
+import { ClientsMain } from '../';
+import { isEmpty } from '../../System/js/Utils.js';
 
-export default function ClientsMainContainer(props) {
+export default function ClientsRouter(props) {
     const handleSearchTermChange = props.handleSearchTermChange;
+    const searchTerm = props.searchTerm;
     const client = props.client;
     const history = useHistory();
     const route = useLocation();
     const url = route.pathname;
-    const searchTerm = props.searchTerm;
     const [ selectedTab, setSelectedTab ] = useState(0);
 
     const updateURL = (clientId, newTab) => {
@@ -35,7 +35,6 @@ export default function ClientsMainContainer(props) {
     }
 
     const checkClientsURL = (client) => {
-        console.log("Checking url: "+url)
         if (matchPath(url, { path: "/clients/found/:term", exact: true, strict: false }) || matchPath(url, { path: "/clients/found", exact: true, strict: false })) {
             const splitUrl = url.split("/");
             const term = splitUrl.length == 4 ? splitUrl[3] : "";
@@ -61,18 +60,18 @@ export default function ClientsMainContainer(props) {
     const checkClient = (client, tabId) => {
         const splitUrl = url.split("/");
         const clientId = splitUrl.length == 4 ? splitUrl[3] : "";
-        if (isEmpty(client) || (client.clientId != clientId)) {
+        if (isEmpty(client) || (client.clientId !== clientId)) {
             handleSearchTermChange(clientId);
         }
         if (selectedTab != tabId) {
             setSelectedTab(tabId);
         }
     }
-
-    return (
-        <ClientsMain {...props}
+    
+    return (    
+          <ClientsMain {...props}
             checkClientsURL={checkClientsURL}
             selectedTab={selectedTab} url={url}
             updateURL={updateURL} />
-    );
+    )
 }
