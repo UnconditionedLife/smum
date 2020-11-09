@@ -1,5 +1,5 @@
 import React from "react";
-import { Route } from "react-router-dom";
+import { Route, Redirect } from "react-router-dom";
 import Container from '@material-ui/core/Container';
 import { ClientsRouter } from '../Clients';
 import { AdminMain } from '../Admin';
@@ -13,6 +13,9 @@ export default function SectionsContent(props) {
     } else {
         return (
             <Container>
+                <Route exact path="/">
+                    <Redirect to="/clients" />
+                </Route>
                 {/* <SectionsHeader section = { props.section } /> */}
                 <Route path="/clients">
                     <ClientsRouter
