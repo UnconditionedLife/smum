@@ -1,8 +1,13 @@
 import React, { Fragment, useState } from 'react';
+import PropTypes from 'prop-types';
 import { AccessibilityNew, ContactMail, Fastfood } from '@material-ui/icons';
 import { Button } from '../../System';
 import { getButtonData, addService } from '../../System/js/Clients'
 import { isEmpty } from '../../System/js/Utils.js';
+
+PrimaryButtons.propTypes = {
+    client: PropTypes.object.isRequired,
+}
 
 export default function PrimaryButtons(props) {
     const [ buttonState, setButtonState ] = useState({})
@@ -21,12 +26,10 @@ export default function PrimaryButtons(props) {
         console.log(buttonState[serviceTypeId])
     }
     
-    if (isEmpty(client)) return null
+    if (isEmpty(props.client)) return null
     const buttonType = "primary"
     const buttonData = getButtonData(buttonType)
     // if (isEmpty(buttonData)) return null
-
-    console.log(buttonData)
     
     let buttons = []
     if (buttonData.primary == "-1") { // dependents grades requirement
@@ -53,25 +56,16 @@ export default function PrimaryButtons(props) {
             buttons.push(buttonData.activeServiceTypes[x])
             // handleButtonState(buttonData.activeServiceTypes[x].serviceTypeId, false)
         }
-        console.log(buttons)
     }
 
     return (
         <Fragment>
             {buttons.map((service) => {
                 return ( 
-                    <Button 
-                        key={ service.serviceTypeId }
-                        width="168px"
-                        height="168px"
-                        variant="contained" 
-                        disabled= { buttonState[service.serviceTypeId] }
-                        color={ service.btnColor }
-                        size="large"
-                        m={ 2 }
-                        endIcon={ service.btnIcon }
-                        onClick={ () => handleAddService(service.serviceTypeId, service.serviceCategory, service.serviceButtons) }
-                        >
+                    <Button key={ service.serviceTypeId } width="168px" height="168px" variant="contained" 
+                        disabled= { buttonState[service.serviceTypeId] } color={ service.btnColor }
+                        size="large" m={ 2 } endIcon={ service.btnIcon }
+                        onClick={ () => handleAddService(service.serviceTypeId, service.serviceCategory, service.serviceButtons) }>
                             { service.serviceName }
                     </Button>
                 )

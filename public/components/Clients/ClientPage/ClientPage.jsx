@@ -28,7 +28,7 @@ export default function ClientPage(props) {
 
     return (
         <Box mt={ 7 } width={ 1 }>
-            <Accordion defaultExpanded='true' onChange={handleChange('panel1')}>
+            <Accordion defaultExpanded={ true } onChange={handleChange('panel1')}>
                 <AccordionSummary expandIcon={ <ExpandMore /> } id="panel1bh-header" >
                     <Typography variant='button' >Client Info</Typography>
                 </AccordionSummary>

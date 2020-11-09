@@ -17,7 +17,7 @@ export function searchClients(str) {
     }
 
     return clientsFoundTemp
-};
+}
 
 export function arrayAddIds(array, id) {
 	// Check if notes & dependents arrays already have ids
@@ -33,7 +33,7 @@ export function arrayAddIds(array, id) {
 	} else {
 		return array
 	}
-};
+}
 
 export function getButtonData(buttonType) {
 	if (isEmpty(client)) return
@@ -43,7 +43,7 @@ export function getButtonData(buttonType) {
     const targetServices = getTargetServices(buttonData.activeServiceTypes); // list of target properties for each serviceType
     buttonData[buttonType] = getActiveServicesButtons(buttonType, buttonData.activeServiceTypes, targetServices, buttonData.lastServed);
     return buttonData
-};
+}
 
 export function getServiceHistory(){
 	let clientHistory = window.dbGetClientActiveServiceHistory()
@@ -51,7 +51,7 @@ export function getServiceHistory(){
 		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
 	//uiShowHistoryData(reactDIV, clientHistory)
 	return clientHistory
-};
+}
 
 export function calcClientDependentsAges(client){
 	// age TODO Move this to other Function
@@ -164,7 +164,7 @@ export function addService(serviceTypeId, serviceCategory, serviceButtons){
 		// uiShowLastServed() *** Moved to REACT ***
 		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
 	}
-};
+}
 
 
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
@@ -192,7 +192,7 @@ function getLastServedDays() {
 		lastServed.backToSchool = moment(lastServedBackToSchool[0].serviceDateTime).startOf('day')
 	}
 	return lastServed
-};
+}
 
 function getActiveServiceTypes(){
 	// build Active Service Types array of Service Types which cover today's date
@@ -226,7 +226,7 @@ function getActiveServiceTypes(){
 		}
 	}
 	return activeServiceTypes
-};
+}
 
 function getTargetServices(activeServiceTypes) {
 	let targets = [];
@@ -273,14 +273,11 @@ function getTargetServices(activeServiceTypes) {
 	return targets;
 }
 
-function getActiveServicesButtons(buttons, activeServiceTypes, targetServices, lastServed) {
-	
-	console.log(buttons)
-	
+function getActiveServicesButtons(buttons, activeServiceTypes, targetServices, lastServed) {	
 	let	btnPrimary = [];
 	let btnSecondary = [];
-	let validDependents = []
-	  
+    let validDependents = []
+      
 	for (let i = 0; i < activeServiceTypes.length; i++) {
 		let display = true;
 		// check for not a valid service based on interval between services
@@ -322,7 +319,7 @@ function getActiveServicesButtons(buttons, activeServiceTypes, targetServices, l
 				btnSecondary.push(i)
 			}
 		}
-	}
+    }
 	// used to prompt service if a dependent child's grade is not set
 	if (client.dependents.length > 0) {
 		for (var i = 0; i < client.dependents.length; i++) {
@@ -331,8 +328,7 @@ function getActiveServicesButtons(buttons, activeServiceTypes, targetServices, l
 				btnSecondary = ""
 			}
 		}
-	}
-	console.log(buttons)
+    }
 	if (buttons == "primary") return btnPrimary
 	if (buttons == "secondary") return btnSecondary
-};
+}

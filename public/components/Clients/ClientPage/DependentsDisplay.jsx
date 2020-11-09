@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/core/styles';
 import theme from '../../Theme.jsx';
 import { isEmpty } from '../../System/js/Utils.js';
 
-export default function DependentsDisplay(props) {
-    const client = props.client
-    const handleClientChange = props.handleClientChange
+DependentsDisplay.propTypes = {
+    client: PropTypes.object.isRequired,
+}
 
-    const dependentsNoAges = client.dependents ? client.dependents : []
+export default function DependentsDisplay(props) {
+    const dependentsNoAges = props.client.dependents ? props.client.dependents : []
 
     const dependents = window.utilCalcDependentsAges(dependentsNoAges)
 
 
-    console.log(dependents)
+    //console.log(dependents)
     // useEffect(() => {
     //     if (!isEmpty(client)) {
 
@@ -62,5 +64,5 @@ export default function DependentsDisplay(props) {
                 </TableContainer>
             </ThemeProvider>
         </div>
-    );
-};
+    )
+}
