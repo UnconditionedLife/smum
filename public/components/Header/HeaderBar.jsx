@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from "react-dom";
+import PropTypes from 'prop-types';
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { AppBar, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
+import { AppBar, Popover, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
 import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '@material-ui/icons';
 import { Button } from '../System';
 import { LoginForm, SectionsContent }  from '.';
@@ -85,6 +85,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+HeaderBar.propTypes = {
+    checkSectionURL: PropTypes.func.isRequired,
+    updateRoute: PropTypes.func.isRequired,
+    version: PropTypes.string.isRequired,
+}
+
 export default function HeaderBar(props) {
     const classes = useStyles();
     const [userMenuAnchor, setUserMenuAnchor] = useState(null);
@@ -133,15 +139,8 @@ export default function HeaderBar(props) {
                     }
                     window.utilInitAuth(cookies.auth)
                     window.utilInitSession(cookies.user, tempUser);
-                    window.uiShowHideLogin('hide');
                 }
             });
-        } else {
-            ReactDOM.render(
-                <ThemeProvider theme={theme}>
-                    <LoginForm onLogin={(x) => setSession(x)} />
-                </ThemeProvider>,
-                document.getElementById("loginOverlay"));
         }
     }, []);
 
@@ -168,23 +167,32 @@ export default function HeaderBar(props) {
 
     function handleLogout() {
         session.cogUser.signOut();
-        window.uiShowHideLogin('show');
         window.utilInitAuth(null);
         removeSession();
-        ReactDOM.render(<ThemeProvider theme={theme}>
-        <LoginForm onLogin={(x) => setSession(x)} />
-        </ThemeProvider>,
-        document.getElementById("loginOverlay"));
     }
 
     function handleSearchTermChange(newValue) {
         if (searchTerm !== newValue) {
-        setSearchTerm(newValue);
+            setSearchTerm(newValue);
         }
     }
 
     const isAdmin = session &&
         (session.user.userRole == 'Admin' || session.user.userRole == 'TechAdmin');
+
+    const login = (
+        <Popover 
+            anchorReference="anchorPosition"
+            anchorPosition={{ top: 200, left: 100 }}
+            transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+            }}
+            open={session == null}
+        >
+            <LoginForm onLogin={(x) => setSession(x)} />
+        </Popover>
+    );
 
     const appbarControls = (
         <React.Fragment>
@@ -260,6 +268,7 @@ export default function HeaderBar(props) {
             <MenuItem>
                 <Button startIcon={<People />}
                     onClick={() => { closeMobileMenu(); handleSectionChange(0); }}>
+                    Clients
                 </Button>
             </MenuItem>
             <MenuItem >
@@ -288,6 +297,7 @@ export default function HeaderBar(props) {
 
     return (
         <Box flexGrow={1} >
+            { login }
             <AppBar position="fixed">
                 <Toolbar>
                     <Tooltip title={props.version}>
@@ -296,13 +306,11 @@ export default function HeaderBar(props) {
                         </Box>
                     </Tooltip>
                     <Box mr={ 4 } className={ classes.appName }>
-                        <Tooltip title={props.version}>
-                            <Typography className={classes.title} variant='h6' noWrap>
-                                Santa Maria Urban Ministry
-                            </Typography>
-                        </Tooltip>
+                        <Typography className={classes.title} variant='h6' noWrap>
+                            Santa Maria Urban Ministry
+                        </Typography>
                     </Box>
-                    {session ? appbarControls : null}
+                    { session ? appbarControls : null }
                 </Toolbar>
             </AppBar>
             { renderMobileMenu }

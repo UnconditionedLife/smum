@@ -63,7 +63,7 @@ let closedEvent = {
 // TODO build some selects in forms from data in settings (ie. Categories)
 
 // uiFillDate() Moved to REACT
-uiShowHideLogin('show')
+// uiShowHideLogin('show')
 // navGotoTab("tab1") Moved to REACT
 $("#noteEditForm").hide()
 $("#atabLable7").hide()
@@ -681,18 +681,18 @@ function uiShowHideReport(todo){
 	}
 };
 
-function uiShowHideLogin(todo){
-	// need this for now until whole app is ported to React
-	// allows for the logout button to work once logged in
-	if (todo === 'show'){
-		$('#loginOverlay').show().css('display', 'flex')
-		$('#loginUserName').focus()
-	} else {
-		$('.loginDiv').show()
-		$('#loginOverlay').hide()
-		$("#loginError").html('')
-	}
-};
+// function uiShowHideLogin(todo){
+// 	// need this for now until whole app is ported to React
+// 	// allows for the logout button to work once logged in
+// 	if (todo === 'show'){
+// 		$('#loginOverlay').show().css('display', 'flex')
+// 		$('#loginUserName').focus()
+// 	} else {
+// 		$('.loginDiv').show()
+// 		$('#loginOverlay').hide()
+// 		$("#loginError").html('')
+// 	}
+// };
 
 // removed UI show hide password (ported to react)
 
@@ -3233,7 +3233,7 @@ function cogLogoutUser(){
 	authorization = {}
 	if (authorization.idToken == undefined) {
 		cognitoUser.signOut();
-		uiShowHideLogin('show')
+		// uiShowHideLogin('show')
 	}
 };
 
@@ -3961,7 +3961,7 @@ function utilInitSession(user, cogUser) {
 }
 
 function utilLoginUserShowScreens() {
-	uiShowHideLogin('hide')
+	// uiShowHideLogin('hide')
 	navGotoSec('nav1')
 	// cogGetUserAttributes()
 	dbGetServiceTypes()

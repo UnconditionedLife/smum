@@ -5,14 +5,14 @@ import TextField from '../Core/TextField.jsx';
 import Typography from '../Core/Typography.jsx';
 import { Controller } from 'react-hook-form';
 
-
-// Props
-//      name - Name of form field 
-//      label - Display label for form field
-//      type - Type of text input field
-//      control - Control property from parent form
-//      rules - Validation rules
-//      error - Error object for this field (i.e. errors.<name>)
+FormTextField.propTypes = {
+    name: PropTypes.string.isRequired,      // Name of form field
+    label: PropTypes.string.isRequired,     // Display label for form field
+    type: PropTypes.string,                 // Type of text input field
+    control: PropTypes.object.isRequired,   // Control property from parent form
+    rules: PropTypes.object,                // Validation rules
+    error: PropTypes.object.isRequired,     // Error object for this field (i.e. errors.<name>)
+}
 // Additional props are passed through to the Controller component. 
 // See the API documentation for Controller for full details.
 
@@ -25,15 +25,6 @@ function FormTextField(props) {
             </Typography>
         </FormControl>
     )
-}
-
-FormTextField.propTypes = {
-    name: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    type: PropTypes.string,
-    control: PropTypes.object.isRequired,
-    rules: PropTypes.object,
-    error: PropTypes.object.isRequired,
 }
 
 export default FormTextField;

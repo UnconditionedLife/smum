@@ -1,13 +1,17 @@
 // LOOK AT CONVERTING TO THIS CODE: https://react.school/material-ui/templates
 
 import React, { useState, Fragment } from "react";
+import PropTypes from 'prop-types';
 import { cogSetupUser, cogSetupAuthDetails } from '../System/js/Cognito.js';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
 import { Box, Grid, IconButton, InputAdornment, Typography, Link } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
-import { Button, Card, TextField, useInput } from '../System';
+import { Button, TextField, useInput } from '../System';
 import SmumLogo from "../Assets/SmumLogo";
 
+LoginForm.propTypes = {
+    onLogin: PropTypes.func.isRequired,
+}
 
 export default function LoginForm(props) {
     let [showPrimaryForm, setShowPrimaryForm] = useState(true);
@@ -258,22 +262,18 @@ export default function LoginForm(props) {
     }
 
     return (
-        <Fragment>
-            <Card width='400px' p={ 2 }>
-                <Box m={ 2 } display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
-                    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
-                        <SmumLogo mb={ 1 } width='50px' height='50px'/>
-                        <Typography variant="h6" align="center">
-                            Login to <br/> Santa Maria Urban Ministry
-                        </Typography>
-                        <form noValidate> { displayLoginForms() } </form>
-                    </Box>
-                    { displaySubmitButtons() }
-                    <Box width='100%' height='22px' mt={ -1 } mb={ 1.5 }>
-                        { message ? <Alert severity="error">{ message }</Alert> : '' }
-                    </Box>
-                </Box>
-            </Card>
-        </Fragment>
+        <Box m={ 2 } width="400px" display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
+            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
+                <SmumLogo mb={ 1 } width='50px' height='50px'/>
+                <Typography variant="h6" align="center">
+                    Login to <br/> Santa Maria Urban Ministry
+                </Typography>
+                <form noValidate> { displayLoginForms() } </form>
+            </Box>
+            { displaySubmitButtons() }
+            <Box width='100%' height='22px' mt={ -1 } mb={ 1.5 }>
+                { message ? <Alert severity="error">{ message }</Alert> : '' }
+            </Box>
+        </Box>
     )
 }
