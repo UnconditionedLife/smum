@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import { AppBar, Popover, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
@@ -10,17 +10,21 @@ import DbSwitch from './DbSwitch.jsx';
 import { useCookies } from 'react-cookie';
 import { cogSetupUser, cogSetupSession } from '../System/js/Cognito.js';
 import SmumLogo from "../Assets/SmumLogo";
+import { HeaderDateTime } from '../Clients'
 
 const useStyles = makeStyles((theme) => ({
-  title: {
+    appName: {
+        display: 'none',
+        [theme.breakpoints.up('sm')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
+        [theme.breakpoints.up('md')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
+        [theme.breakpoints.up('lg')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
+    },
+  
+    title: {
     display: 'none',
-    [theme.breakpoints.up('sm')]: {
-      display: 'block',
-      fontSize: '20px',
-    },
-    [theme.breakpoints.up('lg')]: {
-
-    },
+    [theme.breakpoints.up('sm')]: { display: 'block', fontSize: '10px' },
+    [theme.breakpoints.up('md')]: { display: 'block', fontSize: '15px' },
+    [theme.breakpoints.up('lg')]: { display: 'block', fontSize: '20px' },
   },
   bar: {
     position: 'relative',
@@ -62,13 +66,6 @@ const useStyles = makeStyles((theme) => ({
       },
     [theme.breakpoints.up('xs')]: {
     width: '15ch',
-    },
-  },
-  appName: {
-    display: 'none',
-    [theme.breakpoints.up('md')]: {
-      display: 'flex',
-      justifyContent: 'flex-end',
     },
   },
   sectionDesktop: {
@@ -195,7 +192,7 @@ export default function HeaderBar(props) {
     );
 
     const appbarControls = (
-        <React.Fragment>
+        <Fragment>
             <Box display='flex' className={classes.search} mr={2} ml={2.5} flexGrow={1} justifyContent="flex-start">
                 <Box alignItems='flex-start' pointerEvents='none' display='flex' pl={1} pt={0.75}>
                     <Search />
@@ -243,7 +240,7 @@ export default function HeaderBar(props) {
                     </IconButton>
                 </Box>
             </Box >
-        </React.Fragment >
+        </Fragment >
     );
 
     const menuId = 'primary-search-account-menu';
@@ -296,33 +293,32 @@ export default function HeaderBar(props) {
     );
 
     return (
-        <Box flexGrow={1} >
+        <ThemeProvider theme={theme}>
             { login }
-            <AppBar position="fixed">
-                <Toolbar>
-                    <Tooltip title={props.version}>
-                        <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
-                            <SmumLogo width='44px' height='44px'/>
+            <Box flexGrow={1} >
+                <AppBar position="fixed">
+                    <Toolbar>
+                        <Tooltip title={props.version}>
+                            <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
+                                <SmumLogo width='44px' height='44px'/>
+                            </Box>
+                        </Tooltip>
+                        <Box mr={ 4 } mt={ 1 } className={ classes.appName } >
+                            <Typography variant='h6' noWrap className={ classes.title } >
+                                    Santa Maria Urban Ministry
+                            </Typography>
+                            <HeaderDateTime color='textPrimary' size='overline' />
                         </Box>
-                    </Tooltip>
-                    <Box mr={ 4 } className={ classes.appName }>
-                        <Typography className={classes.title} variant='h6' noWrap>
-                            Santa Maria Urban Ministry
-                        </Typography>
-                    </Box>
-                    { session ? appbarControls : null }
-                </Toolbar>
-            </AppBar>
-            { renderMobileMenu }
-            { renderMenu }
-            <ThemeProvider theme={theme}>
+                        {session ? appbarControls : null}
+                    </Toolbar>
+                </AppBar>
+
+                { renderMobileMenu }
+                { renderMenu }
+                
                 <DbSwitch />
-                <SectionsContent
-                    searchTerm={searchTerm}
-                    handleSearchTermChange={handleSearchTermChange}
-                    session={session}
-                />
-            </ThemeProvider>
-        </Box>
+                <SectionsContent searchTerm={ searchTerm } handleSearchTermChange={ handleSearchTermChange } session={ session } />
+            </Box>
+        </ThemeProvider>
     )
 }
