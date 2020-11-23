@@ -34,7 +34,7 @@ export default function SecondaryButtons(props) {
         <Fragment>
             {buttons.map((service) => {
                 return (
-                    <Button key={ service.serviceTypeId } variant="outlined" color="primary" size="medium" minWidth="168px">
+                    <Button key={ service.serviceTypeId } m={ .5 } variant="outlined" color="primary" size="large" minWidth="168px">
                     {/* onClick= {buttonData.serviceName}> */}
                         { service.serviceName }
                     </Button>

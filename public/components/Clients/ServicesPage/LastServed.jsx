@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Typography } from '@material-ui/core'
+import { Typography } from '../../System'
 import { isEmpty } from '../../System/js/Utils.js'
 
 export default function LastServed(props) {
@@ -37,7 +37,7 @@ export default function LastServed(props) {
                             handleSetNextService("Next service is tomorrow!")
                         } else {
                             let nextServiceDate = window.moment().add(nextServiceDays, "days")
-                            handleSetNextService("Next service " + window.moment(nextServiceDate).format("dddd, MMMM Do") + "!")
+                            handleSetNextService(" | Next service " + window.moment(nextServiceDate).format("dddd, MMMM Do") + "!")
                             // nextService = "<br>" + "Next service " + window.moment(nextServiceDate).format("dddd, MMMM Do") + "!"
                         }
                     }
@@ -47,6 +47,6 @@ export default function LastServed(props) {
     }
 
     return (
-        <Typography variant='h6' color='secondary' align='center' noWrap>{ lastVisit } <br/> { nextService }</Typography>
+        <Typography variant='button' color='secondary' align='center' noWrap>{ lastVisit }{ nextService }</Typography>
     )
 }

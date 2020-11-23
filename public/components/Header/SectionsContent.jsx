@@ -6,7 +6,6 @@ import { AdminMain } from '../Admin';
 import UserMain from '../User/UserMain.jsx';
 import PageToday from './PageToday.jsx';
 
-
 export default function SectionsContent(props) {
     if (props.session == null) {
         return null;

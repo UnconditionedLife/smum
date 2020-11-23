@@ -1,38 +1,10 @@
-import React,  { Fragment } from 'react';
-import { makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import theme from '../../Theme.jsx';
+import React,  { Fragment, useState, useEffect  } from 'react';
 import { isEmpty } from '../../System/js/Utils.js';
-import { useState, useEffect } from 'react';
-import Tooltip from '@material-ui/core/Tooltip';
-import Badge from '@material-ui/core/Badge';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
+import { Box, Badge, CardContent, Fade, Tooltip, Typography } from '@material-ui/core';
 import NotesDisplay from './NotesDisplay.jsx';
 import NoteForm from './NoteForm.jsx';
-import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import Typography from '@material-ui/core/Typography';
-import Fade from '@material-ui/core/Fade';
-
-const useStyles = makeStyles({
-    card: {
-        width: 300,
-        marginBottom: 8,
-    },
-    fabMargin: {
-        marginLeft: 15,
-        float: 'right',
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 15,
-    },
-    badge: {
-        marginTop: 0,
-    }
-  });
+import { Card, Fab } from '../../System';
 
 export default function ServiceNotes(props) {
     const session = props.session;
@@ -43,7 +15,6 @@ export default function ServiceNotes(props) {
     const [ editMode, setEditMode ] = useState('none')
     const [ noteText, setNoteText ] = useState('')
     const [ noteImportant, setNoteImportant ] = useState(false)
-    const classes = useStyles();
 
     useEffect(() => {
         if (!isEmpty(client)) setNoteCount(client.notes.length)
@@ -77,21 +48,26 @@ export default function ServiceNotes(props) {
     }
 
     return (
-        <ThemeProvider theme={ theme }>
-            <div className={ classes.header }>
-                <Badge className={ classes.badge } badgeContent={ noteCount } color="secondary">
-                    <Typography variant='h6' noWrap>
-                        NOTES&nbsp;
-                    </Typography>
-                </Badge>  
-                { editMode === 'none' && 
-                    <Tooltip title= 'Add Note'>
-                        <Fab size="small" className={classes.fabMargin} onClick={() => handleEditModeChange('add')}><AddIcon /></Fab>
-                    </Tooltip> }
-            </div>
+        <Fragment>
+            <Card height='80px'>
+                <Box display='flex' minWidth='300px' maxWidth='100%' p={ 2 } justifyContent='space-between' alignItems='center'>
+                    <Badge badgeContent={ noteCount } color="secondary">
+                        <Typography variant='h6' noWrap>
+                            SERVICE NOTES&nbsp;
+                        </Typography>
+                    </Badge>  
+
+                    { editMode === 'none' && 
+                        <Tooltip title= 'Add Note'>
+                            <Fab ml={ 2 } float='right' size="small" onClick={() => handleEditModeChange('add')}><AddIcon /></Fab>
+                        </Tooltip> 
+                    }
+
+                </Box>
+            </Card>
             { editMode === 'add' &&
             <Fade in= { editMode === 'add' }  timeout={ 1500 }>
-                <Card className={classes.card} variant="elevation" elevation={ 8 }>
+                <Card width='300px'mb={ 1 } variant="elevation" elevation={ 8 }>
                     <CardContent>
                         <NoteForm
                             client = { client } 
@@ -125,6 +101,6 @@ export default function ServiceNotes(props) {
                 noteImportant = { noteImportant }
                 handleNoteImportantChange = { handleNoteImportantChange }
             />
-        </ThemeProvider>
+        </Fragment>
     )
-};
+}

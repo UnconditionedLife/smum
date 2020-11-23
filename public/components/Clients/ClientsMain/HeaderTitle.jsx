@@ -1,6 +1,7 @@
 import React, { Fragment, useState } from "react";
 import PropTypes from 'prop-types';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Chip, Typography } from '@material-ui/core';
+import { House } from '@material-ui/icons';
 import { HeaderDateTime } from '../../Clients';
 import { isEmpty } from '../../System/js/Utils.js';
 
@@ -42,11 +43,6 @@ export default function HeaderTitle(props) {
 
     return (
         <Fragment>
-            { titleType === 'nosearch' &&   
-                <Box display='flex' minHeight='100%' width={ 1 } pt={ .5 } justifyContent='center'>
-                    <HeaderDateTime color='primary' size='h6' />
-                </Box>              
-            }
             { titleType === 'nonclient' &&   
                 <Box display='flex' minHeight='100%' width={ 1 } pt={ .5 } justifyContent='center'>
                     <Typography color='primary' align='center' variant='h5' noWrap >
@@ -56,15 +52,9 @@ export default function HeaderTitle(props) {
             }
             {/* { headerState === 'new-client' && { "NEW CLIENT" } } //TODO WIRE TO NEW CLIENT PAGE */}
             { titleType === 'client' && 
-                <Box display='flex' height='72px'>
-                    <Box height='48px' p={ 1 } pr={ 1 } pt={ 1.125 } mt={ -.5 } ml={ -.5 } 
-                        bgcolor='primary.main' borderRadius={ 6 } >
-                        <Typography color='textPrimary' align='center' variant='h6' noWrap>
-                            <b>{ client.clientId }</b>
-                        </Typography>
-                    </Box>
-                    <Box ml={ 2 } mt={ -1.125 }>
-                        <HeaderDateTime color='primary' size='subtitle1' />
+                <Box mt={ .75 } display='flex' flexDirection='column' height='72px' justifyContent='center' alignContent='center' >
+                    <Chip icon={ <House /> } style={{ width:'108px', fontSize:'x-large', justifyContent:'left' }} label={ client.clientId } color="primary" /> 
+                    <Box mt={ 0 }>
                         <Typography color='primary' variant='h6' noWrap>
                            <b>{ client.givenName } { client.familyName }</b>
                         </Typography>
