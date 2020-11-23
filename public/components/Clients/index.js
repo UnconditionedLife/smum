@@ -9,6 +9,7 @@ import HeaderDateTime from '../Clients/ClientsMain/HeaderDateTime.jsx';
 import HeaderTitle from '../Clients/ClientsMain/HeaderTitle.jsx';
 import HistoryButtons from '../Clients/HistoryPage/HistoryButtons.jsx';
 import HistoryDisplay from '../Clients/HistoryPage/HistoryDisplay.jsx';
+import HistoryEditForm from '../Clients/HistoryPage/HistoryEditForm.jsx';
 import HistoryHeader from '../Clients/HistoryPage/HistoryHeader.jsx';
 import HistoryPage from '../Clients/HistoryPage/HistoryPage.jsx';
 import LastServed from '../Clients/ServicesPage/LastServed.jsx';
@@ -23,6 +24,6 @@ import ServicesPage from '../Clients/ServicesPage/ServicesPage.jsx';
 export  { 
             ClientPage, ClientsContent, ClientsHeader, ClientsMain, ClientsRouter, 
             DependentsDisplay, FoundPage, HeaderDateTime, HeaderTitle, HistoryButtons, 
-            HistoryDisplay, HistoryHeader, HistoryPage, LastServed, NoteForm, 
+            HistoryDisplay, HistoryEditForm, HistoryHeader, HistoryPage, LastServed, NoteForm, 
             NotesDisplay, PrimaryButtons, SecondaryButtons, SelectTestForm, ServiceNotes, ServicesPage 
         }
