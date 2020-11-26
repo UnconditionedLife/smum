@@ -11,15 +11,18 @@ FormTextField.propTypes = {
     type: PropTypes.string,                 // Type of text input field
     control: PropTypes.object.isRequired,   // Control property from parent form
     rules: PropTypes.object,                // Validation rules
-    error: PropTypes.object.isRequired,     // Error object for this field (i.e. errors.<name>)
+    error: PropTypes.object,                // Error object for this field (i.e. errors.<name>)
 }
 // Additional props are passed through to the Controller component. 
 // See the API documentation for Controller for full details.
 
 function FormTextField(props) {
+    let textProps = { ...props };
+    textProps.error = Boolean(props.error);
+
     return (
         <FormControl variant='outlined'>
-            <Controller as={ TextField } m={ 0 } { ...props } />
+            <Controller as={ TextField } m={ 0 } { ...textProps } />
             <Typography ml={ 0.5 } variant='body2' color='error'>
                 { props.error ? props.error.message : '' }
             </Typography>

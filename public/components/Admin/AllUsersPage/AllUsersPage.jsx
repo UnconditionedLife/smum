@@ -57,7 +57,7 @@ export default function AllUsersPage(props) {
                     <Add />
                 </Fab>
             </Tooltip>
-            <Accordion defaultExpanded='true'>
+            <Accordion defaultExpanded={ true }>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
                     <Typography variant='button' >Active Users</Typography>
                 </AccordionSummary>
