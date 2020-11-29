@@ -37,19 +37,19 @@ export default function FoundPage(props) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {clientData.map((row) => (
-                        <TableRow 
-                            key={row.clientId} 
-                            onClick= { (event) => handleSelectedClient(event, row.clientId)}
-                            selected= { row.clientId == clientId }
-                            >
-                            <TableCell component="th" scope="row">{row.clientId}</TableCell>
-                            <TableCell align="center">{row.givenName}</TableCell>
-                            <TableCell align="center">{row.familyName}</TableCell>
-                            <TableCell align="center">{row.dob}</TableCell>
-                            <TableCell align="center">{row.street}</TableCell>
-                        </TableRow>
-                        ))}
+                        { clientData.map((row) => (
+                            <TableRow 
+                                key={row.clientId} 
+                                onClick= { (event) => handleSelectedClient(event, row.clientId)}
+                                selected= { row.clientId == clientId }
+                                >
+                                <TableCell component="th" scope="row">{row.clientId}</TableCell>
+                                <TableCell align="center">{row.givenName}</TableCell>
+                                <TableCell align="center">{row.familyName}</TableCell>
+                                <TableCell align="center">{row.dob}</TableCell>
+                                <TableCell align="center">{row.street}</TableCell>
+                            </TableRow>
+                            ))}
                     </TableBody>
                     </Table>
                 </TableContainer>

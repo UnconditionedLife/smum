@@ -1203,8 +1203,7 @@ function utilCalcAnnualFoodReport(year){
 }
 function uiShowMonthlyReportRows(monthYear, reportType, uniqueTotalCounts){
 	let servicesRendered = utilGetServicesInMonth(monthYear)
-	servicesRendered = servicesRendered
-		.filter(item => item.serviceValid == 'true')
+	servicesRendered = servicesRendered.filter(item => item.serviceValid == 'true')
 	// Food Report
 	if (reportType == "FOOD") {
 		services = utilCalcUSDANonUSDAServices(servicesRendered)
@@ -2426,7 +2425,7 @@ function dbPostData(URL,data){
 				utilBeep()
 				// TODO need proper error messaging
 			} else {
-				utilBloop()
+				//utilBloop()
 				ans = "success"
 				console.log("SUCCESS")
 				if (URL.includes('/servicetypes')) {

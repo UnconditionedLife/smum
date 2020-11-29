@@ -30,3 +30,14 @@ export function dbSetModifiedTime(obj, isNew) {
     if (isNew)
         obj.createdDateTime = now;
 }
+
+// export function saveRecord(object, table){
+//     const data = JSON.stringify(object)
+//     let apiUrl
+//     switch (table){
+//         case 'services':
+//             apiUrl = dbUrl + "/clients/services"
+//     }
+//     const result = dbPostData(apiUrl, data)
+//     return result
+// }

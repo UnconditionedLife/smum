@@ -2,6 +2,7 @@
 //***** CLIENTS SECTION JAVASCRIPT FUNCTIONS *****
 //************************************************
 import { isEmpty } from './Utils.js';
+import { saveRecord } from './database'
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -100,15 +101,21 @@ export function calcClientFamilyCounts(client){
 	return client.family
 }
 
-export function addService(serviceTypeId, serviceCategory, serviceButtons){
+export function addService(serviceTypeId, serviceCategory, serviceButtons, servicesRendered){
 	let serviceType = utilGetServiceTypeByID(serviceTypeId)
 	let serviceId = "" // new service
-	let serviceValid = true
-	// graydout button so undo service
-	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
+    let serviceValid = true
+    let undoneService = false
+    // check if service has already been rendered
+
+    console.log(servicesRendered)
+    console.log(servicesRendered.indexOf(serviceTypeId))
+
+	if (servicesRendered.indexOf(serviceTypeId) !== -1) {
 		const serviceItem = servicesRendered.filter(obj => obj.serviceTypeId == serviceTypeId)
 		serviceValid = false
-		serviceId = serviceItem[0].serviceId
+        serviceId = serviceItem[0].serviceId
+        undoneService = true
 	}
 	// save service record
 	const servedCounts = utilCalcServiceFamilyCounts(serviceTypeId)
@@ -162,7 +169,10 @@ export function addService(serviceTypeId, serviceCategory, serviceButtons){
 		}
 		prnFlush();
 		// uiShowLastServed() *** Moved to REACT ***
-		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
+        uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
+        
+        if (undoneService === true) return 'undone'
+        if (serviceId != "" && result == "success") return serviceRecord
 	}
 }
 
@@ -331,4 +341,28 @@ function getActiveServicesButtons(buttons, activeServiceTypes, targetServices, l
     }
 	if (buttons == "primary") return btnPrimary
 	if (buttons == "secondary") return btnSecondary
+}
+
+export function saveHistoryForm(editRecord, formValues, client, userName){
+    const oldServiceId = editRecord.serviceId
+    Object.assign(editRecord, formValues)
+    // TODO serviceTypes will need to either be retrived each time or be available in session
+    const serviceType = serviceTypes.filter(item => item.serviceName == editRecord.serviceName)[0]
+    Object.assign(editRecord, {serviceTypeId: serviceType.serviceTypeId, serviceCategory: serviceType.serviceCategory, isUSDA: serviceType.isUSDA })
+
+    editRecord.servicedDay = moment(editRecord.servicedDateTime).format("YYYYMMDD")
+    editRecord.servicedByUserName = userName
+    editRecord.updatedDateTime = window.utilNow()
+    editRecord.serviceId = cuid()
+    
+    const data = JSON.stringify(editRecord)
+	const URL = aws+"/clients/services"
+    const result = dbPostData(URL,data)
+    
+    // const result = saveRecord(editRecord, 'service')
+	if (result == "success") {
+		// disable old service record
+		window.utilRemoveService(oldServiceId)
+		return editRecord
+	}
 }

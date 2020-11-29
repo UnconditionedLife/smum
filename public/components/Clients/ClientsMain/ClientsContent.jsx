@@ -25,9 +25,9 @@ export default function ClientsContent(props) {
                     <ClientPage client={props.client} />
                 </Route>
                 <Route path={`${match.path}/history/:clientId`}>
-                    <HistoryPage client={props.client} />
+                    <HistoryPage client={props.client} session={ props.session } />
                 </Route>
             </Switch>
         </Container>
     );
-};
+}

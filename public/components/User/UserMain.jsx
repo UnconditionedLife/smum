@@ -4,6 +4,10 @@ import { Container, CardContent, CardHeader } from '@material-ui/core';
 import { Card } from '../System';
 import { UserForm, PasswordForm } from '../User';
 
+UserMain.propTypes = {
+    session: PropTypes.object.isRequired,
+}
+
 export default function UserMain(props) {
     return (
         <Container maxWidth='md'>
@@ -21,8 +25,4 @@ export default function UserMain(props) {
             </Card>
         </Container>
     )
-}
-
-UserMain.propTypes = {
-    session: PropTypes.object.isRequired,
 }

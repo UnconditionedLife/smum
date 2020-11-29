@@ -4,6 +4,10 @@ import { useForm } from "react-hook-form";
 import { Box, Button } from '@material-ui/core';
 import { FormTextField } from '../System';
 
+PasswordForm.propTypes = {
+    session: PropTypes.object.isRequired,
+}
+
 export default function PasswordForm(props) {
     const { reset, handleSubmit, control, formState, errors, setError } = useForm({
         mode: 'OnBlur',
@@ -41,8 +45,4 @@ export default function PasswordForm(props) {
             </Box>
         </Fragment>
     )
-}
-
-PasswordForm.propTypes = {
-    session: PropTypes.object.isRequired,
 }

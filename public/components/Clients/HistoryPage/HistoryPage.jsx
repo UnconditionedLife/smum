@@ -1,8 +1,12 @@
 import React, { useEffect, useRef, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { isEmpty } from '../../System/js/Utils.js';
 import { HistoryHeader, HistoryDisplay } from '../../Clients';
+import SmumLogo from "../../Assets/SmumLogo";
+
+console.log('HISTORY PAGE')
 
 const useStyles = makeStyles((theme) => ({
     tableHeader: {
@@ -19,6 +23,11 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
+PageHistory.propTypes = {
+    session: PropTypes.object.isRequired,
+    client: PropTypes.object,       // current client object
+}
+
 export default function PageHistory(props) {
     const client = props.client;
     const classes = useStyles();
@@ -31,11 +40,14 @@ export default function PageHistory(props) {
         }
     })
 
+    if (isEmpty(client)) return null
+
     return (
         <Box width={ 1 } mt={ 7 } >
             <Box mt={ 4 }><HistoryHeader client={ client } /></Box>
-            <Box mt={ 4 }><HistoryDisplay client={ client } /></Box>
+            <Box mt={ 4 }><HistoryDisplay client={ client } session={ props.session } /></Box>
             <div className={classes.tableHeader} ref={ historyDivBottom }></div>
         </Box>
     );
-};
+
+}
