@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 import Button from '../Core/Button.jsx';
 
 // Props
@@ -11,17 +12,24 @@ import Button from '../Core/Button.jsx';
 //      saveDisabled - Disable affirmative button (default false)
 //      cancelDisabled - Disable negative button (default false)
 //      disabled - Disable both buttons (default false)
+//      message - Object with (text, severity) 
+//          text: message string & severity: 'error', 'warning', 'info', 'success'
 
 function SaveCancel(props) {
     const saveDisabled = props.saveDisabled || props.disabled;
     const cancelDisabled = props.cancelDisabled || props.disabled;
 
     return (
-        <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
-            <Button variant="contained" color="primary"
-                disabled={ saveDisabled } onClick={ () => props.onClick(true) }>{ props.saveLabel }</Button>
-            <Button variant="outlined" color="secondary"
-                disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ props.cancelLabel }</Button>
+        <Box display="flex" flexDirection="column" flexWrap="wrap" alignContent="center" justifyContent="center">
+            <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
+                <Button variant="contained" color="primary"
+                    disabled={ saveDisabled } onClick={ () => props.onClick(true) }>{ props.saveLabel }</Button>
+                <Button variant="outlined" color="secondary"
+                    disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ props.cancelLabel }</Button>
+            </Box>
+            <Box width='60%' height='38px' m={ 1 } alignContent="center" justifyContent="center">
+                { props.message ? <Alert severity={ props.message.severity } >{ props.message.text }</Alert> : '' }
+            </Box>
         </Box>
     )
 }
@@ -33,6 +41,7 @@ SaveCancel.propTypes = {
     saveDisabled: PropTypes.bool,
     cancelDisabled: PropTypes.bool,
     disabled: PropTypes.bool,
+    message: PropTypes.object,
 }
 
 SaveCancel.defaultProps = {

@@ -91,12 +91,7 @@ export default function HistoryDisplay(props) {
     }
 
     function setDelayTimer(boo){
-
-        console.log('IN TIMER')
-
         if (boo === false) {
-
-            console.log('Clear TIMER')
             if  (reloadHistory) {
                 setEditMode('none')
                 setAnchorEl(null)
@@ -108,8 +103,6 @@ export default function HistoryDisplay(props) {
             clearTimeout(delayInt)
             setDelay(false)
         } else {
-
-            console.log('Set TIMER')
             delayInt = setTimeout(function(){
                 setDelayTimer(false);
             }, 1500)

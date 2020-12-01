@@ -4,8 +4,6 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { saveHistoryForm } from '../../System/js/Clients';
-import { saveRecord } from '../../System/js/database';
-import { isEmpty } from '../../System/js/Utils';
 
 HistoryFormDialog.propTypes = {
     session: PropTypes.object.isRequired,
@@ -18,33 +16,47 @@ HistoryFormDialog.propTypes = {
 }
 
 export default function HistoryFormDialog(props) {
-    const [dialogOpen, setDialogOpen] = useState(true);
+    const [ dialogOpen, setDialogOpen ] = useState(true);
+    const [ message, setMessage ] = useState(null)
+
+    let delayInt
 
     const serviceNames = window.serviceTypes
         .filter(obj => obj.serviceButtons == "Primary")
         .map(obj => obj.serviceName)
 
     function handleDialog(state){
-        if (dialogOpen !== state) setDialogOpen(state);
+        if (dialogOpen !== state) setDialogOpen(state)
     }
 
-    const initValues = props.editRecord;
+    const initValues = props.editRecord
     const { handleSubmit, reset, control, errors, setError, formState } = useForm({
         mode: 'onBlur',
         defaultValues: initValues, 
-    });
+    })
 
     function doSave(formValues) {
-        // const newService = saveHistoryForm(formValues)
         const newService = saveHistoryForm(props.editRecord, formValues, props.client, props.session.user.userName)
+        startMessageTimer(true)
         if (!isEmpty(newService)) {
-            console.log("SAVED - UPDATE DISPLAY")
-            props.handleClientHistory()
-            handleDialog(false)
-            props.handleEditMode('cancel')
-
+            setMessage({text: 'History record was saved!', severity: 'success'})
         } else {
-            console.log("ERROR")
+            setMessage({text: 'Error while saving - try again!!', severity: 'error'})
+        }
+    }
+
+    function startMessageTimer(boo){
+        if (boo === false) {
+            if (message.severity === 'success') {
+                props.handleClientHistory()
+                handleDialog(false)
+                props.handleEditMode('cancel')
+            }
+            clearTimeout(delayInt)
+        } else {
+            delayInt = setTimeout(function(){
+                startMessageTimer(false)
+            }, 1200)
         }
     }
 
@@ -97,9 +109,9 @@ export default function HistoryFormDialog(props) {
                     <FormTextField width='160px' name="servicedByUserName" label="Serviced By" error={ errors.servicedByUserName } 
                         control={ control } disabled={ true } />
                     </form>
-                    <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
+                    <SaveCancel saveDisabled={ !formState.isDirty } message={ message } onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
                 </Box>
-                </DialogContent>
-            </Dialog>
+            </DialogContent>
+        </Dialog>
     )
 }
