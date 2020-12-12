@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { AppBar, Popover, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
+import { AppBar, Dialog, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
 import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '@material-ui/icons';
 import { Button } from '../System';
 import { LoginForm, SectionsContent }  from '.';
@@ -178,17 +178,9 @@ export default function HeaderBar(props) {
         (session.user.userRole == 'Admin' || session.user.userRole == 'TechAdmin');
 
     const login = (
-        <Popover 
-            anchorReference="anchorPosition"
-            anchorPosition={{ top: 200, left: 100 }}
-            transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-            }}
-            open={session == null}
-        >
-            <LoginForm onLogin={(x) => setSession(x)} />
-        </Popover>
+        <Dialog open={ session == null }>
+            <LoginForm onLogin={ (x) => setSession(x) } />
+        </Dialog>
     );
 
     const appbarControls = (
