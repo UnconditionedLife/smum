@@ -111,6 +111,9 @@ export default function HeaderBar(props) {
             setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
             setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' })
             setCogUser(newSession.cogUser)
+            let decodedTkn = jwt_decode(newSession.auth.accessToken)
+            let currTime = new Date()
+            setTimeout(refreshSession(), decodedTkn.exp*1000 - currTime.getTime() - 1000)
             window.utilInitAuth(newSession.auth)
             window.utilInitSession(newSession.user, newSession.cogUser);
 
@@ -168,9 +171,6 @@ export default function HeaderBar(props) {
                 let uRefreshToken = result.refreshToken.token
                 uAuthorization.idToken = result.idToken.jwtToken
                 window.utilInitAuth(uAuthorization)
-                let decodedTkn = jwt_decode(uAuthorization.accessToken)
-                let currTime = new Date()
-                setTimeout(refreshSession(), decodedTkn.exp*1000 - currTime.getTime() - 1000)
                 setSession({ user: session.user, auth: uAuthorization, cogUser: cogUser, refresh: uRefreshToken });
             })
         }
