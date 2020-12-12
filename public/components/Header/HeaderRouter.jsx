@@ -5,37 +5,25 @@ import { HeaderBar } from "./";
 export default function SearchNavBarContainer(props) {
     const route = useLocation();
     const history = useHistory();
-    const checkSectionURL = (selectedSection) => {
+    const checkSectionURL = () => {
         const url = route.pathname;
         console.log(url)
 
         if (matchPath(url, { path: "/", exact: false, strict: false })) {
-            if (selectedSection != 0) {
-                return 0;
-            }
+            return 0;
         }
         else if (matchPath(url, { path: "/clients", exact: false, strict: false })) {
-            if (selectedSection != 0) {
-                return 0;
-            }
+            return 0;
         }
         else if (matchPath(url, { path: "/admin", exact: false, strict: false })) {
-            if (selectedSection != 1) {
-                console.log("Switching to admin...");
-                return 1;
-            }
+            return 1;
         }
         else if (matchPath(url, { path: "/today", exact: false, strict: false })) {
-            if (selectedSection != 2) {
-                return 2;
-            }
+            return 2;
         }
-        else if (matchPath(url, { path: "/user", exact: false, strict: false })) {
-            if (selectedSection != 3) {
-                return 3;
-            }
+        else {
+            return 3;
         }
-        return -1;
     }
 
     const updateRoute = (newValue) => {

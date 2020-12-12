@@ -36,7 +36,7 @@ export default function ClientsMain(props) {
         }
     }, [searchTerm]);
 
-    const handleClientsFoundChange = (newValue, shouldUpdateURL) => {
+    const handleClientsFoundChange = (newValue) => {
         if (clientsFound !== newValue) {
             setClientsFound(newValue);
             window.clientData = newValue // used temporarily to keep global vars in sync

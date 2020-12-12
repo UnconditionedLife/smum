@@ -29,9 +29,12 @@ export default function LoginForm(props) {
         let authDetails = cogSetupAuthDetails(username, password);
         cogUser.authenticateUser(authDetails, {
             onSuccess: (result) => {
+                console.log(result)
                 let authorization = {};
                 setMessage("");
                 authorization.accessToken = result.getAccessToken().getJwtToken()
+                let refreshToken = result.refreshToken.token
+                console.log(refreshToken)
                 authorization.idToken = result.idToken.jwtToken
                 window.utilInitAuth(authorization)
                 let user = window.utilGetCurrentUser(username)
@@ -40,12 +43,11 @@ export default function LoginForm(props) {
                     cogUser.signOut();
                     setMessage("Sorry, your account is INACTIVE.");
                 } else {
-                    props.onLogin({ user: user, auth: authorization, cogUser: cogUser });
+                    props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
                     usernameInput.reset();
                     passwordInput.reset();
                     validationCodeInput.reset();
                     newPasswordInput.reset();
-                    window.utilInitSession(user, cogUser);
                 }
             },
             onFailure: (err) => {

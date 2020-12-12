@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import { AppBar, Popover, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
@@ -8,7 +8,9 @@ import { LoginForm, SectionsContent }  from '.';
 import theme from '../Theme.jsx';
 import DbSwitch from './DbSwitch.jsx';
 import { useCookies } from 'react-cookie';
-import { cogSetupUser, cogSetupSession } from '../System/js/Cognito.js';
+import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
+import jwt_decode from "jwt-decode";
+
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
 
@@ -98,15 +100,20 @@ export default function HeaderBar(props) {
 
     const checkSectionURL = props.checkSectionURL;
     const updateRoute = props.updateRoute;
-    const [cookies, setCookie, removeCookie] = useCookies(['user','auth']);
-    const session = cookies.user && cookies.auth ? 
-          {user:cookies.user,auth:cookies.auth, cogUser: cogUser} : null;
+    const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']);
+
+    const session = cookies.user && cookies.auth && cookies.refresh ? 
+          {user:cookies.user,auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser} : null;
   
     const setSession = (newSession) => {
         if (newSession.user != null && newSession.auth != null) {
             setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
             setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
+            setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' })
             setCogUser(newSession.cogUser)
+            window.utilInitAuth(newSession.auth)
+            window.utilInitSession(newSession.user, newSession.cogUser);
+
         } else {
             removeSession()
         }
@@ -116,30 +123,59 @@ export default function HeaderBar(props) {
     const removeSession = () => {
         removeCookie("user", { path: '/' })
         removeCookie("auth", { path: '/' })
+        removeCookie("refresh", { path: '/' })
+        window.utilInitAuth(null);
+        window.utilInitSession(null, null);
         setCogUser(null)
         // removeCookie("cogUser")
     }
 
     useEffect(() => {
-        const newSection = checkSectionURL(selectedSection);
-        if (newSection != -1) {
+        const newSection = checkSectionURL();
+        if (newSection != selectedSection) {
             setSelectedSection(newSection)
         }
         if (session != null) {
+            
+            let decodedTkn = jwt_decode(cookies.auth.accessToken)
+            let currTime = new Date()
             let tempUser = cogSetupUser(cookies.user.userName)
+            console.log(decodedTkn.exp*1000)
+            console.log(currTime.getTime())
             tempUser.getSession(function (err, cogSession) { 
-                if (err || !cogSession.isValid()) {
-                    removeSession()
+                if (err || !cogSession.isValid() || decodedTkn.exp*1000 < currTime.getTime() ) { 
+                    closeMobileMenu()
+                    handleLogout()
                 } else {
                     if (cogUser == null) {
                         setCogUser(tempUser)
                     }
+                    setTimeout(refreshSession(), decodedTkn.exp*1000 - currTime.getTime() - 1000)
                     window.utilInitAuth(cookies.auth)
                     window.utilInitSession(cookies.user, tempUser);
                 }
             });
         }
     }, []);
+
+    const refreshSession = () => {
+        if (cogUser != null && session != null) {
+            let token = cogGetRefreshToken(session.refresh)
+            cogUser.refreshSession(token, function (err, result) {
+                console.log(err, result)
+                let uAuthorization = {};
+                uAuthorization.accessToken = result.getAccessToken().getJwtToken()
+                let uRefreshToken = result.refreshToken.token
+                uAuthorization.idToken = result.idToken.jwtToken
+                window.utilInitAuth(uAuthorization)
+                let decodedTkn = jwt_decode(uAuthorization.accessToken)
+                let currTime = new Date()
+                setTimeout(refreshSession(), decodedTkn.exp*1000 - currTime.getTime() - 1000)
+                setSession({ user: session.user, auth: uAuthorization, cogUser: cogUser, refresh: uRefreshToken });
+            })
+        }
+
+    }
 
     const handleSectionChange = (newValue) => {
         setSelectedSection(newValue);
@@ -164,7 +200,6 @@ export default function HeaderBar(props) {
 
     function handleLogout() {
         session.cogUser.signOut();
-        window.utilInitAuth(null);
         removeSession();
     }
 
