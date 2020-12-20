@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay, SelectTestForm } from '../';
+import { PrintClientInfo } from '../../Clients';
 import { isEmpty } from '../../System/js/Utils.js';
 
 ClientPage.propTypes = {
@@ -28,6 +29,7 @@ export default function ClientPage(props) {
 
     return (
         <Box mt={ 7 } width={ 1 }>
+            <PrintClientInfo client={ client } />
             <Accordion defaultExpanded={ true } onChange={handleChange('panel1')}>
                 <AccordionSummary expandIcon={ <ExpandMore /> } id="panel1bh-header" >
                     <Typography variant='button' >Client Info</Typography>
@@ -47,7 +49,7 @@ export default function ClientPage(props) {
                 </AccordionDetails>
             </Accordion>
             <Accordion expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
-                <AccordionSummary expandIcon={ <ExpandMore /> }id="panel3bh-header">
+                <AccordionSummary expandIcon={ <ExpandMore /> } id="panel3bh-header">
                     <Typography variant='button' ><b>Family Totals</b></Typography>
                 </AccordionSummary>
                 <AccordionDetails>

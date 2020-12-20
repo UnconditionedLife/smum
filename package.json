@@ -44,6 +44,7 @@
     "react-moment": "^0.9.7",
     "react-router-dom": "^5.2.0",
     "react-swipeable-views": "^0.13.9",
+    "react-to-print": "^2.11.0",
     "readable-stream": "^2.3.7",
     "requirejs": "^2.3.6",
     "webpack": "^4.44.1",
