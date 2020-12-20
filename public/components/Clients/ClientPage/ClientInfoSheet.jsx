@@ -4,6 +4,7 @@ import ReactToPrint from 'react-to-print';
 import { Box, Tooltip } from '@material-ui/core';
 import { Print } from '@material-ui/icons';
 import { Fab, Typography } from '../../System';
+import moment from 'moment';
 
 
 // This component must be implemented with a class in order to use the ref property.
