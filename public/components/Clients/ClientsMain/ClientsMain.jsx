@@ -4,15 +4,17 @@ import { Box } from '@material-ui/core';
 import { ClientsHeader, ClientsContent } from '../../Clients';
 import { isEmpty } from '../../System/js/Utils.js';
 import { searchClients, arrayAddIds, calcClientFamilyCounts, calcClientDependentsAges } from '../../System/js/Clients.js';
+import moment from 'moment';
+import { getServiceHistory } from '../../System/js/Clients';
 
 ClientsMain.propTypes = {
     session: PropTypes.object.isRequired,
     searchTerm: PropTypes.string.isRequired,
     handleSearchTermChange: PropTypes.func.isRequired,
-//    selectedTab: PropTypes.number.isRequired,
+    selectedTab: PropTypes.number.isRequired,
 //     checkClientsURL: PropTypes.func.isRequired,
 //     updateURL: PropTypes.object.isRequired,
-//     url: PropTypes.string,
+    url: PropTypes.string,
 }
 
 export default function ClientsMain(props) {
@@ -22,21 +24,40 @@ export default function ClientsMain(props) {
     const checkClientsURL = props.checkClientsURL
     const updateURL = props.updateURL
     const url = props.url
-    const [clientsFound, setClientsFound] = useState([]);
-    const [client, setClient] = useState({});
+    const [ clientsFound, setClientsFound ] = useState([]);
+    const [ client, setClient ] = useState({});
+    const [ svcsRendered, setSvcsRendered ] = useState([])
 
     useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(client); } }, [session, url])
 
     useEffect(() => {
         if (searchTerm !== '') {
-        if (window.stateCheckPendingEdit()) return // used temporarily to keep global vars in sync
-        window.uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
-        const searchResults = searchClients(searchTerm)
-        handleClientsFoundChange(searchResults)
+            if (window.stateCheckPendingEdit()) return // used temporarily to keep global vars in sync
+            window.uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
+            const searchResults = searchClients(searchTerm)
+            handleClientsFoundChange(searchResults)
         }
     }, [searchTerm]);
 
-    const handleClientsFoundChange = (newValue) => {
+
+    console.log(client.lastServed)
+
+    useEffect(() => {
+        console.log('effect')
+        if (!isEmpty(client) && svcsRendered === []) {
+            const lastServed = client.lastServed
+            lastServed.sort((a, b) => moment.utc(b.serviceDateTime).diff(moment.utc(a.serviceDateTime)))
+            // if last service is same day as today - build the svcsRendered state (??? Store svcType & svcId & maybe svcName ????)
+            if (moment(lastServed[0].serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')) {
+                const svcHistory = getServiceHistory().filter( obj => moment(obj.serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD'))
+                console.log(svcHistory)
+                // get history and build services rendered array from records that have today's date
+
+            }
+        }
+    },[])
+
+    const handleClientsFoundChange = (newValue, shouldUpdateURL) => {
         if (clientsFound !== newValue) {
             setClientsFound(newValue);
             window.clientData = newValue // used temporarily to keep global vars in sync
@@ -72,6 +93,11 @@ export default function ClientsMain(props) {
         }
     }
 
+    function updateSvcsRendered(newArray){
+        console.log(newArray)
+        setSvcsRendered(newArray)
+    }
+
     const handleIsNewClientChange = () => {
         window.clickShowNewClientForm() // used temporarily - remove once clientPage forms have been converted
         handleClientChange({})
@@ -82,18 +108,20 @@ export default function ClientsMain(props) {
     return (
         <Box width="100%" p={2} >
             <ClientsHeader
-                client={client}
-                clientsFound={clientsFound}
+                client={ client }
+                clientsFound={ clientsFound }
                 handleIsNewClientChange={ handleIsNewClientChange }
-                selectedTab={selectedTab}
-                updateURL={updateURL}
+                selectedTab={ selectedTab }
+                updateURL={ updateURL }
             />
             <ClientsContent
-                client={client}
-                clientsFound={clientsFound}
-                handleClientChange={handleClientChange}
-                updateURL={updateURL}
-                session={session}
+                client={ client }
+                clientsFound={ clientsFound }
+                handleClientChange={ handleClientChange }
+                updateURL={ updateURL }
+                session={ session }
+                svcsRendered={ svcsRendered }
+                updateSvcsRendered={ updateSvcsRendered }
             />
         </Box>
     )

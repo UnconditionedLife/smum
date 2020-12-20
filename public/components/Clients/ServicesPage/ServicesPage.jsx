@@ -11,6 +11,8 @@ ServicesPage.propTypes = {
     client: PropTypes.object.isRequired,
     handleClientChange: PropTypes.func.isRequired,
     session: PropTypes.object.isRequired,
+    svcsRendered: PropTypes.array,
+    updateSvcsRendered: PropTypes.func,
 }
 
 export default function ServicesPage(props) {
@@ -27,10 +29,14 @@ export default function ServicesPage(props) {
                     </Box>
                 </Card>
                 <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
-                    <PrimaryButtons client={ props.client }/>
+                    <PrimaryButtons client={ props.client }
+                    svcsRendered={ props.svcsRendered }
+                    updateSvcsRendered={ props.updateSvcsRendered } />
                 </Box>
                 <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
-                    <SecondaryButtons client={ props.client }/>
+                    <SecondaryButtons client={ props.client }
+                    svcsRendered={ props.svcsRendered }
+                    updateSvcsRendered={ props.updateSvcsRendered } />
                 </Box>
             </Box>
             <Box maxWidth="500px" mt={ 5 } justifyContent="center">

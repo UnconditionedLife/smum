@@ -33,15 +33,12 @@ export default function HistoryDisplay(props) {
         const record=clientHistory.filter(function( obj ) {
             return obj.serviceId === newServiceId
         })[0]
-        console.log(record)
-        console.log(anchorEl)
         setEditMode('none')
         setEditRecord(record)
         setAnchorEl(anchorEl ? null : event.currentTarget);
     }
 
     function handleEditMode(newEditMode) {
-        console.log(newEditMode)
         switch(newEditMode) {
             case 'cancel':
                 setSelectedService(null)
@@ -61,7 +58,6 @@ export default function HistoryDisplay(props) {
                 setEditMode('message')
                 break;
             case 'message':
-                console.log('Show Message')
                 if (delay === false) {
                     setEditMode('none')
                     setAnchorEl(null)
@@ -81,7 +77,6 @@ export default function HistoryDisplay(props) {
     }
 
     function handleEditRecord(newRecord){
-        console.log('update history record')
         setEditRecord(newRecord)
         handleEditMode('none')
     }
@@ -112,8 +107,6 @@ export default function HistoryDisplay(props) {
 
     const menuOpen = Boolean(anchorEl);
     const id = menuOpen ? 'simple-popper' : undefined;
-
-    console.log(clientHistory)
 
     if (isEmpty(clientHistory)) return null
 
