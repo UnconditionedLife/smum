@@ -128,7 +128,6 @@ export default function HeaderBar(props) {
         removeCookie("auth", { path: '/' })
         removeCookie("refresh", { path: '/' })
         window.utilInitAuth(null);
-        window.utilInitSession(null, null);
         setCogUser(null)
         // removeCookie("cogUser")
     }
@@ -148,14 +147,16 @@ export default function HeaderBar(props) {
             tempUser.getSession(function (err, cogSession) { 
                 if (err || !cogSession.isValid() || decodedTkn.exp*1000 < currTime.getTime() ) { 
                     closeMobileMenu()
+                    console.log("Logging out")
                     handleLogout(tempUser)
                 } else {
                     if (cogUser == null) {
                         setCogUser(tempUser)
+                        window.utilInitSession(session.user, tempUser);
+                        console.log(session)
                     }
                     setTimeout(refreshSession(), decodedTkn.exp*1000 - currTime.getTime() - 1000)
-                    window.utilInitAuth(cookies.auth)
-                    window.utilInitSession(cookies.user, tempUser);
+                    window.utilInitAuth(session.auth)
                 }
             });
         }
