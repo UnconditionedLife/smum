@@ -104,7 +104,7 @@ export default function HeaderBar(props) {
 
     const session = cookies.user && cookies.auth && cookies.refresh ? 
           {user:cookies.user,auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser} : null;
-  
+
     const setSession = (newSession) => {
         if (newSession.user != null && newSession.auth != null) {
             setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
@@ -148,7 +148,7 @@ export default function HeaderBar(props) {
             tempUser.getSession(function (err, cogSession) { 
                 if (err || !cogSession.isValid() || decodedTkn.exp*1000 < currTime.getTime() ) { 
                     closeMobileMenu()
-                    handleLogout()
+                    handleLogout(tempUser)
                 } else {
                     if (cogUser == null) {
                         setCogUser(tempUser)
@@ -165,12 +165,13 @@ export default function HeaderBar(props) {
         if (cogUser != null && session != null) {
             let token = cogGetRefreshToken(session.refresh)
             cogUser.refreshSession(token, function (err, result) {
-                console.log(err, result)
                 let uAuthorization = {};
                 uAuthorization.accessToken = result.getAccessToken().getJwtToken()
                 let uRefreshToken = result.refreshToken.token
                 uAuthorization.idToken = result.idToken.jwtToken
                 window.utilInitAuth(uAuthorization)
+                window.utilInitSession(session.user, cogUser);
+                console.log({ user: session.user, auth: uAuthorization, cogUser: cogUser, refresh: uRefreshToken })
                 setSession({ user: session.user, auth: uAuthorization, cogUser: cogUser, refresh: uRefreshToken });
             })
         }
@@ -198,8 +199,8 @@ export default function HeaderBar(props) {
         setMobileMenuAnchor(null);
     }
 
-    function handleLogout() {
-        session.cogUser.signOut();
+    function handleLogout(user) {
+        user.signOut();
         removeSession();
     }
 
@@ -278,7 +279,7 @@ export default function HeaderBar(props) {
             <MenuItem onClick={() => { closeUserMenu(); handleSectionChange(3); }}>
                 <Button startIcon={<AccountCircle />}>Profile</Button>
             </MenuItem>
-            <MenuItem onClick={() => { closeUserMenu(); handleLogout(); }} >
+            <MenuItem onClick={() => { closeUserMenu(); handleLogout(cogUser); }} >
                 <Button startIcon={<ExitToApp />}>Logout</Button>
             </MenuItem>
         </Menu>
@@ -311,7 +312,7 @@ export default function HeaderBar(props) {
                     Profile
                 </Button>
             </MenuItem>
-            <MenuItem onClick={() => { closeMobileMenu(); handleLogout(); }} >
+            <MenuItem onClick={() => { closeMobileMenu(); handleLogout(cogUser); }} >
                 <Button startIcon={<ExitToApp />}>
                     Logout
                 </Button>
