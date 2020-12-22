@@ -119,7 +119,11 @@ export function addService(serviceTypeId, serviceCategory, serviceButtons, servi
 	}
 	// save service record
 	const servedCounts = utilCalcServiceFamilyCounts(serviceTypeId)
-	const serviceRecord = utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid)
+    const serviceRecord = utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid)
+    
+console.log(serviceRecord)
+
+
 	const result = dbSaveServiceRecord(serviceRecord)
 	if (serviceType.serviceButtons == "Primary" && result == "success"){
 		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
@@ -172,7 +176,7 @@ export function addService(serviceTypeId, serviceCategory, serviceButtons, servi
         uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
         
         if (undoneService === true) return 'undone'
-        if (serviceId != "" && result == "success") return serviceRecord
+        if (serviceId == "" && result == "success") return serviceRecord
 	}
 }
 

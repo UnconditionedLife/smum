@@ -84,10 +84,16 @@ const useStyles = makeStyles((theme) => ({
 
 PrimaryButtons.propTypes = {
     client: PropTypes.object.isRequired,
+    handleClientChange: PropTypes.func.isRequired,
+    session: PropTypes.object.isRequired,
+    svcsRendered: PropTypes.object,
+    updateSvcsRendered: PropTypes.func,
 }
 
 export default function PrimaryButtons(props) {
-    const [ servicesRendered, setServicesRendered ] = useState([])
+    const svcsRendered = props.svcsRendered
+    const updateSvcsRendered = props.updateSvcsRendered
+    // const [ servicesRendered, setServicesRendered ] = useState([])
     const [ buttonData, setButtonData ] = useState(getButtonData('primary'))
     const [ buttonState, setButtonState ] = useState([])
     const [ update, setUpdate ] = useState(false)
@@ -108,28 +114,18 @@ export default function PrimaryButtons(props) {
             if (index !== -1) array.splice(index, 1)
         }
         setButtonState(array)
-        
     }
 
     function handleAddService(serviceTypeId, serviceCategory, serviceButtons){
-        const serviceRecord = addService(serviceTypeId, serviceCategory, serviceButtons, servicesRendered)
-        const array = servicesRendered
-
-console.log(array)
-
+        const serviceRecord = addService(serviceTypeId, serviceCategory, serviceButtons, svcsRendered)
+        if (serviceRecord === undefined) return
+        const array = svcsRendered
         if (serviceRecord === 'undone') {
             array.splice(array.indexOf(serviceTypeId), 1)
         } else if (!isEmpty(serviceRecord)) {
             array.push(serviceRecord)
-        }
-    
-
-console.log(array)
-        
-        setServicesRendered(array)
-        
-        console.log(servicesRendered)
-
+        }        
+        updateSvcsRendered(array)
         setUpdate(!update)
     }
 
@@ -149,9 +145,7 @@ console.log(array)
     //     }
     // }
     
-    if (isEmpty(props.client)) return null
-
-    
+    if (isEmpty(props.client)) return null    
     
     // if (isEmpty(buttonData)) return null
     
@@ -174,30 +168,17 @@ console.log(array)
     }
 
     function isUsed(id){
-        console.log(servicesRendered)
-        if (servicesRendered.length === 0) return false
-        const index = servicesRendered.map(obj => { return obj.serviceTypeId }).indexOf(id);
-        
-        // flatMap((a, i) => {
-        //     const j = a.findIndex(z => z.id === 9);
-        //     return j > -1 ? [i, j] : []
-        //   }));
-        //  servicesRendered.indexOf(id);
-
-        console.log(index)
-
+        if (svcsRendered.length === 0) return false
+        if (svcsRendered == undefined) return false
+        const index = svcsRendered.map(obj => { return obj.serviceTypeId }).indexOf(id);
         if (index === -1) return false
         return true
     }
-
 
     return (
         <Fragment>
         { buttons.map((service) => (
             <Fragment key={ service.serviceTypeId }>
-
-                { console.log(isUsed(service.serviceTypeId))}
-
                 { isUsed(service.serviceTypeId) === false &&
                     <ButtonBase
                         focusRipple
