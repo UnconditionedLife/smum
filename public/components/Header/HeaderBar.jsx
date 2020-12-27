@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import { AppBar, Dialog, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
@@ -13,6 +13,7 @@ import jwt_decode from "jwt-decode";
 
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
+import { dbGetSettings } from '../System/js/database';
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -119,7 +120,8 @@ export default function HeaderBar(props) {
             setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' })
             setCogUser(newSession.cogUser)
             setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
-            console.log(session)
+            console.log(newSession)
+            dbGetSettings(newSession);
         } else {
             removeSession()
         }
