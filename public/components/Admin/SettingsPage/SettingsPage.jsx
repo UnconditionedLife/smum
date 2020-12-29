@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { Typography } from '../../System';
 import { dbGetSettings, SettingsSound, SettingsPrinter, SettingsSeniorAge,
-    SettingsZipcodes, SettingsServiceCats, SettingsSchedule } from '../../System/js/database.js';
+    SettingsZipcodes, SettingsServiceCats, SettingsSchedule } from '../../System/js/Database.js';
 
 SettingsPage.propTypes = {
     session: PropTypes.object.isRequired,

@@ -13,7 +13,7 @@ import jwt_decode from "jwt-decode";
 
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
-import { dbGetSettings } from '../System/js/database';
+import { dbGetSettings } from '../System/js/Database';
 
 const useStyles = makeStyles((theme) => ({
     appName: {

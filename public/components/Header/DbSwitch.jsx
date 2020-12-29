@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Switch } from '@material-ui/core';
 import { Typography } from '../System';
-import { dbSetUrl } from '../System/js/database';
+import { dbSetUrl } from '../System/js/Database';
 
 export default function DbSwitch() {
     const [switchOn, setSwitchOn] = React.useState(false);

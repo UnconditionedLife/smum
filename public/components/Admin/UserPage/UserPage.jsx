@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { dbGetUser } from '../../System/js/database.js';
+import { dbGetUser } from '../../System/js/Database.js';
 import { Container, CardContent, CardHeader, Typography } from '@material-ui/core';
 import { Card } from '../../System';
 import { UserForm } from '../../User';

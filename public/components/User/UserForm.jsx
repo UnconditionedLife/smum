@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, MenuItem } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
-import { dbGetUser, dbSetModifiedTime } from '../System/js/database';
+import { dbGetUser, dbSetModifiedTime } from '../System/js/Database';
 
 UserForm.propTypes = {
     session: PropTypes.object.isRequired,
