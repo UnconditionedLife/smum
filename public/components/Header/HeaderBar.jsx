@@ -4,6 +4,7 @@ import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import { AppBar, Dialog, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
 import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '@material-ui/icons';
 import { Button } from '../System';
+import { Hidden } from '@material-ui/core';
 import { LoginForm, SectionsContent }  from '.';
 import theme from '../Theme.jsx';
 import DbSwitch from './DbSwitch.jsx';
@@ -29,22 +30,22 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('md')]: { display: 'block', fontSize: '15px' },
     [theme.breakpoints.up('lg')]: { display: 'block', fontSize: '20px' },
   },
-  bar: {
-    position: 'relative',
-    flexShrink: 3,
-    width: '100%',
-    [theme.breakpoints.up('lg')]: {
-      marginLeft: theme.spacing(3),
-      width: 'auto',
-    },
-  },
+//   bar: {
+//     position: 'relative',
+//     flexShrink: 3,
+//     width: '100%',
+//     [theme.breakpoints.up('lg')]: {
+//       marginLeft: theme.spacing(3),
+//       width: 'auto',
+//     },
+//   },
   search: {
     borderRadius: theme.shape.borderRadius,
     backgroundColor: fade(theme.palette.common.white, 0.15),
     '&:hover': {
       backgroundColor: fade(theme.palette.common.white, 0.25),
     },
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up('xs')]: {
       marginLeft: theme.spacing(3),
     },
   },
@@ -53,7 +54,7 @@ const useStyles = makeStyles((theme) => ({
     width: '200px',
   },
   inputInput: {
-    padding: theme.spacing(1, 1, 1, 0),
+    padding: theme.spacing(1, 0, 1, 0),
     // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(3)}px)`,
     transition: theme.transitions.create('width'),
@@ -72,14 +73,14 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   sectionDesktop: {
-    display: 'none',
-    [theme.breakpoints.up('lg')]: {
-      display: 'flex',
-      justifyContent: 'flex-end',
-    },
+    // display: 'none',
+    // [theme.breakpoints.up('lg')]: {
+    //   display: 'flex',
+    //   justifyContent: 'flex-end',
+    // },
   },
   sectionMobile: {
-    [theme.breakpoints.up('lg')]: {
+    [theme.breakpoints.up('md')]: {
       display: 'none',
     },
   },
@@ -229,7 +230,7 @@ export default function HeaderBar(props) {
 
     const appbarControls = (
         <Fragment>
-            <Box display='flex' className={classes.search} mr={2} ml={2.5} flexGrow={1} justifyContent="flex-start">
+            <Box display='flex' className={classes.search} mr={2} ml={2.5} flexGrow={1.5} justifyContent="flex-start">
                 <Box alignItems='flex-start' pointerEvents='none' display='flex' pl={1} pt={0.75}>
                     <Search />
                 </Box>
@@ -247,35 +248,28 @@ export default function HeaderBar(props) {
                     }}
                 />
             </Box>
-            <Box className={classes.bar} mr={2} ml={2.5} justifyContent="flex-end" flexGrow={1}>
-                <Box className={classes.sectionDesktop}>
-                    <Button mr='0' onClick={() => handleSectionChange(0)} startIcon={ <People /> }
-                        variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit">
-                        Clients
+            <Box className={classes.sectionDesktop} justifyContent="flex-end">
+            <Button  onClick={() => handleSectionChange(0)} flexShrink={2} minWidth="30px" startIcon={ <People/>  }
+                variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" >
+                <Hidden mdDown> Clients </Hidden>
                     </Button>
-                    <Button mr= '0' onClick={() => handleSectionChange(1)} startIcon={<Face />}
-                        disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit">
-                        Admin
+                    <Button ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Face />}
+                    disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" flexShrink={1}>
+                    <Hidden mdDown> Admin </Hidden>
                     </Button>
-                    <Button mr= '0' onClick={() => handleSectionChange(2)} startIcon={<Today />}
-                        variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit">
-                        Today
+                    <Button ml= '0' onClick={() => handleSectionChange(2)} minWidth="30px" startIcon={<Today />}
+                        variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" flexShrink={1} >
+                        <Hidden mdDown> Today </Hidden>
+
                     </Button>
-                    <Button mr= '0' edge="end" startIcon={<AccountCircle />} style={{ textTransform: 'none' }}
+                    <Button ml= '0'  minWidth="30px" startIcon={<AccountCircle />} style={{ textTransform: 'none' }}
                         aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
                         onClick={ handleUserMenuOpen }
                         color="inherit"
-                        variant={ (selectedSection === 3) ? 'outlined' : 'text' }>
-                        {session ? session.user.userName : ''}
+                        variant={ (selectedSection === 3) ? 'outlined' : 'text' } flexShrink={1} >
+                        <Hidden mdDown>  {session ? session.user.userName : ''} </Hidden>
                     </Button>
                 </Box>
-                <Box justifyContent="flex-end" display="flex" className={classes.sectionMobile}>
-                    <IconButton aria-label="show more" aria-controls={mobileMenuId} aria-haspopup="true"
-                        onClick={handleMobileMenuOpen} color="inherit">
-                        <MoreVert />
-                    </IconButton>
-                </Box>
-            </Box >
         </Fragment >
     );
 
@@ -334,11 +328,11 @@ export default function HeaderBar(props) {
             <Box flexGrow={1} >
                 <AppBar position="fixed">
                     <Toolbar>
-                        <Tooltip title={props.version}>
-                            <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
-                                <SmumLogo width='44px' height='44px'/>
-                            </Box>
-                        </Tooltip>
+                    <Hidden smDown> <Tooltip title={props.version}>
+                    <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
+                    <SmumLogo width='44px' height='44px'/> 
+                    </Box>
+                </Tooltip> </Hidden> 
                         <Box mr={ 4 } mt={ 1 } className={ classes.appName } >
                             <Typography variant='h6' noWrap className={ classes.title } >
                                     Santa Maria Urban Ministry

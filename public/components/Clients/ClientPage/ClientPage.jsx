@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@material-ui/core';
+import { Accordion, AccordionDetails, AccordionSummary, Box, CardContent, Typography } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay, SelectTestForm } from '../';
 import { PrintClientInfo } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
+import { Card } from '../../System';
+import { ClientInfo } from '..';
 
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
@@ -13,6 +15,7 @@ ClientPage.propTypes = {
 export default function ClientPage(props) {
     const client = props.client;
     const clientFormDiv = useRef(null);
+    const clientFormDiv2 = useRef(null);
     const [expanded, setExpanded] = useState(false);
   
     const handleChange = (panel) => (event, isExpanded) => {
@@ -40,6 +43,9 @@ export default function ClientPage(props) {
                     </Box>
                 </AccordionDetails>
             </Accordion>
+
+        
+
             <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
                 <AccordionSummary expandIcon={ <ExpandMore /> } id="panel2bh-header">
                     <Typography variant='button' ><b>Dependents</b></Typography>
