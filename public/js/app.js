@@ -302,92 +302,93 @@ function uiShowEditHistoryPopup(serviceId, rowNum){
 	$(".rowNum" + rowNum).last().after(popup)
 };
 
-function uiEditHistory(todo, serviceId, rowNum){
-	if (todo == "cancel"){
-		$("#editPopup").remove()
-		$(".greyout").removeClass('greyout')
-		if ($(".historyEditField").length > 0){
-			let temp = ""
-			for (var i = 0; i < 9; i++) {
-				temp = $("#histEditHidden" + i).val()
-				$(".rowNum" + rowNum + ":eq("+ i +")").html(temp)
-			}
-		}
-	} else if (todo == "delete") {
-		utilBeep()
-		let popup = "<div id='editPopup' class='historyPopup'>&#8680; &nbsp; &nbsp; <span style='color:white'>ARE YOU SURE?</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"confirmedDelete\", \"" + serviceId + "\", \""+ rowNum +"\")'>YES</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"cancel\", \"" + serviceId + "\", \""+ rowNum +"\")'>CANCEL</span> &nbsp; &nbsp; &#8678;</div>"
-		$("#editPopup").html(popup)
-	} else if (todo == "confirmedDelete") {
-		const service = utilRemoveService(serviceId)
-		if (service != ""){
-			const result = utilUpdateLastServed()
-			if (result == "failed") return
-		} else {
-			console.log("Saving delete failed.")
-			return
-		}
-		$(".rowNum" + rowNum).hide("slow")
-		uiEditHistory("cancel", serviceId, rowNum)
-	} else if (todo == "edit") {
-		let temp = ""
-		for (var i = 0; i < 9; i++) {
-			temp = $(".rowNum" + rowNum + ":eq(" + i + ")").html()
-			// datetime
-			if (i == 0) {
-				temp = moment(temp, uiDateTime).format(dateTime)
-				$(".rowNum" + rowNum + ":eq(" + i + ")").html("<input id='histEditHidden" + i + "' type='hidden' value='" + temp + "'><input id='histEdit" + i + "' class='historyEditField' type='datetime-local' value='" + temp + "'>")
-			}
-			// selects
-			if (i > 0 && i < 4){
-				let selectOptions
-				if (i == 1) {
-					selectOptions =  serviceTypes
-						.filter(obj => obj.serviceButtons == "Primary")
-						.map(obj => obj.serviceName)
-				}
-				if (i == 2){
-					selectOptions =  ["Client", "NonClient", "Inactive"]
-				}
-				if (i == 3){
-					selectOptions =  ["NO", "YES"]
-				}
-				let html = "<input id='histEditHidden" + i + "' type='hidden' value='" + temp + "'><select id='histEdit" + i + "' class='historyEditField'>"
-				for (var b = 0; b < selectOptions.length; b++) {
-					let selected = "selected='selected'"
-					let isSelected = ""
-					if (temp == selectOptions[b]) {isSelected = selected}
-					html = html + "<option value='" + selectOptions[b] + "' " + isSelected + ">" + selectOptions[b] + "</option>"
-				}
-				$(".rowNum" + rowNum + ":eq(" + i + ")").html(html + "</select>")
-			}
-			// text fields
-			if (i > 3){
-				$(".rowNum" + rowNum + ":eq(" + i + ")").html("<input id='histEditHidden" + i + "' type='hidden' value='" + temp + "'><input id='histEdit" + i + "' class='historyEditFieldSmall' type='text' value='" + temp + "'>")
-			}
-		}
-		let popup = "&#8679; &nbsp; &nbsp; <span style='color:white'>EDIT FIELDS ABOVE</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"save\", \"" + serviceId + "\", \""+ rowNum +"\")'>SAVE</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"cancel\", \"" + serviceId + "\", \""+ rowNum +"\")'>CANCEL</span> &nbsp; &nbsp; &#8679;"
-		$("#editPopup").html(popup)
-		// Save edited service record
-	} else if (todo == "save") {
-		let service = utilUpdateService(serviceId)
-		if (service != ""){
-			let lastServed = utilUpdateLastServed(service)
-			if (lastServed == "failed") {
-				console.log("Saving client / lastServed failed.")
-				return
-			} else {
-				for (var i = 0; i < 9; i++) {
-					let temp = 	$("#histEdit" + i).val()
-					if (i == 0){temp = moment(temp).format(uiDateTimeShort)}
-					$(".rowNum" + rowNum + ":eq(" + i + ")").html(temp)
-				}
-				uiEditHistory("cancel", serviceId, rowNum)
-			}
-		} else {
-			console.log("Updating service failed.")
-		}
-	}
-}
+// MOVED TO REACT JS
+// function uiEditHistory(todo, serviceId, rowNum){
+// 	if (todo == "cancel"){
+// 		$("#editPopup").remove()
+// 		$(".greyout").removeClass('greyout')
+// 		if ($(".historyEditField").length > 0){
+// 			let temp = ""
+// 			for (var i = 0; i < 9; i++) {
+// 				temp = $("#histEditHidden" + i).val()
+// 				$(".rowNum" + rowNum + ":eq("+ i +")").html(temp)
+// 			}
+// 		}
+// 	} else if (todo == "delete") {
+// 		utilBeep()
+// 		let popup = "<div id='editPopup' class='historyPopup'>&#8680; &nbsp; &nbsp; <span style='color:white'>ARE YOU SURE?</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"confirmedDelete\", \"" + serviceId + "\", \""+ rowNum +"\")'>YES</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"cancel\", \"" + serviceId + "\", \""+ rowNum +"\")'>CANCEL</span> &nbsp; &nbsp; &#8678;</div>"
+// 		$("#editPopup").html(popup)
+// 	} else if (todo == "confirmedDelete") {
+// 		const service = utilRemoveService(serviceId)
+// 		if (service != ""){
+// 			const result = utilUpdateLastServed()
+// 			if (result == "failed") return
+// 		} else {
+// 			console.log("Saving delete failed.")
+// 			return
+// 		}
+// 		$(".rowNum" + rowNum).hide("slow")
+// 		uiEditHistory("cancel", serviceId, rowNum)
+// 	} else if (todo == "edit") {
+// 		let temp = ""
+// 		for (var i = 0; i < 9; i++) {
+// 			temp = $(".rowNum" + rowNum + ":eq(" + i + ")").html()
+// 			// datetime
+// 			if (i == 0) {
+// 				temp = moment(temp, uiDateTime).format(dateTime)
+// 				$(".rowNum" + rowNum + ":eq(" + i + ")").html("<input id='histEditHidden" + i + "' type='hidden' value='" + temp + "'><input id='histEdit" + i + "' class='historyEditField' type='datetime-local' value='" + temp + "'>")
+// 			}
+// 			// selects
+// 			if (i > 0 && i < 4){
+// 				let selectOptions
+// 				if (i == 1) {
+// 					selectOptions =  serviceTypes
+// 						.filter(obj => obj.serviceButtons == "Primary")
+// 						.map(obj => obj.serviceName)
+// 				}
+// 				if (i == 2){
+// 					selectOptions =  ["Client", "NonClient", "Inactive"]
+// 				}
+// 				if (i == 3){
+// 					selectOptions =  ["NO", "YES"]
+// 				}
+// 				let html = "<input id='histEditHidden" + i + "' type='hidden' value='" + temp + "'><select id='histEdit" + i + "' class='historyEditField'>"
+// 				for (var b = 0; b < selectOptions.length; b++) {
+// 					let selected = "selected='selected'"
+// 					let isSelected = ""
+// 					if (temp == selectOptions[b]) {isSelected = selected}
+// 					html = html + "<option value='" + selectOptions[b] + "' " + isSelected + ">" + selectOptions[b] + "</option>"
+// 				}
+// 				$(".rowNum" + rowNum + ":eq(" + i + ")").html(html + "</select>")
+// 			}
+// 			// text fields
+// 			if (i > 3){
+// 				$(".rowNum" + rowNum + ":eq(" + i + ")").html("<input id='histEditHidden" + i + "' type='hidden' value='" + temp + "'><input id='histEdit" + i + "' class='historyEditFieldSmall' type='text' value='" + temp + "'>")
+// 			}
+// 		}
+// 		let popup = "&#8679; &nbsp; &nbsp; <span style='color:white'>EDIT FIELDS ABOVE</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"save\", \"" + serviceId + "\", \""+ rowNum +"\")'>SAVE</span> &nbsp; &nbsp; <span class='historyEditLink' onclick='uiEditHistory(\"cancel\", \"" + serviceId + "\", \""+ rowNum +"\")'>CANCEL</span> &nbsp; &nbsp; &#8679;"
+// 		$("#editPopup").html(popup)
+// 		// Save edited service record
+// 	} else if (todo == "save") {
+// 		let service = utilUpdateService(serviceId)
+// 		if (service != ""){
+// 			let lastServed = utilUpdateLastServed(service)
+// 			if (lastServed == "failed") {
+// 				console.log("Saving client / lastServed failed.")
+// 				return
+// 			} else {
+// 				for (var i = 0; i < 9; i++) {
+// 					let temp = 	$("#histEdit" + i).val()
+// 					if (i == 0){temp = moment(temp).format(uiDateTimeShort)}
+// 					$(".rowNum" + rowNum + ":eq(" + i + ")").html(temp)
+// 				}
+// 				uiEditHistory("cancel", serviceId, rowNum)
+// 			}
+// 		} else {
+// 			console.log("Updating service failed.")
+// 		}
+// 	}
+// }
 
 function uiGenerateErrorBubble(errText, id, classes){
 	$('[id="err-' + id + '"]').remove()
@@ -1920,21 +1921,21 @@ function uiSetAdminHeader(title){
 };
 
 // Added primaryReactDiv and secondaryReactDiv as part of REACT migration
-function uiShowServicesButtons(ReactDiv, buttonsCalled){ // TODO DELETE AFTER SERVICE PAGE IS REACTED
-	if ($.isEmptyObject(client)) return
-	// uiShowServicesDateTime() //*** MOVED TO REACT ***
-	// uiShowLastServed()       //*** MOVED TO REACT ***
-	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
-	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
-	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
-	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
-	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
-	if (buttonsCalled === 'primary') {
-		uiShowPrimaryServiceButtons(ReactDiv, btnPrimary, lastServed, activeServiceTypes)
-	} else {
-		uiShowSecondaryServiceButtons(ReactDiv, btnSecondary, lastServed, activeServiceTypes)
-	}
-};
+// function uiShowServicesButtons(ReactDiv, buttonsCalled){ // TODO DELETE AFTER SERVICE PAGE IS REACTED
+// 	if ($.isEmptyObject(client)) return
+// 	// uiShowServicesDateTime() //*** MOVED TO REACT ***
+// 	// uiShowLastServed()       //*** MOVED TO REACT ***
+// 	const lastServed = utilCalcLastServedDays() // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
+// 	const activeServiceTypes = utilCalcActiveServiceTypes() // reduces serviceTypes list for which today is NOT active date range
+// 	const targetServices = utilCalcTargetServices(activeServiceTypes); // list of target properties for each serviceType
+// 	const btnPrimary = utilCalcActiveServicesButtons("primary", activeServiceTypes, targetServices, lastServed);
+// 	const btnSecondary = utilCalcActiveServicesButtons("secondary", activeServiceTypes, targetServices, lastServed);
+// 	if (buttonsCalled === 'primary') {
+// 		uiShowPrimaryServiceButtons(ReactDiv, btnPrimary, lastServed, activeServiceTypes)
+// 	} else {
+// 		uiShowSecondaryServiceButtons(ReactDiv, btnSecondary, lastServed, activeServiceTypes)
+// 	}
+// };
 
 function uiShowServiceTypeForm(){
 	$('#serviceTypeFormContainer').html(uiGetTemplate('#serviceTypeForm'))
@@ -2238,24 +2239,26 @@ function uiResetServiceTypeForm(){
 // ************************************************ DB FUNCTIONS ********************************************
 // **********************************************************************************************************
 
-function dbGetAppSettings(){
-	let temp = dbGetData(aws+"/settings")
-	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
-	for (var i = 0; i < fields.length; i++) {
-		let x = fields[i]
-		if (temp[x] == "*EMPTY*") {
-			temp[x] = []
-		} else {
-			temp[x] = utilStringToArray(temp[x])
-		}
-	}
-	return temp
-};
+// MOVED TO REACT JS --> BREAKING ADMIN CHANGES
+// function dbGetAppSettings(){
+// 	let temp = dbGetData(aws+"/settings")
+// 	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+// 	for (var i = 0; i < fields.length; i++) {
+// 		let x = fields[i]
+// 		if (temp[x] == "*EMPTY*") {
+// 			temp[x] = []
+// 		} else {
+// 			temp[x] = utilStringToArray(temp[x])
+// 		}
+// 	}
+// 	return temp
+// };
 
-function dbGetClientActiveServiceHistory(){
-	let history = dbGetData(aws+"/clients/services/"+client.clientId).services
-	return history.filter(item => item.serviceValid == "true")
-};
+// MOVED TO REACT JS
+// function dbGetClientActiveServiceHistory(){
+// 	let history = dbGetData(aws+"/clients/services/"+client.clientId).services
+// 	return history.filter(item => item.serviceValid == "true")
+// };
 
 function dbGetData(uUrl){
 	cogCheckSession()
@@ -2367,20 +2370,22 @@ function dbGetNewClientID(){
 	return newId
 };
 
-function dbGetService(serviceId){
-	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
-};
+// MOVED TO REACT JS --> Database
+// function dbGetService(serviceId){
+// 	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
+// };
 
-function dbGetServiceTypes(){
-	serviceTypes = dbGetData(aws+"/servicetypes").serviceTypes
-		.sort(function(a, b){
-			let nameA= a.serviceName.toLowerCase()
-			let nameB= b.serviceName.toLowerCase()
-			if (nameA < nameB) return -1
-			if (nameA > nameB) return 1
-		return 0; //default return value (no sorting)
-	})
-};
+// MOVED TO REACT as dbGetSvcTypes
+// function dbGetServiceTypes(){
+// 	serviceTypes = dbGetData(aws+"/servicetypes").serviceTypes
+// 		.sort(function(a, b){
+// 			let nameA= a.serviceName.toLowerCase()
+// 			let nameB= b.serviceName.toLowerCase()
+// 			if (nameA < nameB) return -1
+// 			if (nameA > nameB) return 1
+// 		return 0; //default return value (no sorting)
+// 	})
+// };
 
 function dbGetServicesByIdAndYear(serviceTypeId, year) {
 	// TODO // catch error from dbGetData
@@ -2393,12 +2398,13 @@ function dbGetUsers(){
 	return dbGetData(aws+"/users").users
 };
 
-function dbLoadServiceHistory(reactDIV){
-	let clientHistory = dbGetClientActiveServiceHistory()
-	clientHistory = clientHistory
-		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
-	uiShowHistoryData(reactDIV, clientHistory)
-};
+// MOVED TO REACT JS
+// function dbLoadServiceHistory(reactDIV){
+// 	let clientHistory = dbGetClientActiveServiceHistory()
+// 	clientHistory = clientHistory
+// 		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+// 	uiShowHistoryData(reactDIV, clientHistory)
+// };
 
 function dbPostData(URL,data){
 	const sessionStatus = cogCheckSession()
@@ -2429,7 +2435,7 @@ function dbPostData(URL,data){
 				ans = "success"
 				console.log("SUCCESS")
 				if (URL.includes('/servicetypes')) {
-					dbGetServiceTypes()
+					// dbGetServiceTypes() // MOVED TO REACT
 					uiShowServiceTypes()
 					uiSetServiceTypeHeader()
 					uiPopulateForm(serviceTypes, 'serviceTypes')
@@ -2570,6 +2576,7 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 };
 
 function dbSaveCurrentClient(data){
+    // TODO REMOVE svcHistory & svcsRendered from client before saving
 	uiSaveButton('client', 'Saving...')
 	$("body").css("cursor", "progress")
 	data = utilPadEmptyFields(data)
@@ -2601,11 +2608,12 @@ function dbSaveCurrentClient(data){
 	return result
 };
 
-function dbSaveServiceRecord(service){
-	const data = service // utilPadEmptyFields(service)
-	const URL = aws+"/clients/services"
-	return dbPostData(URL,JSON.stringify(data))
-};
+// MOVED TO REACT JS
+// function dbSaveServiceRecord(service){
+// 	const data = service // utilPadEmptyFields(service)
+// 	const URL = aws+"/clients/services"
+// 	return dbPostData(URL,JSON.stringify(data))
+// };
 
 function dbSaveServiceTypeForm(context){
 	uiClearAllErrorBubbles()
@@ -2685,122 +2693,124 @@ function dateParse(dateString) {
 	}
 };
 
+// MOVED TO REACT --> BREAKING CHANGE FOR CALENDAR
 // TODO should switch to an implementation that follows RFC 5545
-function dateIsClosed(dateRules, date) {
-	let dateObj = dateParse(date.format('YYYY-MM-DD'));
-	if (dateRules.openDays.indexOf(dateObj.formatted) >= 0) {
-		return false;
-	}
-	for (i = 0; i < dateRules.closedEveryDays.length; i++) {
-		if (dateObj.dayOfWeek == dateRules.closedEveryDays[i]) {
-			return true;
-		}
-	}
-	for (i = 0; i < dateRules.closedEveryDaysWeek.length; i++) {
-		if (dateObj.weekInMonth == dateRules.closedEveryDaysWeek[i][0] &&
-			dateObj.dayOfWeek == dateRules.closedEveryDaysWeek[i][1]) {
-			return true;
-		}
-	}
-	for (i = 0; i < dateRules.closedDays.length; i++) {
-		if (dateObj.formatted == dateRules.closedDays[i]) {
-			return true;
-		}
-	}
-	return false;
-};
+// function dateIsClosed(dateRules, date) {
+// 	let dateObj = dateParse(date.format('YYYY-MM-DD'));
+// 	if (dateRules.openDays.indexOf(dateObj.formatted) >= 0) {
+// 		return false;
+// 	}
+// 	for (i = 0; i < dateRules.closedEveryDays.length; i++) {
+// 		if (dateObj.dayOfWeek == dateRules.closedEveryDays[i]) {
+// 			return true;
+// 		}
+// 	}
+// 	for (i = 0; i < dateRules.closedEveryDaysWeek.length; i++) {
+// 		if (dateObj.weekInMonth == dateRules.closedEveryDaysWeek[i][0] &&
+// 			dateObj.dayOfWeek == dateRules.closedEveryDaysWeek[i][1]) {
+// 			return true;
+// 		}
+// 	}
+// 	for (i = 0; i < dateRules.closedDays.length; i++) {
+// 		if (dateObj.formatted == dateRules.closedDays[i]) {
+// 			return true;
+// 		}
+// 	}
+// 	return false;
+// };
 
-function dateFindOpen(target, earliest) {
-	let proposed = moment(target);
-	// Start with target date and work backward to earliest
-	while (proposed >= earliest) {
-		if (dateIsClosed(settings, proposed)) {
-			proposed.subtract(1, 'days');
-		} else {
-			return proposed;
-		}
-	}
-	// Select the first open date after target
-	proposed = moment(target).add(1, 'days');
-	while (true) {
-		if (dateIsClosed(settings, proposed)) {
-			proposed.add(1, 'days');
-		} else {
-			return proposed;
-		}
-	}
-};
+// MOVED TO REACT JS -- Clients/Receipts.js
+// function dateFindOpen(target, earliest) {
+// 	let proposed = moment(target);
+// 	// Start with target date and work backward to earliest
+// 	while (proposed >= earliest) {
+// 		if (dateIsClosed(settings, proposed)) {
+// 			proposed.subtract(1, 'days');
+// 		} else {
+// 			return proposed;
+// 		}
+// 	}
+// 	// Select the first open date after target
+// 	proposed = moment(target).add(1, 'days');
+// 	while (true) {
+// 		if (dateIsClosed(settings, proposed)) {
+// 			proposed.add(1, 'days');
+// 		} else {
+// 			return proposed;
+// 		}
+// 	}
+// };
 
 // **********************************************************************************************************
 // ********************************************** CLICK FUNCTIONS *******************************************
 // **********************************************************************************************************
 
-
-function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
-	let serviceType = utilGetServiceTypeByID(serviceTypeId)
-	let serviceId = "" // new service
-	let serviceValid = true
-	// graydout button so undo service
-	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
-		const serviceItem = servicesRendered.filter(obj => obj.serviceTypeId == serviceTypeId)
-		serviceValid = false
-		serviceId = serviceItem[0].serviceId
-	}
-	// save service record
-	const servedCounts = utilCalcServiceFamilyCounts(serviceTypeId)
-	const serviceRecord = utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid)
-	const result = dbSaveServiceRecord(serviceRecord)
-	if (serviceType.serviceButtons == "Primary" && result == "success"){
-		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
-	}
-	if (serviceId != "" && result == "success") {
-		// ungrayout button
-		uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
-		if (serviceButtons == "Primary") {
-			$("#image-"+serviceTypeId).removeClass("imageGrayOut")
-		}
-	} else if (serviceId == "" && result == "success") {
-		if (serviceCategory == 'Food_Pantry') {
-			// TODO Use function here
-			let service = serviceTypes.filter(function( obj ) {
-					return obj.serviceTypeId == serviceTypeId
-				})[0]
-			prnPrintFoodReceipt(service.isUSDA)
-			if (client.isActive == 'Client') {
-				prnPrintReminderReceipt()
-			}
-		} else if (serviceCategory == 'Clothes_Closet') {
-			prnPrintClothesReceipt(serviceType)
-		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
-			const targetService = utilCalcTargetServices([serviceType])
-			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
-			// TODO use function here
-			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			prnPrintVoucherReceipt(serviceType, dependents, 'grade');
-			prnPrintVoucherReceipt(serviceType, dependents, 'grade');
-		} else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
-			const targetService = utilCalcTargetServices([serviceType])
-			// TODO use function here
-			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			prnPrintVoucherReceipt(service)
-			prnPrintVoucherReceipt(service)
-		} else if (serviceCategory == 'Christmas' && serviceType.target.service == 'Unselected') { // ignore fulfillment
-			const targetService = utilCalcTargetServices([serviceType])
-			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			if (targetService[0].family_totalChildren == "Greater Than 0") {
-				const dependents = utilCalcValidAgeGrade("age", targetService[0])
-				prnPrintVoucherReceipt(serviceType, dependents, 'age');
-				prnPrintVoucherReceipt(serviceType, dependents, 'age');
-			} else {
-				prnPrintVoucherReceipt(service);
-				prnPrintVoucherReceipt(service);
-			}
-		}
-		prnFlush();
-		// uiShowLastServed() *** Moved to REACT ***
-		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
-	}
-};
+// MOVED TO REACT JS as addService
+// function clickAddService(serviceTypeId, serviceCategory, serviceButtons){
+// 	let serviceType = utilGetServiceTypeByID(serviceTypeId)
+// 	let serviceId = "" // new service
+// 	let serviceValid = true
+// 	// graydout button so undo service
+// 	if ($("#btn-"+ serviceTypeId).hasClass("buttonGrayOut")) {
+// 		const serviceItem = servicesRendered.filter(obj => obj.serviceTypeId == serviceTypeId)
+// 		serviceValid = false
+// 		serviceId = serviceItem[0].serviceId
+// 	}
+// 	// save service record
+// 	const servedCounts = utilCalcServiceFamilyCounts(serviceTypeId)
+// 	const serviceRecord = utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid)
+// 	const result = dbSaveServiceRecord(serviceRecord)
+// 	if (serviceType.serviceButtons == "Primary" && result == "success"){
+// 		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
+// 	}
+// 	if (serviceId != "" && result == "success") {
+// 		// ungrayout button
+// 		uiToggleButtonColor("unGray", serviceTypeId, serviceButtons)
+// 		if (serviceButtons == "Primary") {
+// 			$("#image-"+serviceTypeId).removeClass("imageGrayOut")
+// 		}
+// 	} else if (serviceId == "" && result == "success") {
+// 		if (serviceCategory == 'Food_Pantry') {
+// 			// TODO Use function here
+// 			let service = serviceTypes.filter(function( obj ) {
+// 					return obj.serviceTypeId == serviceTypeId
+// 				})[0]
+// 			prnPrintFoodReceipt(service.isUSDA)
+// 			if (client.isActive == 'Client') {
+// 				prnPrintReminderReceipt()
+// 			}
+// 		} else if (serviceCategory == 'Clothes_Closet') {
+// 			prnPrintClothesReceipt(serviceType)
+// 		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+// 			const targetService = utilCalcTargetServices([serviceType])
+// 			const dependents = utilCalcValidAgeGrade("grade",targetService[0])
+// 			// TODO use function here
+// 			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+// 			prnPrintVoucherReceipt(serviceType, dependents, 'grade');
+// 			prnPrintVoucherReceipt(serviceType, dependents, 'grade');
+// 		} else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+// 			const targetService = utilCalcTargetServices([serviceType])
+// 			// TODO use function here
+// 			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+// 			prnPrintVoucherReceipt(service)
+// 			prnPrintVoucherReceipt(service)
+// 		} else if (serviceCategory == 'Christmas' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+// 			const targetService = utilCalcTargetServices([serviceType])
+// 			let service = serviceTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+// 			if (targetService[0].family_totalChildren == "Greater Than 0") {
+// 				const dependents = utilCalcValidAgeGrade("age", targetService[0])
+// 				prnPrintVoucherReceipt(serviceType, dependents, 'age');
+// 				prnPrintVoucherReceipt(serviceType, dependents, 'age');
+// 			} else {
+// 				prnPrintVoucherReceipt(service);
+// 				prnPrintVoucherReceipt(service);
+// 			}
+// 		}
+// 		prnFlush();
+// 		// uiShowLastServed() *** Moved to REACT ***
+// 		uiToggleButtonColor("gray", serviceTypeId, serviceButtons)
+// 	}
+// };
 
 function clickGenerateDailyReport(btn, targetDiv){
 	const dayDate = $('#reportsDailyDate').val()
@@ -3560,101 +3570,108 @@ function utilArrayToObject(arr){
 		}
 		return acc
 	}, {});
-};
+}
 
-function utilGetHistoryLastService(serviceHistory, serviceType){
-	return serviceHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
-	.filter(item => item.serviceTypeId == serviceType.serviceTypeId)
-};
+// MOVED TO REACT JS as getHistoryLastService
+// function utilGetHistoryLastService(serviceHistory, serviceType){
+// 	return serviceHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
+// 	.filter(item => item.serviceTypeId == serviceType.serviceTypeId)
+// }
 
-function utilGetVoucherTargetService(serviceHistory, serviceType){
-	return serviceHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
-	.filter(item => item.serviceTypeId == serviceType.target.service)
-};
+// MOVED TO REACT JS
+// function utilGetVoucherTargetService(serviceHistory, serviceType){
+// 	return serviceHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
+// 	.filter(item => item.serviceTypeId == serviceType.target.service)
+// }
 
-function utilCalcVoucherServiceSignup(serviceType){
-	return dbGetClientActiveServiceHistory()
-		.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
-		.filter(item => item.serviceTypeId == serviceType.target.service)
-};
+// MOVED TO REACT JS
+// function utilCalcVoucherServiceSignup(serviceType){
+// 	return dbGetClientActiveServiceHistory()
+// 		.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
+// 		.filter(item => item.serviceTypeId == serviceType.target.service)
+// }
 
-function utilCalcServiceFamilyCounts(serviceTypeId){
-	const serviceType = utilGetServiceTypeByID(serviceTypeId)
-	let servedCounts = {
-		adults: String(client.family.totalAdults),
-		children: String(client.family.totalChildren),
-		individuals: String(client.family.totalSize),
-		seniors: String(client.family.totalSeniors),
-		itemsServed: String(serviceType.numberItems)
-	}
-	let targetService = utilCalcTargetServices([serviceType])
-	console.log(serviceType)
-	console.log(serviceType.fulfillment);
-	if (serviceType.itemsPer == "Person") {
-		servedCounts.itemsServed = String(servedCounts.itemsServed * client.family.totalSize)
-		if (serviceType.fulfillment.type =="Voucher"){
-			if (serviceType.target.service == "Unselected" && serviceType.serviceCategory == "Back_To_School") {
-				servedCounts = {
-					adults: 0,
-					children: 0,
-					individuals: 0,
-					seniors: 0,
-					itemsServed: 0,
-				}
-			} else {
-				let numChildren = 0;
-				if (targetService[0].dependents_ageMax !== undefined){
-					numChildren = utilCalcValidAgeGrade("age", targetService[0]).length
-				}
-				if (targetService[0].dependents_gradeMax !== undefined){
-					numChildren = Math.abs(numChildren - utilCalcValidAgeGrade("grade", targetService[0]).length)
-				}
 
-				servedCounts = {
-					adults: 0,
-					children: numChildren,
-					individuals: numChildren,
-					seniors: 0,
-					itemsServed: serviceType.numberItems * numChildren,
-				}
-			}
-		}
-	}
-	return servedCounts
-};
+// MOVED TO REACT JS as calcServiceFamilyCounts
+// function utilCalcServiceFamilyCounts(serviceTypeId){
+// 	const serviceType = utilGetServiceTypeByID(serviceTypeId)
+// 	let servedCounts = {
+// 		adults: String(client.family.totalAdults),
+// 		children: String(client.family.totalChildren),
+// 		individuals: String(client.family.totalSize),
+// 		seniors: String(client.family.totalSeniors),
+// 		itemsServed: String(serviceType.numberItems)
+// 	}
+// 	let targetService = utilCalcTargetServices([serviceType])
+// 	console.log(serviceType)
+// 	console.log(serviceType.fulfillment);
+// 	if (serviceType.itemsPer == "Person") {
+// 		servedCounts.itemsServed = String(servedCounts.itemsServed * client.family.totalSize)
+// 		if (serviceType.fulfillment.type =="Voucher"){
+// 			if (serviceType.target.service == "Unselected" && serviceType.serviceCategory == "Back_To_School") {
+// 				servedCounts = {
+// 					adults: 0,
+// 					children: 0,
+// 					individuals: 0,
+// 					seniors: 0,
+// 					itemsServed: 0,
+// 				}
+// 			} else {
+// 				let numChildren = 0;
+// 				if (targetService[0].dependents_ageMax !== undefined){
+// 					numChildren = utilCalcValidAgeGrade("age", targetService[0]).length
+// 				}
+// 				if (targetService[0].dependents_gradeMax !== undefined){
+// 					numChildren = Math.abs(numChildren - utilCalcValidAgeGrade("grade", targetService[0]).length)
+// 				}
+
+// 				servedCounts = {
+// 					adults: 0,
+// 					children: numChildren,
+// 					individuals: numChildren,
+// 					seniors: 0,
+// 					itemsServed: serviceType.numberItems * numChildren,
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return servedCounts
+// }
 
 function utilCognitoPhoneFormat(telephone){
 	const cogFormat= /^\+[1][0-9]{10}$/g // possible future use
 	const cleanTel = telephone.replace(/[.( )-]/g, '')
 	return cleanTel
-};
+}
 
 function utilGetFulfillmentServiceByID(serviceTypeId) {
 	return serviceTypes.filter(function( obj ) {
 		return obj.target.service == serviceTypeId
 	})
-};
+}
 
-function utilGetFoodInterval(isUSDA){
-	for (var i = 0; i < serviceTypes.length; i++) {
-		if ((serviceTypes[i].serviceButtons == "Primary") && (serviceTypes[i].serviceCategory == "Food_Pantry") && (serviceTypes[i].isUSDA == isUSDA)){
-			return serviceTypes[i].serviceInterval
-		}
-	}
-};
+// MOVED TO REACT JS as getFoodInterval
+// function utilGetFoodInterval(isUSDA){
+// 	for (var i = 0; i < serviceTypes.length; i++) {
+// 		if ((serviceTypes[i].serviceButtons == "Primary") && (serviceTypes[i].serviceCategory == "Food_Pantry") && (serviceTypes[i].isUSDA == isUSDA)){
+// 			return serviceTypes[i].serviceInterval
+// 		}
+// 	}
+// }
 
 function utilGetListOfVoucherServiceTypes() {
 	return vouchers = serviceTypes.filter(function( obj ) {
 		return obj.fulfillment.type == "Voucher"
 	})
-};
+}
 
-function utilGetServiceTypeByID(serviceTypeId){
-	let serviceTypeArr = serviceTypes.filter(function( obj ) {
-		return obj.serviceTypeId == serviceTypeId
-	})
-	return serviceTypeArr[0]
-};
+// MOVED TO REACT JS as getServiceTypesByID
+// function utilGetServiceTypeByID(serviceTypeId){
+// 	let serviceTypeArr = serviceTypes.filter(function( obj ) {
+// 		return obj.serviceTypeId == serviceTypeId
+// 	})
+// 	return serviceTypeArr[0]
+// }
 
 function utilBeep(){
 	if (settings.sounds == "YES"){
@@ -3664,7 +3681,7 @@ function utilBeep(){
 		beep.loop = false
 		beep.play()
 	}
-};
+}
 
 function utilBloop(){
 	if (settings.sounds == "YES"){
@@ -3673,66 +3690,67 @@ function utilBloop(){
 		bloop.loop = false
 		bloop.play()
 	}
-};
+}
 
-function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServices, lastServed) { // TODO DELETE AFTER SERVICES PAGE IS REACTED
-	btnPrimary = [];
-	btnSecondary = [];
-  let validDependents = []
-	for (let i = 0; i < activeServiceTypes.length; i++) {
-		let display = true;
-		// check for not a valid service based on interval between services
-		if (!utilValidateServiceInterval(activeServiceTypes[i], activeServiceTypes, lastServed)) continue;
-		// loop through each property in each targetServices
-		for (let prop in targetServices[i]) {
-			if (prop=="family_totalChildren") {
-				// TODO move to grade and age target detection to helper function
-				if (targetServices[i]['dependents_gradeMin'] != "Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
-					validDependents = utilCalcValidAgeGrade("grade",targetServices[i])
-				}
-				//TODO change service types to store non age entries as -1
-				if (targetServices[i]['dependents_ageMax'] > 0){
-					validDependents = utilCalcValidAgeGrade("age",targetServices[i])
-				}
-				if (validDependents.length == 0){
-					display = false
-				}
-			}
-			if (prop == "service") { // targeting a voucher fulfill service
-				let servicesVouchers = utilCalcVoucherServiceSignup(activeServiceTypes[i])
-				if (servicesVouchers.length !== 1) {
-					display = false
-				}
-			} else if (targetServices[i][prop] != client[prop]
-					&& prop.includes("family")==false
-					&& prop.includes("dependents")==false) {
-				display = false
-			}
-		}
-		if (display) {
-			if (activeServiceTypes[i].serviceButtons == "Primary") {
-				if (activeServiceTypes[i].serviceCategory == "Food_Pantry") {
-					btnPrimary.unshift(i)
-				} else {
-					btnPrimary.push(i)
-				}
-			} else {
-				btnSecondary.push(i)
-			}
-		}
-	}
-	// used to prompt service if a dependent child's grade is not set
-	if (client.dependents.length > 0) {
-		for (var i = 0; i < client.dependents.length; i++) {
-			if (client.dependents[i].age < 18 && (client.dependents[i].grade == undefined || client.dependents[i].grade == "")) {
-				btnPrimary = "-1"
-				btnSecondary = ""
-			}
-		}
-	}
-	if (buttons == "primary") return btnPrimary
-	if (buttons == "secondary") return btnSecondary
-};
+// MOVED TO REACT JS as: getActiveServicesButtons
+// function utilCalcActiveServicesButtons(buttons, activeServiceTypes, targetServices, lastServed) { // TODO DELETE AFTER SERVICES PAGE IS REACTED
+// 	btnPrimary = [];
+// 	btnSecondary = [];
+//   let validDependents = []
+// 	for (let i = 0; i < activeServiceTypes.length; i++) {
+// 		let display = true;
+// 		// check for not a valid service based on interval between services
+// 		if (!utilValidateServiceInterval(activeServiceTypes[i], activeServiceTypes, lastServed)) continue;
+// 		// loop through each property in each targetServices
+// 		for (let prop in targetServices[i]) {
+// 			if (prop=="family_totalChildren") {
+// 				// TODO move to grade and age target detection to helper function
+// 				if (targetServices[i]['dependents_gradeMin'] != "Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
+// 					validDependents = utilCalcValidAgeGrade("grade",targetServices[i])
+// 				}
+// 				//TODO change service types to store non age entries as -1
+// 				if (targetServices[i]['dependents_ageMax'] > 0){
+// 					validDependents = utilCalcValidAgeGrade("age",targetServices[i])
+// 				}
+// 				if (validDependents.length == 0){
+// 					display = false
+// 				}
+// 			}
+// 			if (prop == "service") { // targeting a voucher fulfill service
+// 				let servicesVouchers = utilCalcVoucherServiceSignup(activeServiceTypes[i])
+// 				if (servicesVouchers.length !== 1) {
+// 					display = false
+// 				}
+// 			} else if (targetServices[i][prop] != client[prop]
+// 					&& prop.includes("family")==false
+// 					&& prop.includes("dependents")==false) {
+// 				display = false
+// 			}
+// 		}
+// 		if (display) {
+// 			if (activeServiceTypes[i].serviceButtons == "Primary") {
+// 				if (activeServiceTypes[i].serviceCategory == "Food_Pantry") {
+// 					btnPrimary.unshift(i)
+// 				} else {
+// 					btnPrimary.push(i)
+// 				}
+// 			} else {
+// 				btnSecondary.push(i)
+// 			}
+// 		}
+// 	}
+// 	// used to prompt service if a dependent child's grade is not set
+// 	if (client.dependents.length > 0) {
+// 		for (var i = 0; i < client.dependents.length; i++) {
+// 			if (client.dependents[i].age < 18 && (client.dependents[i].grade == undefined || client.dependents[i].grade == "")) {
+// 				btnPrimary = "-1"
+// 				btnSecondary = ""
+// 			}
+// 		}
+// 	}
+// 	if (buttons == "primary") return btnPrimary
+// 	if (buttons == "secondary") return btnSecondary
+// }
 
 function utilCalcActiveServiceTypes(){ // TODO DELETE AFTER SERVICES PAGE IS REACTED
 	// build Active Service Types array of Service Types which cover today's date
@@ -3765,36 +3783,36 @@ function utilCalcActiveServiceTypes(){ // TODO DELETE AFTER SERVICES PAGE IS REA
 		}
 	}
 	return activeServiceTypes
-};
+}
 
-function utilCalcAgeGrouping(dependent){
-	let age = dependent.age
-	if (age >= 0 && age <= 1 ){
-		return "0-1"
-	}
-	else if  (age >= 2 && age <= 3){
-		return "2-3"
-	}
-	else if (age >= 4 && age <= 6){
-		return "4-6"
-	}
-	else if (age >= 7 && age <= 8){
-		return "7-8"
-	}
-	else if (age >= 9 && age <= 10){
-		return "9-10"
-	}
-	else if (age >= 11 && age <= 12){
-		return "11-12"
-	}
-	else if (age >= 13 && age <= 17){
-		return "13-17"
-	}
-	else {
-		return "Unable to Calculate Age Level"
-	}
-};
-
+// MOVED TO REACT JS --> BREAKING CHANGES TO REPORTS
+// function utilCalcAgeGrouping(dependent){
+// 	let age = dependent.age
+// 	if (age >= 0 && age <= 1 ){
+// 		return "0-1"
+// 	}
+// 	else if  (age >= 2 && age <= 3){
+// 		return "2-3"
+// 	}
+// 	else if (age >= 4 && age <= 6){
+// 		return "4-6"
+// 	}
+// 	else if (age >= 7 && age <= 8){
+// 		return "7-8"
+// 	}
+// 	else if (age >= 9 && age <= 10){
+// 		return "9-10"
+// 	}
+// 	else if (age >= 11 && age <= 12){
+// 		return "11-12"
+// 	}
+// 	else if (age >= 13 && age <= 17){
+// 		return "13-17"
+// 	}
+// 	else {
+// 		return "Unable to Calculate Age Level"
+// 	}
+// }
 
 // MOVED TO REACT
 function utilCalcClientFamilyCounts(){
@@ -3855,30 +3873,32 @@ function utilCalcClientFamilyCounts(){
 // 	return currentGrade;
 // };
 
-function utilCalcGradeGrouping(dependent){
-	let currentGrade = utilGradeToNumber(dependent.grade)
-	if (currentGrade==0){
-		return "K"
-	}
-	else if  (currentGrade>=1 && currentGrade<=2){
-		return "1-2"
-	}
-	else if (currentGrade>=3&&currentGrade<=5){
-		return "3-5"
-	}
-	else if (currentGrade>=6&&currentGrade<=8){
-		return "6-8"
-	}
-	else if (currentGrade==9){
-		return "9"
-	}
-	else if (currentGrade>=10 && currentGrade<=12){
-		return "10-12"
-	}
-	else{
-		return "Unable to Calculate Grade Level"
-	}
-};
+
+// MOVED TO REACT JS --> BREAKING CHANGE IN REPORTS
+// function utilCalcGradeGrouping(dependent){
+// 	let currentGrade = utilGradeToNumber(dependent.grade)
+// 	if (currentGrade==0){
+// 		return "K"
+// 	}
+// 	else if  (currentGrade>=1 && currentGrade<=2){
+// 		return "1-2"
+// 	}
+// 	else if (currentGrade>=3&&currentGrade<=5){
+// 		return "3-5"
+// 	}
+// 	else if (currentGrade>=6&&currentGrade<=8){
+// 		return "6-8"
+// 	}
+// 	else if (currentGrade==9){
+// 		return "9"
+// 	}
+// 	else if (currentGrade>=10 && currentGrade<=12){
+// 		return "10-12"
+// 	}
+// 	else{
+// 		return "Unable to Calculate Grade Level"
+// 	}
+// };
 
 // function utilCalcLastIdCheckDays() {
 // 	// get Id Checked Date from client object & calculate number of days
@@ -3887,28 +3907,29 @@ function utilCalcGradeGrouping(dependent){
 // 	return lastIdCheck
 // }
 
-function utilCalcValidAgeGrade(gradeOrAge,targetService){
-	display = false;
-	let dependents = []
-	for (let j = 0; j < client.dependents.length; j++) {
-		if (gradeOrAge=="grade" &&
-		!(client.dependents[j].grade == undefined || client.dependents[j].grade == "") && client.dependents[j].isActive=="Active"){
-			let currentGrade = utilGradeToNumber(client.dependents[j].grade)
-			if (currentGrade>=utilGradeToNumber(targetService['dependents_gradeMin'])
-			&& currentGrade<=utilGradeToNumber(targetService['dependents_gradeMax'])){
-				dependents.push(client.dependents[j])
-			}
-		}
-		if (gradeOrAge == "age" && client.dependents[j].isActive == "Active"){
-			let age = client.dependents[j].age
-			if (age >= targetService['dependents_ageMin']
-			&& age <= targetService['dependents_ageMax']){
-				dependents.push(client.dependents[j])
-			}
-		}
-  }
-	return dependents
-};
+// MOVED TO REACT JS as calcValidAgeGrade
+// function utilCalcValidAgeGrade(gradeOrAge,targetService){
+// 	display = false;
+// 	let dependents = []
+// 	for (let j = 0; j < client.dependents.length; j++) {
+// 		if (gradeOrAge=="grade" &&
+// 		!(client.dependents[j].grade == undefined || client.dependents[j].grade == "") && client.dependents[j].isActive=="Active"){
+// 			let currentGrade = utilGradeToNumber(client.dependents[j].grade)
+// 			if (currentGrade>=utilGradeToNumber(targetService['dependents_gradeMin'])
+// 			&& currentGrade<=utilGradeToNumber(targetService['dependents_gradeMax'])){
+// 				dependents.push(client.dependents[j])
+// 			}
+// 		}
+// 		if (gradeOrAge == "age" && client.dependents[j].isActive == "Active"){
+// 			let age = client.dependents[j].age
+// 			if (age >= targetService['dependents_ageMin']
+// 			&& age <= targetService['dependents_ageMax']){
+// 				dependents.push(client.dependents[j])
+// 			}
+// 		}
+//   }
+// 	return dependents
+// };
 
 function utilGenerateFamiliesReport(){
 	const reportType = $('#reportFamilyType').val()
@@ -3943,6 +3964,7 @@ function utilGenerateMonthlyReport(){
 	}, 0);
 };
 
+// MOVED TO REACT JS
 function utilGradeToNumber(grade){
 	if (grade=="Pre-K") return -1
 	if (grade == "K") return 0
@@ -3963,9 +3985,9 @@ function utilLoginUserShowScreens() {
 	// uiShowHideLogin('hide')
 	navGotoSec('nav1')
 	// cogGetUserAttributes()
-	dbGetServiceTypes()
+	// dbGetServiceTypes() MOVED TO REACT --> clientGlobals
 	uiSetMenusForUser()
-	settings = dbGetAppSettings()
+	// settings = dbGetAppSettings() MOVED TO REACT --> clientGlobals
 	prnConnect()
 }
 
@@ -4001,13 +4023,14 @@ function utilRemoveEmptyPlaceholders(){
 	})
 };
 
-function utilRemoveService(serviceId){
-	let service = dbGetService(serviceId)[0]
-	service.serviceValid = false
-	const result = dbSaveServiceRecord(service)
-	if (result == "success") {return service}
-	return
-};
+// MOVED TO REACT -- Breaking changes
+// function utilRemoveService(serviceId){
+// 	let service = dbGetService(serviceId)[0]
+// 	service.serviceValid = false
+// 	const result = dbSaveServiceRecord(service)
+// 	if (result == "success") {return service}
+// 	return
+// };
 
 function utilStringToArray(str){
 	let arr = []
@@ -4045,6 +4068,7 @@ function utilStringToArray(str){
 	return arr
 };
 
+// MOVED TO REACT JS as saveHistoryForm
 function utilUpdateService(serviceId){
 	let service = dbGetService(serviceId)
 	// to handle duplicate ID's -- old data (code should no longer create duplicates)
@@ -4105,22 +4129,23 @@ function utilUpdateService(serviceId){
 	return
 };
 
-function utilUpdateLastServed(){
-	// get the service history
-	const history = dbGetClientActiveServiceHistory()
-	let h = history
-		.filter(item => item.serviceButtons == "Primary")
-		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
-	let topHist = []
-	for (var a = 0; a < h.length; a++) {
-		if (topHist.findIndex(item => item.serviceTypeId == h[a].serviceTypeId) < 0) {
-			let lsItem = {serviceTypeId: h[a].serviceTypeId, serviceDateTime: h[a].servicedDateTime, serviceCategory: h[a].serviceCategory, isUSDA: h[a].isUSDA}
-			topHist.push(lsItem)
-		}
-	}
-	client.lastServed = topHist
-	return dbSaveCurrentClient(client)
-};
+// MOVED TO REACT JS as updateLastServed
+// function utilUpdateLastServed(){
+// 	// get the service history
+// 	const history = dbGetClientActiveServiceHistory()
+// 	let h = history
+// 		.filter(item => item.serviceButtons == "Primary")
+// 		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+// 	let topHist = []
+// 	for (var a = 0; a < h.length; a++) {
+// 		if (topHist.findIndex(item => item.serviceTypeId == h[a].serviceTypeId) < 0) {
+// 			let lsItem = {serviceTypeId: h[a].serviceTypeId, serviceDateTime: h[a].servicedDateTime, serviceCategory: h[a].serviceCategory, isUSDA: h[a].isUSDA}
+// 			topHist.push(lsItem)
+// 		}
+// 	}
+// 	client.lastServed = topHist
+// 	return dbSaveCurrentClient(client)
+// };
 
 function utilSetLastServedFood(){
 	// TODO too much duplicated code with utilCalcLastServedDays()
@@ -4164,50 +4189,51 @@ function utilCalcLastServedDays() {   // TODO DELETE AFTER SERVICE PAGE IS REACT
 	return lastServed
 };
 
-function utilCalcTargetServices(activeServiceTypes) { // TODO DELETE AFTER MOVING ALL UTILS TO REACT
-	let targets = [];
-	// build list of client target items for each Active Service Type
-	for (let i = 0; i < activeServiceTypes.length; i++) {
-		// make list of specific targets.... for each type.
-		targets[i] = {}
-		// target homeless
-		if (activeServiceTypes[i].target.homeless !== "Unselected") targets[i].homeless = activeServiceTypes[i].target.homeless;
-		// target families with children, singles, couples
-		if (activeServiceTypes[i].target.family == "Single Individual") {
-			targets[i].family_totalSize = 1;
-		} else if (activeServiceTypes[i].target.family == "Couple") {
-			targets[i].family_totalSize = 2;
-			targets[i].family_totalChildren = 0;
-		} else if (activeServiceTypes[i].target.family == "With Children") {
-			targets[i].family_totalChildren = "0";
-		}
-		// target gender male/female
-		if (activeServiceTypes[i].target.gender !== "Unselected") targets[i].gender = activeServiceTypes[i].target.gender;
-		// target children
-		if (activeServiceTypes[i].target.child == "YES") {
-			targets[i].family_totalChildren = "Greater Than 0"
-			// target age
-			if (activeServiceTypes[i].target.childMaxAge > 0) {
-				targets[i].dependents_ageMin = activeServiceTypes[i].target.childMinAge
-				targets[i].dependents_ageMax = activeServiceTypes[i].target.childMaxAge
-			}
-			//target grade
-			if (activeServiceTypes[i].target.childMinGrade !== "Unselected") {
-				targets[i].dependents_gradeMin = activeServiceTypes[i].target.childMinGrade;
-			}
-			if (activeServiceTypes[i].target.childMaxGrade !== "Unselected") {
-				targets[i].dependents_gradeMax = activeServiceTypes[i].target.childMaxGrade;
-			}
-		} else if (activeServiceTypes[i].target.child == "NO"){
-			targets[i].family_totalChildren = "0";
-		}
-		// target Voucher Service
-		if (activeServiceTypes[i].target.service !== "Unselected") {
-			targets[i].service = activeServiceTypes[i].target.service; //set target to Voucher service ID
-		}
-	}
-	return targets;
-}
+// MOVED TO REACT JS -- Clients/ClientUtils.js
+// function utilCalcTargetServices(activeServiceTypes) { // TODO DELETE AFTER MOVING ALL UTILS TO REACT
+// 	let targets = [];
+// 	// build list of client target items for each Active Service Type
+// 	for (let i = 0; i < activeServiceTypes.length; i++) {
+// 		// make list of specific targets.... for each type.
+// 		targets[i] = {}
+// 		// target homeless
+// 		if (activeServiceTypes[i].target.homeless !== "Unselected") targets[i].homeless = activeServiceTypes[i].target.homeless;
+// 		// target families with children, singles, couples
+// 		if (activeServiceTypes[i].target.family == "Single Individual") {
+// 			targets[i].family_totalSize = 1;
+// 		} else if (activeServiceTypes[i].target.family == "Couple") {
+// 			targets[i].family_totalSize = 2;
+// 			targets[i].family_totalChildren = 0;
+// 		} else if (activeServiceTypes[i].target.family == "With Children") {
+// 			targets[i].family_totalChildren = "0";
+// 		}
+// 		// target gender male/female
+// 		if (activeServiceTypes[i].target.gender !== "Unselected") targets[i].gender = activeServiceTypes[i].target.gender;
+// 		// target children
+// 		if (activeServiceTypes[i].target.child == "YES") {
+// 			targets[i].family_totalChildren = "Greater Than 0"
+// 			// target age
+// 			if (activeServiceTypes[i].target.childMaxAge > 0) {
+// 				targets[i].dependents_ageMin = activeServiceTypes[i].target.childMinAge
+// 				targets[i].dependents_ageMax = activeServiceTypes[i].target.childMaxAge
+// 			}
+// 			//target grade
+// 			if (activeServiceTypes[i].target.childMinGrade !== "Unselected") {
+// 				targets[i].dependents_gradeMin = activeServiceTypes[i].target.childMinGrade;
+// 			}
+// 			if (activeServiceTypes[i].target.childMaxGrade !== "Unselected") {
+// 				targets[i].dependents_gradeMax = activeServiceTypes[i].target.childMaxGrade;
+// 			}
+// 		} else if (activeServiceTypes[i].target.child == "NO"){
+// 			targets[i].family_totalChildren = "0";
+// 		}
+// 		// target Voucher Service
+// 		if (activeServiceTypes[i].target.service !== "Unselected") {
+// 			targets[i].service = activeServiceTypes[i].target.service; //set target to Voucher service ID
+// 		}
+// 	}
+// 	return targets;
+// }
 
 function utilChangeWordCase(str){
 	str = str.replace(/[^\s]+/g, function(word) {
@@ -4397,15 +4423,16 @@ function utilCalcDependentsAges(dependents){
 	return dependents
 };
 
-function utilCalcFoodInterval(isUSDA, activeServiceTypes) {
-	let foodServiceInterval = ""
-	for (var i = 0; i < activeServiceTypes.length; i++) {
-		if (activeServiceTypes[i].serviceCategory == "Food_Pantry" && activeServiceTypes[i].serviceButtons == "Primary" && activeServiceTypes[i].isUSDA == isUSDA) {
-			foodServiceInterval = activeServiceTypes[i].serviceInterval
-		}
-	}
-	return foodServiceInterval
-};
+// Moved to REACT JS
+// function utilCalcFoodInterval(isUSDA, activeServiceTypes) {
+// 	let foodServiceInterval = ""
+// 	for (var i = 0; i < activeServiceTypes.length; i++) {
+// 		if (activeServiceTypes[i].serviceCategory == "Food_Pantry" && activeServiceTypes[i].serviceButtons == "Primary" && activeServiceTypes[i].isUSDA == isUSDA) {
+// 			foodServiceInterval = activeServiceTypes[i].serviceInterval
+// 		}
+// 	}
+// 	return foodServiceInterval
+// };
 
 function utilCalcUserAge(source){
 	let dob = ""
@@ -4434,15 +4461,16 @@ function utilGetOrdinal(n) {
   return n+(s[(v-20)%10]||s[v]||s[0])
 };
 
-function utilPadTrimString(str, length) {
-	if (length > str.length) { // pad
-		return str.padEnd(length)
-	} else if (length < str.length) { // trim
-		return str.substring(0, length)
-	} else {
-		return str
-	}
-};
+// MOVED TO REACT JS
+// function utilPadTrimString(str, length) {
+// 	if (length > str.length) { // pad
+// 		return str.padEnd(length)
+// 	} else if (length < str.length) { // trim
+// 		return str.substring(0, length)
+// 	} else {
+// 		return str
+// 	}
+// };
 
 function utilGetCurrentUser(username) {
 	users = dbGetUsers()
@@ -4822,93 +4850,96 @@ function utilValidateConfig(form, id){
 	if (form == "noteForm") return noteForm[id]
 };
 
-function utilSortDependentsByAge(dependents){
-	return dependents.sort((a,b) => a.age-b.age)
-};
+// MOVED TO REACT JS
+// function utilSortDependentsByAge(dependents){
+// 	return dependents.sort((a,b) => a.age-b.age)
+// };
 
-function utilSortDependentsByGrade(dependents){
-  return dependents.sort((a,b) => utilGradeToNumber(a.grade) - utilGradeToNumber(b.grade))
-};
+// MOVED TO REACT JS
+// function utilSortDependentsByGrade(dependents){
+//   return dependents.sort((a,b) => utilGradeToNumber(a.grade) - utilGradeToNumber(b.grade))
+// };
 
-function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
-	if (activeServiceType.serviceButtons == "Primary") {
-		const serviceCategory = activeServiceType.serviceCategory
-		let serviceHistory
-		if (serviceCategory == "Food_Pantry") {
-			let nonUSDAServiceInterval = utilCalcFoodInterval("NonUSDA", activeServiceTypes)
-			let USDAServiceInterval = utilCalcFoodInterval("USDA", activeServiceTypes)
-			if (lastServed.daysUSDA >= USDAServiceInterval) {
-				if (activeServiceType.isUSDA == "USDA") return true
-				return false
-			}
-			if (lastServed.lowestDays >= nonUSDAServiceInterval) {
-				if (activeServiceType.isUSDA == "NonUSDA") return true
-				return false
-			}
-			if (lastServed.lowestDays < nonUSDAServiceInterval) {
-				if (activeServiceType.isUSDA == "Emergency") return true
-				return false
-			}
-		}
-		if (serviceCategory == "Clothes_Closet") {
-			if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
-		}
-		// validate that a voucher was already registered for
-		if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
-			serviceHistory = dbGetClientActiveServiceHistory()
-			//const voucherHistory = utilCalcVoucherServiceSignup(activeServiceType)
-			const voucherHistory = utilGetVoucherTargetService(serviceHistory, activeServiceType)
-			let voucherDays = 10000
-			if (voucherHistory.length == 1) {
-				voucherDays = moment().diff(voucherHistory[0].servicedDateTime, 'days')
-			}
-			if (activeServiceType.target.service == "Unselected") {
-				if (voucherDays < activeServiceType.serviceInterval) {
-					return false
-				}
-		  } else {
-				if (voucherDays == 10000) {
-			  	return false
-				}
-			}
-		}
-		//TODO: this is a workaround due to last served not tracking id. Need last served to track by service id.
-		if (activeServiceType.fulfillment.type == "Voucher"){
-			let service = dbGetServicesByIdAndYear(activeServiceType.serviceTypeId, moment().year())
-				.filter(obj => obj.clientServedId == client.clientId)
-			if (service.length == 0){
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
-		if (inLastServed.length > 0) {
-			// if a voucher fulfill service then need to chech against Voucher service
-			if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
-				// get voucher service
-				const voucherHistory = utilGetHistoryLastService(serviceHistory, activeServiceType)
-				if (voucherHistory.length > 0) {
-					return false;
-				}
-			} else {
-				inLastServed = inLastServed[0].serviceDateTime
-			}
-		} else if (serviceCategory == "Administration") {
-			inLastServed = client.familyIdCheckedDate
-		} else {
-			inLastServed = "2000-01-01"
-		}
-		const lastServedDate = moment(inLastServed).startOf('day')
-		if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return false
-	} else {
-		// secondary buttons
-		if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
-	}
-	// default: show button
-	return true
-};
+// Moved to REACT JS as validateServiceInterval
+// function utilValidateServiceInterval(activeServiceType, activeServiceTypes, lastServed){
+// 	if (activeServiceType.serviceButtons == "Primary") {
+// 		const serviceCategory = activeServiceType.serviceCategory
+// 		let serviceHistory
+// 		if (serviceCategory == "Food_Pantry") {
+// 			let nonUSDAServiceInterval = utilCalcFoodInterval("NonUSDA", activeServiceTypes)
+// 			let USDAServiceInterval = utilCalcFoodInterval("USDA", activeServiceTypes)
+// 			if (lastServed.daysUSDA >= USDAServiceInterval) {
+// 				if (activeServiceType.isUSDA == "USDA") return true
+// 				return false
+// 			}
+// 			if (lastServed.lowestDays >= nonUSDAServiceInterval) {
+// 				if (activeServiceType.isUSDA == "NonUSDA") return true
+// 				return false
+// 			}
+// 			if (lastServed.lowestDays < nonUSDAServiceInterval) {
+// 				if (activeServiceType.isUSDA == "Emergency") return true
+// 				return false
+// 			}
+// 		}
+// 		if (serviceCategory == "Clothes_Closet") {
+// 			if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
+// 		}
+// 		// validate that a voucher was already registered for
+// 		if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
+// 			serviceHistory = dbGetClientActiveServiceHistory()
+// 			//const voucherHistory = utilCalcVoucherServiceSignup(activeServiceType)
+// 			const voucherHistory = utilGetVoucherTargetService(serviceHistory, activeServiceType)
+// 			let voucherDays = 10000
+// 			if (voucherHistory.length == 1) {
+// 				voucherDays = moment().diff(voucherHistory[0].servicedDateTime, 'days')
+// 			}
+// 			if (activeServiceType.target.service == "Unselected") {
+// 				if (voucherDays < activeServiceType.serviceInterval) {
+// 					return false
+// 				}
+// 		  } else {
+// 				if (voucherDays == 10000) {
+// 			  	return false
+// 				}
+// 			}
+// 		}
+// 		//TODO: this is a workaround due to last served not tracking id. Need last served to track by service id.
+// 		if (activeServiceType.fulfillment.type == "Voucher"){
+// 			let service = dbGetServicesByIdAndYear(activeServiceType.serviceTypeId, moment().year())
+// 				.filter(obj => obj.clientServedId == client.clientId)
+// 			if (service.length == 0){
+// 				return true;
+// 			}
+// 			else {
+// 				return false;
+// 			}
+// 		}
+// 		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
+// 		if (inLastServed.length > 0) {
+// 			// if a voucher fulfill service then need to chech against Voucher service
+// 			if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
+// 				// get voucher service
+// 				const voucherHistory = utilGetHistoryLastService(serviceHistory, activeServiceType)
+// 				if (voucherHistory.length > 0) {
+// 					return false;
+// 				}
+// 			} else {
+// 				inLastServed = inLastServed[0].serviceDateTime
+// 			}
+// 		} else if (serviceCategory == "Administration") {
+// 			inLastServed = client.familyIdCheckedDate
+// 		} else {
+// 			inLastServed = "2000-01-01"
+// 		}
+// 		const lastServedDate = moment(inLastServed).startOf('day')
+// 		if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return false
+// 	} else {
+// 		// secondary buttons
+// 		if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
+// 	}
+// 	// default: show button
+// 	return true
+// };
 
 // **********************************************************************************************************
 //     PRN PRINTER FUNCTIONS
@@ -4935,11 +4966,12 @@ function prnCallback_connect(resultConnect){
  }
 };
 
-function prnGetWindow() {
-	let win = window.open('', 'Receipt Printer', 'width=550,height=1000');
-	win.document.title = 'Receipt Printer';
-	return win;
-}
+// MOVED TO REACT JS -- Clients/Receipts.js
+// function prnGetWindow() {
+// 	let win = window.open('', 'Receipt Printer', 'width=550,height=1000');
+// 	win.document.title = 'Receipt Printer';
+// 	return win;
+// }
 
 function prnCallback_createDevice(deviceObj, errorCode){
  	if (deviceObj === null) {
@@ -4965,205 +4997,213 @@ function prnDrawCanvas(name) {
 	canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
 }
 
-function prnStartReceipt() {
-	let logo = document.getElementById('smum');
-	if (printer) {
-		printer.addTextAlign(printer.ALIGN_CENTER);
-		printer.addTextSmooth(true);
-		printer.addImage(logo.getContext('2d'), 0, 0, logo.width, logo.height,
-			printer.COLOR_1, printer.MODE_GRAY16);
-	} else {
-		let prnWindow = prnGetWindow();
-		prnWindow.document.writeln('<p align="center">');
-		let logo_id = 'logo' + Math.floor(Math.random() * 10000);
-		let w = Math.floor(logo.width * 2 / 3);
-		let h = Math.floor(logo.height * 2 / 3);
-		prnWindow.document.writeln('<canvas id="' + logo_id + '" width="' + w +
-			'" height="' + h + '"></canvas>');
-		let ctx = prnWindow.document.getElementById(logo_id).getContext('2d');
-		ctx.drawImage(logo, 0, 0, w, h);
-	}
-	prnFeed(1);
-	prnTextLine('778 S. Almaden Avenue');
-	prnTextLine('San Jose, CA 95110');
-	prnTextLine('(408) 292-3314');
-}
+// MOVED TO REACT JS
+// function prnStartReceipt() {
+// 	let logo = document.getElementById('smum');
+// 	if (printer) {
+// 		printer.addTextAlign(printer.ALIGN_CENTER);
+// 		printer.addTextSmooth(true);
+// 		printer.addImage(logo.getContext('2d'), 0, 0, logo.width, logo.height,
+// 			printer.COLOR_1, printer.MODE_GRAY16);
+// 	} else {
+// 		let prnWindow = prnGetWindow();
+// 		prnWindow.document.writeln('<p align="center">');
+// 		let logo_id = 'logo' + Math.floor(Math.random() * 10000);
+// 		let w = Math.floor(logo.width * 2 / 3);
+// 		let h = Math.floor(logo.height * 2 / 3);
+// 		prnWindow.document.writeln('<canvas id="' + logo_id + '" width="' + w +
+// 			'" height="' + h + '"></canvas>');
+// 		let ctx = prnWindow.document.getElementById(logo_id).getContext('2d');
+// 		ctx.drawImage(logo, 0, 0, w, h);
+// 	}
+// 	prnFeed(1);
+// 	prnTextLine('778 S. Almaden Avenue');
+// 	prnTextLine('San Jose, CA 95110');
+// 	prnTextLine('(408) 292-3314');
+// }
 
-function prnAlign(align) {
-	if (printer) {
-		if (align == 'left')
-			printer.addTextAlign(printer.ALIGN_LEFT);
-		else if (align == 'center')
-			printer.addTextAlign(printer.ALIGN_CENTER);
-	}
-	else {
-		let prnWindow = prnGetWindow();
-		prnWindow.document.writeln('</p><p align="' + align + '">')
-	}
-}
+// function prnAlign(align) {
+// 	if (printer) {
+// 		if (align == 'left')
+// 			printer.addTextAlign(printer.ALIGN_LEFT);
+// 		else if (align == 'center')
+// 			printer.addTextAlign(printer.ALIGN_CENTER);
+// 	}
+// 	else {
+// 		let prnWindow = prnGetWindow();
+// 		prnWindow.document.writeln('</p><p align="' + align + '">')
+// 	}
+// }
 
-function prnTextLine(str, width, height, attrs) {
-	if (width == null)
-		width = 1;
-	if (height == null)
-		height = 1;
-	let inverse = attrs && attrs.indexOf('inverse') >= 0;
-	if (printer) {
-		printer.addTextSize(width, height);
-		if (inverse)
-			printer.addTextStyle(true,false,false,printer.COLOR_1);
-		printer.addText(str + '\n');
-		if (inverse)
-			printer.addTextStyle(false,false,false,printer.COLOR_1);
-	} else {
-		let prnWindow = prnGetWindow();
-		let style = "font-family:monospace;";
-		if (height > 1)
-			style += 'font-size:' + height*100 + '%;';
-		if (inverse)
-			style += 'color:white;background-color:black;';
-		prnWindow.document.writeln('<span style="' + style + '">' +
-			str.replace(/ /g, '&nbsp;') + '<br/></span>')
-	}
-}
+// function prnTextLine(str, width, height, attrs) {
+// 	if (width == null)
+// 		width = 1;
+// 	if (height == null)
+// 		height = 1;
+// 	let inverse = attrs && attrs.indexOf('inverse') >= 0;
+// 	if (printer) {
+// 		printer.addTextSize(width, height);
+// 		if (inverse)
+// 			printer.addTextStyle(true,false,false,printer.COLOR_1);
+// 		printer.addText(str + '\n');
+// 		if (inverse)
+// 			printer.addTextStyle(false,false,false,printer.COLOR_1);
+// 	} else {
+// 		let prnWindow = prnGetWindow();
+// 		let style = "font-family:monospace;";
+// 		if (height > 1)
+// 			style += 'font-size:' + height*100 + '%;';
+// 		if (inverse)
+// 			style += 'color:white;background-color:black;';
+// 		prnWindow.document.writeln('<span style="' + style + '">' +
+// 			str.replace(/ /g, '&nbsp;') + '<br/></span>')
+// 	}
+// }
 
-function prnFeed(n) {
-	if (printer) {
-		printer.addTextSize(1, 1);
-  	printer.addFeedLine(n);
-	} else {
-		let prnWindow = prnGetWindow();
-		for (let i = 0; i < n; i++) {
-			prnWindow.document.writeln('<br/>');
-		}
-	}
-}
+// function prnFeed(n) {
+// 	if (printer) {
+// 		printer.addTextSize(1, 1);
+//   	printer.addFeedLine(n);
+// 	} else {
+// 		let prnWindow = prnGetWindow();
+// 		for (let i = 0; i < n; i++) {
+// 			prnWindow.document.writeln('<br/>');
+// 		}
+// 	}
+// }
 
-function prnEndReceipt() {
-	if (printer) {
-		printer.addFeedLine(2);
-		printer.addCut(printer.CUT_FEED);
-	} else {
-		let prnWindow = prnGetWindow();
-		prnWindow.document.writeln('</p><br/><br/><hr/>');
-	}
-}
+// function prnEndReceipt() {
+// 	if (printer) {
+// 		printer.addFeedLine(2);
+// 		printer.addCut(printer.CUT_FEED);
+// 	} else {
+// 		let prnWindow = prnGetWindow();
+// 		prnWindow.document.writeln('</p><br/><br/><hr/>');
+// 	}
+// }
 
-function prnFlush() {
-	if (printer)
-		printer.send();
-}
+// MOVED TO REACT JS
+// function prnFlush() {
+// 	if (printer)
+// 		printer.send();
+// }
 
-function prnServiceHeader(title) {
-	prnFeed(2);
-	prnTextLine('* ' + title + ' *', 1, 2);
-	prnTextLine(moment().format("MMMM Do, YYYY LT"));
-	prnFeed(1);
-	prnTextLine(client.givenName + ' ' + client.familyName, 2, 2);
-	prnFeed(1);
-	prnTextLine(' ' + client.clientId + ' ', 2, 1, ['inverse']);
-}
+// MOVED TO REACT JS
+// function prnServiceHeader(title) {
+// 	prnFeed(2);
+// 	prnTextLine('* ' + title + ' *', 1, 2);
+// 	prnTextLine(moment().format("MMMM Do, YYYY LT"));
+// 	prnFeed(1);
+// 	prnTextLine(client.givenName + ' ' + client.familyName, 2, 2);
+// 	prnFeed(1);
+// 	prnTextLine(' ' + client.clientId + ' ', 2, 1, ['inverse']);
+// }
 
-function prnPickupTimes(fromDateTime, toDateTime) {
-	prnTextLine('**************************************')
-	prnTextLine('PRESENT THIS FOR PICKUP')
-	prnTextLine('HAY QUE PRESENTAR PARA RECLAMAR')
-	prnTextLine(' ' + moment(fromDateTime).format("MMMM Do, YYYY")+ ' ', 2, 2, ['inverse']);
-	prnFeed(1);
-	prnTextLine(' ' + moment(fromDateTime).format("h:mm a") + ' - ' +
-		moment(toDateTime).format("h:mm a") + ' ', 1, 1, ['inverse']);
-	prnTextLine('**************************************');
-}
+// MOVED TO REACT JS
+// function prnPickupTimes(fromDateTime, toDateTime) {
+// 	prnTextLine('**************************************')
+// 	prnTextLine('PRESENT THIS FOR PICKUP')
+// 	prnTextLine('HAY QUE PRESENTAR PARA RECLAMAR')
+// 	prnTextLine(' ' + moment(fromDateTime).format("MMMM Do, YYYY")+ ' ', 2, 2, ['inverse']);
+// 	prnFeed(1);
+// 	prnTextLine(' ' + moment(fromDateTime).format("h:mm a") + ' - ' +
+// 		moment(toDateTime).format("h:mm a") + ' ', 1, 1, ['inverse']);
+// 	prnTextLine('**************************************');
+// }
 
-function prnPrintClothesReceipt(serviceType) {
-	const numArticles = client.family.totalSize * serviceType.numberItems;
-	const timeLimit = 10; // TODO get from service properties
+// MOVED TO REACT JS
+// function prnPrintClothesReceipt(serviceType) {
+// 	const numArticles = client.family.totalSize * serviceType.numberItems;
+// 	const timeLimit = 10; // TODO get from service properties
 
-	prnStartReceipt();
-	prnServiceHeader('CLOTHES CLOSET PROGRAM');
-	prnFeed(1);
-	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
-	prnTextLine('ADULTS | ADULTOS\t\t' +
-		(client.family.totalAdults + client.family.totalSeniors));
-	prnFeed(1);
-	prnTextLine('LIMIT OF ' + serviceType.numberItems + ' ITEMS PER PERSON');
-	prnTextLine('LIMITE ' + serviceType.numberItems + ' ARTÍCULOS POR PERSONA');
-	prnFeed(1);
-	prnTextLine('TOTAL ITEMS | ARTÍCULOS');
-	prnTextLine('**************************************')
-	prnTextLine(' ' + numArticles + ' ', 2, 2, ['inverse']);
-	prnTextLine('**************************************');
-  prnFeed(1);
-	prnTextLine('MAXIMUM TIME ' + timeLimit + ' MINUTES');
-	prnTextLine('TIEMPO MÁXIMO ' + timeLimit + ' MINUTOS');
-  prnFeed(2);
-	prnTextLine('TIME IN___________   TIME OUT___________');
-	prnEndReceipt();
-}
+// 	prnStartReceipt();
+// 	prnServiceHeader('CLOTHES CLOSET PROGRAM');
+// 	prnFeed(1);
+// 	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
+// 	prnTextLine('ADULTS | ADULTOS\t\t' +
+// 		(client.family.totalAdults + client.family.totalSeniors));
+// 	prnFeed(1);
+// 	prnTextLine('LIMIT OF ' + serviceType.numberItems + ' ITEMS PER PERSON');
+// 	prnTextLine('LIMITE ' + serviceType.numberItems + ' ARTÍCULOS POR PERSONA');
+// 	prnFeed(1);
+// 	prnTextLine('TOTAL ITEMS | ARTÍCULOS');
+// 	prnTextLine('**************************************')
+// 	prnTextLine(' ' + numArticles + ' ', 2, 2, ['inverse']);
+// 	prnTextLine('**************************************');
+//   prnFeed(1);
+// 	prnTextLine('MAXIMUM TIME ' + timeLimit + ' MINUTES');
+// 	prnTextLine('TIEMPO MÁXIMO ' + timeLimit + ' MINUTOS');
+//   prnFeed(2);
+// 	prnTextLine('TIME IN___________   TIME OUT___________');
+// 	prnEndReceipt();
+// }
 
-function prnPrintFoodReceipt(isUSDA) {
-	prnStartReceipt();
-	prnServiceHeader('EMERGENCY FOOD PANTRY PROGRAM');
-	prnTextLine('(' + client.zipcode +	')');
-	prnFeed(1);
-	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
-	prnTextLine('ADULTS | ADULTOS\t\t' +
-		(client.family.totalAdults + client.family.totalSeniors));
-	prnTextLine('FAMILY | FAMILIA:\t\t' + client.family.totalSize);
-	prnFeed(1);
-	prnTextLine('**************************************')
-	prnTextLine(' ' + isUSDA + ' ', 2, 2, ['inverse']);
-	prnTextLine('**************************************');
-	prnEndReceipt();
-}
+// MOVED TO REACT JS
+// function prnPrintFoodReceipt(isUSDA) {
+// 	prnStartReceipt();
+// 	prnServiceHeader('EMERGENCY FOOD PANTRY PROGRAM');
+// 	prnTextLine('(' + client.zipcode +	')');
+// 	prnFeed(1);
+// 	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
+// 	prnTextLine('ADULTS | ADULTOS\t\t' +
+// 		(client.family.totalAdults + client.family.totalSeniors));
+// 	prnTextLine('FAMILY | FAMILIA:\t\t' + client.family.totalSize);
+// 	prnFeed(1);
+// 	prnTextLine('**************************************')
+// 	prnTextLine(' ' + isUSDA + ' ', 2, 2, ['inverse']);
+// 	prnTextLine('**************************************');
+// 	prnEndReceipt();
+// }
 
-function prnPrintVoucherReceipt(serviceType, dependents, grouping) {
-	let serviceName = serviceType.serviceName;
-	prnStartReceipt();
-	prnServiceHeader(serviceName.toUpperCase());
-	prnFeed(1);
-	if (dependents) {
-		let sortingFn, groupingFn;
-		prnAlign('left');
-	  if (grouping == 'age') {
-			sortingFn = utilSortDependentsByAge;
-			groupingFn = utilCalcAgeGrouping;
-			prnTextLine('CHILDREN / NIÑOS        GENDER   AGE');
-		} else if (grouping = 'grade') {
-			sortingFn = utilSortDependentsByGrade;
-			groupingFn = utilCalcGradeGrouping;
-			prnTextLine('CHILDREN / NIÑOS        GENDER   GRADE');
-		}
-		prnFeed(1);
-		for (let dep of sortingFn(dependents)) {
-			let childName = utilPadTrimString(dep.givenName.toUpperCase() +
-				' ' + dep.familyName.toUpperCase(), 24);
-			let gender =  utilPadTrimString(dep.gender.toUpperCase(), 9);
-			let group = utilPadTrimString(groupingFn(dep), 5);
-			prnTextLine(childName + gender + group);
-		}
-		prnFeed(1);
-	}
-	prnAlign('center');
-	prnPickupTimes(serviceType.fulfillment.fromDateTime,
-		serviceType.fulfillment.toDateTime);
-  prnEndReceipt();
-}
+// MOVED TO REACT JS
+// function prnPrintVoucherReceipt(serviceType, dependents, grouping) {
+// 	let serviceName = serviceType.serviceName;
+// 	prnStartReceipt();
+// 	prnServiceHeader(serviceName.toUpperCase());
+// 	prnFeed(1);
+// 	if (dependents) {
+// 		let sortingFn, groupingFn;
+// 		prnAlign('left');
+// 	  if (grouping == 'age') {
+// 			sortingFn = utilSortDependentsByAge;
+// 			groupingFn = utilCalcAgeGrouping;
+// 			prnTextLine('CHILDREN / NIÑOS        GENDER   AGE');
+// 		} else if (grouping = 'grade') {
+// 			sortingFn = utilSortDependentsByGrade;
+// 			groupingFn = utilCalcGradeGrouping;
+// 			prnTextLine('CHILDREN / NIÑOS        GENDER   GRADE');
+// 		}
+// 		prnFeed(1);
+// 		for (let dep of sortingFn(dependents)) {
+// 			let childName = utilPadTrimString(dep.givenName.toUpperCase() +
+// 				' ' + dep.familyName.toUpperCase(), 24);
+// 			let gender =  utilPadTrimString(dep.gender.toUpperCase(), 9);
+// 			let group = utilPadTrimString(groupingFn(dep), 5);
+// 			prnTextLine(childName + gender + group);
+// 		}
+// 		prnFeed(1);
+// 	}
+// 	prnAlign('center');
+// 	prnPickupTimes(serviceType.fulfillment.fromDateTime,
+// 		serviceType.fulfillment.toDateTime);
+//   prnEndReceipt();
+// }
 
-function prnPrintReminderReceipt() {
-	// Determine next visit date
-	let targetDate = moment().add(14, 'days');
-	let earliestDate = moment().add(7, 'days');
-	let nextVisit = dateFindOpen(targetDate, earliestDate);
-	prnStartReceipt();
-	prnServiceHeader('NEXT VISIT REMINDER');
-	prnFeed(1);
-  prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
-  prnTextLine('**************************************')
-  prnTextLine(' ' + nextVisit.format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
-  prnTextLine('**************************************');
-  prnEndReceipt();
-}
+// MOVED TO REACT JS
+// function prnPrintReminderReceipt() {
+// 	// Determine next visit date
+// 	let targetDate = moment().add(14, 'days');
+// 	let earliestDate = moment().add(7, 'days');
+// 	let nextVisit = dateFindOpen(targetDate, earliestDate);
+// 	prnStartReceipt();
+// 	prnServiceHeader('NEXT VISIT REMINDER');
+// 	prnFeed(1);
+//   prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
+//   prnTextLine('**************************************')
+//   prnTextLine(' ' + nextVisit.format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
+//   prnTextLine('**************************************');
+//   prnEndReceipt();
+// }
 
 // Printer testing
 receiptIndex = 0;
