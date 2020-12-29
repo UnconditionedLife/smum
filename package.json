@@ -29,6 +29,7 @@
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.56",
     "babel-loader": "^8.1.0",
+    "cuid": "^2.1.8",
     "dynamodbexportcsv": "^0.2.7",
     "express": "^4.17.1",
     "html-to-react": "^1.4.3",
