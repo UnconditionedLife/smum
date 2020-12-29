@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/core/styles';
 import theme from '../../Theme.jsx';
-import { isEmpty } from '../../System/js/Utils.js';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 DependentsDisplay.propTypes = {
     client: PropTypes.object.isRequired,

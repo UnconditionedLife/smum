@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
 import { ClientsMain } from '../';
-import { isEmpty } from '../../System/js/Utils.js';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 export default function ClientsRouter(props) {
     const handleSearchTermChange = props.handleSearchTermChange;

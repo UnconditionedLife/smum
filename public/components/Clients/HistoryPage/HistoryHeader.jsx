@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { isEmpty } from '../../System/js/Utils.js';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 
 const useStyles = makeStyles((theme) => ({

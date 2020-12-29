@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Chip, Typography } from '@material-ui/core';
 import { House } from '@material-ui/icons';
 import { HeaderDateTime } from '../../Clients';
-import { isEmpty } from '../../System/js/Utils.js';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 HeaderTitle.propTypes = {
     client: PropTypes.object.isRequired,

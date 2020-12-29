@@ -4,7 +4,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '
 import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay, SelectTestForm } from '../';
 import { PrintClientInfo } from '../../Clients';
-import { isEmpty } from '../../System/js/Utils.js';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
