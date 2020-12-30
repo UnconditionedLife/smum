@@ -28,7 +28,7 @@ export default function DependentsDisplay(props) {
                 <TableContainer > 
                     <Table >
                     <TableHead>
-                        <TableRow>
+                         <TableRow>
                         {/* <TableCell>ID #</TableCell> */}
                         <TableCell align="center">Given Name</TableCell>
                         <TableCell align="center">Family Name</TableCell>
@@ -45,6 +45,8 @@ export default function DependentsDisplay(props) {
                         {dependents.map((row) => (
                         <TableRow 
                             key={row.depId} 
+                            onClick= { (event) => handleSelectedService(event, row.serviceId)}
+                                selected= { row.serviceId == selectedService } >
                             // onClick= { (event) => handleSelectedClient(event, row.depId)}
                             // selected= { row.clientId == clientId }
                             >
