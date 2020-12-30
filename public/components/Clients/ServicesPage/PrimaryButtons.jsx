@@ -84,10 +84,10 @@ const useStyles = makeStyles((theme) => ({
 
 PrimaryButtons.propTypes = {
     client: PropTypes.object.isRequired,
-    handleClientChange: PropTypes.func.isRequired,
-    session: PropTypes.object.isRequired,
-    svcsRendered: PropTypes.object,
-    updateSvcsRendered: PropTypes.func,
+    // handleClientChange: PropTypes.func.isRequired,
+    // session: PropTypes.object.isRequired,
+    // svcsRendered: PropTypes.object,
+    // updateSvcsRendered: PropTypes.func,
 }
 
 export default function PrimaryButtons(props) {
