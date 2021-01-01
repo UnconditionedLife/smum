@@ -1,7 +1,7 @@
 //************************************************
 //***** CLIENTS SECTION JAVASCRIPT FUNCTIONS *****
 //************************************************
-import { saveRecord } from './Database'
+//import { saveRecord } from '../database'
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 

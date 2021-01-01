@@ -131,10 +131,10 @@ export function getSvcsRendered(svcHistory){
 function getLastServedDays(client) {
 	// get Last Served Date from client object & calculate number of days
     let lastServed = { daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000 }
-    
-console.log(client.lastServed)
+// console.log(client.lastServed)
 
-	if (client.lastServed[0] == undefined) return lastServed
+	if(client === undefined) { return null; }
+	if (client.lastServed[0] == undefined) return lastServed;
 	let lastServedFood = client.lastServed.filter(obj => obj.serviceCategory === "Food_Pantry")
 
 	for (var i = 0; i < lastServedFood.length; i++) {

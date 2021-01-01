@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Chip, Typography } from '@material-ui/core';
 import { Badge, CardContent, Fade, Tooltip, } from '@material-ui/core';
-import { isEmpty } from '../../System/js/Utils.js';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Card } from '../../System';
 import { LastServed, PrimaryButtons, SecondaryButtons, ServiceNotes } from '../';
 import { HeaderTitle } from '../../Clients';
@@ -11,7 +11,7 @@ ServicesPage.propTypes = {
     client: PropTypes.object.isRequired,
     handleClientChange: PropTypes.func.isRequired,
     session: PropTypes.object.isRequired,
-    svcsRendered: PropTypes.array,
+    svcsRendered: PropTypes.object,
     updateSvcsRendered: PropTypes.func,
 }
 
@@ -30,6 +30,8 @@ export default function ServicesPage(props) {
                 </Card>
                 <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
                     <PrimaryButtons client={ props.client }
+                    handleClientChange={props.handleClientChange}
+                    session={props.session}
                     svcsRendered={ props.svcsRendered }
                     updateSvcsRendered={ props.updateSvcsRendered } />
                 </Box>

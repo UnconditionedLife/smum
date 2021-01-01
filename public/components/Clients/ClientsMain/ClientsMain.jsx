@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { ClientsHeader, ClientsContent } from '../../Clients';
 import { isEmpty } from '../../System/js/Utils.js';
-import { searchClients, arrayAddIds, calcClientFamilyCounts, calcClientDependentsAges } from '../../System/js/Clients.js';
+import { searchClients } from '../../System/js/Clients/Clients.js';
+import { arrayAddIds, calcClientFamilyCounts, calcClientDependentsAges } from '../../System/js/Clients/ClientUtils.js';
 import moment from 'moment';
 import { getServiceHistory } from '../../System/js/Clients';
 
@@ -120,7 +121,7 @@ export default function ClientsMain(props) {
                 handleClientChange={ handleClientChange }
                 updateURL={ updateURL }
                 session={ session }
-                svcsRendered={ svcsRendered }
+                svcsRendered={ Object.fromEntries(svcsRendered) }
                 updateSvcsRendered={ updateSvcsRendered }
             />
         </Box>

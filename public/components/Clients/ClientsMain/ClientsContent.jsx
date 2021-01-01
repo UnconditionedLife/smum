@@ -8,7 +8,7 @@ ClientsContent.propTypes = {
     clientsFound: PropTypes.array.isRequired,
     client: PropTypes.object.isRequired,
     handleClientChange: PropTypes.func.isRequired,
-    svcsRendered: PropTypes.array.isRequired,
+    svcsRendered: PropTypes.object.isRequired,
     updateSvcsRendered: PropTypes.func.isRequired,
     updateURL: PropTypes.func.isRequired,
     session: PropTypes.object.isRequired,

@@ -1,8 +1,8 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { getButtonData } from '../../System/js/Clients'
+import { getButtonData } from '../../System/js/Clients/Services.js'
 import { Button } from '../../System';
-import { isEmpty } from '../../System/js/Utils.js';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 SecondaryButtons.propTypes = {
     client: PropTypes.object.isRequired,

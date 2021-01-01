@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles'
 import { Box, ButtonBase } from '@material-ui/core';
 import { Button, Typography } from '../../System';
-import { getButtonData, addService } from '../../System/js/Clients'
+import { getButtonData, addService } from '../../System/js/Clients/Services.js'
 import { isEmpty } from '../../System/js/Utils.js';
 
 const useStyles = makeStyles((theme) => ({

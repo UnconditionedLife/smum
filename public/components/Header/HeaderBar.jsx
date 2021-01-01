@@ -11,7 +11,6 @@ import DbSwitch from './DbSwitch.jsx';
 import { useCookies } from 'react-cookie';
 import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
-
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
 import { dbGetSettings } from '../System/js/Database';
@@ -71,6 +70,10 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('xs')]: {
     width: '15ch',
     },
+  },
+  peopleIcon: {
+      paddingLeft: '0px',
+      paddingRight: '0px',
   },
   sectionDesktop: {
     // display: 'none',
@@ -249,24 +252,23 @@ export default function HeaderBar(props) {
                 />
             </Box>
             <Box className={classes.sectionDesktop} justifyContent="flex-end">
-            <Button  onClick={() => handleSectionChange(0)} flexShrink={2} minWidth="30px" startIcon={ <People/>  }
+            <Button  onClick={() => handleSectionChange(0)} flexshrink={2} minWidth="30px" startIcon={ <People/>  }
                 variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" >
                 <Hidden mdDown> Clients </Hidden>
                     </Button>
                     <Button ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Face />}
-                    disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" flexShrink={1}>
+                    disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" flexshrink={1}>
                     <Hidden mdDown> Admin </Hidden>
                     </Button>
                     <Button ml= '0' onClick={() => handleSectionChange(2)} minWidth="30px" startIcon={<Today />}
-                        variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" flexShrink={1} >
+                        variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" flexshrink={1} >
                         <Hidden mdDown> Today </Hidden>
-
                     </Button>
                     <Button ml= '0'  minWidth="30px" startIcon={<AccountCircle />} style={{ textTransform: 'none' }}
                         aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
                         onClick={ handleUserMenuOpen }
                         color="inherit"
-                        variant={ (selectedSection === 3) ? 'outlined' : 'text' } flexShrink={1} >
+                        variant={ (selectedSection === 3) ? 'outlined' : 'text' } flexshrink={1} >
                         <Hidden mdDown>  {session ? session.user.userName : ''} </Hidden>
                     </Button>
                 </Box>
