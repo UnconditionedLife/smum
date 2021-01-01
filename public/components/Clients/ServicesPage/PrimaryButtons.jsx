@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles'
 import { Box, ButtonBase } from '@material-ui/core';
 import { Button, Typography } from '../../System';
-import { getButtonData, addService } from '../../System/js/Clients'
+import { getButtonData, addService } from '../../System/js/Clients/Services.js'
 import { isEmpty } from '../../System/js/Utils.js';
 
 const useStyles = makeStyles((theme) => ({
@@ -84,10 +84,10 @@ const useStyles = makeStyles((theme) => ({
 
 PrimaryButtons.propTypes = {
     client: PropTypes.object.isRequired,
-    // handleClientChange: PropTypes.func.isRequired,
-    // session: PropTypes.object.isRequired,
-    // svcsRendered: PropTypes.object,
-    // updateSvcsRendered: PropTypes.func,
+    handleClientChange: PropTypes.func.isRequired,
+    session: PropTypes.object.isRequired,
+    svcsRendered: PropTypes.object,
+    updateSvcsRendered: PropTypes.func,
 }
 
 export default function PrimaryButtons(props) {

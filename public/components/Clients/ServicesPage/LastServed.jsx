@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Typography } from '../../System'
-import { isEmpty } from '../../System/js/Utils.js'
+import { isEmpty } from '../../System/js/GlobalUtils.js'
+import { getFoodInterval } from '../../System/js/Clients/Services.js'
 
 export default function LastServed(props) {
     const client = props.client
@@ -30,7 +31,7 @@ export default function LastServed(props) {
                     let displayLastServed = window.moment(servedDate).fromNow() //lastServedFood[0].serviceDateTime
                     handleSetLastVisit('LAST SERVED ' + displayLastServed.toUpperCase())
                     // visitHeader = 'LAST SERVED ' + displayLastServed.toUpperCase()
-                    let nonUSDAServiceInterval = window.utilGetFoodInterval("NonUSDA")
+                    let nonUSDAServiceInterval = getFoodInterval(nextService,false)
                     if (lastServed.lowestDays < nonUSDAServiceInterval){
                         let nextServiceDays = (nonUSDAServiceInterval - lastServed.lowestDays)
                         if (nextServiceDays == 1) {
