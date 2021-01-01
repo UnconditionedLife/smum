@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
+import { getSvcTypes, isEmpty } from '../../System/js/GlobalUtils';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { saveHistoryForm } from '../../System/js/Clients';
 
@@ -12,7 +13,7 @@ HistoryFormDialog.propTypes = {
     handleEditMode: PropTypes.func.isRequired,          // editMode handler
     editRecord: PropTypes.object.isRequired,            // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
-    handleClientHistory: PropTypes.func.isRequired,     // handles updating history
+    // handleClientHistory: PropTypes.func.isRequired,     // handles updating history
 }
 
 export default function HistoryFormDialog(props) {
@@ -21,7 +22,7 @@ export default function HistoryFormDialog(props) {
 
     let delayInt
 
-    const serviceNames = window.serviceTypes
+    const serviceNames = getSvcTypes()
         .filter(obj => obj.serviceButtons == "Primary")
         .map(obj => obj.serviceName)
 
@@ -48,7 +49,7 @@ export default function HistoryFormDialog(props) {
     function startMessageTimer(boo){
         if (boo === false) {
             if (message.severity === 'success') {
-                props.handleClientHistory()
+                // props.handleClientHistory()
                 handleDialog(false)
                 props.handleEditMode('cancel')
             }

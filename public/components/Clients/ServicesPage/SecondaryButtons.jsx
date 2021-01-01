@@ -1,18 +1,19 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { getButtonData } from '../../System/js/Clients'
+import { getButtonData } from '../../System/js/Clients/Services'
 import { Button } from '../../System';
-import { isEmpty } from '../../System/js/Utils.js';
+import { getSvcTypes, isEmpty } from '../../System/js/GlobalUtils.js';
 
 SecondaryButtons.propTypes = {
     client: PropTypes.object.isRequired,
 }
 
 export default function SecondaryButtons(props) {
-    if (isEmpty(props.client)) return null
-    const buttonType = "secondary"
-    const buttonData = getButtonData(buttonType)
-    // if ($.isEmptyObject(buttonData)) return null
+    const client = props.client
+
+    if (isEmpty(client)) return null
+    const buttonData = getButtonData({ client: client, buttons: "secondary" })
+    if (isEmpty(buttonData.secondary)) return null
 
     let buttons = []
     if (buttonData.secondary == "-1") { // dependents grades requirement

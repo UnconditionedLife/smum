@@ -2370,7 +2370,7 @@ function dbGetNewClientID(){
 	return newId
 };
 
-// MOVED TO REACT JS --> Database
+// MOVED TO REACT JS --> Database.js
 // function dbGetService(serviceId){
 // 	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
 // };
@@ -2681,17 +2681,18 @@ function dbSearchClients(str, slashCount){
 // *********************************************** DATE FUNCTIONS *******************************************
 // **********************************************************************************************************
 
-function dateParse(dateString) {
-	let momentDay = moment(dateString)
-	let dayOfWeek = momentDay.day();
-	let weekInMonth = momentDay.isoWeek() -
-		momentDay.subtract(momentDay.date()-1, 'days').isoWeek() + 1;
-	return {
-		"dayOfWeek": dayOfWeek,
-		"weekInMonth": weekInMonth,
-		"formatted": dateString
-	}
-};
+// MOVED TO REACT JS -- GlobalUtils.js -- BREAKING Change for Admin Settings Calendar
+// function dateParse(dateString) {
+// 	let momentDay = moment(dateString)
+// 	let dayOfWeek = momentDay.day();
+// 	let weekInMonth = momentDay.isoWeek() -
+// 		momentDay.subtract(momentDay.date()-1, 'days').isoWeek() + 1;
+// 	return {
+// 		"dayOfWeek": dayOfWeek,
+// 		"weekInMonth": weekInMonth,
+// 		"formatted": dateString
+// 	}
+// };
 
 // MOVED TO REACT --> BREAKING CHANGE FOR CALENDAR
 // TODO should switch to an implementation that follows RFC 5545
@@ -3988,7 +3989,7 @@ function utilLoginUserShowScreens() {
 	// dbGetServiceTypes() MOVED TO REACT --> clientGlobals
 	uiSetMenusForUser()
 	// settings = dbGetAppSettings() MOVED TO REACT --> clientGlobals
-	prnConnect()
+	// prnConnect() MOVED TO REACT --> HeaderBar.jsx
 }
 
 function utilPadEmptyFields(data){
@@ -4372,9 +4373,10 @@ function utilKeyToLabel(x){
 	if (y==undefined){return x} else {return y}
 }
 
-function utilNow() {
-	return moment().format(dateTime)
-}
+// MOVED TO REACT - BREAKING CHANGE
+// function utilNow() {
+// 	return moment().format(dateTime)
+// }
 
 function utilRemoveDupClients(clients) {
 	let ids=[], temp=[], undupClients = []
@@ -4945,26 +4947,29 @@ function utilValidateConfig(form, id){
 //     PRN PRINTER FUNCTIONS
 // **********************************************************************************************************
 // global printer vars
-let ePosDev = new epson.ePOSDevice();
-let img = document.getElementById('smum');
-let printer = null;
+// MOVED TO REACT JS --> Clients/Receipts.js
+// let ePosDev = new epson.ePOSDevice();
+// let img = document.getElementById('smum');
+// let printer = null;
 
-function prnConnect() {
-	prnDrawCanvas('smum');
- 	ePosDev.connect(settings.printerIP, '8008', prnCallback_connect);
-};
+// MOVED TO REACT JS --> Clients/Receipts.js
+// function prnConnect() {
+// 	prnDrawCanvas('smum');
+//  	ePosDev.connect(settings.printerIP, '8008', prnCallback_connect);
+// };
 
-function prnCallback_connect(resultConnect){
- 	var deviceId = 'local_printer';
- 	var options = {'crypto' : false, 'buffer' : false};
- 	if ((resultConnect == 'OK') || (resultConnect == 'SSL_CONNECT_OK')) {
-	 	//Retrieves the Printer object
-	 	ePosDev.createDevice(deviceId, ePosDev.DEVICE_TYPE_PRINTER, options, prnCallback_createDevice);
- 	}	else {
-	 	//Displays error messages
-	 	console.log("Error in callback_connect");
- }
-};
+// MOVED TO REACT JS --> Clients/Receipts.js
+// function prnCallback_connect(resultConnect){
+//  	var deviceId = 'local_printer';
+//  	var options = {'crypto' : false, 'buffer' : false};
+//  	if ((resultConnect == 'OK') || (resultConnect == 'SSL_CONNECT_OK')) {
+// 	 	//Retrieves the Printer object
+// 	 	ePosDev.createDevice(deviceId, ePosDev.DEVICE_TYPE_PRINTER, options, prnCallback_createDevice);
+//  	}	else {
+// 	 	//Displays error messages
+// 	 	console.log("Error in callback_connect");
+//  }
+// };
 
 // MOVED TO REACT JS -- Clients/Receipts.js
 // function prnGetWindow() {
@@ -4973,31 +4978,33 @@ function prnCallback_connect(resultConnect){
 // 	return win;
 // }
 
-function prnCallback_createDevice(deviceObj, errorCode){
- 	if (deviceObj === null) {
-		//Displays an error message if the system fails to retrieve the Printer object
-	 	console.log("error in callback_createDevice 1");
-	 	return;
- 	}
- 	printer = deviceObj;
- 	//Registers the print complete event
- 	printer.onreceive = function(response){
-	 	if (response.success) {
-		 	console.log("success in callback_createDevice");
-	 	} else {
-			console.log("error in callback_createDevice 1");
-	 	}
- 	}
-};
+// MOVED TO REACT JS -- Clients/Receipts.js
+// function prnCallback_createDevice(deviceObj, errorCode){
+//  	if (deviceObj === null) {
+// 		//Displays an error message if the system fails to retrieve the Printer object
+// 	 	console.log("error in callback_createDevice 1");
+// 	 	return;
+//  	}
+//  	printer = deviceObj;
+//  	//Registers the print complete event
+//  	printer.onreceive = function(response){
+// 	 	if (response.success) {
+// 		 	console.log("success in callback_createDevice");
+// 	 	} else {
+// 			console.log("error in callback_createDevice 1");
+// 	 	}
+//  	}
+// };
 
-function prnDrawCanvas(name) {
-	let canvas = document.getElementById(name);
-	let img = document.getElementById(name + 'img');
-	// img.setAttribute('crossOrigin', 'Anonymous');
-	canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-}
+// MOVED TO REACT JS -- Clients/Receipts.js
+// function prnDrawCanvas(name) {
+// 	let canvas = document.getElementById(name);
+// 	let img = document.getElementById(name + 'img');
+// 	// img.setAttribute('crossOrigin', 'Anonymous');
+// 	canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+// }
 
-// MOVED TO REACT JS
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnStartReceipt() {
 // 	let logo = document.getElementById('smum');
 // 	if (printer) {
@@ -5022,6 +5029,7 @@ function prnDrawCanvas(name) {
 // 	prnTextLine('(408) 292-3314');
 // }
 
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnAlign(align) {
 // 	if (printer) {
 // 		if (align == 'left')
@@ -5035,6 +5043,7 @@ function prnDrawCanvas(name) {
 // 	}
 // }
 
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnTextLine(str, width, height, attrs) {
 // 	if (width == null)
 // 		width = 1;
@@ -5060,6 +5069,7 @@ function prnDrawCanvas(name) {
 // 	}
 // }
 
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnFeed(n) {
 // 	if (printer) {
 // 		printer.addTextSize(1, 1);
@@ -5072,6 +5082,7 @@ function prnDrawCanvas(name) {
 // 	}
 // }
 
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnEndReceipt() {
 // 	if (printer) {
 // 		printer.addFeedLine(2);
@@ -5082,13 +5093,13 @@ function prnDrawCanvas(name) {
 // 	}
 // }
 
-// MOVED TO REACT JS
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnFlush() {
 // 	if (printer)
 // 		printer.send();
 // }
 
-// MOVED TO REACT JS
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnServiceHeader(title) {
 // 	prnFeed(2);
 // 	prnTextLine('* ' + title + ' *', 1, 2);
@@ -5099,7 +5110,7 @@ function prnDrawCanvas(name) {
 // 	prnTextLine(' ' + client.clientId + ' ', 2, 1, ['inverse']);
 // }
 
-// MOVED TO REACT JS
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnPickupTimes(fromDateTime, toDateTime) {
 // 	prnTextLine('**************************************')
 // 	prnTextLine('PRESENT THIS FOR PICKUP')
@@ -5111,7 +5122,7 @@ function prnDrawCanvas(name) {
 // 	prnTextLine('**************************************');
 // }
 
-// MOVED TO REACT JS
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnPrintClothesReceipt(serviceType) {
 // 	const numArticles = client.family.totalSize * serviceType.numberItems;
 // 	const timeLimit = 10; // TODO get from service properties
@@ -5138,7 +5149,7 @@ function prnDrawCanvas(name) {
 // 	prnEndReceipt();
 // }
 
-// MOVED TO REACT JS
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnPrintFoodReceipt(isUSDA) {
 // 	prnStartReceipt();
 // 	prnServiceHeader('EMERGENCY FOOD PANTRY PROGRAM');
@@ -5155,7 +5166,7 @@ function prnDrawCanvas(name) {
 // 	prnEndReceipt();
 // }
 
-// MOVED TO REACT JS
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnPrintVoucherReceipt(serviceType, dependents, grouping) {
 // 	let serviceName = serviceType.serviceName;
 // 	prnStartReceipt();
@@ -5189,7 +5200,7 @@ function prnDrawCanvas(name) {
 //   prnEndReceipt();
 // }
 
-// MOVED TO REACT JS
+// MOVED TO REACT JS -- Clients/Receipts.js
 // function prnPrintReminderReceipt() {
 // 	// Determine next visit date
 // 	let targetDate = moment().add(14, 'days');
@@ -5205,46 +5216,50 @@ function prnDrawCanvas(name) {
 //   prnEndReceipt();
 // }
 
+// MOVED TO REACT JS -- Clients/Receipts.js
 // Printer testing
-receiptIndex = 0;
-const receiptTypes = 6;
+// receiptIndex = 0;
+// const receiptTypes = 6;
 
-function clickPrintTestSingle() {
-	prnTestReceipt(receiptIndex);
-	prnFlush();
-	receiptIndex = (receiptIndex + 1) % receiptTypes;
-}
+// MOVED TO REACT JS -- Clients/Receipts.js
+// function clickPrintTestSingle() {
+// 	prnTestReceipt(receiptIndex);
+// 	prnFlush();
+// 	receiptIndex = (receiptIndex + 1) % receiptTypes;
+// }
 
-function clickPrintTestBatch() {
-	for (let i=0; i < receiptTypes; i++)
-		prnTestReceipt(i);
-	prnFlush();
-}
+// MOVED TO REACT JS -- Clients/Receipts.js
+// function clickPrintTestBatch() {
+// 	for (let i=0; i < receiptTypes; i++)
+// 		prnTestReceipt(i);
+// 	prnFlush();
+// }
 
-function prnTestReceipt(receiptType) {
-	let service;
-	switch(receiptType) {
-		case 0:
-			service = serviceTypes.filter(obj => obj.serviceName == 'Clothes')[0];
-			prnPrintClothesReceipt(service);
-			break;
-		case 1:
-			prnPrintFoodReceipt('USDA');
-			break;
-		case 2:
-			prnPrintReminderReceipt();
-			break;
-		case 3:
-			service = serviceTypes.filter(obj => obj.serviceName == 'Thanksgiving Turkey')[0];
-			prnPrintVoucherReceipt(service);
-			break;
-		case 4:
-			service = serviceTypes.filter(obj => obj.serviceName == 'Christmas Toy')[0];
-			prnPrintVoucherReceipt(service, client.dependents, 'age');
-			break;
-		case 5:
-			service = serviceTypes.filter(obj => obj.serviceName == 'First Step')[0];
-			prnPrintVoucherReceipt(service, client.dependents, 'grade');
-			break;
-	}
-}
+// MOVED TO REACT JS -- Clients/Receipts.js
+// function prnTestReceipt(receiptType) {
+// 	let service;
+// 	switch(receiptType) {
+// 		case 0:
+// 			service = serviceTypes.filter(obj => obj.serviceName == 'Clothes')[0];
+// 			prnPrintClothesReceipt(service);
+// 			break;
+// 		case 1:
+// 			prnPrintFoodReceipt('USDA');
+// 			break;
+// 		case 2:
+// 			prnPrintReminderReceipt();
+// 			break;
+// 		case 3:
+// 			service = serviceTypes.filter(obj => obj.serviceName == 'Thanksgiving Turkey')[0];
+// 			prnPrintVoucherReceipt(service);
+// 			break;
+// 		case 4:
+// 			service = serviceTypes.filter(obj => obj.serviceName == 'Christmas Toy')[0];
+// 			prnPrintVoucherReceipt(service, client.dependents, 'age');
+// 			break;
+// 		case 5:
+// 			service = serviceTypes.filter(obj => obj.serviceName == 'First Step')[0];
+// 			prnPrintVoucherReceipt(service, client.dependents, 'grade');
+// 			break;
+// 	}
+// }

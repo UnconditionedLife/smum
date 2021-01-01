@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles'
 import { Box, ButtonBase } from '@material-ui/core';
 import { Button, Typography } from '../../System';
-import { getButtonData, addService } from '../../System/js/Clients'
-import { isEmpty } from '../../System/js/Utils.js';
+import { getButtonData, addService, getSvcsRendered } from '../../System/js/Clients/Services'
+import { getSvcTypes, isEmpty } from '../../System/js/GlobalUtils.js';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -83,18 +83,18 @@ const useStyles = makeStyles((theme) => ({
   }));
 
 PrimaryButtons.propTypes = {
-    client: PropTypes.object.isRequired,
-    handleClientChange: PropTypes.func.isRequired,
-    session: PropTypes.object.isRequired,
-    svcsRendered: PropTypes.object,
-    updateSvcsRendered: PropTypes.func,
+    client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
 }
 
 export default function PrimaryButtons(props) {
-    const svcsRendered = props.svcsRendered
-    const updateSvcsRendered = props.updateSvcsRendered
-    // const [ servicesRendered, setServicesRendered ] = useState([])
-    const [ buttonData, setButtonData ] = useState(getButtonData('primary'))
+    const client = props.client
+    const updateClient = props.updateClient
+    const svcsRendered = props.client.svcsRendered
+
+    console.log(svcsRendered)
+
+    // const updateSvcsRendered = props.updateSvcsRendered
+    const [ buttonData, setButtonData ] = useState(getButtonData({ client: props.client, buttons: 'primary' }))
     const [ buttonState, setButtonState ] = useState([])
     const [ update, setUpdate ] = useState(false)
 
@@ -116,18 +116,25 @@ export default function PrimaryButtons(props) {
         setButtonState(array)
     }
 
-    function handleAddService(serviceTypeId, serviceCategory, serviceButtons){
-        const serviceRecord = addService(serviceTypeId, serviceCategory, serviceButtons, svcsRendered)
+    function handleAddService(serviceTypeId, serviceCategory, svcButtons){
+        const serviceRecord = addService( { client: client, serviceTypeId: serviceTypeId, 
+            serviceCategory: serviceCategory, svcButtons: svcButtons, svcsRendered: svcsRendered })
         if (serviceRecord === undefined) return
-        const array = svcsRendered
+        const svcsArray = svcsRendered
         if (serviceRecord === 'undone') {
-            array.splice(array.indexOf(serviceTypeId), 1)
+            svcsArray.splice(svcsArray.indexOf(serviceTypeId), 1)
         } else if (!isEmpty(serviceRecord)) {
-            array.push(serviceRecord)
+            svcsArray.push(serviceRecord)
         }        
-        updateSvcsRendered(array)
+        updateSvcsRendered(svcsArray)
         setUpdate(!update)
     }
+
+    function updateSvcsRendered(){
+        const newClient = client
+        newClient.svcsRendered = getSvcsRendered(client.svcHistory)
+        updateClient(newClient)
+    } 
 
     // function handleUndoService(serviceTypeId, serviceCategory, serviceButtons){
     //     console.log('UNDO SERVICE')
@@ -202,8 +209,8 @@ export default function PrimaryButtons(props) {
                 }
 
                 { isUsed(service.serviceTypeId) === true &&
-                    <Box m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='text.disabled' display='flex' >
-                            <Button m={ 0 } width='168px' height='168px' color='text.primary'
+                    <Box m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#ddd' display='flex' >
+                            <Button m={ 0 } width='168px' height='168px' color='primary'
                                 onClick={ () => handleAddService(service.serviceTypeId, 
                                 service.serviceCategory, service.serviceButtons) }>
                                 <strong>{ service.serviceName.toUpperCase() }</strong>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { AppBar, Dialog, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
+import { AppBar, Box, Dialog, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu  } from '@material-ui/core';
 import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '@material-ui/icons';
 import { Button } from '../System';
 import { Hidden } from '@material-ui/core';
@@ -14,7 +14,9 @@ import jwt_decode from "jwt-decode";
 
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
-import { dbGetSettings } from '../System/js/Database';
+// import { dbGetSettings } from '../System/js/Database';
+import { cacheSessionVar, cacheSettingsVar } from '../System/js/GlobalUtils';
+import { prnConnect } from '../System/js/Clients/Receipts'
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -106,6 +108,13 @@ export default function HeaderBar(props) {
 
     const session = cookies.user && cookies.auth && cookies.refresh ? 
           {user:cookies.user,auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser} : null;
+    
+    // Temporary while migrating to cached variables
+    if (session !== null) {
+        cacheSessionVar(session)
+        cacheSettingsVar()
+        prnConnect()
+    }
 
     const setSession = (newSession) => {
         console.log("Start")
@@ -122,7 +131,9 @@ export default function HeaderBar(props) {
             setCogUser(newSession.cogUser)
             setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
             console.log(newSession)
-            dbGetSettings(newSession);
+            cacheSessionVar(newSession)
+            cacheSettingsVar()
+            prnConnect()
         } else {
             removeSession()
         }
@@ -136,6 +147,7 @@ export default function HeaderBar(props) {
         removeCookie("refresh", { path: '/' })
         window.utilInitAuth(null);
         setCogUser(null)
+        cacheSessionVar({})
     }
 
     const refreshUserSession = () => {
@@ -148,8 +160,10 @@ export default function HeaderBar(props) {
                 uAuthorization.accessToken = result.getAccessToken().getJwtToken()
                 let uRefreshToken = result.refreshToken.token
                 uAuthorization.idToken = result.idToken.jwtToken
-                console.log({ user: session.user, auth: uAuthorization, cogUser: tempUser, refresh: uRefreshToken })
-                setSession({ user: session.user, auth: uAuthorization, cogUser: tempUser, refresh: uRefreshToken });
+                const newSession = { user: session.user, auth: uAuthorization, cogUser: tempUser, refresh: uRefreshToken }
+                console.log(newSession)
+                setSession(newSession);
+                cacheSessionVar(newSession)
             })
         }
     }
@@ -249,16 +263,16 @@ export default function HeaderBar(props) {
                 />
             </Box>
             <Box className={classes.sectionDesktop} justifyContent="flex-end">
-            <Button  onClick={() => handleSectionChange(0)} flexShrink={2} minWidth="30px" startIcon={ <People/>  }
+            <Button  onClick={() => handleSectionChange(0)} flexshrink={2} minWidth="30px" startIcon={ <People/>  }
                 variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" >
                 <Hidden mdDown> Clients </Hidden>
                     </Button>
                     <Button ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Face />}
-                    disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" flexShrink={1}>
+                    disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" flexshrink={1}>
                     <Hidden mdDown> Admin </Hidden>
                     </Button>
                     <Button ml= '0' onClick={() => handleSectionChange(2)} minWidth="30px" startIcon={<Today />}
-                        variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" flexShrink={1} >
+                        variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" flexshrink={1} >
                         <Hidden mdDown> Today </Hidden>
 
                     </Button>
@@ -266,7 +280,7 @@ export default function HeaderBar(props) {
                         aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
                         onClick={ handleUserMenuOpen }
                         color="inherit"
-                        variant={ (selectedSection === 3) ? 'outlined' : 'text' } flexShrink={1} >
+                        variant={ (selectedSection === 3) ? 'outlined' : 'text' } flexshrink={1} >
                         <Hidden mdDown>  {session ? session.user.userName : ''} </Hidden>
                     </Button>
                 </Box>

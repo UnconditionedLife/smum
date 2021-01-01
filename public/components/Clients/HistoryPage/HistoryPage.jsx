@@ -2,7 +2,7 @@ import React, { useEffect, useRef, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { isEmpty } from '../../System/js/Utils.js';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { HistoryHeader, HistoryDisplay } from '../../Clients';
 import SmumLogo from "../../Assets/SmumLogo";
 
@@ -21,12 +21,12 @@ import SmumLogo from "../../Assets/SmumLogo";
 //     }
 // }))
 
-PageHistory.propTypes = {
+HistoryPage.propTypes = {
     session: PropTypes.object.isRequired,
-    client: PropTypes.object,       // current client object
+    client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
 }
 
-export default function PageHistory(props) {
+export default function HistoryPage(props) {
     // const classes = useStyles();
     // const historyDivBottom = useRef(null);
 
@@ -37,12 +37,13 @@ export default function PageHistory(props) {
     //     }
     // })
 
-    if (isEmpty(client)) return null
+    if (isEmpty(props.client)) return null
 
     return (
         <Box width={ 1 } mt={ 7 } >
             <Box mt={ 4 }><HistoryHeader client={ props.client } /></Box>
-            <Box mt={ 4 }><HistoryDisplay client={ props.client } session={ props.session } /></Box>
+            <Box mt={ 4 }><HistoryDisplay { ...props } />
+            </Box>
             {/* <div className={classes.tableHeader} ref={ historyDivBottom }></div> */}
         </Box>
     );

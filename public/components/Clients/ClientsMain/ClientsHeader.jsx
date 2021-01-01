@@ -3,6 +3,7 @@ import { Add, Pageview, RoomService, House, History } from '@material-ui/icons';
 import { AppBar, Box, Tab, Tabs, Tooltip } from '@material-ui/core';
 import { Fab } from '../../System';
 import { HeaderTitle } from '../../Clients';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 export default function clientsHeader(props) {
     const client = props.client
@@ -10,6 +11,7 @@ export default function clientsHeader(props) {
     const handleIsNewClientChange = props.handleIsNewClientChange
     const selectedTab = props.selectedTab
     const updateURL = props.updateURL
+    const isDisabled = isEmpty(client) ? true : false
 
     function handleNewClient() {
        handleIsNewClientChange(true)
@@ -32,10 +34,10 @@ export default function clientsHeader(props) {
                     centered
                     style={{ justifyContent: 'space-between' }}
                 >
-                    <Tab icon={<Pageview />} label="Found" />
-                    <Tab icon={<RoomService />} label="Services" />
-                    <Tab icon={<House />} label="Client" />
-                    <Tab icon={<History />} label="History" />
+                    <Tab icon={<Pageview />} disabled={ isDisabled } label="Found" />
+                    <Tab icon={<RoomService />} disabled={ isDisabled } label="Services" />
+                    <Tab icon={<House />} disabled={ isDisabled } label="Client" />
+                    <Tab icon={<History />} disabled={ isDisabled }  label="History" />
                 </Tabs>
                 <Box display='flex' width='100px' mt={ 0 } mr={ 2 } justifyContent='flex-end'>
                     <Tooltip title= 'Add Client'>

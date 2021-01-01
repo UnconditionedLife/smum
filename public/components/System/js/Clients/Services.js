@@ -1,10 +1,10 @@
 //******************************************************************
 //****** CLIENTS ServiceInstance SECTION JAVASCRIPT FUNCTIONS ******
 //******************************************************************
-import { isEmpty } from '../GlobalUtils.js';
+import { getSvcTypes, isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from '../Clients/ClientUtils'
-import { dbGetClientActiveServiceHistory } from '../Database';
+import { dbGetClientActiveServiceHistory, dbGetSettings, dbSaveServiceRecord } from '../Database';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
     prnPrintVoucherReceipt, prnFlush } 
     from '../Clients/Receipts';
@@ -12,7 +12,9 @@ import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
 export function addService(at){
-    const { svcTypes, settings, client, serviceTypeId, serviceCategory, svcButtons, svcsRendered } = at
+    const { client, serviceTypeId, serviceCategory, svcButtons, svcsRendered } = at
+    const svcTypes = getSvcTypes()
+    const settings = dbGetSettings()
 	let serviceType = getServiceTypeByID(svcTypes, serviceTypeId)
 	let serviceId = "" // new service
     let serviceValid = true
@@ -53,7 +55,7 @@ console.log(serviceRecord)
 				})[0]
 			prnPrintFoodReceipt({ client: client, isUSDA: service.isUSDA })
 			if (client.isActive == 'Client') {
-				prnPrintReminderReceipt({ client: client, settings: settings })
+				prnPrintReminderReceipt( client )
 			}
 		} else if (serviceCategory == 'Clothes_Closet') {
 			prnPrintClothesReceipt({ client: client, serviceType: serviceType })
@@ -92,11 +94,11 @@ console.log(serviceRecord)
 }
 
 export function getButtonData( at ) {
-    const { svcTypes, client, buttons } = at
+    const { client, buttons } = at
 	if (isEmpty(client)) return
     let buttonData = {}
     buttonData.lastServed = getLastServedDays(client) // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
-    buttonData.activeServiceTypes = getActiveSvcTypes(svcTypes) // reduces serviceTypes list for which today is NOT active date range
+    buttonData.activeServiceTypes = getActiveSvcTypes() // reduces serviceTypes list for which today is NOT active date range
     const targetServices = getTargetServices(buttonData.activeServiceTypes); // list of target properties for each serviceType
     buttonData[buttons] = getActiveServicesButtons(
         { client: client, buttons: buttons, activeServiceTypes: buttonData.activeServiceTypes, 
@@ -104,7 +106,8 @@ export function getButtonData( at ) {
     return buttonData
 }
 
-export function getFoodInterval(svcTypes, isUSDA){
+export function getFoodInterval(isUSDA){
+    const svcTypes = getSvcTypes()
 	for (var i = 0; i < svcTypes.length; i++) {
 		if ((svcTypes[i].serviceButtons == "Primary") && (svcTypes[i].serviceCategory == "Food_Pantry") && (svcTypes[i].isUSDA == isUSDA)){
 			return svcTypes[i].serviceInterval
@@ -159,10 +162,14 @@ console.log(lastServed)
 	return lastServed
 }
 
-function getActiveSvcTypes(svcTypes){
+function getActiveSvcTypes(){
 	// build Active Service Types array of Service Types which cover today's date
     let activeSvcTypes = []
-	for (let i=0; i<svcTypes.length; i++){
+    const svcTypes = getSvcTypes()
+
+console.log(svcTypes)
+
+	for (let i=0; i < svcTypes.length; i++){
 		if (svcTypes[i].isActive == "Active"){
 			// FROM
 			let fromDateString = []

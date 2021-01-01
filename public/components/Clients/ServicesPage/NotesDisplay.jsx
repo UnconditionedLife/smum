@@ -1,13 +1,20 @@
 import React, { Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
 import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
 import { Card, IconButton } from '../../System';
 import { NoteForm } from '../../Clients';
 
+NotesDisplay.propTypes = {
+    client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
+    handleNoteCountChange: PropTypes.func.isRequired,
+    session: PropTypes.object.isRequired,
+}
+
 export default function NotesDisplay(props) {
     const session = props.session;
     const client = props.client;
-    const handleClientChange = props.handleClientChange;
+    const updateClient = props.updateClient;
     const handleNoteCountChange = props.handleNoteCountChange;
     const editNote = props.editNote
     const handleEditNoteChange = props.handleEditNoteChange;
@@ -25,7 +32,7 @@ export default function NotesDisplay(props) {
         const notes = client.notes
         const filteredNotes = notes.filter(note => note.noteId !== noteId)
         tempClient.notes = filteredNotes
-        handleClientChange(tempClient)
+        updateClient(tempClient)
         handleNoteCountChange(client.notes.length)
         const result = window.dbSaveCurrentClient(client)
         if (result !== "success") {
@@ -92,7 +99,7 @@ export default function NotesDisplay(props) {
                             <CardContent>
                                 <NoteForm
                                     client={ client } 
-                                    handleClientChange={ handleClientChange }
+                                    updateClient={ updateClient }
                                     handleNoteCountChange={ handleNoteCountChange }
                                     editNote={ editNote }
                                     editMode={ editMode }

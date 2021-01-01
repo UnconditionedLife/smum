@@ -1,44 +1,48 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types';
+import moment from 'moment';
 import { Typography } from '../../System'
-import { isEmpty } from '../../System/js/Utils.js'
+import { isEmpty } from '../../System/js/GlobalUtils.js'
+import { getFoodInterval } from '../../System/js/Clients/Services'
+import { Box } from '@material-ui/core';
+
+LastServed.propTypes = {
+    client: PropTypes.object.isRequired,
+}
 
 export default function LastServed(props) {
     const client = props.client
     const [ lastVisit, setLastVisit ] = useState("FIRST SERVICE")
     const [ nextService, setNextService ] = useState("")
 
-    const handleSetLastVisit = (newValue) => {
+    function handleSetLastVisit(newValue){
         if (lastVisit !== newValue) setLastVisit(newValue)
     }
 
-    const handleSetNextService = (newValue) => {
+    function handleSetNextService(newValue){
         if (nextService !== newValue) setNextService(newValue)
     }
 
     if (isEmpty(client)) {
         return null
-    } else {
-        //let visitHeader = "FIRST SERVICE"; // uppdate the last served info in upper right
-        
+    } else {    
         if (client.lastServed[0] !== undefined) {
             let lastServed = window.utilCalcLastServedDays()
             if (lastServed.lowestDays != 10000) {
                 if (lastServed.lowestDays == 0) {
                     handleSetLastVisit('LAST SERVED TODAY')
                 } else {
-                    let servedDate = window.moment().subtract(lastServed.lowestDays, "days");
-                    let displayLastServed = window.moment(servedDate).fromNow() //lastServedFood[0].serviceDateTime
+                    let servedDate = moment().subtract(lastServed.lowestDays, "days");
+                    let displayLastServed = moment(servedDate).fromNow()
                     handleSetLastVisit('LAST SERVED ' + displayLastServed.toUpperCase())
-                    // visitHeader = 'LAST SERVED ' + displayLastServed.toUpperCase()
-                    let nonUSDAServiceInterval = window.utilGetFoodInterval("NonUSDA")
+                    let nonUSDAServiceInterval = getFoodInterval("NonUSDA")
                     if (lastServed.lowestDays < nonUSDAServiceInterval){
                         let nextServiceDays = (nonUSDAServiceInterval - lastServed.lowestDays)
                         if (nextServiceDays == 1) {
                             handleSetNextService("Next service is tomorrow!")
                         } else {
-                            let nextServiceDate = window.moment().add(nextServiceDays, "days")
-                            handleSetNextService(" | Next service " + window.moment(nextServiceDate).format("dddd, MMMM Do") + "!")
-                            // nextService = "<br>" + "Next service " + window.moment(nextServiceDate).format("dddd, MMMM Do") + "!"
+                            let nextServiceDate = moment().add(nextServiceDays, "days")
+                            handleSetNextService("Next service " + moment(nextServiceDate).format("dddd, MMMM Do") + "!")
                         }
                     }
                 }
@@ -47,6 +51,13 @@ export default function LastServed(props) {
     }
 
     return (
-        <Typography variant='button' color='secondary' align='center' noWrap>{ lastVisit }{ nextService }</Typography>
+        <Box width='100%' display='flex' flexDirection='row'>
+            <Box width='50%'>
+                <Typography variant='button' color='secondary' noWrap>{ lastVisit }</Typography>
+            </Box>
+            <Box width='50%' justifyContent="flex-end">
+                <Typography variant='button' color='secondary' noWrap>{ nextService }</Typography>
+            </Box>
+        </Box>
     )
 }

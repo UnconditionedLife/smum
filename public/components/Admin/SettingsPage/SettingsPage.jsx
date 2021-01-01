@@ -2,15 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { Typography } from '../../System';
-import { dbGetSettings, SettingsSound, SettingsPrinter, SettingsSeniorAge,
-    SettingsZipcodes, SettingsServiceCats, SettingsSchedule } from '../../System/js/Database.js';
+import { SettingsSound, SettingsPrinter, SettingsSeniorAge,
+    SettingsZipcodes, SettingsServiceCats, SettingsSchedule } from '../../System/js/GlobalUtils';
+import { dbGetSettings } from '../../System/js/Database'
 
 SettingsPage.propTypes = {
     session: PropTypes.object.isRequired,
 }
 
 export default function SettingsPage(props) {
-    let settings = dbGetSettings(props.session);
+    const settings = dbGetSettings(props.session);
 
     return (
         <Box mt={ 7 }>

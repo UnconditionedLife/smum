@@ -3,6 +3,7 @@
 //******************************************************************
 import moment from  'moment';
 import cuid from 'cuid';
+import { getSvcTypes, utilNow } from '../GlobalUtils';
 import { dbGetClientActiveServiceHistory, dbGetService, dbSaveServiceRecord } from '../Database';
 
 export function getServiceHistory(){
@@ -30,13 +31,14 @@ export function updateLastServed(client){
 export function saveHistoryForm(editRecord, formValues, client, userName){
     const oldServiceId = editRecord.serviceId
     Object.assign(editRecord, formValues)
-    // TODO serviceTypes will need to either be retrived each time or be available in session
-    const serviceType = serviceTypes.filter(item => item.serviceName == editRecord.serviceName)[0]
-    Object.assign(editRecord, {serviceTypeId: serviceType.serviceTypeId, serviceCategory: serviceType.serviceCategory, isUSDA: serviceType.isUSDA })
+    const serviceType = getSvcTypes.filter(item => item.serviceName == editRecord.serviceName)[0]
+    Object.assign(editRecord, {
+        serviceTypeId: serviceType.serviceTypeId, serviceCategory: serviceType.serviceCategory, 
+        isUSDA: serviceType.isUSDA })
 
     editRecord.servicedDay = moment(editRecord.servicedDateTime).format("YYYYMMDD")
     editRecord.servicedByUserName = userName
-    editRecord.updatedDateTime = window.utilNow()
+    editRecord.updatedDateTime = utilNow()
     editRecord.serviceId = cuid()
     
     const result = dbSaveServiceRecord(editRecord)
