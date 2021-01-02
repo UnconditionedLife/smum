@@ -7,6 +7,8 @@ import { PrintClientInfo } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Card } from '../../System';
 import { ClientInfo } from '..';
+import { ClientInfoForm } from '../../Clients';
+
 
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
@@ -35,7 +37,7 @@ export default function ClientPage(props) {
             <PrintClientInfo client={ client } />
             <Accordion defaultExpanded={ true } onChange={handleChange('panel1')}>
                 <AccordionSummary expandIcon={ <ExpandMore /> } id="panel1bh-header" >
-                    <Typography variant='button' >Client Info</Typography>
+                    <Typography  variant='button'>Client Info</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <Box id="clientFormWrap">
@@ -44,7 +46,19 @@ export default function ClientPage(props) {
                 </AccordionDetails>
             </Accordion>
 
-        
+            <Accordion defaultExpanded="true" onChange={handleChange('panel2')}>
+            <AccordionSummary expandIcon={<ExpandMore />} id="panel1bh-header" >
+                <Typography  variant='button'>Client Info 2</Typography>
+            </AccordionSummary>
+            <AccordionDetails> 
+                <Card>
+                    <CardContent>
+                        <ClientInfoForm client = { client } />{/**/}
+                    </CardContent>
+                </Card>
+            </AccordionDetails>
+        </Accordion>
+
 
             <Accordion expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
                 <AccordionSummary expandIcon={ <ExpandMore /> } id="panel2bh-header">
