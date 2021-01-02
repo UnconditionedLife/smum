@@ -2,9 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { Typography } from '../../System';
-import { SettingsSound, SettingsPrinter, SettingsSeniorAge,
-    SettingsZipcodes, SettingsServiceCats, SettingsSchedule } from '../../System/js/GlobalUtils';
-import { dbGetSettings } from '../../System/js/Database'
+import { dbGetSettings, SettingsSound, SettingsPrinter, SettingsSeniorAge,
+    SettingsZipcodes, SettingsServiceCats, SettingsSchedule } from '../../System/js/Database';
 
 SettingsPage.propTypes = {
     session: PropTypes.object.isRequired,

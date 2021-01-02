@@ -2,74 +2,11 @@
 //****** GLOBAL UTILITIES JAVASCRIPT FUNCTIONS *****
 //**************************************************
 
-import { dbGetSvcTypes, dbGetSettings } from "./Database";
+//import { dbGetSvcTypes, dbGetSettings } from "./Database";
 import moment from "moment";
-
-//**** CACHED VARIABLES  AVAIABLE TO GLOBAL FUNCTIONS ****
-let cachedSession = {}
-let cachedSettings = null;
-let cachedSvcTypes = []
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
-export function getSvcTypes(){
-    console.log(cachedSvcTypes)
-    console.log(cachedSession)
-    if (isEmpty(cachedSvcTypes) && !isEmpty(cachedSession)) {
-        const temp = dbGetSvcTypes()
-        console.log(temp)
-        cachedSvcTypes = temp
-    }
-    return cachedSvcTypes
-}
-
-export function SettingsSound() {
-    return (cachedSettings.sounds == 'YES');
-}
-
-// Settings 
-export function SettingsPrinter() {
-    return (cachedSettings.printerIP);
-}
-
-export function SettingsSeniorAge() {
-    return (parseInt(cachedSettings.seniorAge, 10));
-}
-
-export function SettingsServiceCats() {
-    return (cachedSettings.serviceCat);
-}
-
-export function SettingsZipcodes() {
-    return (cachedSettings.serviceZip);
-}
-
-export function SettingsSchedule() {
-    return {
-        closedDays: cachedSettings.closedDays,
-        closedEveryDays: cachedSettings.closedEveryDays,
-        closedEveryDaysWeek: cachedSettings.closedEveryDaysWeek,
-        openDays: cachedSettings.openDays,
-    };
-}
-
-// export function getSession(){
-//     if (isEmpty(cachedSvcTypes && !isEmpty(cachedSession))) {
-//         cachedSvcTypes = dbGetSvcTypes()
-//     }
-//     return cachedSvcTypes
-// }
-
-export function cacheSettingsVar() {
-    console.log("GETTING SETTINGS")
-    cachedSettings = dbGetSettings()
-}
-
-export function cacheSessionVar(newSession) {
-    console.log('UPDATE SESSION VAR')
-    cachedSession = newSession
-    return cachedSession
-}
 
 export function isEmpty(obj) {
     if (typeof obj === "undefined") return false
@@ -115,6 +52,8 @@ export function utilStringToArray(str){
 	}
 	return arr
 }
+
+// Date/Schedule Functions
 
 export function dateFindOpen(at) {
     const { targetDate, earliestDate, schedule } = at

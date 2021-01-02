@@ -1,10 +1,10 @@
 //******************************************************************
 //****** CLIENTS ServiceInstance SECTION JAVASCRIPT FUNCTIONS ******
 //******************************************************************
-import { getSvcTypes, isEmpty } from '../GlobalUtils.js';
+import { isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from '../Clients/ClientUtils'
-import { dbGetClientActiveServiceHistory, dbGetSettings, dbSaveServiceRecord } from '../Database';
+import { dbGetClientActiveServiceHistory, dbGetSettings, dbSaveServiceRecord, getSvcTypes } from '../Database';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
     prnPrintVoucherReceipt, prnFlush } 
     from '../Clients/Receipts';

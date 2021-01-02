@@ -6,7 +6,7 @@ import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { searchClients } from '../../System/js/Clients/Clients';
 import { arrayAddIds, calcClientFamilyCounts, calcClientDependentsAges } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';
-import { dbGetClientActiveServiceHistory, dbGetSvcTypes } from '../../System/js/Database';
+import { dbGetClientActiveServiceHistory } from '../../System/js/Database';
 import { getSvcsRendered } from '../../System/js/Clients/Services'
 import SmumLogo from "../../Assets/SmumLogo";
 
@@ -31,10 +31,6 @@ export default function ClientsMain(props) {
     const [ client, setClient ] = useState({});
 
     useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(client); } }, [session, url])
-
-    useEffect(() => {
-        dbGetSvcTypes()
-    }, [])
 
     useEffect(() => {
         if (searchTerm !== '') {

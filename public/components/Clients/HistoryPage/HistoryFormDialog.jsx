@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
-import { getSvcTypes, isEmpty } from '../../System/js/GlobalUtils';
+import { isEmpty } from '../../System/js/GlobalUtils';
+import { getSvcTypes } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { saveHistoryForm } from '../../System/js/Clients';
 

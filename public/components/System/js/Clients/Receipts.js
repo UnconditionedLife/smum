@@ -4,7 +4,8 @@
 import moment from  'moment';
 import { utilSortDependentsByGrade, utilCalcGradeGrouping, utilSortDependentsByAge,
     utilCalcAgeGrouping, utilPadTrimString } from '../Clients/ClientUtils'
-import { dateFindOpen, getSvcTypes, SettingsPrinter, SettingsSchedule } from '../GlobalUtils';
+import { getSvcTypes, SettingsPrinter, SettingsSchedule } from '../Database';
+import { dateFindOpen } from '../GlobalUtils'
 
 const svcTypes = getSvcTypes()
 

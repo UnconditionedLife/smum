@@ -15,7 +15,7 @@ import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
 // import { dbGetSettings } from '../System/js/Database';
-import { cacheSessionVar, cacheSettingsVar } from '../System/js/GlobalUtils';
+import { cacheSessionVar, dbGetSvcTypes, dbGetSettings } from '../System/js/Database';
 import { prnConnect } from '../System/js/Clients/Receipts'
 
 const useStyles = makeStyles((theme) => ({
@@ -109,13 +109,6 @@ export default function HeaderBar(props) {
     const session = cookies.user && cookies.auth && cookies.refresh ? 
           {user:cookies.user,auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser} : null;
     
-    // Temporary while migrating to cached variables
-    if (session !== null) {
-        cacheSessionVar(session)
-        cacheSettingsVar()
-        prnConnect()
-    }
-
     const setSession = (newSession) => {
         console.log("Start")
         if (newSession.user != null && newSession.auth != null) {
@@ -131,9 +124,6 @@ export default function HeaderBar(props) {
             setCogUser(newSession.cogUser)
             setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
             console.log(newSession)
-            cacheSessionVar(newSession)
-            cacheSettingsVar()
-            prnConnect()
         } else {
             removeSession()
         }
@@ -198,6 +188,10 @@ export default function HeaderBar(props) {
                     setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
                 }
             });
+            cacheSessionVar(session) // first var to cache
+            dbGetSvcTypes()
+            dbGetSettings()
+            prnConnect()
         }
     }, []);
 

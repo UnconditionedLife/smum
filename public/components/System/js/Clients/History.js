@@ -3,8 +3,8 @@
 //******************************************************************
 import moment from  'moment';
 import cuid from 'cuid';
-import { getSvcTypes, utilNow } from '../GlobalUtils';
-import { dbGetClientActiveServiceHistory, dbGetService, dbSaveServiceRecord } from '../Database';
+import { utilNow } from '../GlobalUtils';
+import { dbGetClientActiveServiceHistory, dbGetService, dbSaveServiceRecord, getSvcTypes } from '../Database';
 
 export function getServiceHistory(){
 	let clientHistory = dbGetClientActiveServiceHistory()

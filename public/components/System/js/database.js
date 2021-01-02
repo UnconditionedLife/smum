@@ -3,18 +3,37 @@
 //************************************************
 
 import moment from 'moment';
-import { utilStringToArray } from './GlobalUtils';
+import { isEmpty, utilStringToArray } from './GlobalUtils';
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
+
+//**** CACHED VARIABLES ****
+
 let dbUrl = '';
+let cachedSession = {}
+let cachedSettings = null;
+let cachedSvcTypes = []
 
 function dbFetchUrl(session, subUrl) {
-    console.log(dbUrl + subUrl)
-    if (dbUrl === '') dbSetUrl('dev')
     return window.dbGetData(dbUrl + subUrl);
 }
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
+
+// svcTypes
+
+export function getSvcTypes(){
+    if (isEmpty(cachedSvcTypes) && !isEmpty(cachedSession)) {
+        cachedSvcTypes = dbGetSvcTypes()
+    }
+    return cachedSvcTypes
+}
+
+// Session
+
+export function cacheSessionVar(newSession) {
+    cachedSession = newSession
+}
 
 // Utility Functions
 
@@ -63,8 +82,39 @@ export function dbGetSettings(session) {
     fields.forEach(x => {
         temp[x] = utilStringToArray(temp[x]);
     });
+    cachedSettings = temp;
     return temp;
 }
+
+export function SettingsSound() {
+    return (cachedSettings.sounds == 'YES');
+}
+
+export function SettingsPrinter() {
+    return (cachedSettings.printerIP);
+}
+
+export function SettingsSeniorAge() {
+    return (parseInt(cachedSettings.seniorAge, 10));
+}
+
+export function SettingsServiceCats() {
+    return (cachedSettings.serviceCat);
+}
+
+export function SettingsZipcodes() {
+    return (cachedSettings.serviceZip);
+}
+
+export function SettingsSchedule() {
+    return {
+        closedDays: cachedSettings.closedDays,
+        closedEveryDays: cachedSettings.closedEveryDays,
+        closedEveryDaysWeek: cachedSettings.closedEveryDaysWeek,
+        openDays: cachedSettings.openDays,
+    };
+}
+
 
 // ServiceTypes
 
@@ -78,7 +128,7 @@ export function dbGetSvcTypes(){
 			if (nameA > nameB) return 1
 		return 0; //default return value (no sorting)
     })
-    console.log(temp)
+    cachedSvcTypes = temp
     return temp
 }
 
