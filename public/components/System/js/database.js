@@ -3,11 +3,16 @@
 //************************************************
 
 import moment from 'moment';
-import { utilStringToArray } from './GlobalUtils';
+import { isEmpty, utilStringToArray } from './GlobalUtils';
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
+
+//**** CACHED VARIABLES ****
+
 let dbUrl = '';
-let cached_settings = null;
+let cachedSession = {}
+let cachedSettings = null;
+let cachedSvcTypes = []
 
 function dbFetchUrl(session, subUrl) {
     return window.dbGetData(dbUrl + subUrl);
@@ -15,10 +20,26 @@ function dbFetchUrl(session, subUrl) {
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
+// svcTypes
+
+export function getSvcTypes(){
+    if (isEmpty(cachedSvcTypes) && !isEmpty(cachedSession)) {
+        cachedSvcTypes = dbGetSvcTypes()
+    }
+    return cachedSvcTypes
+}
+
+// Session
+
+export function cacheSessionVar(newSession) {
+    cachedSession = newSession
+}
+
 // Utility Functions
 
 export function dbSetUrl(instance) {
     dbUrl = dbBase + instance;
+    console.log(dbUrl)
 }
 
 export function dbSetModifiedTime(obj, isNew) {
@@ -61,39 +82,55 @@ export function dbGetSettings(session) {
     fields.forEach(x => {
         temp[x] = utilStringToArray(temp[x]);
     });
-    cached_settings = temp;
+    cachedSettings = temp;
     return temp;
 }
 
 export function SettingsSound() {
-    return (cached_settings.sounds == 'YES');
+    return (cachedSettings.sounds == 'YES');
 }
 
 export function SettingsPrinter() {
-    return (cached_settings.printerIP);
+    return (cachedSettings.printerIP);
 }
 
 export function SettingsSeniorAge() {
-    return (parseInt(cached_settings.seniorAge, 10));
+    return (parseInt(cachedSettings.seniorAge, 10));
 }
 
 export function SettingsServiceCats() {
-    return (cached_settings.serviceCat);
+    return (cachedSettings.serviceCat);
 }
 
 export function SettingsZipcodes() {
-    return (cached_settings.serviceZip);
+    return (cachedSettings.serviceZip);
 }
 
 export function SettingsSchedule() {
     return {
-        closedDays: cached_settings.closedDays,
-        closedEveryDays: cached_settings.closedEveryDays,
-        closedEveryDaysWeek: cached_settings.closedEveryDaysWeek,
-        openDays: cached_settings.openDays,
+        closedDays: cachedSettings.closedDays,
+        closedEveryDays: cachedSettings.closedEveryDays,
+        closedEveryDaysWeek: cachedSettings.closedEveryDaysWeek,
+        openDays: cachedSettings.openDays,
     };
 }
 
+
+// ServiceTypes
+
+export function dbGetSvcTypes(){
+    console.log('GETTING SVCTYPES')
+	const temp = dbGetData(aws+"/servicetypes").serviceTypes
+		.sort(function(a, b){
+			let nameA= a.serviceName.toLowerCase()
+			let nameB= b.serviceName.toLowerCase()
+			if (nameA < nameB) return -1
+			if (nameA > nameB) return 1
+		return 0; //default return value (no sorting)
+    })
+    cachedSvcTypes = temp
+    return temp
+}
 
 // export function saveRecord(object, table){
 //     const data = JSON.stringify(object)
@@ -115,30 +152,21 @@ console.log('GET HISTORY FROM DB')
             .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
 }
 
-export function dbGetAppSettings(){
-	let temp = dbGetData(aws+"/settings")
-	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
-	for (var i = 0; i < fields.length; i++) {
-		let x = fields[i]
-		if (temp[x] == "*EMPTY*") {
-			temp[x] = []
-		} else {
-			temp[x] = utilStringToArray(temp[x])
-		}
-	}
-	return temp
-}
+// export function dbGetAppSettings(){
+// 	let temp = dbGetData(aws+"/settings")
+// 	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+// 	for (var i = 0; i < fields.length; i++) {
+// 		let x = fields[i]
+// 		if (temp[x] == "*EMPTY*") {
+// 			temp[x] = []
+// 		} else {
+// 			temp[x] = utilStringToArray(temp[x])
+// 		}
+// 	}
+// 	return temp
+// }
 
-export function dbGetSvcTypes(){
-	return dbGetData(aws+"/servicetypes").serviceTypes
-		.sort(function(a, b){
-			let nameA= a.serviceName.toLowerCase()
-			let nameB= b.serviceName.toLowerCase()
-			if (nameA < nameB) return -1
-			if (nameA > nameB) return 1
-		return 0; //default return value (no sorting)
-	})
-}
+
 
 export function dbSaveServiceRecord(service){
 	const URL = aws+"/clients/services"

@@ -1,15 +1,21 @@
 import React,  { Fragment, useState, useEffect  } from 'react';
-import { isEmpty } from '../../System/js/Utils.js';
+import PropTypes from 'prop-types';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Box, Badge, CardContent, Fade, Tooltip, Typography } from '@material-ui/core';
 import NotesDisplay from './NotesDisplay.jsx';
 import NoteForm from './NoteForm.jsx';
 import AddIcon from '@material-ui/icons/Add';
 import { Card, Fab } from '../../System';
 
+ServiceNotes.propTypes = {
+    client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,    
+    session: PropTypes.object.isRequired,
+}
+
 export default function ServiceNotes(props) {
     const session = props.session;
     const client = props.client;
-    const handleClientChange = props.handleClientChange;
+    const updateClient = props.updateClient;
     const [ noteCount, setNoteCount ] = useState(0);
     const [ editNote, setEditNote ] = useState({})
     const [ editMode, setEditMode ] = useState('none')
@@ -71,7 +77,7 @@ export default function ServiceNotes(props) {
                     <CardContent>
                         <NoteForm
                             client = { client } 
-                            handleClientChange = { handleClientChange }
+                            updateClient = { updateClient }
                             noteCount = { noteCount }
                             handleNoteCountChange = { handleNoteCountChange }
                             editNote = { editNote }
@@ -88,18 +94,13 @@ export default function ServiceNotes(props) {
             </Fade>
             }   
             <NotesDisplay 
-                client={ client }
-                handleClientChange = { handleClientChange }
+                client={ client } updateClient = { updateClient }
                 session = { session }
                 handleNoteCountChange = { handleNoteCountChange }
-                editNote = { editNote }
-                handleEditNoteChange = { handleEditNoteChange }
-                editMode={ editMode }
-                handleEditModeChange = { handleEditModeChange }
-                noteText = { noteText }
-                handleTextFieldChange = { handleTextFieldChange }
-                noteImportant = { noteImportant }
-                handleNoteImportantChange = { handleNoteImportantChange }
+                editNote = { editNote } handleEditNoteChange = { handleEditNoteChange }
+                editMode={ editMode } handleEditModeChange = { handleEditModeChange }
+                noteText = { noteText } handleTextFieldChange = { handleTextFieldChange }
+                noteImportant = { noteImportant } handleNoteImportantChange = { handleNoteImportantChange }
             />
         </Fragment>
     )

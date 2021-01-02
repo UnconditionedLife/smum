@@ -4,8 +4,22 @@
 import moment from  'moment';
 import { utilSortDependentsByGrade, utilCalcGradeGrouping, utilSortDependentsByAge,
     utilCalcAgeGrouping, utilPadTrimString } from '../Clients/ClientUtils'
+import { getSvcTypes, SettingsPrinter, SettingsSchedule } from '../Database';
+import { dateFindOpen } from '../GlobalUtils'
+
+const svcTypes = getSvcTypes()
+
+let ePosDev = new window.epson.ePOSDevice();
+let img = document.getElementById('smum');
+let printer = null;
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
+
+export function prnConnect() {
+    // TODO UI ALERT CONNECTED TO PRINTER
+    prnDrawCanvas('smum');
+    ePosDev.connect(SettingsPrinter(), '8008', prnCallback_connect);
+}
 
 export function prnPrintFoodReceipt(at) {
     const { client, isUSDA } = at
@@ -85,12 +99,11 @@ export function prnPrintClothesReceipt(at) {
 	prnEndReceipt();
 }
 
-export function prnPrintReminderReceipt(at) {
-    const { client, settings } = at
+export function prnPrintReminderReceipt(client) {
 	// Determine next visit date
 	let targetDate = moment().add(14, 'days');
 	let earliestDate = moment().add(7, 'days');
-	let nextVisit = dateFindOpen({ targetDate: targetDate, eraliestDate: earliestDate, settings: settings });
+	let nextVisit = dateFindOpen({ targetDate: targetDate, eraliestDate: earliestDate, schedule: SettingsSchedule() });
 	prnStartReceipt();
 	prnServiceHeader(client, 'NEXT VISIT REMINDER');
 	prnFeed(1);
@@ -213,26 +226,19 @@ function prnPickupTimes(fromDateTime, toDateTime) {
 	prnTextLine('**************************************');
 }
 
-function dateFindOpen(at) {
-    const { targetDate, earliestDate, settings } = at
-	let proposed = moment(targetDate);
-	// Start with target date and work backward to earliest
-	while (proposed >= earliestDate) {
-		if (dateIsClosed(settings, proposed)) {
-			proposed.subtract(1, 'days');
-		} else {
-			return proposed;
-		}
-	}
-	// Select the first open date after target
-	proposed = moment(targetDate).add(1, 'days');
-	while (true) {
-		if (dateIsClosed(settings, proposed)) {
-			proposed.add(1, 'days');
-		} else {
-			return proposed;
-		}
-	}
+// PRINTER FUNCTIONS
+
+function prnCallback_connect(resultConnect){
+    var deviceId = 'local_printer';
+    var options = {'crypto' : false, 'buffer' : false};
+    if ((resultConnect == 'OK') || (resultConnect == 'SSL_CONNECT_OK')) {
+        //Retrieves the Printer object
+        ePosDev.createDevice(deviceId, ePosDev.DEVICE_TYPE_PRINTER, options, prnCallback_createDevice);
+    } else {
+        //Displays error messages
+        // TODO ADD UI ALERT
+        console.log("Error in callback_connect");
+ }
 }
 
 function prnGetWindow() {
@@ -241,27 +247,70 @@ function prnGetWindow() {
 	return win;
 }
 
-// TODO should switch to an implementation that follows RFC 5545
-function dateIsClosed(dateRules, date) {
-	let dateObj = dateParse(date.format('YYYY-MM-DD'));
-	if (dateRules.openDays.indexOf(dateObj.formatted) >= 0) {
-		return false;
+function prnCallback_createDevice(deviceObj, errorCode){
+    if (deviceObj === null) {
+       //Displays an error message if the system fails to retrieve the Printer object
+        console.log("error in callback_createDevice 1");
+        return;
+    }
+    printer = deviceObj;
+    //Registers the print complete event
+    printer.onreceive = function(response){
+        if (response.success) {
+            console.log("success in callback_createDevice");
+        } else {
+           console.log("error in callback_createDevice 1");
+        }
+    }
+}
+
+function prnDrawCanvas(name) {
+   let canvas = document.getElementById(name);
+   let img = document.getElementById(name + 'img');
+   // img.setAttribute('crossOrigin', 'Anonymous');
+   canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+}
+
+// Printer testing
+let receiptIndex = 0;
+const receiptTypes = 6;
+
+function clickPrintTestSingle() {
+	prnTestReceipt(receiptIndex);
+	prnFlush();
+	receiptIndex = (receiptIndex + 1) % receiptTypes;
+}
+
+function clickPrintTestBatch() {
+	for (let i=0; i < receiptTypes; i++)
+		prnTestReceipt(i);
+	prnFlush();
+}
+
+function prnTestReceipt(receiptType) {
+	let service;
+	switch(receiptType) {
+		case 0:
+			service = svcTypes.filter(obj => obj.serviceName == 'Clothes')[0];
+			prnPrintClothesReceipt(service);
+			break;
+		case 1:
+			prnPrintFoodReceipt('USDA');
+			break;
+		case 2:
+			prnPrintReminderReceipt();
+			break;
+		case 3:
+			service = svcTypes.filter(obj => obj.serviceName == 'Thanksgiving Turkey')[0];
+			prnPrintVoucherReceipt(service);
+			break;
+		case 4:
+			service = svcTypes.filter(obj => obj.serviceName == 'Christmas Toy')[0];
+			prnPrintVoucherReceipt(service, client.dependents, 'age');
+			break;
+		case 5:
+			service = svcTypes.filter(obj => obj.serviceName == 'First Step')[0];
+			prnPrintVoucherReceipt(service, client.dependents, 'grade');
+			break;
 	}
-	for (let i = 0; i < dateRules.closedEveryDays.length; i++) {
-		if (dateObj.dayOfWeek == dateRules.closedEveryDays[i]) {
-			return true;
-		}
-	}
-	for (let i = 0; i < dateRules.closedEveryDaysWeek.length; i++) {
-		if (dateObj.weekInMonth == dateRules.closedEveryDaysWeek[i][0] &&
-			dateObj.dayOfWeek == dateRules.closedEveryDaysWeek[i][1]) {
-			return true;
-		}
-	}
-	for (let i = 0; i < dateRules.closedDays.length; i++) {
-		if (dateObj.formatted == dateRules.closedDays[i]) {
-			return true;
-		}
-	}
-	return false;
 }
