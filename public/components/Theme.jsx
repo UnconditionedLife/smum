@@ -1,6 +1,8 @@
 import { createMuiTheme } from '@material-ui/core/styles';
 import { green, deepOrange } from '@material-ui/core/colors';
 
+const defaultTheme = createMuiTheme();
+
 const theme = createMuiTheme({
     palette: {
         primary: { main: green[600] },
@@ -33,6 +35,16 @@ theme.overrides = {
             minWidth: theme.spacing(12),
         }
     },
+    MuiToolbar: {
+        ...theme.MuiToolbar,
+        gutters: {
+            ...theme.gutters,
+            [defaultTheme.breakpoints.down('xs')]: {
+                paddingLeft: '0px',
+                paddingRight: '0px',
+            },
+        },
+    },  
     MuiCard: {
         ...theme.MuiCard,
         root: {

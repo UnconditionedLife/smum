@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { AppBar, Dialog, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
+import { AppBar, Dialog, Toolbar, Tooltip, IconButton, useMediaQuery, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
 import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '@material-ui/icons';
 import { Button } from '../System';
 import { Hidden } from '@material-ui/core';
@@ -19,8 +19,8 @@ import { dbGetSettings } from '../System/js/Database';
 const useStyles = makeStyles((theme) => ({
     appName: {
         display: 'none',
-        [theme.breakpoints.up('sm')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
-        [theme.breakpoints.up('md')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
+        // [theme.breakpoints.up('sm')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
+        // [theme.breakpoints.up('md')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
         [theme.breakpoints.up('lg')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
     },
   
@@ -45,32 +45,37 @@ const useStyles = makeStyles((theme) => ({
     '&:hover': {
       backgroundColor: fade(theme.palette.common.white, 0.25),
     },
-    [theme.breakpoints.up('xs')]: {
+    [theme.breakpoints.down('sm')]: {
       marginLeft: theme.spacing(3),
+    },
+    [theme.breakpoints.down('xs')]: {
+        marginLeft: theme.spacing(1),
+        marginRight: theme.spacing(1),
+        minWidth:'170px',
     },
   },
   inputRoot: {
     color: 'inherit',
-    width: '200px',
+    width: '100%',
+    paddingRight: theme.spacing(1),
   },
   inputInput: {
-    padding: theme.spacing(1, 0, 1, 0),
+    padding: theme.spacing(1, 0, 1, 1),
     // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(3)}px)`,
     transition: theme.transitions.create('width'),
     width: '100%',
-    [theme.breakpoints.up('lg')]: {
-        width: '35ch',
-      },
-    [theme.breakpoints.up('md')]: {
-      width: '25ch',
+    [theme.breakpoints.down(425)]: {
+        maxWidth: "15ch",
     },
     [theme.breakpoints.up('sm')]: {
-        width: '20ch',
-      },
-    [theme.breakpoints.up('xs')]: {
-    width: '15ch',
+        paddingLeft: theme.spacing(2),
     },
+    [theme.breakpoints.up('md')]: {
+        paddingLeft: theme.spacing(2),
+    },
+    [theme.breakpoints.up('lg')]: {
+        paddingLeft: theme.spacing(2),
+    }
   },
   sectionDesktop: {
     // display: 'none',
@@ -79,9 +84,15 @@ const useStyles = makeStyles((theme) => ({
     //   justifyContent: 'flex-end',
     // },
   },
-  sectionMobile: {
-    [theme.breakpoints.up('md')]: {
-      display: 'none',
+  buttonContainer: {
+    [theme.breakpoints.down('xs')]: {
+        marginRight: theme.spacing(0.5),
+        marginLeft: theme.spacing(0.5),
+    },
+  },
+  icon: {
+    [theme.breakpoints.down('sm')]: {
+        marginRight: theme.spacing(-1),
     },
   },
 }));
@@ -95,7 +106,6 @@ HeaderBar.propTypes = {
 export default function HeaderBar(props) {
     const classes = useStyles();
     const [userMenuAnchor, setUserMenuAnchor] = useState(null);
-    const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
     const [cogUser, setCogUser] = useState(null);
     const [selectedSection, setSelectedSection] = useState(-1);
     const [searchTerm, setSearchTerm] = useState('');
@@ -169,7 +179,6 @@ export default function HeaderBar(props) {
             console.log(currTime.getTime())
             tempUser.getSession(function (err, cogSession) { 
                 if (err || !cogSession.isValid() || decodedTkn.exp*1000 < currTime.getTime() ) { 
-                    closeMobileMenu()
                     console.log("Logging out")
                     handleLogout(tempUser)
                 } else {
@@ -196,16 +205,8 @@ export default function HeaderBar(props) {
         setUserMenuAnchor(event.currentTarget);
     };
 
-    const handleMobileMenuOpen = (event) => {
-        setMobileMenuAnchor(event.currentTarget);
-    };
-
     function closeUserMenu() {
         setUserMenuAnchor(null);
-    }
-
-    function closeMobileMenu() {
-        setMobileMenuAnchor(null);
     }
 
     function handleLogout(user) {
@@ -249,25 +250,25 @@ export default function HeaderBar(props) {
                 />
             </Box>
             <Box className={classes.sectionDesktop} justifyContent="flex-end">
-            <Button  onClick={() => handleSectionChange(0)} flexShrink={2} minWidth="30px" startIcon={ <People/>  }
+            <Button  className={classes.buttonContainer} onClick={() => handleSectionChange(0)} flexShrink={2} minWidth="30px" startIcon={ <People className={classes.icon}/>  }
                 variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" >
-                <Hidden mdDown> Clients </Hidden>
+                <Hidden smDown> Clients </Hidden>
                     </Button>
-                    <Button ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Face />}
+                    <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Face className={classes.icon}/>}
                     disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" flexShrink={1}>
-                    <Hidden mdDown> Admin </Hidden>
+                    <Hidden smDown> Admin </Hidden>
                     </Button>
-                    <Button ml= '0' onClick={() => handleSectionChange(2)} minWidth="30px" startIcon={<Today />}
+                    <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(2)} minWidth="30px" startIcon={<Today className={classes.icon}/>}
                         variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" flexShrink={1} >
-                        <Hidden mdDown> Today </Hidden>
+                        <Hidden smDown> Today </Hidden>
 
                     </Button>
-                    <Button ml= '0'  minWidth="30px" startIcon={<AccountCircle />} style={{ textTransform: 'none' }}
+                    <Button className={classes.buttonContainer} ml= '0' minWidth="30px" startIcon={<AccountCircle className={classes.icon}/>} style={{ textTransform: 'none' }}
                         aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
                         onClick={ handleUserMenuOpen }
                         color="inherit"
                         variant={ (selectedSection === 3) ? 'outlined' : 'text' } flexShrink={1} >
-                        <Hidden mdDown>  {session ? session.user.userName : ''} </Hidden>
+                        <Hidden smDown>  {session ? session.user.userName : ''} </Hidden>
                     </Button>
                 </Box>
         </Fragment >
@@ -287,48 +288,13 @@ export default function HeaderBar(props) {
         </Menu>
     );
 
-    const mobileMenuId = 'primary-search-account-menu-mobile';
-    const renderMobileMenu = (
-        <Menu anchorEl={mobileMenuAnchor} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        id={mobileMenuId} keepMounted transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        open={Boolean(mobileMenuAnchor)} onClose={() => { closeMobileMenu(); }}>
-            <MenuItem>
-                <Button startIcon={<People />}
-                    onClick={() => { closeMobileMenu(); handleSectionChange(0); }}>
-                    Clients
-                </Button>
-            </MenuItem>
-            <MenuItem >
-                <Button startIcon={<Face />} onClick={() => { closeMobileMenu(); handleSectionChange(1); }}
-                    disabled={!isAdmin}>
-                    Admin
-                </Button>
-            </MenuItem>
-            <MenuItem onClick={() => { closeMobileMenu(); handleSectionChange(2); }}>
-                <Button startIcon={<Today />}>
-                    Today
-                </Button>
-            </MenuItem>
-            <MenuItem onClick={() => { closeMobileMenu(); handleSectionChange(3); }} >
-                <Button startIcon={<AccountCircle />}>
-                    Profile
-                </Button>
-            </MenuItem>
-            <MenuItem onClick={() => { closeMobileMenu(); handleLogout(cogUser); }} >
-                <Button startIcon={<ExitToApp />}>
-                    Logout
-                </Button>
-            </MenuItem>
-        </Menu>
-    );
-
     return (
         <ThemeProvider theme={theme}>
             { login }
             <Box flexGrow={1} >
                 <AppBar position="fixed">
                     <Toolbar>
-                    <Hidden smDown> <Tooltip title={props.version}>
+                    <Hidden xsDown> <Tooltip title={props.version}>
                     <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
                     <SmumLogo width='44px' height='44px'/> 
                     </Box>
@@ -342,8 +308,6 @@ export default function HeaderBar(props) {
                         {session ? appbarControls : null}
                     </Toolbar>
                 </AppBar>
-
-                { renderMobileMenu }
                 { renderMenu }
                 
                 <DbSwitch />
