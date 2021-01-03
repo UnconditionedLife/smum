@@ -39,42 +39,38 @@ export default function HistoryHeader(props) {
 
     window.utilSetLastServedFood()
 
-    if (!isEmpty(client)) {
-        return (
-            <Fragment>
-                {/* <Box className={ classes.container}>
-                { headerData.map((item) => (
-                    <Box key={ item.label } display='flex' flexDirection='column'>
-                        <Box p={ 2.5 } bgcolor='primary.main' justifyContent='center' alignItems='center' textAlign='center'><strong>{ item.label }</strong></Box>
-                        <Box p={ 2.5 } justifyContent='center' alignItems='center' textAlign='center'>{ item.value }</Box>
-                    </Box>
-                ))}
-                </Box> */}
-            <TableContainer > 
-                <Table >
-                <TableHead>
-                    <TableRow>
-                        <TableCell align="center">Profile Created</TableCell>
-                        <TableCell align="center">Profile Updated</TableCell>
-                        <TableCell align="center">First Seen</TableCell>
-                        <TableCell align="center">Last Served</TableCell>
-                        <TableCell align="center">Last ID Check</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    <TableRow>
-                        <TableCell align="center">{ window.moment(client.createdDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
-                        <TableCell align="center">{ window.moment(client.updatedDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
-                        <TableCell align="center">{ window.moment(client.firstSeenDate).format("MMM DD, YYYY") }</TableCell>
-                        <TableCell align="center">{ window.moment(client.lastServedFoodDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
-                        <TableCell align="center">{ window.moment(client.familyIdCheckedDate).format("MMM DD, YYYY") }</TableCell>
-                    </TableRow>
-                </TableBody>
-                </Table>
-            </TableContainer>
-            </Fragment>
-        );
-    } else {
-        return null
-    }
+    return (
+        <Fragment>
+            {/* <Box className={ classes.container}>
+            { headerData.map((item) => (
+                <Box key={ item.label } display='flex' flexDirection='column'>
+                    <Box p={ 2.5 } bgcolor='primary.main' justifyContent='center' alignItems='center' textAlign='center'><strong>{ item.label }</strong></Box>
+                    <Box p={ 2.5 } justifyContent='center' alignItems='center' textAlign='center'>{ item.value }</Box>
+                </Box>
+            ))}
+            </Box> */}
+        <TableContainer > 
+            <Table >
+            <TableHead>
+                <TableRow>
+                    <TableCell align="center">Profile Created</TableCell>
+                    <TableCell align="center">Profile Updated</TableCell>
+                    <TableCell align="center">First Seen</TableCell>
+                    <TableCell align="center">Last Served</TableCell>
+                    <TableCell align="center">Last ID Check</TableCell>
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                <TableRow>
+                    <TableCell align="center">{ window.moment(client.createdDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
+                    <TableCell align="center">{ window.moment(client.updatedDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
+                    <TableCell align="center">{ window.moment(client.firstSeenDate).format("MMM DD, YYYY") }</TableCell>
+                    <TableCell align="center">{ window.moment(client.lastServedFoodDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
+                    <TableCell align="center">{ window.moment(client.familyIdCheckedDate).format("MMM DD, YYYY") }</TableCell>
+                </TableRow>
+            </TableBody>
+            </Table>
+        </TableContainer>
+        </Fragment>
+    );
 }

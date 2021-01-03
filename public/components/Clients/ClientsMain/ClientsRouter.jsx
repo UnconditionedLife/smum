@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
 import { ClientsMain } from '../';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 export default function ClientsRouter(props) {
     const handleSearchTermChange = props.handleSearchTermChange;
@@ -60,7 +59,7 @@ export default function ClientsRouter(props) {
     const checkClient = (client, tabId) => {
         const splitUrl = url.split("/");
         const clientId = splitUrl.length == 4 ? splitUrl[3] : "";
-        if (isEmpty(client) || (client.clientId !== clientId)) {
+        if (client.clientId !== clientId) {
             handleSearchTermChange(clientId);
         }
         if (selectedTab != tabId) {

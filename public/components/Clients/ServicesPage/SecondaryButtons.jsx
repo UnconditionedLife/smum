@@ -10,8 +10,6 @@ SecondaryButtons.propTypes = {
 
 export default function SecondaryButtons(props) {
     const client = props.client
-
-    if (isEmpty(client)) return null
     const buttonData = getButtonData({ client: client, buttons: "secondary" })
     if (isEmpty(buttonData.secondary)) return null
 

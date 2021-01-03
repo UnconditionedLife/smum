@@ -10,7 +10,6 @@ import { dateFindOpen } from '../GlobalUtils'
 const svcTypes = getSvcTypes()
 
 let ePosDev = new window.epson.ePOSDevice();
-let img = document.getElementById('smum');
 let printer = null;
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****

@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { Box, Checkbox, FormControlLabel } from '@material-ui/core';
 import { NotificationImportant } from '@material-ui/icons';
 import { Button, TextField } from '../../System';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
+import { isEmpty, utilNow } from '../../System/js/GlobalUtils.js';
+import moment from 'moment';
 
 NoteForm.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
@@ -11,6 +12,10 @@ NoteForm.propTypes = {
     editMode: PropTypes.string.isRequired,
     handleEditModeChange: PropTypes.func.isRequired,
     editNote: PropTypes.object.isRequired,
+    noteText: PropTypes.string.isRequired,
+    handleTextFieldChange: PropTypes.func.isRequired,
+    noteImportant: PropTypes.bool.isRequired,
+    handleNoteImportantChange: PropTypes.func.isRequired,
 }
 
 export default function NoteForm(props) {
@@ -46,8 +51,8 @@ export default function NoteForm(props) {
         if (noteImportant) important = "true"
         if (isEmpty(editNote)) {
             const noteId = window.cuid()
-            newNote.createdDateTime = window.moment().format(dateTime);
-            newNote.updatedDateTime = window.moment().format(dateTime);
+            newNote.createdDateTime = utilNow() // moment().format(dateTime);
+            newNote.updatedDateTime = utilNow() // moment().format(dateTime);
             newNote.isImportant = important;
             newNote.noteByUserName = "jleal67";
             newNote.noteId = noteId;
@@ -56,7 +61,7 @@ export default function NoteForm(props) {
             tempNotes.unshift(newNote)
         } else {
             newNote.createdDateTime = editNote.createdDateTime;
-            newNote.updatedDateTime = window.moment().format(dateTime);
+            newNote.updatedDateTime = utilNow() // window.moment().format(dateTime);
             newNote.isImportant = important;
             newNote.noteByUserName = "jleal67";
             newNote.noteId = editNote.noteId;
@@ -81,7 +86,7 @@ export default function NoteForm(props) {
             handleNoteImportantChange(false)
             handleEditModeChange('none')
         }
-    };
+    }
 
     return (
         <Fragment>

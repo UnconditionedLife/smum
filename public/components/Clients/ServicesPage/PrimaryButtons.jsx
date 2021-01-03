@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Box, ButtonBase } from '@material-ui/core';
 import { Button, Typography } from '../../System';
 import { getButtonData, addService, getSvcsRendered } from '../../System/js/Clients/Services'
-import { getSvcTypes, isEmpty } from '../../System/js/GlobalUtils.js';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -151,8 +151,7 @@ export default function PrimaryButtons(props) {
     //         return
     //     }
     // }
-    
-    if (isEmpty(props.client)) return null    
+     
     
     // if (isEmpty(buttonData)) return null
     

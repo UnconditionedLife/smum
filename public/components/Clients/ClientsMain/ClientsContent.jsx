@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { FoundPage, ServicesPage, ClientPage, HistoryPage } from '../';
 import { useRouteMatch, Route, Switch } from "react-router-dom";
 import { Container } from '../../System';
+import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 ClientsContent.propTypes = {
     clientsFound: PropTypes.array.isRequired,
@@ -24,19 +25,23 @@ export default function ClientsContent(props) {
                         updateURL={ props.updateURL }
                     />
                 </Route>
-                <Route path={`${match.path}/services/:clientId`}>
-                    <ServicesPage 
-                        client={ props.client } updateClient={ props.updateClient }
-                        session={ props.session } />
-                </Route>
-                <Route path={`${match.path}/client/:clientId`}>
-                    <ClientPage client={props.client} updateClient={ props.updateClient }
-                        session={ props.session } />
-                </Route>
-                <Route path={`${match.path}/history/:clientId`}>
-                    <HistoryPage client={props.client} updateClient={ props.updateClient }
-                        session={ props.session } />
-                </Route>
+                { isEmpty(props.client) === false && 
+                    <Fragment>
+                        <Route path={`${match.path}/services/:clientId`}>
+                            <ServicesPage 
+                                client={ props.client } updateClient={ props.updateClient }
+                                session={ props.session } />
+                        </Route>
+                        <Route path={`${match.path}/client/:clientId`}>
+                            <ClientPage client={props.client} updateClient={ props.updateClient }
+                                session={ props.session } />
+                        </Route>
+                        <Route path={`${match.path}/history/:clientId`}>
+                            <HistoryPage client={props.client} updateClient={ props.updateClient }
+                                session={ props.session } />
+                        </Route>
+                    </Fragment>
+                }
             </Switch>
         </Container>
     );

@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@material-ui/core';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Card } from '../../System';
 import { LastServed, PrimaryButtons, SecondaryButtons, ServiceNotes } from '../';
 
@@ -11,9 +10,6 @@ ServicesPage.propTypes = {
 }
 
 export default function ServicesPage(props) {
-  
-    if (isEmpty(props.client)) return null
-
     return (
         <Box display="flex" justifyContent="space-around" flexWrap="wrap">
             <Box width='100%' maxWidth="800px" mt={ 5 } pt={ 0 }>

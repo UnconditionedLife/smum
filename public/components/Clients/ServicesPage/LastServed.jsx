@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { Typography } from '../../System'
-import { isEmpty } from '../../System/js/GlobalUtils.js'
 import { getFoodInterval } from '../../System/js/Clients/Services'
 import { Box } from '@material-ui/core';
 
@@ -22,28 +21,24 @@ export default function LastServed(props) {
     function handleSetNextService(newValue){
         if (nextService !== newValue) setNextService(newValue)
     }
-
-    if (isEmpty(client)) {
-        return null
-    } else {    
-        if (client.lastServed[0] !== undefined) {
-            let lastServed = window.utilCalcLastServedDays()
-            if (lastServed.lowestDays != 10000) {
-                if (lastServed.lowestDays == 0) {
-                    handleSetLastVisit('LAST SERVED TODAY')
-                } else {
-                    let servedDate = moment().subtract(lastServed.lowestDays, "days");
-                    let displayLastServed = moment(servedDate).fromNow()
-                    handleSetLastVisit('LAST SERVED ' + displayLastServed.toUpperCase())
-                    let nonUSDAServiceInterval = getFoodInterval("NonUSDA")
-                    if (lastServed.lowestDays < nonUSDAServiceInterval){
-                        let nextServiceDays = (nonUSDAServiceInterval - lastServed.lowestDays)
-                        if (nextServiceDays == 1) {
-                            handleSetNextService("Next service is tomorrow!")
-                        } else {
-                            let nextServiceDate = moment().add(nextServiceDays, "days")
-                            handleSetNextService("Next service " + moment(nextServiceDate).format("dddd, MMMM Do") + "!")
-                        }
+ 
+    if (client.lastServed[0] !== undefined) {
+        let lastServed = window.utilCalcLastServedDays()
+        if (lastServed.lowestDays != 10000) {
+            if (lastServed.lowestDays == 0) {
+                handleSetLastVisit('LAST SERVED TODAY')
+            } else {
+                let servedDate = moment().subtract(lastServed.lowestDays, "days");
+                let displayLastServed = moment(servedDate).fromNow()
+                handleSetLastVisit('LAST SERVED ' + displayLastServed.toUpperCase())
+                let nonUSDAServiceInterval = getFoodInterval("NonUSDA")
+                if (lastServed.lowestDays < nonUSDAServiceInterval){
+                    let nextServiceDays = (nonUSDAServiceInterval - lastServed.lowestDays)
+                    if (nextServiceDays == 1) {
+                        handleSetNextService("Next service is tomorrow!")
+                    } else {
+                        let nextServiceDate = moment().add(nextServiceDays, "days")
+                        handleSetNextService("Next service " + moment(nextServiceDate).format("dddd, MMMM Do") + "!")
                     }
                 }
             }

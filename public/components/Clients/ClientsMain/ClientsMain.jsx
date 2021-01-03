@@ -126,6 +126,7 @@ console.log(lastServed.length)
         updateURL(null, 2)
     }
 
+    // TODO DEAL with empty clientsFound &/or client
     return (
         <Box width="100%" p={2} >
             <ClientsHeader
@@ -133,18 +134,15 @@ console.log(lastServed.length)
                 selectedTab={ selectedTab }
                 updateURL={ updateURL }
             />
-            { !isEmpty(client) &&
+            { !isEmpty(clientsFound) &&
                 <ClientsContent
                     updateURL={ updateURL } session={ session } clientsFound={ clientsFound }
                     client={ client } changeClient={ changeClient } updateClient={ updateClient }
                 />
             } 
-            { isEmpty(client) &&
+            { isEmpty(clientsFound) &&
                 <Box display="flex" width="100%" height="100%" justifyContent="center" p='30%' pt='4%'>
                     <SmumLogo width='90%' />
-                    {/* <Box width="100%" height="100%" bgcolor="#ddd" position="relative" top="0" left="0" 
-                        style={{ zIndex: 9, opacity:"0.8" }}>
-                    </Box> */}
                 </Box>
             }
         </Box>

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+
+// NOT USED - WAS USED DURRING MIGRATION TO REACT
 export default function ShowSearchResults(props) {
     
     const clientData = props.clientData
