@@ -23,6 +23,7 @@ html, body {
 
 body {
 	font: 14px/1 'Open Sans', sans-serif;
+	overflow-x: hidden;
 	color: #555;
 	background: #ffffff;
 }
