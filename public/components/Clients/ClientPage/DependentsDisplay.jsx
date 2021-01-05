@@ -8,12 +8,24 @@ import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 DependentsDisplay.propTypes = {
     client: PropTypes.object.isRequired,
+    handleEditMode: PropTypes.func.isRequired, 
 }
 
 export default function DependentsDisplay(props) {
+
+    function handleEditMode(newEditMode) {
+        switch(newEditMode) {
+            case 'edit':
+                setEditMode('edit')
+                setAnchorEl(null)
+                break;
+        }
+    }
+
     const dependentsNoAges = props.client.dependents ? props.client.dependents : []
     const [selectedService, setSelectedService] = useState(null);
-    const [editMode, setEditMode] = useState(null);
+    const [editMode, setEditMode] = useState(null)
+    const [setAnchorEl ] = useState(null);
     const dependents = window.utilCalcDependentsAges(dependentsNoAges)
     console.log(dependents);
 
@@ -60,11 +72,16 @@ export default function DependentsDisplay(props) {
                     </TableHead>
                     <TableBody>
                         {dependents.map((row) => (
+                            // eslint-disable-next-line react/jsx-key
                             <Fragment>
                         <TableRow 
                             key={row.depId} 
-                            onClick= { (event) => handleSelectedClient(event, row.depId)}
-                            selected= { row.clientId == clientId }  >
+                            // onClick= { (event) => handleSelectedService(event, row.depId)}
+                            onClick={ () => props.handleEditMode('edit')}
+                            selected= { row.depId == selectedService } 
+                            // onClick= { (event) => handleSelectedClient(event, row.depId)}
+                            // selected= { row.clientId == clientId } 
+                             >
     
                             <TableCell component="th" scope="row">{row.depId}</TableCell>
                             <TableCell component="th" scope="row" align="center">{row.givenName}</TableCell>
@@ -93,5 +110,4 @@ export default function DependentsDisplay(props) {
     );
 } else {
     return null
-}
-};
+}}
