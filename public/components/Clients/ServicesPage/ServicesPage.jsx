@@ -1,12 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-<<<<<<< HEAD
 import { Box, Typography } from '@material-ui/core';
-=======
-import { Box, Chip, Typography } from '@material-ui/core';
-import { Badge, CardContent, Fade, Tooltip, } from '@material-ui/core';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
->>>>>>> WIP : stash nikhil changes
 import { Card } from '../../System';
 import { LastServed, PrimaryButtons, SecondaryButtons, ServiceNotes } from '../';
 

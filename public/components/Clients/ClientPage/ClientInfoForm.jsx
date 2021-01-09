@@ -1,8 +1,9 @@
 import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { Box, MenuItem } from '@material-ui/core';
+// import PropTypes from 'prop-types';
+import { Box, MenuItem, Typography } from '@material-ui/core';
 import { FormTextField, SaveCancel, FormSelect } from '../../System';
 import { useForm } from "react-hook-form";
+import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../../System/js/Forms.js';
 
 export default function ClientInfoForm(props) {
 
@@ -16,6 +17,7 @@ export default function ClientInfoForm(props) {
         let clientData = Object.assign({}, props.client);
         Object.assign(clientData, values);
         reset(values);
+        values.telephone = formatPhone(values.telephone);
         alert("Changes saved (not really!)");
     }
 
@@ -26,15 +28,16 @@ export default function ClientInfoForm(props) {
             <form>
 
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField name="clientId" label="clientId" control={control} error={ errors.clientId } 
-                    rules={ {required: 'Client ID is required'}} />
-                    <FormTextField name="updatedDateTime" label="updatedDateTime" control={control} error={ errors.updatedDateTime } 
-                    rules={ {required: 'updatedDateTime is required'}} />
-                    <FormTextField name="createdDateTime" label="createdDateTime" control={control} error={ errors.createdDateTime }
-                    rules={ {required: 'createdDateTime is required'}}/>
-                    <FormTextField name="firstSeenDate" label="First Seen" control={control} error={ errors.firstSeenDate }
+                    {/* <FormTextField name="clientId" label="clientId" control={control} error={ errors.clientId } 
+    rules={ {required: 'Client ID is required'}} /> */}
+                    {/* <FormTextField name="updatedDateTime" label="updatedDateTime" control={control} error={ errors.updatedDateTime } 
+                    rules={ {required: 'updatedDateTime is required'}} /> */}
+                    {/* <FormTextField name="createdDateTime" label="createdDateTime" control={control} error={ errors.createdDateTime }
+                    rules={ {required: 'createdDateTime is required'}}/>*/}
+
+                    <FormTextField name="firstSeenDate" label="First Seen" type="datetime-local" control={control} error={ errors.firstSeenDate }
                     rules={ {required: 'First Seen time is required'}} />
-                    <FormTextField name="familyIdCheckedDate" label="ID Checked" control={control} error={ errors.familyIdCheckedDate }
+                    <FormTextField name="familyIdCheckedDate" label="ID Checked" type="datetime-local" control={control} error={ errors.familyIdCheckedDate }
                     rules={ {required: 'ID Checked is required'}} />
                     <FormSelect name="isActive" label="Active Status" control={control} error={ errors.isActive }
                     rules={ {required: 'Active Status is required'}} >
@@ -74,10 +77,19 @@ export default function ClientInfoForm(props) {
                 </Box>
 
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormSelect name="homeless" label="Homeless" control={control} error={ errors.homeless }
+                <Typography>
+                Address
+                </Typography>
+                </Box>
+        
+                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                
+                
+                    <FormSelect pr="50px" name="homeless" label="Homeless" control={control} error={ errors.homeless }
                     rules={ {required: 'Homeless Status is required'}} >
                         <MenuItem value="YES">Yes</MenuItem>
                         <MenuItem value="NO">No</MenuItem>
+
                     </FormSelect>
 
                     <FormTextField name="street" label="Street" control={control} error={ errors.street }
@@ -94,14 +106,19 @@ export default function ClientInfoForm(props) {
                 </Box>
 
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Typography>
+                Contact Info
+                </Typography>
+                </Box>
+
+                <Box display="flex" flexDirection="row" flexWrap="wrap">
                     <FormTextField name="telephone" label="Phone" control={control} error={ errors.telephone }
-                    rules={ {required: 'Telephone is required'}} />
+                    rules={ {validate: value => validPhone(value) || 'Enter a US phone number with area code'} } />
                     <FormTextField name="email" label="Email" control={control} error={ errors.email }
                     rules={ {required: 'Email is required'}} />
                 </Box>
 
-                <Box>
-                    JSON.stringify(props.client);
+                <Box> 
         </Box>
 
     </form>

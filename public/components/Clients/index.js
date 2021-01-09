@@ -4,6 +4,7 @@ import ClientsHeader from '../Clients/ClientsMain/ClientsHeader.jsx';
 import ClientsMain from '../Clients/ClientsMain/ClientsMain.jsx';
 import ClientsRouter from './ClientsMain/ClientsRouter.jsx';
 import DependentsDisplay from '../Clients/ClientPage/DependentsDisplay.jsx';
+import DependentsFormDialog from '../Clients/ClientPage/DependentsFormDialog.jsx'
 import FoundPage from '../Clients/FoundPage/FoundPage.jsx';
 import HeaderDateTime from '../Clients/ClientsMain/HeaderDateTime.jsx';
 import HeaderTitle from '../Clients/ClientsMain/HeaderTitle.jsx';
@@ -22,10 +23,12 @@ import SelectTestForm from '../Clients/ClientPage/SelectTestForm.jsx';
 import ServiceNotes from '../Clients/ServicesPage/ServiceNotes.jsx';
 import ServicesPage from '../Clients/ServicesPage/ServicesPage.jsx';
 import ClientInfoForm from '../Clients/ClientPage/ClientInfoForm.jsx';
+import FamilyTotalsForm from '../Clients/ClientPage/FamilyTotalsForm.jsx';
+import FinancialInfoForm from '../Clients/ClientPage/FinancialInfoForm.jsx';
 
 export  { 
             ClientPage, ClientsContent, ClientsHeader, ClientsMain, ClientInfoForm,ClientsRouter, 
-            DependentsDisplay, FoundPage, HeaderDateTime, HeaderTitle, HistoryDisplay, 
+            DependentsDisplay, DependentsFormDialog, FamilyTotalsForm, FinancialInfoForm, FoundPage, HeaderDateTime, HeaderTitle, HistoryDisplay, 
             HistoryFormDialog, HistoryHeader, HistoryPage, HistoryPopupMenu, LastServed, 
             NoteForm, NotesDisplay, PrimaryButtons, PrintClientInfo, SecondaryButtons, 
             SelectTestForm, ServiceNotes, ServicesPage 

@@ -7,7 +7,6 @@ import { Button } from '../System';
 const useStyles = makeStyles((theme) => ({
     menus: {
         position: 'relative',
-        flexShrink: 3,
         width: '100%',
         [theme.breakpoints.up('lg')]: {
           marginLeft: theme.spacing(3),

@@ -8,6 +8,8 @@ import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Card } from '../../System';
 import { ClientInfo } from '..';
 import { ClientInfoForm } from '../../Clients';
+import {FamilyTotalsForm} from '../../Clients';
+import {FinancialInfoForm} from '../../Clients';
 
 
 ClientPage.propTypes = {
@@ -17,7 +19,7 @@ ClientPage.propTypes = {
 export default function ClientPage(props) {
     const client = props.client;
     const clientFormDiv = useRef(null);
-    const clientFormDiv2 = useRef(null);
+    // const clientFormDiv2 = useRef(null);
     const [expanded, setExpanded] = useState(false);
   
     const handleChange = (panel) => (event, isExpanded) => {
@@ -35,6 +37,8 @@ export default function ClientPage(props) {
     return (
         <Box mt={ 7 } width={ 1 }>
             <PrintClientInfo client={ client } />
+
+            {/*
             <Accordion defaultExpanded={ true } onChange={handleChange('panel1')}>
                 <AccordionSummary expandIcon={ <ExpandMore /> } id="panel1bh-header" >
                     <Typography  variant='button'>Client Info</Typography>
@@ -44,15 +48,15 @@ export default function ClientPage(props) {
                         <div ref={ clientFormDiv }></div>
                     </Box>
                 </AccordionDetails>
-            </Accordion>
+            </Accordion> */}
 
-            <Accordion defaultExpanded="true" onChange={handleChange('panel2')}>
-            <AccordionSummary expandIcon={<ExpandMore />} id="panel1bh-header" >
-                <Typography  variant='button'>Client Info 2</Typography>
+            <Accordion defaultExpanded="true" onChange={handleChange('panel1')}>
+            <AccordionSummary style={{justifyContent: "center"}} expandIcon={<ExpandMore />} id="panel1bh-header" >
+                <Typography  variant='button'>Client Info</Typography>
             </AccordionSummary>
-            <AccordionDetails> 
-                <Card>
-                    <CardContent>
+            <AccordionDetails style={{justifyContent: "center"}}> 
+                <Card style={{justifyContent: "center"}}>
+                    <CardContent style={{justifyContent: "center"}}>
                         <ClientInfoForm client = { client } />{/**/}
                     </CardContent>
                 </Card>
@@ -64,30 +68,38 @@ export default function ClientPage(props) {
                 <AccordionSummary expandIcon={ <ExpandMore /> } id="panel2bh-header">
                     <Typography variant='button' ><b>Dependents</b></Typography>
                 </AccordionSummary>
-                <AccordionDetails>
+                <AccordionDetails  style={{justifyContent: "center"}} >
                     <DependentsDisplay client= { client } />
                 </AccordionDetails>
             </Accordion>
+
             <Accordion expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
                 <AccordionSummary expandIcon={ <ExpandMore /> } id="panel3bh-header">
                     <Typography variant='button' ><b>Family Totals</b></Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <Typography>
+                    {/* <Typography>
                         This will show the family totals section (calculated counts)
-                    </Typography>
+                    </Typography> */}
+                    <Card>
+                        <CardContent>
+                            <FamilyTotalsForm client={client}/>
+                        </CardContent>
+                    </Card>
                 </AccordionDetails>
             </Accordion>
+
             <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
                 <AccordionSummary expandIcon={ <ExpandMore /> } id="panel4bh-header">
                     <Typography variant='button' ><b>Financial Information</b></Typography>
                 </AccordionSummary>
-                <AccordionDetails>
-                    <Typography>
-                        This will show the financial info that currently only displays on edit
-                        <SelectTestForm client={ client }/>
-                    </Typography>
-                </AccordionDetails>
+                <Card>
+                        <CardContent>
+                        {/* This will show the financial info that currently only displays on edit */}
+                        {/*  <SelectTestForm client={ client }/>*/}
+                        <FinancialInfoForm client = { client }/>
+                        </CardContent>
+                </Card>
             </Accordion>
         </Box>
     );
