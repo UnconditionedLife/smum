@@ -26,13 +26,13 @@ export default function FinancialInfoForm(props) {
             <form>
 
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField name="financials.income" type="number" label="Income" control={control} 
+                    <FormTextField name="financials.income" label="Income" control={control} 
                     rules={ {required: 'Income status required'}} />
-                    <FormTextField name="financials.rent" label="Rent" type= "number" control={control} 
+                    <FormTextField name="financials.rent" label="Rent"  control={control} 
                     rules={ {required: 'Rent amount required'}} />
-                    <FormTextField name="financials.foodStamps" label="Food Stamps" type= "number" control={control} 
+                    <FormTextField name="financials.foodStamps" label="Food Stamps" control={control} 
                     rules={ {required: '# of Food Stamps required'}} />
-                    <FormTextField name="financials.govtAssistance" label="Govt. Assist" type= "number" control={control} 
+                    <FormTextField name="financials.govtAssistance" label="Govt. Assist" control={control} 
                     rules={ {required: '# of Seniors required'}} />
                 </Box>
 

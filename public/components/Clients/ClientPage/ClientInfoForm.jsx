@@ -35,9 +35,9 @@ export default function ClientInfoForm(props) {
                     {/* <FormTextField name="createdDateTime" label="createdDateTime" control={control} error={ errors.createdDateTime }
                     rules={ {required: 'createdDateTime is required'}}/>*/}
 
-                    <FormTextField name="firstSeenDate" label="First Seen" type="datetime-local" control={control} error={ errors.firstSeenDate }
+                    <FormTextField name="firstSeenDate" label="First Seen" type="date" control={control} error={ errors.firstSeenDate }
                     rules={ {required: 'First Seen time is required'}} />
-                    <FormTextField name="familyIdCheckedDate" label="ID Checked" type="datetime-local" control={control} error={ errors.familyIdCheckedDate }
+                    <FormTextField name="familyIdCheckedDate" label="ID Checked" type="date" control={control} error={ errors.familyIdCheckedDate }
                     rules={ {required: 'ID Checked is required'}} />
                     <FormSelect name="isActive" label="Active Status" control={control} error={ errors.isActive }
                     rules={ {required: 'Active Status is required'}} >
@@ -53,7 +53,7 @@ export default function ClientInfoForm(props) {
                     <FormTextField name="familyName" label="Family Name" control={control} error={ errors.familyName }
                     rules={ {required: 'Family Name is required'}} />
                     <FormTextField name="dob" label="DOB" control={control} error={ errors.dob }
-                    rules={ {required: 'DOB is required'}} />
+                    type="date" rules={ {required: 'DOB is required'}} />
                 </Box>
 
                 <Box display="flex" flexDirection="row" flexWrap="wrap">

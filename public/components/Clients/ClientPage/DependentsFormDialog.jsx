@@ -71,8 +71,17 @@ export default function DependentsFormDialog(props) {
                     error={ errors.givenName } rules={ {required: 'Given name is required'}}/>
                     <FormTextField width='160px' name="familyName" label="Family Name" control = {control}
                     error={ errors.familyName } rules={ {required: 'Family name is required'}}/>
-                    <FormTextField width='160px' name="relationship" label= "Relationship" control ={control}
-                    error={ errors.relationship } rules={ {required: 'Relationship is required'}}/>
+
+                    <FormSelect width='160px' name="relationship" label= "Relationship" control ={control}
+                    error={ errors.relationship } rules={ {required: 'Relationship is required'}}>
+                        <MenuItem value="Spouse">Spouse</MenuItem>
+                        <MenuItem value="Child">Child</MenuItem>
+                        <MenuItem value="Parent">Parent</MenuItem>
+                        <MenuItem value="Grandparent">Grandparent</MenuItem>
+                        <MenuItem value="Sibling">Sibling</MenuItem>
+                        <MenuItem value="Grandchild">Grandchild</MenuItem>
+                        <MenuItem value="Other">Other</MenuItem>
+                    </FormSelect>
 
                     <FormSelect width='160px' name="gender" label="Gender" error={ errors.gender } 
                         control={ control } rules={ {required: 'Gender is required'}} >
@@ -80,12 +89,30 @@ export default function DependentsFormDialog(props) {
                             <MenuItem value="Female">Female</MenuItem>
                     </FormSelect>
 
-                    <FormTextField width='160px' name="dob" label="DOB" control={control}
+                    <FormTextField width='170px' name="dob" type="date" label="DOB" control={control}
                     error={ errors.dob } rules={ {required: 'DOB is required'}}/>
-                    <FormTextField width='80px' name="age" label="Age" control={control}
+                    <FormTextField width='60px' name="age" label="Age" control={control}
                     error={ errors.age } rules={ {required: 'Age is required'}}/>
-                    <FormTextField width='80px' name="grade" label="Grade" control={control}
-                    error={ errors.grade } rules={ {required: 'grade is required'}}/>
+                    
+
+                    <FormSelect width='80px' name="grade" label="Grade" control={control}
+                    error={ errors.grade } rules={ {required: 'grade is required'}}>
+                        <MenuItem value="None">None</MenuItem>
+                        <MenuItem value="Pre-K">Pre-K</MenuItem>
+                        <MenuItem value="K">K</MenuItem>
+                        <MenuItem value="1st">1st</MenuItem>
+                        <MenuItem value="2nd">2nd</MenuItem>
+                        <MenuItem value="3rd">3rd</MenuItem>
+                        <MenuItem value="4th">4th</MenuItem>
+                        <MenuItem value="5th">5th</MenuItem>
+                        <MenuItem value="6th">6th</MenuItem>
+                        <MenuItem value="7th">7th</MenuItem>
+                        <MenuItem value="8th">8th</MenuItem>
+                        <MenuItem value="9th">9th</MenuItem>
+                        <MenuItem value="10th">10th</MenuItem>
+                        <MenuItem value="11th">11th</MenuItem>
+                        <MenuItem value="12th">12th</MenuItem>
+                    </FormSelect>
                     
                     <FormSelect width='160px' name="isActive" label="Status" error={ errors.isActive } 
                         control={ control } rules={ {required: 'Status is required'}} >

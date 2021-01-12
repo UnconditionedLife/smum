@@ -43,7 +43,7 @@ export default function FamilyTotalsForm(props) {
 
             </form>
 
-            <SaveCancel disabled={!formState.isDirty} onClick={(isSave) => { isSave ? submitForm() : reset() }} />
+            
         </Fragment>
     );
 }
