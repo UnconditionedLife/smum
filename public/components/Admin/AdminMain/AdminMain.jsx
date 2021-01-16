@@ -33,8 +33,7 @@ export default function AdminMain(props) {
             textColor="primary"
             selectionFollowsFocus
             >
-            <Tab icon={<ListAlt/>} label="Services" />
-            <Tab icon={<RoomService/>} label="Service Type" />
+            <Tab icon={<RoomService/>} label="Service Types" />
             <Tab icon={<Assessment/>} label="Reports" />
             <Tab icon={<AccountBox/>} label="Users" />
             <Tab icon={<AccountCircle/>} label="User" />
@@ -42,13 +41,12 @@ export default function AdminMain(props) {
             <Tab icon={<Input/>} label="Import" />
             </Tabs>
         </AppBar>
-        {selectedTab === 0 && <AdminServicesPage session={ props.session } />}
-        {selectedTab === 1 && <ServiceTypePage session={ props.session } />}
-        {selectedTab === 2 && <ReportsPage session={ props.session } />}
-        {selectedTab === 3 && <AllUsersPage session={ props.session } onSelect={ onSelectUser }/>}
-        {selectedTab === 4 && <UserPage session={ props.session } userName={ selectedUser }/>}
-        {selectedTab === 5 && <SettingsPage session={ props.session } />}
-        {selectedTab === 6 && <ImportPage session={ props.session } />}
+        {selectedTab === 0 && <ServiceTypePage session={ props.session } />}
+        {selectedTab === 1 && <ReportsPage session={ props.session } />}
+        {selectedTab === 2 && <AllUsersPage session={ props.session } onSelect={ onSelectUser }/>}
+        {selectedTab === 3 && <UserPage session={ props.session } userName={ selectedUser }/>}
+        {selectedTab === 4 && <SettingsPage session={ props.session } />}
+        {selectedTab === 5 && <ImportPage session={ props.session } />}
         </Box>
     );
 }
