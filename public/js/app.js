@@ -2346,29 +2346,30 @@ function dbGetDaysServices(dayDate){
 // TODO remove bymonth from API
 // TODO update service record in API to not have month property
 
-function dbGetNewClientID(){
-	lastIdJson = dbGetData(aws+"/clients/lastid")
-	newId = lastIdJson.lastId
-	let notEmpty = true
-	while (notEmpty) {
-		result = dbGetData(aws+"/clients/exists/" + newId)
-		if (result.count == 0) {
-			notEmpty = false
-		} else {
-			newId++
-		}
-	}
-	request = {}
-	newId = newId.toString()
-	request['lastId']=newId
-	result = dbPostData(aws+"/clients/lastid",JSON.stringify(request))
-	console.log(result)
-	if (result != "success") {
-		utilBeep()
-		console.log("Last client ID not Saved")
-	}
-	return newId
-};
+// MOVED TO REACT JS --> js/database.js
+// function dbGetNewClientID(){
+// 	lastIdJson = dbGetData(aws+"/clients/lastid")
+// 	newId = lastIdJson.lastId
+// 	let notEmpty = true
+// 	while (notEmpty) {
+// 		result = dbGetData(aws+"/clients/exists/" + newId)
+// 		if (result.count == 0) {
+// 			notEmpty = false
+// 		} else {
+// 			newId++
+// 		}
+// 	}
+// 	request = {}
+// 	newId = newId.toString()
+// 	request['lastId']=newId
+// 	result = dbPostData(aws+"/clients/lastid",JSON.stringify(request))
+// 	console.log(result)
+// 	if (result != "success") {
+// 		utilBeep()
+// 		console.log("Last client ID not Saved")
+// 	}
+// 	return newId
+// };
 
 // MOVED TO REACT JS --> Database.js
 // function dbGetService(serviceId){
@@ -2575,38 +2576,39 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 	return serviceRecord
 };
 
-function dbSaveCurrentClient(data){
-    // TODO REMOVE svcHistory & svcsRendered from client before saving
-	uiSaveButton('client', 'Saving...')
-	$("body").css("cursor", "progress")
-	data = utilPadEmptyFields(data)
-	const URL = aws+"/clients/"
-	const result = dbPostData(URL,JSON.stringify(data))
-	if (result == "success") {
-	 if (client.clientId != undefined) {
-	 	utilCalcClientAge("db")
-			utilCalcClientFamilyCounts()
-			uiToggleClientViewEdit("view")
-		} else {
-			clientId = $('#clientId.clientForm').val()
-			$('#searchField').val(clientId)
-			clickSearchClients(clientId)
-		}
-		if (clientData != null) {
-			console.log("REDO CLIENT DATA")
-			uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
+// MOVED TO REACT JS --> js/database.js
+// function dbSaveCurrentClient(data){
+//     // TODO REMOVE svcHistory & svcsRendered from client before saving
+// 	uiSaveButton('client', 'Saving...')
+// 	$("body").css("cursor", "progress")
+// 	data = utilPadEmptyFields(data)
+// 	const URL = aws+"/clients/"
+// 	const result = dbPostData(URL,JSON.stringify(data))
+// 	if (result == "success") {
+// 	 if (client.clientId != undefined) {
+// 	 	utilCalcClientAge("db")
+// 			utilCalcClientFamilyCounts()
+// 			uiToggleClientViewEdit("view")
+// 		} else {
+// 			clientId = $('#clientId.clientForm').val()
+// 			$('#searchField').val(clientId)
+// 			clickSearchClients(clientId)
+// 		}
+// 		if (clientData != null) {
+// 			console.log("REDO CLIENT DATA")
+// 			uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
 
-			console.log(clientData)
+// 			console.log(clientData)
 
-			if (clientData.length == 1) clientTableRow = 1
-			uiOutlineTableRow('clientTable', clientTableRow)
-			// uiSetClientsHeader("numberAndName") MOVED TO REACT
-		}
-	}
-	$("body").css("cursor", "default");
-	uiSaveButton('client', 'SAVED!!')
-	return result
-};
+// 			if (clientData.length == 1) clientTableRow = 1
+// 			uiOutlineTableRow('clientTable', clientTableRow)
+// 			// uiSetClientsHeader("numberAndName") MOVED TO REACT
+// 		}
+// 	}
+// 	$("body").css("cursor", "default");
+// 	uiSaveButton('client', 'SAVED!!')
+// 	return result
+// };
 
 // MOVED TO REACT JS
 // function dbSaveServiceRecord(service){
@@ -3015,38 +3017,39 @@ function clickResetDependentsTable() {
 	clickToggleDependentsViewEdit('view') // set display to view
 };
 
-function clickSaveClientForm(context){
-	uiClearAllErrorBubbles()
-	const hasErrors = utilValidateForm("clientForm", context)
-	if (hasErrors) return
-	$("#updatedDateTime.clientForm").val(utilNow())
-	let data = {}
-	if (client.clientId == undefined) {
-		let clientId = dbGetNewClientID()
-		$("#clientId.clientForm").val(clientId)
-		data = utilFormToJSON('.clientForm')
-		data.dependents = []
-		data.lastServed = []
-		data.notes = []
-	} else {
-		data = utilFormToJSON('.clientForm')
-		if (client.dependents == undefined) client.dependents = []
-		if (client.lastServed == undefined) client.lastServed = []
-		data.dependents = client.dependents
-		data.lastServed = client.lastServed
-		for (var i = 0; i < data.dependents.length; i++) {
-			delete data.dependents[i].age
-		}
-		if (data.lastServed == undefined || data.lastServed == "") {
-			data.lastServed = []
-		}
-		if (data.notes == undefined || data.notes == "") {
-			data.notes = []
-		}
-	}
-	let result = dbSaveCurrentClient(data)
-	if (result == 'success') editFlag.client = false
-};
+// MOVED TO REACT JS --> js/clients.js as saveClientForms
+// function clickSaveClientForm(context){
+// 	uiClearAllErrorBubbles()
+// 	const hasErrors = utilValidateForm("clientForm", context)
+// 	if (hasErrors) return
+// 	$("#updatedDateTime.clientForm").val(utilNow())
+// 	let data = {}
+// 	if (client.clientId == undefined) {
+// 		let clientId = dbGetNewClientID()
+// 		$("#clientId.clientForm").val(clientId)
+// 		data = utilFormToJSON('.clientForm')
+// 		data.dependents = []
+// 		data.lastServed = []
+// 		data.notes = []
+// 	} else {
+// 		data = utilFormToJSON('.clientForm')
+// 		if (client.dependents == undefined) client.dependents = []
+// 		if (client.lastServed == undefined) client.lastServed = []
+// 		data.dependents = client.dependents
+// 		data.lastServed = client.lastServed
+// 		for (var i = 0; i < data.dependents.length; i++) {
+// 			delete data.dependents[i].age
+// 		}
+// 		if (data.lastServed == undefined || data.lastServed == "") {
+// 			data.lastServed = []
+// 		}
+// 		if (data.notes == undefined || data.notes == "") {
+// 			data.notes = []
+// 		}
+// 	}
+// 	let result = dbSaveCurrentClient(data)
+// 	if (result == 'success') editFlag.client = false
+// };
 
 function clickSaveDependentsTable(){
 	// TODO validate dependents and field level
@@ -4009,20 +4012,21 @@ function utilPadEmptyFields(data){
 	return data
 };
 
-function utilRemoveEmptyPlaceholders(){
-	// TODO make this operate on other forms / data
-	$.each(client, function(key,value){
-		if (key == "dependents") {
-			for (var i = 0; i < value.length; i++) {
-				if (value[i].grade == "*EMPTY*") {client[key][i].grade = ""}
-				if (value[i].gradeDateTime == "*EMPTY*") {client[key][i].gradeDateTime = ""}
-			}
-		}
-		if (value == "*EMPTY*" || (key == "zipSuffix" && value == 0)) {
-			client[key] = ""
-		}
-	})
-};
+// MOVED TO REACT --> database.js
+// function utilRemoveEmptyPlaceholders(){
+// 	// TODO make this operate on other forms / data
+// 	$.each(client, function(key,value){
+// 		if (key == "dependents") {
+// 			for (var i = 0; i < value.length; i++) {
+// 				if (value[i].grade == "*EMPTY*") {client[key][i].grade = ""}
+// 				if (value[i].gradeDateTime == "*EMPTY*") {client[key][i].gradeDateTime = ""}
+// 			}
+// 		}
+// 		if (value == "*EMPTY*" || (key == "zipSuffix" && value == 0)) {
+// 			client[key] = ""
+// 		}
+// 	})
+// };
 
 // MOVED TO REACT -- Breaking changes
 // function utilRemoveService(serviceId){
@@ -4404,17 +4408,17 @@ function utilCalcClientAge(source){
 	}
 };
 
-function utilCalcDependentAge(index){
-	let dob = document.getElementById("dob["+index+"]")
-	let age = document.getElementById("age["+index+"]")
-	if (dob != null && age != null){
-		let newAge = moment().diff(dob.value, "years")
-		age.value = newAge
-		if (client.dependents[index] != undefined) {
-			client.dependents.age = newAge
-		}
-	}
-};
+// function utilCalcDependentAge(index){
+// 	let dob = document.getElementById("dob["+index+"]")
+// 	let age = document.getElementById("age["+index+"]")
+// 	if (dob != null && age != null){
+// 		let newAge = moment().diff(dob.value, "years")
+// 		age.value = newAge
+// 		if (client.dependents[index] != undefined) {
+// 			client.dependents.age = newAge
+// 		}
+// 	}
+// };
 
 function utilCalcDependentsAges(dependents){
 	$.each(dependents, function(i, dependent){

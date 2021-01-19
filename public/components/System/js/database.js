@@ -166,13 +166,87 @@ console.log('GET HISTORY FROM DB')
 // 	return temp
 // }
 
+export function dbSaveClient(clientData){
+    
+	
+    clientData = utilPadEmptyFields(clientData)
+    cl
+	const URL = aws + "/clients/"
+	const result = dbPostData(URL,JSON.stringify(clientData))
+	if (result == "success") {
+	    if (client.clientId !== undefined) {
+	 	    utilCalcClientAge("db")
+			utilCalcClientFamilyCounts()
+			uiToggleClientViewEdit("view")
+		} else {
+			clientId = $('#clientId.clientForm').val()
+			$('#searchField').val(clientId)
+			clickSearchClients(clientId)
+		}
+		if (clientData != null) {
+			console.log("REDO CLIENT DATA")
+			uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
 
+			console.log(clientData)
+
+			if (clientData.length == 1) clientTableRow = 1
+			uiOutlineTableRow('clientTable', clientTableRow)
+			// uiSetClientsHeader("numberAndName") MOVED TO REACT
+		}
+	}
+	$("body").css("cursor", "default");
+	uiSaveButton('client', 'SAVED!!')
+	return result
+}
+
+export function dbGetNewClientID(){
+    const lastIdJson = dbGetData(aws + "/clients/lastid")
+    let newId = lastIdJson.lastId
+    let notEmpty = true
+    while (notEmpty) {
+        const result = dbGetData(aws + "/clients/exists/" + newId)
+        if (result.count == 0) {
+            notEmpty = false
+        } else {
+            newId++
+        }
+    }
+    let request = {}
+    newId = newId.toString()
+    request['lastId'] = newId
+    const result = dbPostData(aws+"/clients/lastid",JSON.stringify(request))
+    console.log(result)
+    if (result !== "success") {
+        console.log("Last client ID not Saved")
+        return 'failed'
+    }
+    return newId
+}
 
 export function dbSaveServiceRecord(service){
-	const URL = aws+"/clients/services"
+	const URL = aws + "/clients/services"
 	return dbPostData(URL, JSON.stringify(service))
 }
 
 export function dbGetService(serviceId){
 	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
+}
+
+export function utilRemoveEmptyPlaceholders(obj){
+    // TODO NEED TO ADDRESS THIS SITUATION(key == "zipSuffix" && value == 0)) {
+    for (const [key, value] of Object.entries(obj)) {
+        if (value === "*EMPTY*") {
+            obj[key] = ""
+        } else if (Array.isArray(value)) {
+			for (var i = 0; i < value.length; i++) {
+                const array = value[i]
+                for (const [arrayKey, arrayVal] of Object.entries(array)) {
+                    if (arrayVal === "*EMPTY*") {
+                        obj[key][i][arrayKey] = ""
+                    }
+                }
+			}
+        }
+    }
+    return obj
 }

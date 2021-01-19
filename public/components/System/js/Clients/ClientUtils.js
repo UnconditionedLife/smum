@@ -23,12 +23,13 @@ export function arrayAddIds(array, id) {
 }
 
 export function calcClientDependentsAges(client){
-	// age TODO Move this to other Function
-	if (client.dependents == undefined) client.dependents = []
-	for (var i = 0; i < client.dependents.length; i++) {
-		utilCalcDependentAge(i)
+    // age TODO Move this to other Function
+    let deps = client.dependents
+	if (deps === undefined) deps = []
+	for (var i = 0; i < deps.length; i++) {
+		deps[i] = utilCalcAge(deps[i])
 	}
-	return client.dependents
+	return deps
 }
 
 export function calcClientFamilyCounts(client){
@@ -191,8 +192,18 @@ export function utilSortDependentsByGrade(dependents){
     return dependents.sort((a,b) => utilGradeToNumber(a.grade) - utilGradeToNumber(b.grade))
 }
 
+export function utilCalcAge(person){
+	const dob = person.dob
+	if (dob !== null){
+        person.age = moment().diff(dob, "years")
+        return person
+    } else {
+        person.age = ""
+    }
+}
 
 
 //******************************************************************
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 //******************************************************************
+

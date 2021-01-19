@@ -4,6 +4,7 @@ import FormControl from '../Core/FormControl.jsx';
 import TextField from '../Core/TextField.jsx';
 import Typography from '../Core/Typography.jsx';
 import { Controller } from 'react-hook-form';
+import { getFieldSize } from '../../System/js/System'
 
 FormTextField.propTypes = {
     name: PropTypes.string.isRequired,      // Name of form field
@@ -12,22 +13,22 @@ FormTextField.propTypes = {
     control: PropTypes.object.isRequired,   // Control property from parent form
     rules: PropTypes.object,                // Validation rules
     error: PropTypes.object,                // Error object for this field (i.e. errors.<name>)
+    fieldsize: PropTypes.string,            // defines the width of the text field
 }
 // Additional props are passed through to the Controller component. 
 // See the API documentation for Controller for full details.
 
-function FormTextField(props) {
+export default function FormTextField(props) {
     let textProps = { ...props };
     textProps.error = Boolean(props.error);
-
+    const width = getFieldSize(props.fieldsize) // xs, sm, md, lg, xl
+    
     return (
         <FormControl variant='outlined'>
-            <Controller as={ TextField } m={ 0 } { ...textProps } />
+            <Controller as={ TextField } m={ 0 } width={ width } { ...textProps } />
             <Typography ml={ 0.5 } variant='body2' color='error'>
                 { props.error ? props.error.message : '' }
             </Typography>
         </FormControl>
     )
 }
-
-export default FormTextField;

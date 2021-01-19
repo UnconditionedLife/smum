@@ -258,16 +258,19 @@ export default function HeaderBar(props) {
                 />
             </Box>
             <Box className={classes.sectionDesktop} justifyContent="flex-end">
-            <Button  className={classes.buttonContainer} onClick={() => handleSectionChange(0)} flexShrink={2} minWidth="30px" startIcon={ <People className={classes.icon}/>  }
+            <Button  className={classes.buttonContainer} onClick={() => handleSectionChange(0)} minWidth="30px" startIcon={ <People className={classes.icon}/>  }
                 variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" >
+                    {/* flexShrink={2} */}
                 <Hidden smDown> Clients </Hidden>
                     </Button>
                     <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Face className={classes.icon}/>}
-                    disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" flexShrink={1}>
+                    disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" >
+                        {/* flexShrink={1} */}
                     <Hidden smDown> Admin </Hidden>
                     </Button>
                     <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(2)} minWidth="30px" startIcon={<Today className={classes.icon}/>}
-                        variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" flexShrink={1} >
+                        variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" >
+                            {/* flexShrink={1} */}
                         <Hidden smDown> Today </Hidden>
 
                     </Button>
@@ -275,7 +278,8 @@ export default function HeaderBar(props) {
                         aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
                         onClick={ handleUserMenuOpen }
                         color="inherit"
-                        variant={ (selectedSection === 3) ? 'outlined' : 'text' } flexShrink={1} >
+                        variant={ (selectedSection === 3) ? 'outlined' : 'text' }  >
+                            {/* flexShrink={1} */}
                         <Hidden smDown>  {session ? session.user.userName : ''} </Hidden>
                     </Button>
                 </Box>

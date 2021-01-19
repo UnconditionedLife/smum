@@ -15,25 +15,6 @@ import Button from '../Core/Button.jsx';
 //      message - Object with (text, severity) 
 //          text: message string & severity: 'error', 'warning', 'info', 'success'
 
-function SaveCancel(props) {
-    const saveDisabled = props.saveDisabled || props.disabled;
-    const cancelDisabled = props.cancelDisabled || props.disabled;
-
-    return (
-        <Box display="flex" flexDirection="column" flexWrap="wrap" alignContent="center" justifyContent="center">
-            <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
-                <Button variant="contained" color="primary"
-                    disabled={ saveDisabled } onClick={ () => props.onClick(true) }>{ props.saveLabel }</Button>
-                <Button variant="outlined" color="secondary"
-                    disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ props.cancelLabel }</Button>
-            </Box>
-            <Box width='60%' height='38px' m={ 1 } alignContent="center" justifyContent="center">
-                { props.message ? <Alert severity={ props.message.severity } >{ props.message.text }</Alert> : '' }
-            </Box>
-        </Box>
-    )
-}
-
 SaveCancel.propTypes = {
     onClick: PropTypes.func.isRequired,
     saveLabel: PropTypes.string,
@@ -52,4 +33,22 @@ SaveCancel.defaultProps = {
     disabled: false,
 }
 
-export default SaveCancel;
+export default function SaveCancel(props) {
+    const saveDisabled = props.saveDisabled || props.disabled;
+    const cancelDisabled = props.cancelDisabled || props.disabled;
+
+    return (
+        <Box display="flex" mt={ 2 } flexDirection="column" flexWrap="wrap" alignContent="center" justifyContent="center">
+            <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
+                <Button variant="contained" color="primary"
+                    disabled={ saveDisabled } onClick={ () => props.onClick(true) }>{ props.saveLabel }</Button>
+                <Button variant="outlined" color="secondary"
+                    disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ props.cancelLabel }</Button>
+            </Box>
+            <Box width='40%' height='38px' m={ 1 } alignContent="center" justifyContent="center">
+                { props.message ? <Alert severity={ props.message.severity } >{ props.message.text }</Alert> : '' }
+            </Box>
+        </Box>
+    )
+}
+

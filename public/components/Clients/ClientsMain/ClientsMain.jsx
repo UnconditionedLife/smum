@@ -4,9 +4,9 @@ import { Box } from '@material-ui/core';
 import { ClientsHeader, ClientsContent } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { searchClients } from '../../System/js/Clients/Clients';
-import { arrayAddIds, calcClientFamilyCounts, calcClientDependentsAges } from '../../System/js/Clients/ClientUtils';
+import { arrayAddIds, calcClientFamilyCounts, calcClientDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';
-import { dbGetClientActiveServiceHistory } from '../../System/js/Database';
+import { dbGetClientActiveServiceHistory, utilRemoveEmptyPlaceholders } from '../../System/js/Database';
 import { getSvcsRendered } from '../../System/js/Clients/Services'
 import SmumLogo from "../../Assets/SmumLogo";
 
@@ -92,6 +92,8 @@ console.log(lastServed.length)
         if (newClient !== client) {
             if (!isEmpty(newClient)){
                 // TODO client should be sorted and have ids for nested arrays saved to the database
+                newClient = utilRemoveEmptyPlaceholders(newClient)
+                newClient = utilCalcAge(newClient)
                 newClient.dependents.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
                 newClient.dependents = arrayAddIds(newClient.dependents, 'depId')
                 newClient.dependents = calcClientDependentsAges(newClient)

@@ -8,6 +8,9 @@ let poolData = {
 };
 let userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 
+// Cached Variables
+let cachedSession = null
+
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
 export function cogSetupUser(username) {

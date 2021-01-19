@@ -4,7 +4,6 @@ import { Box, Checkbox, FormControlLabel } from '@material-ui/core';
 import { NotificationImportant } from '@material-ui/icons';
 import { Button, TextField } from '../../System';
 import { isEmpty, utilNow } from '../../System/js/GlobalUtils.js';
-import moment from 'moment';
 
 NoteForm.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,

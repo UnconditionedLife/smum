@@ -82,21 +82,21 @@ export default function UserForm(props) {
                         control={ control } />
                 </Box>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField width="300px" name="street" label="Street" error={ errors.street }
+                    <FormTextField fieldsize="xl" name="street" label="Street" error={ errors.street }
                         control={ control } rules={ {required: 'Street address is required'}} />
                     <FormTextField name="city" label="City" error={ errors.city }
                         control={ control } rules={ {required: 'City is required'}} />
-                    <FormTextField width="60px" name="state" label="State" error={ errors.state }
+                    <FormTextField fieldsize="xs" name="state" label="State" error={ errors.state }
                         control={ control } rules={ {required: 'State is required',
                         validate: value => validState(value.toUpperCase()) || 'Invalid state'} } />
-                    <FormTextField width="150px" name="zipcode" label="Zip Code" error={ errors.zipcode }
+                    <FormTextField fieldsize="md" name="zipcode" label="Zip Code" error={ errors.zipcode }
                         control={ control } rules={ {required: 'Zip code is required', 
                         pattern: {value: /^\d{5}$|^\d{5}-\d{4}$/, message: 'Invalid zip code'}} } />
                 </Box>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
                     <FormTextField name="telephone" label="Telephone" error={ errors.telephone }
                         control={ control } rules={ {validate: value => validPhone(value) || 'Enter a US phone number with area code'} } />
-                    <FormTextField name="email" label="Email" error={ errors.email }
+                    <FormTextField fieldsize="xl" name="email" label="Email" error={ errors.email }
                         control={ control } />
                 </Box>
             </form>

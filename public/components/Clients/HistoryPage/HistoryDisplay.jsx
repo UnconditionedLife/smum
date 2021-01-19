@@ -145,9 +145,9 @@ export default function HistoryDisplay(props) {
                 </TableRow>
             </TableHead>
             <TableBody>
-                { svcHistory.map((row) => (
-                    <Fragment key={row.serviceId} >
-                        {/* { ((editMode === 'none') || (editMode === 'edit' && row.serviceId !== selectedService )) &&  */}
+                <Fragment>
+                    { svcHistory.map((row) => (
+                        <Fragment key={row.serviceId} >
                             <TableRow 
                                 key={row.serviceId}
                                 onClick= { (event) => handleSelectedService(event, row.serviceId)}
@@ -165,14 +165,13 @@ export default function HistoryDisplay(props) {
                                 <TableCell align="center">{ row.totalSeniorsServed }</TableCell>
                                 <TableCell align="center">{ row.servicedByUserName }</TableCell>
                             </TableRow>
-                        {/* } */}
-                        
-                        { editMode === 'edit' &&
-                            <HistoryFormDialog session={ props.session } client = { props.client } editMode={ editMode } 
-                            handleEditMode={ handleEditMode } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
-                        }
-                    </Fragment>
-                ))}
+                        </Fragment>
+                    ))}
+                    { editMode === 'edit' &&
+                        <HistoryFormDialog session={ props.session } client = { props.client } editMode={ editMode } 
+                        handleEditMode={ handleEditMode } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
+                    }
+                </Fragment>
             </TableBody>
             </Table>
         </TableContainer>

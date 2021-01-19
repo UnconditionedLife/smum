@@ -58,7 +58,7 @@ class ClientInfo extends React.PureComponent {
                     </thead>
                     <tbody>
                         {(client?.dependents ?? []).map((row) => (row.isActive == 'Active' ? (
-                            <tr>
+                            <tr key={ row.givenName + row.age } >
                                 <td>{row.givenName} {row.familyName}</td>
                                 <td>{row.relationship}</td>
                                 <td>{row.gender}</td>
@@ -138,7 +138,7 @@ function PrintClientInfo(props) {
     return (
         <>
             <ReactToPrint
-                trigger={() => <Tooltip title='Print Client Form'><Fab align='right'><Print /></Fab></Tooltip> }
+                trigger={() => <Tooltip title='Print Client Form'><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
                 content={() => ref.current}
                 copyStyles={ false }
             />

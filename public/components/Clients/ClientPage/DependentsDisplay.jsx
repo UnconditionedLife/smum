@@ -80,9 +80,9 @@ export default function DependentsDisplay(props) {
                     </TableHead>
                     <TableBody>
                         {dependents.map((row) => (
-                            <Fragment>
+                            <Fragment key={ row.depId } >
                         <TableRow 
-                            key={row.depId} 
+                            key={ row.depId } 
                             // onClick={ () => handleEditMode('edit')}
                             // selected= { row.depId == selectedService } 
                             onClick= { (event) => handleSelectedDependent(event, row.depId)}
