@@ -30,9 +30,6 @@ export default function ClientInfoForm(props) {
     });
 
     function doSave(values) {
-        
-        console.log("IN DO SAVE") 
-
         // Convert form values to canonical format
         values.state = values.state.toUpperCase();
         values.telephone = formatPhone(values.telephone);
