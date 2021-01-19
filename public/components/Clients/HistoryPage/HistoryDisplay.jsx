@@ -5,7 +5,7 @@ import { Popper, Table, TableBody, TableCell, TableContainer,
 import { Card } from '../../System';
 import { HistoryFormDialog, HistoryPopupMenu } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils';
-import { updateLastServed } from '../../System/js/Clients/History';
+import { updateLastServed, utilRemoveService } from '../../System/js/Clients/History';
 import { dbGetClientActiveServiceHistory } from '../../System/js/Database';
 
 HistoryDisplay.propTypes = {
@@ -14,11 +14,9 @@ HistoryDisplay.propTypes = {
 }
 
 export default function HistoryDisplay(props) {
-    //const [ clientHistory, setClientHistory ] = useState(getServiceHistory());
     const client = props.client
     const updateClient = props.updateClient
     const svcHistory = props.client.svcHistory
-    // const updateSvcHistory = props.updateSvcHistory
     
     const [ selectedService, setSelectedService ] = useState(null);
     const [ editMode, setEditMode ] = useState('none');
@@ -35,17 +33,22 @@ export default function HistoryDisplay(props) {
         const record = svcHistory.filter(function( obj ) {
             return obj.serviceId === newServiceId
         })[0]
-        setEditMode('none')
+        // setEditMode('none')
         setEditRecord(record)
         setAnchorEl(anchorEl ? null : event.currentTarget);
+    }
+
+    function clearSelection(){
+        setSelectedService(null)
+        setAnchorEl(null)
+        setEditRecord(null)
     }
 
     function handleEditMode(newEditMode) {
         switch(newEditMode) {
             case 'cancel':
-                setSelectedService(null)
                 setEditMode('none')
-                setAnchorEl(null)
+                clearSelection()
                 break;
             case 'edit':
                 setEditMode('edit')
@@ -56,19 +59,18 @@ export default function HistoryDisplay(props) {
                 break;
             case 'confirm':
                 removeService()
-                setSelectedService(null)
                 setEditMode('message')
                 break;
             case 'message':
                 if (delay === false) {
                     setEditMode('none')
-                    setAnchorEl(null)
+                    clearSelection()
                 }
         }
     }
 
     function removeService(){
-        const service = window.utilRemoveService(selectedService)
+        const service = utilRemoveService(selectedService)
         if (service !== ""){
             handleMessage({ text: "Service successfully removed!", severity: "success" })
             setDelayTimer(true)
@@ -80,7 +82,8 @@ export default function HistoryDisplay(props) {
 
     function handleEditRecord(newRecord){
         setEditRecord(newRecord)
-        handleEditMode('none')
+        clearSelection()
+        
     }
 
     function handleMessage(newMessage){
@@ -88,7 +91,6 @@ export default function HistoryDisplay(props) {
     }
 
     function updateSvcHistory(){
-        console.log('get service History')
         const history = dbGetClientActiveServiceHistory(props.client.clientId)
         let tempClient = client
         tempClient.svcHistory = history

@@ -2,9 +2,11 @@
 //       ****** CLIENTS UTILITIES JAVASCRIPT FUNCTIONS ******
 //******************************************************************
 import moment from  'moment';
-import { dbGetAppSettings } from '../Database.js';
+import { SettingsSeniorAge } from '../Database.js';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
+
+const seniorAge = SettingsSeniorAge
 
 export function arrayAddIds(array, id) {
 	// Check if notes & dependents arrays already have ids
@@ -22,7 +24,7 @@ export function arrayAddIds(array, id) {
 	}
 }
 
-export function calcClientDependentsAges(client){
+export function calcDependentsAges(client){
     // age TODO Move this to other Function
     let deps = client.dependents
 	if (deps === undefined) deps = []
@@ -32,13 +34,13 @@ export function calcClientDependentsAges(client){
 	return deps
 }
 
-export function calcClientFamilyCounts(client){
+export function calcFamilyCounts(client){
 	if (client.family == undefined) client.family = {}
 	// dependents age & family counts
 	let fam = {totalAdults:0, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:0}
 	// client individual --- clients must be 18 or older
 	++fam.totalSize
-	if (client.age >= settings.seniorAge) {
+	if (client.age >= seniorAge) {
 		++fam.totalSeniors
 	} else {
 		++fam.totalAdults
@@ -47,7 +49,7 @@ export function calcClientFamilyCounts(client){
 	for (let i = 0; i < client.dependents.length; i++) {
 		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
 		if (client.dependents[i].isActive == "Active") {
-			if (client.dependents[i].age >= settings.seniorAge) {
+			if (client.dependents[i].age >= seniorAge) {
 				++fam.totalSeniors
 			} else if (client.dependents[i].age < 18) {
 				++fam.totalChildren

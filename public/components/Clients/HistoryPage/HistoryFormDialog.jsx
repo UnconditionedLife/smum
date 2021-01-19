@@ -28,7 +28,10 @@ export default function HistoryFormDialog(props) {
         .map(obj => obj.serviceName)
 
     function handleDialog(state){
-        if (dialogOpen !== state) setDialogOpen(state)
+        if (!state) { 
+            props.handleEditMode('cancel')
+        }
+        setDialogOpen(state)
     }
 
     const initValues = props.editRecord

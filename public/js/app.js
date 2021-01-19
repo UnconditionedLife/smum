@@ -3176,16 +3176,17 @@ function clickSetCurrentAdminUser(index){
 	navGotoTab("aTab5")
 };
 
-function clickSetCurrentClient(index){
-	servicesRendered = []
-	client = clientData[index]
-	utilRemoveEmptyPlaceholders()
-	utilCalcClientAge("db")
-	utilCalcClientFamilyCounts() // calculate fields counts and ages
-	uiShowHistory()
-	uiUpdateCurrentClient(index)
-	$('#receiptBody').html("")
-};
+// MOVED TO REACT
+// function clickSetCurrentClient(index){
+// 	servicesRendered = []
+// 	client = clientData[index]
+// 	utilRemoveEmptyPlaceholders()
+// 	utilCalcClientAge("db")
+// 	utilCalcClientFamilyCounts() // calculate fields counts and ages
+// 	uiShowHistory()
+// 	uiUpdateCurrentClient(index)
+// 	$('#receiptBody').html("")
+// };
 
 function clickSetCurrentServiceType(index){
 	serviceType = serviceTypes[index]
@@ -3819,46 +3820,46 @@ function utilCalcActiveServiceTypes(){ // TODO DELETE AFTER SERVICES PAGE IS REA
 // }
 
 // MOVED TO REACT
-function utilCalcClientFamilyCounts(){
-	// age TODO Move this to other Function
-	if (client.dependents == undefined) client.dependents = []
-	for (var i = 0; i < client.dependents.length; i++) {
-		utilCalcDependentAge(i)
-	}
-	if (client.family == undefined) client.family = {}
-	// dependents age & family counts
-	let fam = {totalAdults:0, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:0}
-	// client individual --- clients must be 18 or older
-	++fam.totalSize
-	if (client.age >= settings.seniorAge) {
-		++fam.totalSeniors
-	} else {
-		++fam.totalAdults
-	}
-	// client dependents
-	for (let i = 0; i < client.dependents.length; i++) {
-		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
-		if (client.dependents[i].isActive == "Active") {
-			if (client.dependents[i].age >= settings.seniorAge) {
-				++fam.totalSeniors
-			} else if (client.dependents[i].age < 18) {
-				++fam.totalChildren
-			} else {
-				++fam.totalAdults
-			}
-			if (client.dependents[i].relationship == "Other") {
-				++fam.totalOtherDependents
-			}
-			++fam.totalSize
-		}
-	}
-	client.family.totalAdults = fam.totalAdults
-	client.family.totalChildren = fam.totalChildren
-	client.family.totalOtherDependents = fam.totalOtherDependents
-	client.family.totalSeniors = fam.totalSeniors
-	client.family.totalSize = fam.totalSize
-	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
-};
+// function utilCalcClientFamilyCounts(){
+// 	// age TODO Move this to other Function
+// 	if (client.dependents == undefined) client.dependents = []
+// 	for (var i = 0; i < client.dependents.length; i++) {
+// 		utilCalcDependentAge(i)
+// 	}
+// 	if (client.family == undefined) client.family = {}
+// 	// dependents age & family counts
+// 	let fam = {totalAdults:0, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:0}
+// 	// client individual --- clients must be 18 or older
+// 	++fam.totalSize
+// 	if (client.age >= settings.seniorAge) {
+// 		++fam.totalSeniors
+// 	} else {
+// 		++fam.totalAdults
+// 	}
+// 	// client dependents
+// 	for (let i = 0; i < client.dependents.length; i++) {
+// 		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
+// 		if (client.dependents[i].isActive == "Active") {
+// 			if (client.dependents[i].age >= settings.seniorAge) {
+// 				++fam.totalSeniors
+// 			} else if (client.dependents[i].age < 18) {
+// 				++fam.totalChildren
+// 			} else {
+// 				++fam.totalAdults
+// 			}
+// 			if (client.dependents[i].relationship == "Other") {
+// 				++fam.totalOtherDependents
+// 			}
+// 			++fam.totalSize
+// 		}
+// 	}
+// 	client.family.totalAdults = fam.totalAdults
+// 	client.family.totalChildren = fam.totalChildren
+// 	client.family.totalOtherDependents = fam.totalOtherDependents
+// 	client.family.totalSeniors = fam.totalSeniors
+// 	client.family.totalSize = fam.totalSize
+// 	uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
+// };
 
 // Removed because of errors with 12 graders - now only assumes grade entered to be next year's grade
 // function utilCalcCurrentGrade(numericGrade,date){
@@ -3995,24 +3996,25 @@ function utilLoginUserShowScreens() {
 	// prnConnect() MOVED TO REACT --> HeaderBar.jsx
 }
 
-function utilPadEmptyFields(data){
-	$.each(data, function(key,value){
-		if (key == "dependents") {
-			for (var i = 0; i < value.length; i++) {
-				if (value[i].grade == "") {data[key][i].grade = "*EMPTY*"}
-				if (value[i].gradeDateTime == "") {data[key][i].gradeDateTime = "*EMPTY*"}
-			}
-		}
-		if (value === "" || (key == "zipSuffix" && value === 0)) {
-			if (key != "notes" && key != "dependents" && key != "fulfillment" && key != "serviceValid") {
-				data[key] = "*EMPTY*"
-			}
-		}
-	})
-	return data
-};
+// MOVED TO REACT --> database.js as utilEmptyPlaceholders
+// function utilPadEmptyFields(data){
+// 	$.each(data, function(key,value){
+// 		if (key == "dependents") {
+// 			for (var i = 0; i < value.length; i++) {
+// 				if (value[i].grade == "") {data[key][i].grade = "*EMPTY*"}
+// 				if (value[i].gradeDateTime == "") {data[key][i].gradeDateTime = "*EMPTY*"}
+// 			}
+// 		}
+// 		if (value === "" || (key == "zipSuffix" && value === 0)) {
+// 			if (key != "notes" && key != "dependents" && key != "fulfillment" && key != "serviceValid") {
+// 				data[key] = "*EMPTY*"
+// 			}
+// 		}
+// 	})
+// 	return data
+// };
 
-// MOVED TO REACT --> database.js
+// MOVED TO REACT --> database.js as utilEmptyPlaceholders
 // function utilRemoveEmptyPlaceholders(){
 // 	// TODO make this operate on other forms / data
 // 	$.each(client, function(key,value){

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { Box, MenuItem, Typography } from '@material-ui/core';
 import { FormTextField, SaveCancel, FormSelect } from '../../System';
-import { saveClientRecord } from '../../System/js/Clients';
+import { saveClient } from '../../System/js/Clients/Clients';
 import { useForm } from "react-hook-form";
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../../System/js/Forms.js';
 import { dbSetModifiedTime } from '../../System/js/Database';
@@ -39,7 +39,7 @@ export default function ClientInfoForm(props) {
         Object.assign(data, unpackZipcode(values.zipcode));
         // Save user data and reset form state to new values
         dbSetModifiedTime(data, false);
-        const result = saveClientRecord(data)
+        const result = saveClient(data)
         if (result === 'failed') {
             updateMessage("error", "FAILED TO SAVE - try again!")
         } else {

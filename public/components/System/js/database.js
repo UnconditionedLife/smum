@@ -4,6 +4,8 @@
 
 import moment from 'moment';
 import { isEmpty, utilStringToArray } from './GlobalUtils';
+import { calcFamilyCounts } from './Clients/ClientUtils';
+import { searchClients } from './Clients/Clients';
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 
@@ -166,36 +168,13 @@ console.log('GET HISTORY FROM DB')
 // 	return temp
 // }
 
-export function dbSaveClient(clientData){
-    
-	
-    clientData = utilPadEmptyFields(clientData)
-    cl
+export function dbSaveClient(data){
+    data = utilEmptyPlaceholders(data, "add") // "add" or "remove"
 	const URL = aws + "/clients/"
-	const result = dbPostData(URL,JSON.stringify(clientData))
+	const result = dbPostData(URL,JSON.stringify(data))
 	if (result == "success") {
-	    if (client.clientId !== undefined) {
-	 	    utilCalcClientAge("db")
-			utilCalcClientFamilyCounts()
-			uiToggleClientViewEdit("view")
-		} else {
-			clientId = $('#clientId.clientForm').val()
-			$('#searchField').val(clientId)
-			clickSearchClients(clientId)
-		}
-		if (clientData != null) {
-			console.log("REDO CLIENT DATA")
-			uiGenSelectHTMLTable('#searchContainer', clientData, ['clientId', 'givenName', 'familyName', 'dob', 'street'],'clientTable')
-
-			console.log(clientData)
-
-			if (clientData.length == 1) clientTableRow = 1
-			uiOutlineTableRow('clientTable', clientTableRow)
-			// uiSetClientsHeader("numberAndName") MOVED TO REACT
-		}
+		searchClients(data.clientId)
 	}
-	$("body").css("cursor", "default");
-	uiSaveButton('client', 'SAVED!!')
 	return result
 }
 
@@ -232,17 +211,19 @@ export function dbGetService(serviceId){
 	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
 }
 
-export function utilRemoveEmptyPlaceholders(obj){
+export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove"
     // TODO NEED TO ADDRESS THIS SITUATION(key == "zipSuffix" && value == 0)) {
+    const fromVal = (action === "remove") ? "*EMPTY*" : ""
+    const toVal = (action === "add") ? "" : "*EMPTY*"
     for (const [key, value] of Object.entries(obj)) {
-        if (value === "*EMPTY*") {
-            obj[key] = ""
+        if (value === fromVal) {
+            obj[key] = toVal
         } else if (Array.isArray(value)) {
 			for (var i = 0; i < value.length; i++) {
                 const array = value[i]
                 for (const [arrayKey, arrayVal] of Object.entries(array)) {
-                    if (arrayVal === "*EMPTY*") {
-                        obj[key][i][arrayKey] = ""
+                    if (arrayVal === fromVal) {
+                        obj[key][i][arrayKey] = toVal
                     }
                 }
 			}

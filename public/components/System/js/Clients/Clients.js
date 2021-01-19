@@ -19,7 +19,7 @@ export function searchClients(str) {
     return clientsFoundTemp
 }
 
-export function saveClientRecord(data){
+export function saveClient(data){
     console.log(data)
 	data.updatedDateTime = utilNow()
 	if (data.clientId === undefined) {

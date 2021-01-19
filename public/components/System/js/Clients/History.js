@@ -4,7 +4,7 @@
 import moment from  'moment';
 import cuid from 'cuid';
 import { utilNow } from '../GlobalUtils';
-import { dbGetClientActiveServiceHistory, dbGetService, dbSaveServiceRecord, getSvcTypes } from '../Database';
+import { dbGetClientActiveServiceHistory, dbGetService, dbSaveServiceRecord, getSvcTypes, dbSaveClient } from '../Database';
 
 export function getServiceHistory(){
 	let clientHistory = dbGetClientActiveServiceHistory()
@@ -25,7 +25,7 @@ export function updateLastServed(client){
 		}
 	}
 	client.lastServed = topHist
-	return window.dbSaveCurrentClient(client) // TODO REMOVE FROM APP.JS
+	return dbSaveClient(client)
 }
 
 export function saveHistoryForm(editRecord, formValues, client, userName){
@@ -52,7 +52,7 @@ export function saveHistoryForm(editRecord, formValues, client, userName){
     return null
 }
 
-function utilRemoveService(serviceId){
+export function utilRemoveService(serviceId){
 	let service = dbGetService(serviceId)[0]
 	service.serviceValid = false
 	const result = dbSaveServiceRecord(service)
