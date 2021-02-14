@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { AppBar, Box, Tab, Tabs } from '@material-ui/core';
-import { ListAlt, RoomService, AccountBox, AccountCircle, 
+import { RoomService, AccountBox, AccountCircle, 
             Assessment, SettingsApplications, Input } from '@material-ui/icons';
-import { AdminServicesPage, AllUsersPage, ImportPage, ReportsPage, 
+import { AllUsersPage, ImportPage, ReportsPage, 
             ServiceTypePage, SettingsPage, UserPage } from '../../Admin';
 
 AdminMain.propTypes = {
@@ -20,7 +20,7 @@ export default function AdminMain(props) {
 
     function onSelectUser(userName) {
         setSelectedUser(userName);
-        setSelectedTab(4);
+        setSelectedTab(3);
     }
 
     return (
