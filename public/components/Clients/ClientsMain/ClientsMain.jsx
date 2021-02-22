@@ -3,12 +3,10 @@ import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { ClientsHeader, ClientsContent } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
-import { searchClients } from '../../System/js/Clients/Clients';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';
-import { dbGetClientActiveServiceHistory, utilEmptyPlaceholders } from '../../System/js/Database';
+import { dbSearchClients, dbGetClientActiveServiceHistory, dbSetModifiedTime, utilEmptyPlaceholders } from '../../System/js/Database';
 import { getSvcsRendered } from '../../System/js/Clients/Services'
-import SmumLogo from "../../Assets/SmumLogo";
 
 ClientsMain.propTypes = {
     session: PropTypes.object.isRequired,
@@ -29,36 +27,34 @@ export default function ClientsMain(props) {
     const url = props.url
     const [ clientsFound, setClientsFound ] = useState([]);
     const [ client, setClient ] = useState({});
+    const [ showFound, setShowFound ] = useState(false);
+    const [ showServices, setShowService ] = useState(false);
+    const [ showClient, setShowClient ] = useState(false);
+    
 
     useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(client); } }, [session, url])
+
+    useEffect(() => {
+        const foundEval = !isEmpty(clientsFound)
+        const clientEval = (!isEmpty(client) || client?.clientId === "0")
+        const servicesEval = (!isEmpty(client) || client?.clientId !== "0")
+        if (showFound !== foundEval) setShowFound(foundEval)
+        if (showServices !== servicesEval) setShowService(servicesEval)
+        if (showClient !== clientEval) setShowClient(clientEval)
+    })
 
     useEffect(() => {
         if (searchTerm !== '') {
             if (window.stateCheckPendingEdit()) return // used temporarily to keep global vars in sync
             window.uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
-            const searchResults = searchClients(searchTerm)
+            const searchResults = dbSearchClients(searchTerm)
             changeClientsFound(searchResults)
         }
     }, [searchTerm]);
 
-
-//     useEffect(() => {
-//         console.log('update history effect')
-//         console.log()
-//         if (!isEmpty(client) && svcHistory === []) {
-//             console.log('updatttting history effect')
-//             updateSvcHistory()
-//         }
-//     })
-
-// console.log(client.lastServed)
-// console.log(svcHistory)
-
     useEffect(() => {
         if (!isEmpty(client)) {
             const lastServed = client.lastServed
-
-console.log(lastServed.length)
             if (lastServed.length > 0) {
                 lastServed.sort((a, b) => moment.utc(b.serviceDateTime).diff(moment.utc(a.serviceDateTime)))
                 // if last service is same day as today - build the svcsRendered state (??? Store svcType & svcId & maybe svcName ????)
@@ -89,27 +85,39 @@ console.log(lastServed.length)
     }
 
     function changeClient(newClient){
-        if (newClient !== client) {
-            if (!isEmpty(newClient)){
+
+console.log("IN CHANGE CLIENT")
+console.log(newClient)
+console.log("{",newClient.clientId,"}")
+        if (!isEmpty(newClient)) {
+
+            if ( newClient.clientId !== "0" ){
+
+    console.log("IN PREP CLIENT")
+
                 // TODO client should be sorted and have ids for nested arrays saved to the database
                 newClient = utilEmptyPlaceholders(newClient, "remove")
                 newClient = utilCalcAge(newClient)
+                newClient.dependents = calcDependentsAges(newClient)
+                newClient.family = calcFamilyCounts(newClient)
                 newClient.dependents.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
                 newClient.dependents = arrayAddIds(newClient.dependents, 'depId')
-                newClient.dependents = calcDependentsAges(newClient)
                 newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
-                newClient.family = calcFamilyCounts(newClient)
+                // add service handling objects
                 newClient.svcHistory = dbGetClientActiveServiceHistory(newClient.clientId)
                 newClient.svcsRendered = getSvcsRendered(newClient.svcHistory)
+            } else {
+                dbSetModifiedTime(newClient, true);
             }
             keepAppJsInSync(newClient)
-            setClient(newClient);
+            setClient(newClient)
         }
     }
 
     function updateClient(newClient){
         keepAppJsInSync(newClient)
+        newClient = utilCalcAge(newClient)
         setClient(newClient);
     }
 
@@ -117,36 +125,76 @@ console.log(lastServed.length)
     function keepAppJsInSync(newClient){
         window.client = newClient // used temporarily to keep global vars in sync
         window.servicesRendered = [] // used temporarily to keep global vars in sync
-        window.uiResetNotesTab() // used temporarily to keep global vars in sync
+        // window.uiResetNotesTab() // used temporarily to keep global vars in sync
         window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
     }
 
-    function handleIsNewClientChange(){
-        window.clickShowNewClientForm() // used temporarily - remove once clientPage forms have been converted
-        changeClient({})
+    const emptyClient = {
+        clientId: "0",
+        givenName: "",
+        familyName: "",
+        gender: "",
+        dob: "",
+        createdDateTime: "",
+        updatedDateTime: "",
+        firstSeenDate: moment().format('YYYY-MM-DD'),
+        familyIdCheckedDate: moment().format('YYYY-MM-DD'),
+        street: "",
+        city: "San Jose",
+        state: "CA",
+        zipcode: "",
+        zipSuffix: "",
+        telephone: "",
+        email: "",
+        isActive: "Client",
+        ethnicGroup: "",
+        homeless: "",
+        financials: {
+            income: "",
+            govtAssistance: "",
+            rent: "",
+            foodStamps: ""
+        },
+        dependents: [],
+        notes: [],
+        lastServed: [],
+        family: {
+            totalAdults: 0,
+            totalChildren: 0,
+            totalOtherDependents: 0,
+            totalSeniors: 0,
+            totalSize: 0,
+        },
+        svcHistory: [],
+        svcsRendered: []
+    }
+
+    function isNewClientChange(){
+        // window.clickShowNewClientForm() // used temporarily - remove once clientPage forms have been converted
+        // NEED TOO CHECK FOR CLIENT EDIT FLAG
+
+console.log("IN NEW CLIENT")
+
+        changeClient(emptyClient)
         changeClientsFound([])
         updateURL(null, 2)
     }
 
-    // TODO DEAL with empty clientsFound &/or client
+    const passProps = {
+        client, clientsFound, 
+        changeClient: changeClient,
+        updateClient: updateClient, 
+        isNewClientChange: isNewClientChange,
+        selectedTab, updateURL,
+        showFound: showFound,
+        showServices: showServices,
+        showClient: showClient
+    }
+
     return (
-        <Box width="100%" p={2} >
-            <ClientsHeader
-                client={ client } clientsFound={ clientsFound } handleIsNewClientChange={ handleIsNewClientChange }
-                selectedTab={ selectedTab }
-                updateURL={ updateURL }
-            />
-            { !isEmpty(clientsFound) &&
-                <ClientsContent
-                    updateURL={ updateURL } session={ session } clientsFound={ clientsFound }
-                    client={ client } changeClient={ changeClient } updateClient={ updateClient }
-                />
-            } 
-            { isEmpty(clientsFound) &&
-                <Box display="flex" width="100%" height="100%" justifyContent="center" p='30%' pt='4%'>
-                    <SmumLogo width='90%' />
-                </Box>
-            }
+        <Box key={ client.updatedDateTime } width="100%" p={2} >
+            <ClientsHeader { ...passProps } />
+            <ClientsContent { ...passProps } session={ session } />
         </Box>
     )
 }

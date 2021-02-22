@@ -1,4 +1,4 @@
-export function getFieldSize(size) {
+export function getFormFieldSize(size) {
     switch (size){
         case "xs": return "80px"
         case "sm": return "120px"

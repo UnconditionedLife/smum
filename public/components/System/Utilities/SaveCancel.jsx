@@ -13,10 +13,10 @@ import moment from 'moment';
 //      saveDisabled - Disable affirmative button (default false)
 //      cancelDisabled - Disable negative button (default false)
 //      disabled - Disable both buttons (default false)
-//      message - Object with (text, severity)
+//      message - Object with (text, severity, tooltip)
 //          severity: 'error', 'warning', 'info', or 'success'
-//          text: message string
-//          lastUpdate: date object corresponding to last save (implies severity='info')
+//          text: message string (NOT REQUIRED)
+//          tooltip: date or additional info (NOT REQUIRED)
 
 SaveCancel.propTypes = {
     onClick: PropTypes.func.isRequired,
@@ -39,16 +39,36 @@ SaveCancel.defaultProps = {
 export default function SaveCancel(props) {
     const saveDisabled = props.saveDisabled || props.disabled;
     const cancelDisabled = props.cancelDisabled || props.disabled;
-    let msgText = null;
-    let msgSeverity = null;
-    let msgTime = null;
 
-    if (props.message?.lastUpdate) {
-        msgTime = props.message.lastUpdate;
-    } else if (props.message) {
-        msgText = props.message.text;
-        msgSeverity = props.message.severity;
+    //props.message = { result, text, time }
+    let m = {}
+    if (props.message.result === 'success') {
+        m.severity = 'info'
+        m.text = "Saved " + moment(props.message.time).fromNow()
+        m.tooltip = moment(props.message.time).format("MMM DD, YYYY h:mma")
     }
+
+    if (props.message.result === 'error') {
+        m.severity = 'error'
+        m.text = "FAILED TO SAVE - try again!"
+        if (typeof props.message.text === 'object') {
+            JSON.stringify(props.message.text)
+            m.tooltip = props.message.text.message
+        } else {
+            m.tooltip = props.message.text
+        }
+    }
+
+    if (props.message.result === 'loading') {
+        m.severity = 'warning'
+        m.text = "SAVING TO DATABASE..."
+    }
+
+    const alertBox = (
+        <Box width='40%' height='38px' m={ 1 } alignContent="center" justifyContent="center">
+            <Alert severity={ m.severity }> { m.text } </Alert>
+        </Box>
+    )
 
     return (
         <Box display="flex" mt={ 2 } flexDirection="column" flexWrap="wrap" alignContent="center" justifyContent="center">
@@ -58,15 +78,8 @@ export default function SaveCancel(props) {
                 <Button variant="outlined" color="secondary"
                     disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ props.cancelLabel }</Button>
             </Box>
-            { msgText && <Box width='40%' height='38px' m={ 1 } alignContent="center" justifyContent="center">
-                <Alert severity={ msgSeverity } >{ msgText }</Alert>
-            </Box> }
-            { msgTime && <Box width='40%' height='38px' m={ 1 } alignContent="center" justifyContent="center">
-                <Tooltip title={ moment(msgTime).format('MMM DD, YYYY hh:mm A') } placement="right">
-                    <Alert severity="info">{ "Last updated " + moment(msgTime).fromNow() }</Alert>
-                </Tooltip>
-            </Box> }
+            { (m.tooltip && m.text) && <Tooltip title={ m.tooltip } placement="right">{ alertBox }</Tooltip> }
+            { (!m.tooltip && m.text) && alertBox }
         </Box>
     )
 }
-

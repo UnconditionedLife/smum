@@ -1,9 +1,10 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import { Box } from '@material-ui/core';
 import { FoundPage, ServicesPage, ClientPage, HistoryPage } from '../';
 import { useRouteMatch, Route, Switch } from "react-router-dom";
 import { Container } from '../../System';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
+import SmumLogo from "../../Assets/SmumLogo";
 
 ClientsContent.propTypes = {
     clientsFound: PropTypes.array.isRequired,
@@ -11,37 +12,54 @@ ClientsContent.propTypes = {
     updateClient: PropTypes.func.isRequired,
     updateURL: PropTypes.func.isRequired,
     session: PropTypes.object.isRequired,
+    showFound: PropTypes.bool.isRequired,
+    showServices: PropTypes.bool.isRequired,
+    showClient: PropTypes.bool.isRequired,
 }
 
 export default function ClientsContent(props) {
     const match = useRouteMatch();
+
+    const logoBox = (
+        <Box display="flex" width="100%" height="100%" justifyContent="center" p='30%' pt='4%'>
+            <SmumLogo width='90%' />
+        </Box>
+    )
+
     return (
         <Container maxWidth='lg' mt={0} pt={0}>
             <Switch>
                 <Route path={`${match.path}/found/:term`}>
-                    <FoundPage
-                        clientsFound={ props.clientsFound }
-                        client={ props.client } changeClient={ props.changeClient }
-                        updateURL={ props.updateURL }
-                    />
+                    { props.showFound && 
+                        <FoundPage
+                            clientsFound={ props.clientsFound }
+                            client={ props.client } changeClient={ props.changeClient }
+                            updateURL={ props.updateURL } />
+                    }
+                    { !props.showFound && logoBox }
+                </Route>              
+                <Route path={`${match.path}/services/:clientId`}>
+                    { props.showServices && 
+                        <ServicesPage 
+                            client={ props.client } updateClient={ props.updateClient }
+                            session={ props.session } />
+                    }
+                    { !props.showServices && logoBox }
                 </Route>
-                { isEmpty(props.client) === false && 
-                    <Fragment>
-                        <Route path={`${match.path}/services/:clientId`}>
-                            <ServicesPage 
-                                client={ props.client } updateClient={ props.updateClient }
-                                session={ props.session } />
-                        </Route>
-                        <Route path={`${match.path}/client/:clientId`}>
-                            <ClientPage client={props.client} updateClient={ props.updateClient }
-                                session={ props.session } />
-                        </Route>
-                        <Route path={`${match.path}/history/:clientId`}>
-                            <HistoryPage client={props.client} updateClient={ props.updateClient }
-                                session={ props.session } />
-                        </Route>
-                    </Fragment>
-                }
+                <Route path={`${match.path}/client/:clientId`}>
+                    { props.showClient && 
+                        <ClientPage client={props.client} updateClient={ props.updateClient }
+                            session={ props.session } />
+                    }
+                    { !props.showClient && logoBox }
+                </Route>
+                <Route path={`${match.path}/history/:clientId`}>
+                    { props.showClient && 
+                        <HistoryPage client={props.client} updateClient={ props.updateClient }
+                            session={ props.session } />
+                    }
+                    { !props.showClient && logoBox }
+                </Route>
             </Switch>
         </Container>
     );

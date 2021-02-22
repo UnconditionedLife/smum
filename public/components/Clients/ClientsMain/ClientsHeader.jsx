@@ -1,32 +1,39 @@
-import React from "react";
+import React, { Fragment } from "react";
 import PropTypes from 'prop-types';
+import { AppBar, Box, Tab, Tabs, Tooltip, Snackbar } from '@material-ui/core';
 import { Add, Pageview, RoomService, House, History } from '@material-ui/icons';
-import { AppBar, Box, Tab, Tabs, Tooltip } from '@material-ui/core';
 import { Fab } from '../../System';
 import { HeaderTitle } from '../../Clients';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 ClientsHeader.propTypes = {
     clientsFound: PropTypes.array.isRequired,
-    client: PropTypes.object.isRequired, handleIsNewClientChange: PropTypes.func.isRequired,
+    client: PropTypes.object.isRequired, 
+    isNewClientChange: PropTypes.func.isRequired,
     updateURL: PropTypes.func.isRequired,
     selectedTab: PropTypes.number.isRequired,
+    showFound: PropTypes.bool.isRequired,
+    showServices: PropTypes.bool.isRequired,
+    showClient: PropTypes.bool.isRequired,
 }
 
 export default function ClientsHeader(props) {
     const client = props.client
     const clientsFound = props.clientsFound
-    const handleIsNewClientChange = props.handleIsNewClientChange
+    const isNewClientChange = props.isNewClientChange
     const selectedTab = props.selectedTab
     const updateURL = props.updateURL
-    const isDisabledFound = isEmpty(clientsFound) ? true : false
-    const isDisabledClient = isEmpty(client) ? true : false
 
     function handleNewClient() {
-       handleIsNewClientChange(true)
+       isNewClientChange(true)
     }
-    
+
     return (
+        <Fragment>
+        <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
+            <Tooltip title= 'Add Client' placement="left-end">
+                <Fab  float='right' onClick={() => handleNewClient()} size='medium' color='primary' ><Add /></Fab> 
+            </Tooltip>
+        </Snackbar>
         <Box width={ 1 } display="flex" flexWrap="wrap-reverse">
             <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'72px',
                 justifyContent: 'space-between', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>
@@ -43,19 +50,13 @@ export default function ClientsHeader(props) {
                     centered
                     style={{ justifyContent: 'space-between' }}
                 >
-                    <Tab icon={<Pageview />} disabled={ isDisabledFound } label="Found" />
-                    <Tab icon={<RoomService />} disabled={ isDisabledClient } label="Services" />
-                    <Tab icon={<House />} disabled={ isDisabledClient } label="Client" />
-                    <Tab icon={<History />} disabled={ isDisabledClient }  label="History" />
+                    <Tab icon={<Pageview />} disabled={ !props.showFound } label="Found" />
+                    <Tab icon={<RoomService />} disabled={ !props.showServices } label="Services" />
+                    <Tab icon={<House />} disabled={ !props.showClient } label="Client" />
+                    <Tab icon={<History />} disabled={ !props.showClient }  label="History" />
                 </Tabs>
-                <Box display='flex' width='100px' mt={ 0 } mr={ 2 } justifyContent='flex-end'>
-                    <Tooltip title= 'Add Client'>
-                        <Fab  float='right' onClick={() => handleNewClient()} size='medium' color='default' >
-                            <Add />
-                        </Fab> 
-                    </Tooltip>
-                </Box>
             </AppBar>
         </Box>
+        </Fragment>
     )
 }
