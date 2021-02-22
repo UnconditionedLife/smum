@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 // import PropTypes from 'prop-types';
-import { Box, MenuItem } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import { FormTextField, SaveCancel } from '../../System';
 import { useForm } from "react-hook-form";
 
@@ -13,37 +13,19 @@ export default function FamilyTotalsForm(props) {
     });
 
     function doSave(values) {
-        let clientData = Object.assign({}, props.client);
-        Object.assign(clientData, values);
-        reset(values);
-        alert("Changes saved (not really!)");
     }
 
     const submitForm = handleSubmit(doSave);
 
     return (
-        <Fragment>
+        <Box display="flex" flexDirection="row" flexWrap="wrap">
             <form>
-
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField name="family.totalAdults" disabled={ true } label="Adults" type= "number" control={control} 
-                    rules={ {required: '# of Adults required'}} />
-                    <FormTextField name="family.totalChildren" disabled={ true } label="Children" type= "number" control={control} 
-                    rules={ {required: '# of Children equired'}} />
-                    <FormTextField name="family.totalOtherDependents" disabled={ true } label="Other Dep." type= "number" control={control} 
-                    rules={ {required: '# of Total Dependents required'}} />
-                    <FormTextField name="family.totalSeniors" disabled={ true } label="Seniors" type= "number" control={control} 
-                    rules={ {required: '# of Seniors required'}} />
-                    <FormTextField name="family.totalSize"  disabled={ true } label="Total Size" type= "number" control={control} 
-                    rules={ {required: 'Total size is required'}} />
-                </Box>
-
-                <Box>
-        </Box>
-
+            <FormTextField name="family.totalAdults" disabled={ true } label="Adults" fieldsize="xs" type= "number" control={control} />
+            <FormTextField name="family.totalChildren" disabled={ true } label="Children" fieldsize="xs" type= "number" control={control} />
+            <FormTextField name="family.totalOtherDependents" disabled={ true } label="Other Dep." fieldsize="xs" type= "number" control={control} />
+            <FormTextField name="family.totalSeniors" disabled={ true } label="Seniors" fieldsize="xs" type= "number" control={control} />
+            <FormTextField name="family.totalSize" disabled={ true } label="Total Size" fieldsize="xs" type= "number" control={control} />
             </form>
-
-            
-        </Fragment>
+        </Box>
     );
 }

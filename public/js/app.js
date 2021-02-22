@@ -2260,6 +2260,8 @@ function uiResetServiceTypeForm(){
 // 	return history.filter(item => item.serviceValid == "true")
 // };
 
+
+// MOVED TO REACT
 function dbGetData(uUrl){
 	cogCheckSession()
 	let urlNew = uUrl;
@@ -2407,58 +2409,60 @@ function dbGetUsers(){
 // 	uiShowHistoryData(reactDIV, clientHistory)
 // };
 
-function dbPostData(URL,data){
-	const sessionStatus = cogCheckSession()
-	if (authorization.idToken == 'undefined' || sessionStatus == "FAILED") {
-		utilBeep()
-		return
-	}
-	let ans = "failed";
-	$.ajax({
-    type: "POST",
-    url: URL,
-		headers: {"Authorization": authorization.idToken},
-    async: false,
-    dataType: "json",
-    data: data,
-    contentType:'application/json',
-    success: function(message){
-			if (typeof message.message !== 'undefined') {
-				console.log(message.message)
-				utilBeep()
-			} else if (message.__type != undefined) {
-				console.log(message.__type)
-				console.log("ERROR")
-				utilBeep()
-				// TODO need proper error messaging
-			} else {
-				//utilBloop()
-				ans = "success"
-				console.log("SUCCESS")
-				if (URL.includes('/servicetypes')) {
-					// dbGetServiceTypes() // MOVED TO REACT
-					uiShowServiceTypes()
-					uiSetServiceTypeHeader()
-					uiPopulateForm(serviceTypes, 'serviceTypes')
-					uiSaveButton('serviceType', 'SAVED!!')
-				}
-			}
-		},
-		error: function(json){
-				console.log("ERROR")
-	    	console.log(json)
-				// TODO move this to funtion and make sure all save buttons are covered
-				if (URL.includes('/servicetypes')) {
-					uiSaveButton('serviceType', 'ERROR!!')
-				} else if (URL.includes('/clients')) {
-					uiSaveButton('client', 'ERROR!!')
-				} else if (URL.includes('/users')) {
-					console.log("show error in button")
-				}
-		}
-	})
-	return ans
-};
+
+// MOVED TO REACT
+// function dbPostData(URL,data){
+// 	const sessionStatus = cogCheckSession()
+// 	if (authorization.idToken == 'undefined' || sessionStatus == "FAILED") {
+// 		utilBeep()
+// 		return
+// 	}
+// 	let ans = "failed";
+// 	$.ajax({
+//     type: "POST",
+//     url: URL,
+// 		headers: {"Authorization": authorization.idToken},
+//     async: false,
+//     dataType: "json",
+//     data: data,
+//     contentType:'application/json',
+//     success: function(message){
+// 			if (typeof message.message !== 'undefined') {
+// 				console.log(message.message)
+// 				utilBeep()
+// 			} else if (message.__type != undefined) {
+// 				console.log(message.__type)
+// 				console.log("ERROR")
+// 				utilBeep()
+// 				// TODO need proper error messaging
+// 			} else {
+// 				//utilBloop()
+// 				ans = "success"
+// 				console.log("SUCCESS")
+// 				if (URL.includes('/servicetypes')) {
+// 					// dbGetServiceTypes() // MOVED TO REACT
+// 					uiShowServiceTypes()
+// 					uiSetServiceTypeHeader()
+// 					uiPopulateForm(serviceTypes, 'serviceTypes')
+// 					uiSaveButton('serviceType', 'SAVED!!')
+// 				}
+// 			}
+// 		},
+// 		error: function(json){
+// 				console.log("ERROR")
+// 	    	console.log(json)
+// 				// TODO move this to funtion and make sure all save buttons are covered
+// 				if (URL.includes('/servicetypes')) {
+// 					uiSaveButton('serviceType', 'ERROR!!')
+// 				} else if (URL.includes('/clients')) {
+// 					uiSaveButton('client', 'ERROR!!')
+// 				} else if (URL.includes('/users')) {
+// 					console.log("show error in button")
+// 				}
+// 		}
+// 	})
+// 	return ans
+// };
 
 function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
 	let serviceDateTime = moment().format(dateTime)

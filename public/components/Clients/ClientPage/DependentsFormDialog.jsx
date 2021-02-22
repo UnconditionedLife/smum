@@ -1,28 +1,38 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
 import { isEmpty } from '../../System/js/GlobalUtils';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { saveHistoryForm } from '../../System/js/Clients';
+import { dbSetModifiedTime } from '../../System/js/Database';
+import { saveClient } from '../../System/js/Clients/Clients';
+
 
 DependentsFormDialog.propTypes = {
     session: PropTypes.object.isRequired,
     client: PropTypes.object.isRequired,                // current client
-    // editMode: PropTypes.string.isRequired,              // 'edit' = display form
-    handleEditMode: PropTypes.func.isRequired,          // editMode handler
+    // editMode: PropTypes.string.isRequired,           // 'edit' = display form
+    // handleEditMode: PropTypes.func.isRequired,          // editMode handler
+    saveMessage: PropTypes.object.isRequired,
     editRecord: PropTypes.object.isRequired,            // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
-    // handleClientHistory: PropTypes.func.isRequired,     // handles updating history
+    saveAndUpdateClient: PropTypes.func.isRequired,     // saving and updateing client handler
+    // handleClientHistory: PropTypes.func.isRequired,  // handles updating history
 }
 
 export default function DependentsFormDialog(props) {
     const [ dialogOpen, setDialogOpen ] = useState(true);
-    const [ message, setMessage ] = useState(null)
+    // const [ saveMessage, setSaveMessage ] = useState({})
 
-    let delayInt
+    // if (isEmpty(saveMessage)) updateMessage("info", 
+    //     "Saved " + moment(props.client.updatedDateTime).fromNow(), 
+    //     moment(props.client.updatedDateTime).format("MMM DD, YYYY h:mma")
+    // )
 
-    
+    // function updateMessage(severity, text, tooltip){
+    //     setSaveMessage({ severity: severity, text: text, tooltip: tooltip }) // severity: error, warning, info, success
+    // }
 
     function handleDialog(state){
         if (dialogOpen !== state) setDialogOpen(state)
@@ -34,29 +44,38 @@ export default function DependentsFormDialog(props) {
         defaultValues: initValues, 
     })
 
-    function doSave(formValues) {
-        const newService = saveHistoryForm(props.editRecord, formValues, props.client, props.session.user.userName)
-        startMessageTimer(true)
-        if (!isEmpty(newService)) {
-            setMessage({text: 'Dependents form was saved!', severity: 'success'})
-        } else {
-            setMessage({text: 'Error while saving - try again!!', severity: 'error'})
-        }
-    }
+    function doSave(values) {
+        // Overwrite data structure with form values
+        let data = Object.assign({}, props.client);
 
-    function startMessageTimer(boo){
-        if (boo === false) {
-            if (message.severity === 'success') {
-                // props.handleClientHistory()
-                handleDialog(false)
-                props.handleEditMode('cancel')
-            }
-            clearTimeout(delayInt)
-        } else {
-            delayInt = setTimeout(function(){
-                startMessageTimer(false)
-            }, 1200)
-        }
+
+console.log(props.editRecord)
+
+        const index = data.dependents.map(function(e) { return e.depId; }).indexOf(props.editRecord.depId);
+
+console.log(index)
+
+// NEED TO PUT VALUES INTO THE RIGHT DEPENDENT
+
+        Object.assign(data.dependents[index], values);
+
+console.log(data)
+
+        const saved = props.saveAndUpdateClient(data)
+
+        // Save user data and reset form state to new values
+//         // dbSetModifiedTime(data, false);
+//         // const result = saveClient(data)
+
+// console.log(result)
+
+//         if (result === 'failed') {
+//             updateMessage("error", "FAILED TO SAVE - try again!", 'ERROR')
+//         } else {
+//             updateMessage("info", "Saved " + moment().fromNow(), moment().format("MMM DD, YYYY h:mma"))
+//             props.updateClient(data)
+//         }
+        reset(values);
     }
 
     const submitForm = handleSubmit(doSave);
@@ -67,61 +86,65 @@ export default function DependentsFormDialog(props) {
             <DialogContent>
                 <Box>
                 <form>
-                    <FormTextField width='160px' name="givenName" label="Given Name" control = {control}
-                    error={ errors.givenName } rules={ {required: 'Given name is required'}}/>
-                    <FormTextField width='160px' name="familyName" label="Family Name" control = {control}
-                    error={ errors.familyName } rules={ {required: 'Family name is required'}}/>
+                    <FormTextField name="givenName" label="Given Name" fieldsize="md" control = {control}
+                        error={ errors.givenName } rules={ {required: 'Required'}}/>
 
-                    <FormSelect width='160px' name="relationship" label= "Relationship" control ={control}
-                    error={ errors.relationship } rules={ {required: 'Relationship is required'}}>
-                        <MenuItem value="Spouse">Spouse</MenuItem>
-                        <MenuItem value="Child">Child</MenuItem>
-                        <MenuItem value="Parent">Parent</MenuItem>
-                        <MenuItem value="Grandparent">Grandparent</MenuItem>
-                        <MenuItem value="Sibling">Sibling</MenuItem>
-                        <MenuItem value="Grandchild">Grandchild</MenuItem>
-                        <MenuItem value="Other">Other</MenuItem>
+                    <FormTextField name="familyName" label="Family Name" fieldsize="md" control = {control}
+                        error={ errors.familyName } rules={ {required: 'Required'}}/>
+
+                    <FormSelect name="relationship" label= "Relationship" fieldsize="sm" control ={control}
+                        error={ errors.relationship } rules={ {required: 'Required'}}>
+                            <MenuItem value="">&nbsp;</MenuItem>
+                            <MenuItem value="Spouse">Spouse</MenuItem>
+                            <MenuItem value="Child">Child</MenuItem>
+                            <MenuItem value="Parent">Parent</MenuItem>
+                            <MenuItem value="Grandparent">Grandparent</MenuItem>
+                            <MenuItem value="Sibling">Sibling</MenuItem>
+                            <MenuItem value="Grandchild">Grandchild</MenuItem>
+                            <MenuItem value="Other">Other</MenuItem>
                     </FormSelect>
 
-                    <FormSelect width='160px' name="gender" label="Gender" error={ errors.gender } 
-                        control={ control } rules={ {required: 'Gender is required'}} >
+                    <FormSelect name="gender" label="Gender" fieldsize="sm" error={ errors.gender } 
+                        control={ control } rules={ {required: 'Required'}} >
+                            <MenuItem value="">&nbsp;</MenuItem>
                             <MenuItem value="Male">Male</MenuItem>
                             <MenuItem value="Female">Female</MenuItem>
                     </FormSelect>
 
-                    <FormTextField width='170px' name="dob" type="date" label="DOB" control={control}
-                    error={ errors.dob } rules={ {required: 'DOB is required'}}/>
-                    <FormTextField width='60px' name="age" label="Age" control={control}
-                    error={ errors.age } rules={ {required: 'Age is required'}}/>
-                    
+                    <FormTextField name="dob" type="date" label="DOB" fieldsize="md" control={control}
+                        error={ errors.dob } rules={ {required: 'Required'}}/>
 
-                    <FormSelect width='80px' name="grade" label="Grade" control={control}
-                    error={ errors.grade } rules={ {required: 'grade is required'}}>
-                        <MenuItem value="None">None</MenuItem>
-                        <MenuItem value="Pre-K">Pre-K</MenuItem>
-                        <MenuItem value="K">K</MenuItem>
-                        <MenuItem value="1st">1st</MenuItem>
-                        <MenuItem value="2nd">2nd</MenuItem>
-                        <MenuItem value="3rd">3rd</MenuItem>
-                        <MenuItem value="4th">4th</MenuItem>
-                        <MenuItem value="5th">5th</MenuItem>
-                        <MenuItem value="6th">6th</MenuItem>
-                        <MenuItem value="7th">7th</MenuItem>
-                        <MenuItem value="8th">8th</MenuItem>
-                        <MenuItem value="9th">9th</MenuItem>
-                        <MenuItem value="10th">10th</MenuItem>
-                        <MenuItem value="11th">11th</MenuItem>
-                        <MenuItem value="12th">12th</MenuItem>
+                    <FormTextField name="age" label="Age" fieldsize="xs" control={ control } disabled={ true } />
+
+                    <FormSelect name="grade" label="Grade" fieldsize="xs" control={control}
+                        error={ errors.grade } rules={ {required: 'Required'}}>
+                            <MenuItem value="None">None</MenuItem>
+                            <MenuItem value="Pre-K">Pre-K</MenuItem>
+                            <MenuItem value="K">K</MenuItem>
+                            <MenuItem value="1st">1st</MenuItem>
+                            <MenuItem value="2nd">2nd</MenuItem>
+                            <MenuItem value="3rd">3rd</MenuItem>
+                            <MenuItem value="4th">4th</MenuItem>
+                            <MenuItem value="5th">5th</MenuItem>
+                            <MenuItem value="6th">6th</MenuItem>
+                            <MenuItem value="7th">7th</MenuItem>
+                            <MenuItem value="8th">8th</MenuItem>
+                            <MenuItem value="9th">9th</MenuItem>
+                            <MenuItem value="10th">10th</MenuItem>
+                            <MenuItem value="11th">11th</MenuItem>
+                            <MenuItem value="12th">12th</MenuItem>
                     </FormSelect>
                     
-                    <FormSelect width='160px' name="isActive" label="Status" error={ errors.isActive } 
-                        control={ control } rules={ {required: 'Status is required'}} >
+                    <FormSelect name="isActive" label="Status" fieldsize="sm" error={ errors.isActive } 
+                        control={ control } rules={ {required: 'Required'}} >
                             <MenuItem value="Active">Active</MenuItem>
                             <MenuItem value="Inactive">Inactive</MenuItem>
                     </FormSelect>   
 
                     </form>
-                    <SaveCancel saveDisabled={ !formState.isDirty } message={ message } onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
+                    <SaveCancel key={ props.saveMessage.text }
+                        saveDisabled={ !formState.isDirty } message={ props.saveMessage } 
+                        onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
                 </Box>
             </DialogContent>
         </Dialog>

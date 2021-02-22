@@ -25,9 +25,7 @@ export function arrayAddIds(array, id) {
 }
 
 export function calcDependentsAges(client){
-    // age TODO Move this to other Function
     let deps = client.dependents
-	if (deps === undefined) deps = []
 	for (var i = 0; i < deps.length; i++) {
 		deps[i] = utilCalcAge(deps[i])
 	}
@@ -195,13 +193,8 @@ export function utilSortDependentsByGrade(dependents){
 }
 
 export function utilCalcAge(person){
-	const dob = person.dob
-	if (dob !== null){
-        person.age = moment().diff(dob, "years")
-        return person
-    } else {
-        person.age = ""
-    }
+    person.age = (person.dob) ? moment().diff(person.dob, "years") : ""
+    return person
 }
 
 

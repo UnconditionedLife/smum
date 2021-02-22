@@ -3,9 +3,10 @@
 //************************************************
 
 import moment from 'moment';
-import { isEmpty, utilStringToArray } from './GlobalUtils';
-import { calcFamilyCounts } from './Clients/ClientUtils';
+import { utilNow, isEmpty, utilStringToArray } from './GlobalUtils';
+import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 import { searchClients } from './Clients/Clients';
+
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 
@@ -32,7 +33,6 @@ export function getSvcTypes(){
 }
 
 // Session
-
 export function cacheSessionVar(newSession) {
     cachedSession = newSession
 }
@@ -70,6 +70,7 @@ export function dbGetAllUsers(session) {
 export function dbGetClient(session, clientId) {
     let result = dbFetchUrl(session, "/clients/" + clientId).clients;
     if (result.length == 1)
+
         return result[0];
     else
         return null;
@@ -168,15 +169,54 @@ console.log('GET HISTORY FROM DB')
 // 	return temp
 // }
 
-export function dbSaveClient(data){
-    data = utilEmptyPlaceholders(data, "add") // "add" or "remove"
-	const URL = aws + "/clients/"
-	const result = dbPostData(URL,JSON.stringify(data))
-	if (result == "success") {
-		searchClients(data.clientId)
+export async function dbSaveClient(data, callback){
+	if (data.clientId === "0") {
+        dbSetModifiedTime(data, true);
+        data.clientId = dbGetNewClientID()
+
+console.log("GET CLIENT ID")
+console.log(data.clientId)
+
+        if (data.clientId === 'failed') callback('error', 'Unable to get new client ID')
+	} else {
+        dbSetModifiedTime(data, false);
+        // DELETE svcHistory, svcsRendered from client before saving
+        // delete data.svcHistory
+        // delete data.svcsRendered
+        // Assign dependents, lastServed, and notes arrays if undefined
+		// if (data.dependents === undefined) data.dependents = []
+        // if (data.lastServed === undefined) data.lastServed = []
+        // if (data.notes === undefined) data.notes = []
+        // DELETE Age fields
+        // delete data.age
+		// for (var i = 0; i < data.dependents.length; i++) delete data.dependents[i].age
 	}
-	return result
+    const subUrl = "/clients/"
+    await dbPostData(subUrl, data, callback)
 }
+
+export function dbSearchClients(str) {
+    const regex = /[/.]/g
+    const slashCount = (str.match(regex) || []).length
+    let clientsFoundTemp = window.dbSearchClients(str, slashCount)
+    
+    if (clientsFoundTemp == undefined || clientsFoundTemp==null || clientsFoundTemp.length==0){
+      clientsFoundTemp = []
+      window.servicesRendered = [] // used temporarily to keep global vars in sync
+      window.uiClearCurrentClient()
+    }
+    return clientsFoundTemp
+}
+
+// export function dbSaveClient(data){
+//     data = utilEmptyPlaceholders(data, "add") // "add" or "remove"
+// 	const URL = aws + "/clients/"
+// 	const result = dbPostData(URL,JSON.stringify(data))
+// 	if (result == "success") {
+// 		searchClients(data.clientId)
+// 	}
+// 	return result
+// }
 
 export function dbGetNewClientID(){
     const lastIdJson = dbGetData(aws + "/clients/lastid")
@@ -212,11 +252,10 @@ export function dbGetService(serviceId){
 }
 
 export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove"
-    // TODO NEED TO ADDRESS THIS SITUATION(key == "zipSuffix" && value == 0)) {
     const fromVal = (action === "remove") ? "*EMPTY*" : ""
-    const toVal = (action === "add") ? "" : "*EMPTY*"
+    const toVal = (action === "add") ? "*EMPTY*" : ""
     for (const [key, value] of Object.entries(obj)) {
-        if (value === fromVal) {
+        if (value === fromVal || value === undefined) {
             obj[key] = toVal
         } else if (Array.isArray(value)) {
 			for (var i = 0; i < value.length; i++) {
@@ -231,3 +270,246 @@ export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove
     }
     return obj
 }
+
+
+// function OLDdbPostData(URL,data){
+// 	const sessionStatus = cogCheckSession()
+// 	if (authorization.idToken == 'undefined' || sessionStatus == "FAILED") {
+// 		utilBeep()
+// 		return
+// 	}
+// 	let ans = "failed";
+// 	$.ajax({
+//     type: "POST",
+//     url: URL,
+// 		headers: {"Authorization": authorization.idToken},
+//     async: false,
+//     dataType: "json",
+//     data: data,
+//     contentType:'application/json',
+//     success: function(message){
+// 			if (typeof message.message !== 'undefined') {
+// 				console.log(message.message)
+// 				utilBeep()
+// 			} else if (message.__type != undefined) {
+// 				console.log(message.__type)
+// 				console.log("ERROR")
+// 				utilBeep()
+// 				// TODO need proper error messaging
+// 			} else {
+// 				//utilBloop()
+// 				ans = "success"
+// 				console.log("SUCCESS")
+// 				if (URL.includes('/servicetypes')) {
+// 					// dbGetServiceTypes() // MOVED TO REACT
+// 					uiShowServiceTypes()
+// 					uiSetServiceTypeHeader()
+// 					uiPopulateForm(serviceTypes, 'serviceTypes')
+// 					uiSaveButton('serviceType', 'SAVED!!')
+// 				}
+// 			}
+// 		},
+// 		error: function(json){
+// 				console.log("ERROR")
+// 	    	console.log(json)
+// 				// TODO move this to funtion and make sure all save buttons are covered
+// 				if (URL.includes('/servicetypes')) {
+// 					uiSaveButton('serviceType', 'ERROR!!')
+// 				} else if (URL.includes('/clients')) {
+// 					uiSaveButton('client', 'ERROR!!')
+// 				} else if (URL.includes('/users')) {
+// 					console.log("show error in button")
+// 				}
+// 		}
+// 	})
+// 	return ans
+// };
+
+
+async function dbPostData(subUrl, data, callback){
+    callback('loading', '' )
+    if (cachedSession.auth) {
+        return fetch(dbUrl + subUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',    
+                "Authorization": cachedSession.auth.idToken,
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => {
+
+            console.log(response)
+
+            if (response.ok) {
+                response.json()
+                if (response.status === 200) {
+                    console.log('success:', "Save Confirmed")
+                    callback('success', "")
+                } 
+            } else {
+                if (response.status === 400) {
+                    console.log('error:', "Bad Request Exception")
+                    callback('error', "Bad Request Exception")
+                } else if (response.status === 401) {
+                    console.log('error:', "Authentication Failed")
+                    callback('error', "Authentication Failed")
+                }else if (response.status === 403) {
+                    console.log('error:', "Access Denied Exception")
+                    callback('error', "Access Denied Exception")
+                } else if (response.status === 404) {
+                    console.log('error:', "Not Found Exception")
+                    callback('error', "Not Found Exception")
+                } else if (response.status === 409) {
+                    console.log('error:', "Conflict Exception")
+                    callback('error', "Conflict Exception")
+                } else if (response.status === 413) {
+                    console.log('error:', "Request Too Large")
+                } else if (response.status === 429) {
+                    console.log('error:', "API Configuration Error/Throttled")
+                    callback('error', "API Configuration Error/Throttled")
+                } else if (response.status === 500) {
+                    console.log('error:', "Bad Gateway Exception")
+                    callback('error', "Bad Gateway Exception")
+                } else if (response.status === 502) {
+                    console.log('error:', "Bad Gateway Exception")
+                    callback('error', "Bad Gateway Exception")
+                } else if (response.status === 503) {
+                    console.log('error:', "Service Unavailable Exception")
+                    callback('error', "Service Unavailable Exception")
+                } else if (response.status === 504) {
+                    console.log('error:', "Endpoint Request Timed-out Exception")
+                    callback('error', "Endpoint Request Timed-out Exception")
+                } else {
+                    console.log(response.status)
+                    console.log('error:', "Database can't be reached!")
+                    callback('error', "Database can't be reached!")
+                }
+            }
+        })
+        .then(data => {
+            console.log('Raw Data:', data);
+            if (data !== undefined) {
+                if (data.message === "Unauthorized") {
+                    console.log('error:', 'Unauthorized Connection');
+                    callback('error', 'Unauthorized Connection')
+                } else {
+                    console.log('Success:', data);
+                    callback('success', data)
+                }
+            } else {
+                callback('success', '')
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            callback('error', error)
+        })
+    } else {
+        console.error('Error:', 'Session Expired');
+        callback('error', 'Session Expired') 
+    }
+}
+
+function OLDdbGetData(uUrl){
+	cogCheckSession()
+	let urlNew = uUrl;
+	let ans = null;
+// TODO /// move Ajax calls to [.done .fail . always syntax]
+	$.ajax({
+    type: "GET",
+    url: urlNew,
+		headers: {"Authorization": authorization.idToken},
+    async: false,
+    dataType: "json",
+		contentType:'application/json',
+    success: function(json){
+			if (json!==undefined) {
+				// console.log(urlNew)
+			}
+    	ans = json
+		},
+		statusCode: {
+			401: function() {
+console.log("Error: 401")
+				cogLogoutUser()
+				//$(loginError).html("Sorry, your session has expired.")
+				console.log("Session Expired")
+			},
+			0: function() {
+console.log("Error: 0")
+				console.log("Status code: 0")
+				cogLogoutUser()
+				$(loginError).html("Sorry, your session has expired.")
+				console.log("Unauthorized")
+			}
+		},
+		error: function(jqXHR, status, error){
+			// utilErrorHandler(message, status, error, "aws")
+			// console.log(jqXHR)
+			console.log(jqXHR.status)
+			// console.log(jqXHR + ", " + status + ", " + error)
+			// // alert(error);
+			// // TODO try to capture the error 401 - ????
+			// // TODO add same error handling to dbPostData
+			//
+			// console.log(typeof error)
+			//
+			// // if (error.indexOf("NetworkError: Failed to execute 'send' on 'XMLHttpRequest'") > -1) {
+			// 	cogLogoutUser()
+			// 	$('#nav5').html('Login')
+			// 	$('#nav4').html('')
+			// 	$(loginError).html("Sorry, your session has expired.")
+			// //}
+
+			// if (message.readyState == 0) {
+			// 	console.log("Error of some kind!")
+			// }
+		}
+	}).done(function(data, textStatus, jqXHR) {
+    //console.log("DONE")
+		//console.log(data)
+  }).fail(function (jqXHR, textStatus, errorThrown) {
+    console.log("status", jqXHR.status)
+		if (jqXHR.status == 0) {
+
+        }
+        if (errorThrown) {
+	    	console.log("errorThrown", errorThrown)
+            console.log("errorThrown", JSON.parse(errorThrown))
+        }
+
+		// if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
+		// 	console.log("ACCESS ERROR") // force logon
+		// }
+	}).always(function (data, textStatus, jqXHR) {
+    // TODO most likely remove .always
+	})
+// console.log(JSON.stringify(ans))
+	return ans
+};
+
+
+// async function dbGetData(subUrl, data){
+
+// console.log("GETTING DATA")
+
+//     let results = "failed"
+//     fetch(dbUrl + subUrl, {
+//         headers: {
+//             'Content-Type': 'application/json',    
+//             "Authorization": cachedSession.auth.idToken,
+//         },
+//         body: JSON.stringify(data),
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         console.log('Success:', data);
+//         results = "success"
+    
+//     })
+//     .catch((error) => {
+//         console.error('Error:', error);
+//     });
+//     return results
+// }

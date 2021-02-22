@@ -5,7 +5,7 @@ import Select from '../Core/Select.jsx';
 import FormControl from '../Core/FormControl.jsx';
 import Typography from '../Core/Typography.jsx';
 import { Controller } from 'react-hook-form';
-import { getFieldSize } from '../../System/js/System'
+import { getFormFieldSize } from '../js/FormsSystem'
 
 FormSelect.propTypes = {
     name: PropTypes.string.isRequired,      // name - Name of form field
@@ -21,10 +21,10 @@ FormSelect.propTypes = {
 export default function FormSelect(props) {
     let selectProps = { ...props };
     selectProps.error = Boolean(props.error);
-    const width = getFieldSize(props.fieldsize) // xs, sm, md, lg, xl
+    const width = getFormFieldSize(props.fieldsize) // xs, sm, md, lg, xl
 
     return (
-        <FormControl variant='outlined'>
+        <FormControl variant='outlined' size='small'>
             <InputLabel>{ props.label }</InputLabel>
             <Controller as={ Select } width={ width } { ...selectProps }   />
             <Typography ml={ 0.5 } variant='body2' color='error'>
