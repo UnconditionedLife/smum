@@ -8,7 +8,7 @@ import moment from 'moment';
 
 
 // This component must be implemented with a class in order to use the ref property.
-class ClientInfo extends React.PureComponent {
+class ClientInfoSheet extends React.PureComponent {
     render() {
         const client = this.props.client;
 
@@ -58,7 +58,7 @@ class ClientInfo extends React.PureComponent {
                     </thead>
                     <tbody>
                         {(client?.dependents ?? []).map((row) => (row.isActive == 'Active' ? (
-                            <tr key={ row.givenName + row.age } >
+                            <tr key={ row.depId } >
                                 <td>{row.givenName} {row.familyName}</td>
                                 <td>{row.relationship}</td>
                                 <td>{row.gender}</td>
@@ -124,7 +124,7 @@ class ClientInfo extends React.PureComponent {
     }
 }
 
-ClientInfo.propTypes = {
+ClientInfoSheet.propTypes = {
     client: PropTypes.object.isRequired,    // client data
 }
 
@@ -138,12 +138,12 @@ function PrintClientInfo(props) {
     return (
         <>
             <ReactToPrint
-                trigger={() => <Tooltip title='Print Client Form'><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
+                trigger={() => <Tooltip title='Print Client Form' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
                 content={() => ref.current}
                 copyStyles={ false }
             />
             <div style={{ display: 'none' }}>
-                <ClientInfo client={ props.client } ref={ ref } />
+                <ClientInfoSheet client={ props.client } ref={ ref } />
             </div>
         </>
     );
