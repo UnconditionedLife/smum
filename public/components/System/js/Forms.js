@@ -32,16 +32,24 @@ export function validState(state) {
 }
 
 export function validPhone(phone) {
-    let digits = phone.replace(/[^+\d]/g, ''); // Leave only + and digits
-    if (digits.match(/^(\+1)?[1-9]\d{9}$/)) // Optional +1 followed by 10 digits
+    if (phone == '') {
         return true;
-    else
-        return false;
+    } else {
+        let digits = phone.replace(/[^+\d]/g, ''); // Leave only + and digits
+        if (digits.match(/^(\+1)?[1-9]\d{9}$/)) // Optional +1 followed by 10 digits
+            return true;
+        else
+            return false;
+    }
 }
 
 export function formatPhone(phone) {
     let digits = phone.replace(/[^+\d]/g, '');
-    if (digits.startsWith('+1'))
-        digits = digits.substring(2);
-    return '+1-' + digits.substr(0, 3) + '-' + digits.substr(3, 3) + '-' + digits.substr(6, 4);
+    if (digits) {
+        if (digits.startsWith('+1'))
+            digits = digits.substring(2);
+        return '+1-' + digits.substr(0, 3) + '-' + digits.substr(3, 3) + '-' + digits.substr(6, 4);
+    } else {
+        return '';
+    }
 }
