@@ -2262,88 +2262,88 @@ function uiResetServiceTypeForm(){
 
 
 // MOVED TO REACT
-function dbGetData(uUrl){
-	cogCheckSession()
-	let urlNew = uUrl;
-	let ans = null;
-// TODO /// move Ajax calls to [.done .fail . always syntax]
-	$.ajax({
-    type: "GET",
-    url: urlNew,
-		headers: {"Authorization": authorization.idToken},
-    async: false,
-    dataType: "json",
-		contentType:'application/json',
-    success: function(json){
-			if (json!==undefined) {
-				// console.log(urlNew)
-			}
-    	ans = json
-		},
-		statusCode: {
-			401: function() {
-console.log("Error: 401")
-				cogLogoutUser()
-				//$(loginError).html("Sorry, your session has expired.")
-				console.log("Session Expired")
-			},
-			0: function() {
-console.log("Error: 0")
-				console.log("Status code: 0")
-				cogLogoutUser()
-				$(loginError).html("Sorry, your session has expired.")
-				console.log("Unauthorized")
-			}
-		},
-		error: function(jqXHR, status, error){
-			// utilErrorHandler(message, status, error, "aws")
-			// console.log(jqXHR)
-			console.log(jqXHR.status)
-			// console.log(jqXHR + ", " + status + ", " + error)
-			// // alert(error);
-			// // TODO try to capture the error 401 - ????
-			// // TODO add same error handling to dbPostData
-			//
-			// console.log(typeof error)
-			//
-			// // if (error.indexOf("NetworkError: Failed to execute 'send' on 'XMLHttpRequest'") > -1) {
-			// 	cogLogoutUser()
-			// 	$('#nav5').html('Login')
-			// 	$('#nav4').html('')
-			// 	$(loginError).html("Sorry, your session has expired.")
-			// //}
+// function dbGetData(uUrl){
+// 	cogCheckSession()
+// 	let urlNew = uUrl;
+// 	let ans = null;
+// // TODO /// move Ajax calls to [.done .fail . always syntax]
+// 	$.ajax({
+//     type: "GET",
+//     url: urlNew,
+// 		headers: {"Authorization": authorization.idToken},
+//     async: false,
+//     dataType: "json",
+// 		contentType:'application/json',
+//     success: function(json){
+// 			if (json!==undefined) {
+// 				// console.log(urlNew)
+// 			}
+//     	ans = json
+// 		},
+// 		statusCode: {
+// 			401: function() {
+// console.log("Error: 401")
+// 				cogLogoutUser()
+// 				//$(loginError).html("Sorry, your session has expired.")
+// 				console.log("Session Expired")
+// 			},
+// 			0: function() {
+// console.log("Error: 0")
+// 				console.log("Status code: 0")
+// 				cogLogoutUser()
+// 				$(loginError).html("Sorry, your session has expired.")
+// 				console.log("Unauthorized")
+// 			}
+// 		},
+// 		error: function(jqXHR, status, error){
+// 			// utilErrorHandler(message, status, error, "aws")
+// 			// console.log(jqXHR)
+// 			console.log(jqXHR.status)
+// 			// console.log(jqXHR + ", " + status + ", " + error)
+// 			// // alert(error);
+// 			// // TODO try to capture the error 401 - ????
+// 			// // TODO add same error handling to dbPostData
+// 			//
+// 			// console.log(typeof error)
+// 			//
+// 			// // if (error.indexOf("NetworkError: Failed to execute 'send' on 'XMLHttpRequest'") > -1) {
+// 			// 	cogLogoutUser()
+// 			// 	$('#nav5').html('Login')
+// 			// 	$('#nav4').html('')
+// 			// 	$(loginError).html("Sorry, your session has expired.")
+// 			// //}
 
-			// if (message.readyState == 0) {
-			// 	console.log("Error of some kind!")
-			// }
-		}
-	}).done(function(data, textStatus, jqXHR) {
-    //console.log("DONE")
-		//console.log(data)
-  }).fail(function (jqXHR, textStatus, errorThrown) {
-    console.log("status", jqXHR.status)
-		if (jqXHR.status == 0) {
+// 			// if (message.readyState == 0) {
+// 			// 	console.log("Error of some kind!")
+// 			// }
+// 		}
+// 	}).done(function(data, textStatus, jqXHR) {
+//     //console.log("DONE")
+// 		//console.log(data)
+//   }).fail(function (jqXHR, textStatus, errorThrown) {
+//     console.log("status", jqXHR.status)
+// 		if (jqXHR.status == 0) {
 
-        }
-        if (errorThrown) {
-	    	console.log("errorThrown", errorThrown)
-            console.log("errorThrown", JSON.parse(errorThrown))
-        }
+//         }
+//         if (errorThrown) {
+// 	    	console.log("errorThrown", errorThrown)
+//             console.log("errorThrown", JSON.parse(errorThrown))
+//         }
 
-		// if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
-		// 	console.log("ACCESS ERROR") // force logon
-		// }
-	}).always(function (data, textStatus, jqXHR) {
-    // TODO most likely remove .always
-	})
-// console.log(JSON.stringify(ans))
-	return ans
-};
+// 		// if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
+// 		// 	console.log("ACCESS ERROR") // force logon
+// 		// }
+// 	}).always(function (data, textStatus, jqXHR) {
+//     // TODO most likely remove .always
+// 	})
+// // console.log(JSON.stringify(ans))
+// 	return ans
+// };
 
-function dbGetDaysServices(dayDate){
-	dayDate = moment(dayDate).format("YYYYMMDD")
-	return dbGetData(aws+"/clients/services/byday/"+dayDate).services
-};
+// function dbGetDaysServices(dayDate){
+// 	dayDate = moment(dayDate).format("YYYYMMDD")
+// 	return dbGetData(aws+"/clients/services/byday/"+dayDate).services
+// };
 
 // TODO remove bymonth from API
 // TODO update service record in API to not have month property
@@ -2397,9 +2397,9 @@ function dbGetServicesByIdAndYear(serviceTypeId, year) {
 					.filter(item => moment(item.servicedDateTime).year() == year)
 };
 
-function dbGetUsers(){
-	return dbGetData(aws+"/users").users
-};
+// function dbGetUsers(){
+// 	return dbGetData(aws+"/users").users
+// };
 
 // MOVED TO REACT JS
 // function dbLoadServiceHistory(reactDIV){
@@ -2653,35 +2653,36 @@ function dbSaveSettingsForm(){
 	settings = dbGetAppSettings()
 };
 
-function dbSearchClients(str, slashCount){
-	clientData = []
-	if (slashCount == 2){
-		str = utilCleanUpDate(str)
-		str = moment(str, uiDate).format(date)
-		clientData = dbGetData(aws+"/clients/dob/"+str).clients
-	} else if (!isNaN(str)&&str.length<MAX_ID_DIGITS){
-		clientData = dbGetData(aws+"/clients/"+str).clients
-	} else if (str.includes(" ")){
-		str = utilChangeWordCase(str)
-		let split = str.split(" ")
-//*** TODO deal with more than two words ***
-		let d1 = dbGetData(aws+"/clients/givenname/"+split[0]).clients
-		let d2 = dbGetData(aws+"/clients/familyname/"+split[0]).clients
-		let d3 = dbGetData(aws+"/clients/givenname/"+split[1]).clients
-		let d4 = dbGetData(aws+"/clients/familyname/"+split[1]).clients
-		clientData = utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
-	} else if (clientData==null||clientData.length==0){
-		str = utilChangeWordCase(str)
-		let d2 = dbGetData(aws+"/clients/givenname/"+str).clients
-		let d1 = dbGetData(aws+"/clients/familyname/"+str).clients
-		if (d1.length>0&&d2.length<1){
-			clientData = utilRemoveDupClients(d1.concat(d2))
-		}	else if (d2.length>0){
-			clientData = utilRemoveDupClients(d2.concat(d1))
-		}
-	}
-	return clientData
-};
+// MOVED TO REACT Database.js
+// function dbSearchClients(str, slashCount){
+// 	clientData = []
+// 	if (slashCount == 2){
+// 		str = utilCleanUpDate(str)
+// 		str = moment(str, uiDate).format(date)
+// 		clientData = dbGetData(aws+"/clients/dob/"+str).clients
+// 	} else if (!isNaN(str) && str.length < MAX_ID_DIGITS){
+// 		clientData = dbGetData(aws+"/clients/"+str).clients
+// 	} else if (str.includes(" ")){
+// 		str = utilChangeWordCase(str)
+// 		let split = str.split(" ")
+// //*** TODO deal with more than two words ***
+// 		let d1 = dbGetData(aws+"/clients/givenname/"+split[0]).clients
+// 		let d2 = dbGetData(aws+"/clients/familyname/"+split[0]).clients
+// 		let d3 = dbGetData(aws+"/clients/givenname/"+split[1]).clients
+// 		let d4 = dbGetData(aws+"/clients/familyname/"+split[1]).clients
+// 		clientData = utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
+// 	} else if (clientData==null||clientData.length==0){
+// 		str = utilChangeWordCase(str)
+// 		let d2 = dbGetData(aws+"/clients/givenname/"+str).clients
+// 		let d1 = dbGetData(aws+"/clients/familyname/"+str).clients
+// 		if (d1.length>0&&d2.length<1){
+// 			clientData = utilRemoveDupClients(d1.concat(d2))
+// 		}	else if (d2.length>0){
+// 			clientData = utilRemoveDupClients(d2.concat(d1))
+// 		}
+// 	}
+// 	return clientData
+// };
 
 // **********************************************************************************************************
 // *********************************************** DATE FUNCTIONS *******************************************
@@ -4246,42 +4247,44 @@ function utilCalcLastServedDays() {   // TODO DELETE AFTER SERVICE PAGE IS REACT
 // 	return targets;
 // }
 
-function utilChangeWordCase(str){
-	str = str.replace(/[^\s]+/g, function(word) {
-	  return word.replace(/^./, function(first) {
-	    return first.toUpperCase();
-	  });
-	});
-	return str
-}
+// function utilChangeWordCase(str){
+// 	str = str.replace(/[^\s]+/g, function(word) {
+// 	  return word.replace(/^./, function(first) {
+// 	    return first.toUpperCase();
+// 	  });
+// 	});
+// 	return str
+// }
 
-function utilCleanUpDate(a) {
-	a = a.replace("-", "/")
-	a = a.replace(".", "/")
-	let dateArr = []
-	let temp = a
-	// let year = ""
-	for (var i = 0; i < 2; i++) {
-		let slash = temp.indexOf("/")
-		dateArr[i] = temp.slice(0, slash)
-		if (dateArr[i].length == 1) dateArr[i] = "0" + dateArr[i]
-		temp =  temp.slice(slash + 1)
-	}
-	yearLength = temp.length
-	if (yearLength == 1) {
-		dateArr[2] = "200" + temp
-	} else if (yearLength == 2) {
-		if (temp <= moment().format("YY")) {
-			dateArr[2] = "20" + temp
-		} else {
-			dateArr[2] = "19" + temp
-		}
-	} else {
-		dateArr[2] = temp
-	}
-	const date = dateArr[0] +"/"+ dateArr[1] +"/"+ dateArr[2]
-	return date
-};
+
+// Moved to REACT GlobalUtils.js
+// function utilCleanUpDate(a) {
+// 	a = a.replace("-", "/")
+// 	a = a.replace(".", "/")
+// 	let dateArr = []
+// 	let temp = a
+// 	// let year = ""
+// 	for (var i = 0; i < 2; i++) {
+// 		let slash = temp.indexOf("/")
+// 		dateArr[i] = temp.slice(0, slash)
+// 		if (dateArr[i].length == 1) dateArr[i] = "0" + dateArr[i]
+// 		temp =  temp.slice(slash + 1)
+// 	}
+// 	yearLength = temp.length
+// 	if (yearLength == 1) {
+// 		dateArr[2] = "200" + temp
+// 	} else if (yearLength == 2) {
+// 		if (temp <= moment().format("YY")) {
+// 			dateArr[2] = "20" + temp
+// 		} else {
+// 			dateArr[2] = "19" + temp
+// 		}
+// 	} else {
+// 		dateArr[2] = temp
+// 	}
+// 	const date = dateArr[0] +"/"+ dateArr[1] +"/"+ dateArr[2]
+// 	return date
+// };
 
 // Replaced by REACT
 // function utilDeleteNote(index){
@@ -4388,17 +4391,19 @@ function utilKeyToLabel(x){
 // 	return moment().format(dateTime)
 // }
 
-function utilRemoveDupClients(clients) {
-	let ids=[], temp=[], undupClients = []
-	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)
-	for (let i = 0; i < ids.length; i++) {
-		if (temp.indexOf(ids[i])<0) {
-			undupClients.push(clients[i])
-			temp.push(ids[i])
-		}
-	}
-	return undupClients
-};
+
+// MOVED TO REACT - GloabalUtils.js
+// function utilRemoveDupClients(clients) {
+// 	let ids=[], temp=[], undupClients = []
+// 	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)
+// 	for (let i = 0; i < ids.length; i++) {
+// 		if (temp.indexOf(ids[i])<0) {
+// 			undupClients.push(clients[i])
+// 			temp.push(ids[i])
+// 		}
+// 	}
+// 	return undupClients
+// };
 
 function utilCalcClientAge(source){
 	let dob = ""
@@ -4484,14 +4489,14 @@ function utilGetOrdinal(n) {
 // 	}
 // };
 
-function utilGetCurrentUser(username) {
-	users = dbGetUsers()
-	userList = users.filter(obj => obj.userName == username)
-	if (userList.length == 1)
-		return userList[0]
-	else
-		return null
-}
+// function utilGetCurrentUser(username) {
+// 	users = dbGetUsers()
+// 	userList = users.filter(obj => obj.userName == username)
+// 	if (userList.length == 1)
+// 		return userList[0]
+// 	else
+// 		return null
+// }
 
 function utilToday() {
 	return moment().format(date)

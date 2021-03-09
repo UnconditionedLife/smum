@@ -115,3 +115,52 @@ function dateIsClosed(schedule, date) {
 	}
 	return false;
 }
+
+export function utilCleanUpDate(a) {
+	a = a.replace("-", "/")
+	a = a.replace(".", "/")
+	let dateArr = []
+	let temp = a
+	// let year = ""
+	for (var i = 0; i < 2; i++) {
+		let slash = temp.indexOf("/")
+		dateArr[i] = temp.slice(0, slash)
+		if (dateArr[i].length == 1) dateArr[i] = "0" + dateArr[i]
+		temp =  temp.slice(slash + 1)
+	}
+	const yearLength = temp.length
+	if (yearLength == 1) {
+		dateArr[2] = "200" + temp
+	} else if (yearLength == 2) {
+		if (temp <= moment().format("YY")) {
+			dateArr[2] = "20" + temp
+		} else {
+			dateArr[2] = "19" + temp
+		}
+	} else {
+		dateArr[2] = temp
+	}
+	const date = dateArr[0] +"/"+ dateArr[1] +"/"+ dateArr[2]
+	return date
+}
+
+export function utilChangeWordCase(str){
+	str = str.replace(/[^\s]+/g, function(word) {
+	  return word.replace(/^./, function(first) {
+	    return first.toUpperCase();
+	  });
+	});
+	return str
+}
+
+export function utilRemoveDupClients(clients) {
+	let ids=[], temp=[], undupClients = []
+	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)
+	for (let i = 0; i < ids.length; i++) {
+		if (temp.indexOf(ids[i])<0) {
+			undupClients.push(clients[i])
+			temp.push(ids[i])
+		}
+	}
+	return undupClients
+}

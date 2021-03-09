@@ -3,7 +3,7 @@
 //************************************************
 
 import moment from 'moment';
-import { utilNow, isEmpty, utilStringToArray } from './GlobalUtils';
+import { utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, isEmpty, utilStringToArray } from './GlobalUtils';
 import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 import { searchClients } from './Clients/Clients';
 
@@ -16,9 +16,10 @@ let dbUrl = '';
 let cachedSession = {}
 let cachedSettings = null;
 let cachedSvcTypes = []
+const MAX_ID_DIGITS = 5
 
 function dbFetchUrl(session, subUrl) {
-    return window.dbGetData(dbUrl + subUrl);
+    return dbGetData(dbUrl + subUrl);
 }
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
@@ -63,6 +64,15 @@ export function dbGetUser(session, userName) {
 
 export function dbGetAllUsers(session) {
 	return dbFetchUrl(session, "/users").users;
+}
+
+export function utilGetCurrentUser(username) {
+	const users = dbGetUsers()
+	const userList = users.filter(obj => obj.userName == username)
+	if (userList.length == 1)
+		return userList[0]
+	else
+		return null
 }
 
 // Clients
@@ -123,7 +133,7 @@ export function SettingsSchedule() {
 
 export function dbGetSvcTypes(){
     console.log('GETTING SVCTYPES')
-	const temp = dbGetData(aws+"/servicetypes").serviceTypes
+	const temp = dbGetData(dbUrl + "/servicetypes").serviceTypes
 		.sort(function(a, b){
 			let nameA= a.serviceName.toLowerCase()
 			let nameB= b.serviceName.toLowerCase()
@@ -150,7 +160,7 @@ export function dbGetClientActiveServiceHistory(clientId){
 
 console.log('GET HISTORY FROM DB')
 
-    let history = dbGetData(aws + "/clients/services/" + clientId).services
+    let history = dbGetData(dbUrl + "/clients/services/" + clientId).services
     return history.filter(item => item.serviceValid == "true")
             .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
 }
@@ -195,17 +205,46 @@ console.log(data.clientId)
     await dbPostData(subUrl, data, callback)
 }
 
-export function dbSearchClients(str) {
+export function dbSearchClients(searchTerm) {
     const regex = /[/.]/g
-    const slashCount = (str.match(regex) || []).length
-    let clientsFoundTemp = window.dbSearchClients(str, slashCount)
-    
+    const slashCount = (searchTerm.match(regex) || []).length    
+    let clientsFoundTemp = dbGetClients(searchTerm, slashCount)    
     if (clientsFoundTemp == undefined || clientsFoundTemp==null || clientsFoundTemp.length==0){
       clientsFoundTemp = []
       window.servicesRendered = [] // used temporarily to keep global vars in sync
       window.uiClearCurrentClient()
     }
     return clientsFoundTemp
+}
+
+function dbGetClients(searchTerm, slashCount){
+	let clientData = []
+	if (slashCount == 2){
+		searchTerm = utilCleanUpDate(searchTerm)
+		searchTerm = moment(searchTerm, 'MM/DD/YYYY').format('YYYY-MM-DD')
+		clientData = dbGetData(dbUrl + "/clients/dob/" + searchTerm).clients
+	} else if (!isNaN(searchTerm) && searchTerm.length < MAX_ID_DIGITS){
+		clientData = dbGetData(dbUrl + "/clients/" + searchTerm).clients
+	} else if (searchTerm.includes(" ")){
+		searchTerm = utilChangeWordCase(searchTerm)
+		let split = searchTerm.split(" ")
+//*** TODO deal with more than two words ***
+		let d1 = dbGetData(dbUrl + "/clients/givenname/" + split[0]).clients
+		let d2 = dbGetData(dbUrl + "/clients/familyname/" + split[0]).clients
+		let d3 = dbGetData(dbUrl + "/clients/givenname/" + split[1]).clients
+		let d4 = dbGetData(dbUrl + "/clients/familyname/" + split[1]).clients
+		clientData = utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
+	} else if (clientData==null||clientData.length==0){
+		searchTerm = utilChangeWordCase(searchTerm)
+		let d2 = dbGetData(dbUrl + "/clients/givenname/" + searchTerm).clients
+		let d1 = dbGetData(dbUrl + "/clients/familyname/" + searchTerm).clients
+		if (d1.length > 0 && d2.length < 1){
+			clientData = utilRemoveDupClients(d1.concat(d2))
+		}	else if (d2.length > 0){
+			clientData = utilRemoveDupClients(d2.concat(d1))
+		}
+	}
+	return clientData
 }
 
 // export function dbSaveClient(data){
@@ -219,11 +258,11 @@ export function dbSearchClients(str) {
 // }
 
 export function dbGetNewClientID(){
-    const lastIdJson = dbGetData(aws + "/clients/lastid")
+    const lastIdJson = dbGetData(dbUrl + "/clients/lastid")
     let newId = lastIdJson.lastId
     let notEmpty = true
     while (notEmpty) {
-        const result = dbGetData(aws + "/clients/exists/" + newId)
+        const result = dbGetData(dbUrl + "/clients/exists/" + newId)
         if (result.count == 0) {
             notEmpty = false
         } else {
@@ -233,7 +272,7 @@ export function dbGetNewClientID(){
     let request = {}
     newId = newId.toString()
     request['lastId'] = newId
-    const result = dbPostData(aws+"/clients/lastid",JSON.stringify(request))
+    const result = dbPostData(dbUrl + "/clients/lastid", JSON.stringify(request))
     console.log(result)
     if (result !== "success") {
         console.log("Last client ID not Saved")
@@ -243,12 +282,34 @@ export function dbGetNewClientID(){
 }
 
 export function dbSaveServiceRecord(service){
-	const URL = aws + "/clients/services"
+	const URL = dbUrl + "/clients/services"
 	return dbPostData(URL, JSON.stringify(service))
 }
 
+// formerly utilGetServicesInMonth in app.js
+export function dbGetSvcsInMonth(monthYear){
+
+console.log("Month Year")
+console.log(monthYear)
+
+	const currentMonth = moment().format("YYYYMM")
+	let daysInMonth = moment(monthYear, "YYYYMM").daysInMonth()
+	if (monthYear == currentMonth) daysInMonth = moment().format("D")
+	let monthOfSvcs = []
+	daysInMonth = parseInt(daysInMonth) + 1
+    // Loop through days of month
+	for (var i = 1; i < daysInMonth; i++) {
+		const day = String(i).padStart(2, '0')
+		const dayDate = monthYear + day
+		const dayOfSvcs = dbGetDaysSvcs(dayDate)
+		monthOfSvcs = monthOfSvcs.concat(dayOfSvcs)
+	}
+	return monthOfSvcs
+}
+
 export function dbGetService(serviceId){
-	return dbGetData(aws+"/clients/services/byid/"+serviceId).services
+	return dbGetData(dbUrl + "/clients/services/byid/" + serviceId).services
+    //return dbFetchUrl(cachedSession, "/clients/services/byid/" + serviceId).services;
 }
 
 export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove"
@@ -271,60 +332,16 @@ export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove
     return obj
 }
 
+// UNEXPORTED FUNCTIONS
 
-// function OLDdbPostData(URL,data){
-// 	const sessionStatus = cogCheckSession()
-// 	if (authorization.idToken == 'undefined' || sessionStatus == "FAILED") {
-// 		utilBeep()
-// 		return
-// 	}
-// 	let ans = "failed";
-// 	$.ajax({
-//     type: "POST",
-//     url: URL,
-// 		headers: {"Authorization": authorization.idToken},
-//     async: false,
-//     dataType: "json",
-//     data: data,
-//     contentType:'application/json',
-//     success: function(message){
-// 			if (typeof message.message !== 'undefined') {
-// 				console.log(message.message)
-// 				utilBeep()
-// 			} else if (message.__type != undefined) {
-// 				console.log(message.__type)
-// 				console.log("ERROR")
-// 				utilBeep()
-// 				// TODO need proper error messaging
-// 			} else {
-// 				//utilBloop()
-// 				ans = "success"
-// 				console.log("SUCCESS")
-// 				if (URL.includes('/servicetypes')) {
-// 					// dbGetServiceTypes() // MOVED TO REACT
-// 					uiShowServiceTypes()
-// 					uiSetServiceTypeHeader()
-// 					uiPopulateForm(serviceTypes, 'serviceTypes')
-// 					uiSaveButton('serviceType', 'SAVED!!')
-// 				}
-// 			}
-// 		},
-// 		error: function(json){
-// 				console.log("ERROR")
-// 	    	console.log(json)
-// 				// TODO move this to funtion and make sure all save buttons are covered
-// 				if (URL.includes('/servicetypes')) {
-// 					uiSaveButton('serviceType', 'ERROR!!')
-// 				} else if (URL.includes('/clients')) {
-// 					uiSaveButton('client', 'ERROR!!')
-// 				} else if (URL.includes('/users')) {
-// 					console.log("show error in button")
-// 				}
-// 		}
-// 	})
-// 	return ans
-// };
+function dbGetUsers(){
+	return dbGetData(dbUrl + "/users").users
+}
 
+function dbGetDaysSvcs(dayDate){
+	const subUrl = "/clients/services/byday/" + dayDate
+    return dbGetData(dbUrl + subUrl).services
+}
 
 async function dbPostData(subUrl, data, callback){
     callback('loading', '' )
@@ -411,7 +428,7 @@ async function dbPostData(subUrl, data, callback){
     }
 }
 
-function OLDdbGetData(uUrl){
+function dbGetData(uUrl){
 	cogCheckSession()
 	let urlNew = uUrl;
 	let ans = null;
@@ -487,29 +504,94 @@ console.log("Error: 0")
 	})
 // console.log(JSON.stringify(ans))
 	return ans
-};
+}
+
+function dbGetDaysServices(dayDate){
+	dayDate = moment(dayDate).format("YYYYMMDD")
+	return dbGetData(dbUrl + "/clients/services/byday/"+dayDate).services
+}
 
 
-// async function dbGetData(subUrl, data){
+// async function dbGetData(subUrl, data, callback){
+//     callback('loading', '' )
+//     if (cachedSession.auth) {
+//         return fetch(dbUrl + subUrl, {
+//             headers: {
+//                 'Content-Type': 'application/json',    
+//                 "Authorization": cachedSession.auth.idToken,
+//             },
+//             body: JSON.stringify(data),
+//         })
+//         .then(response => {
 
-// console.log("GETTING DATA")
+//             console.log(response)
 
-//     let results = "failed"
-//     fetch(dbUrl + subUrl, {
-//         headers: {
-//             'Content-Type': 'application/json',    
-//             "Authorization": cachedSession.auth.idToken,
-//         },
-//         body: JSON.stringify(data),
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         console.log('Success:', data);
-//         results = "success"
-    
-//     })
-//     .catch((error) => {
-//         console.error('Error:', error);
-//     });
-//     return results
+//             if (response.ok) {
+//                 response.json()
+//                 if (response.status === 200) {
+//                     console.log('success:', "Save Confirmed")
+//                     callback('success', "")
+//                 } 
+//             } else {
+//                 if (response.status === 400) {
+//                     console.log('error:', "Bad Request Exception")
+//                     callback('error', "Bad Request Exception")
+//                 } else if (response.status === 401) {
+//                     console.log('error:', "Authentication Failed")
+//                     callback('error', "Authentication Failed")
+//                 }else if (response.status === 403) {
+//                     console.log('error:', "Access Denied Exception")
+//                     callback('error', "Access Denied Exception")
+//                 } else if (response.status === 404) {
+//                     console.log('error:', "Not Found Exception")
+//                     callback('error', "Not Found Exception")
+//                 } else if (response.status === 409) {
+//                     console.log('error:', "Conflict Exception")
+//                     callback('error', "Conflict Exception")
+//                 } else if (response.status === 413) {
+//                     console.log('error:', "Request Too Large")
+//                 } else if (response.status === 429) {
+//                     console.log('error:', "API Configuration Error/Throttled")
+//                     callback('error', "API Configuration Error/Throttled")
+//                 } else if (response.status === 500) {
+//                     console.log('error:', "Bad Gateway Exception")
+//                     callback('error', "Bad Gateway Exception")
+//                 } else if (response.status === 502) {
+//                     console.log('error:', "Bad Gateway Exception")
+//                     callback('error', "Bad Gateway Exception")
+//                 } else if (response.status === 503) {
+//                     console.log('error:', "Service Unavailable Exception")
+//                     callback('error', "Service Unavailable Exception")
+//                 } else if (response.status === 504) {
+//                     console.log('error:', "Endpoint Request Timed-out Exception")
+//                     callback('error', "Endpoint Request Timed-out Exception")
+//                 } else {
+//                     console.log(response.status)
+//                     console.log('error:', "Database can't be reached!")
+//                     callback('error', "Database can't be reached!")
+//                 }
+//             }
+//         })
+//         .then(data => {
+//             console.log('Raw Data:', data);
+//             if (data !== undefined) {
+//                 if (data.message === "Unauthorized") {
+//                     console.log('error:', 'Unauthorized Connection');
+//                     callback('error', 'Unauthorized Connection')
+//                 } else {
+//                     console.log('Success:', data);
+//                     callback('success', data)
+//                 }
+//             } else {
+//                 callback('error', 'No Data Returned')
+//             }
+//         })
+//         .catch((error) => {
+//             console.error('Error:', error);
+//             callback('error', error)
+//         })
+//     } else {
+//         console.error('Error:', 'Session Expired');
+//         callback('error', 'Session Expired') 
+//     }
 // }
