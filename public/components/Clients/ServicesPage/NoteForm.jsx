@@ -4,6 +4,7 @@ import { Box, Checkbox, FormControlLabel } from '@material-ui/core';
 import { NotificationImportant } from '@material-ui/icons';
 import { Button, TextField } from '../../System';
 import { isEmpty, utilNow } from '../../System/js/GlobalUtils.js';
+import { dbSaveClient } from '../../System/js/Database.js';
 
 NoteForm.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
@@ -15,6 +16,7 @@ NoteForm.propTypes = {
     handleTextFieldChange: PropTypes.func.isRequired,
     noteImportant: PropTypes.bool.isRequired,
     handleNoteImportantChange: PropTypes.func.isRequired,
+    showAlert: PropTypes.func.isRequired,
 }
 
 export default function NoteForm(props) {
@@ -41,6 +43,11 @@ export default function NoteForm(props) {
             setStopEffect(true)
         }
     });
+
+    function callback(response, msg){
+        if (response === 'success') msg = "Note successfully added."
+        props.showAlert(response, msg);
+    }
 
     function handleNoteSave(){
         let important = "false"
@@ -73,10 +80,7 @@ export default function NoteForm(props) {
         updateClient(tempClient)
         handleNoteCountChange(tempClient.notes.length)
         handleNoteCancel()
-        const result = window.dbSaveCurrentClient(client)
-        if (result !== "success") {
-            alert("Client did not save properly");
-        }
+        dbSaveClient(client, callback)
     }
 
     function handleNoteCancel(){

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@material-ui/core';
 import { Card } from '../../System';
@@ -9,9 +9,12 @@ ServicesPage.propTypes = {
     session: PropTypes.object.isRequired,
     svcsRendered: PropTypes.object,
     updateSvcsRendered: PropTypes.func,
+    showAlert: PropTypes.func.isRequired,
 }
 
 export default function ServicesPage(props) {
+
+
     return (
         <Box display="flex" justifyContent="space-around" flexWrap="wrap">
             <Box width='100%' maxWidth="800px" mt={ 5 } pt={ 0 }>

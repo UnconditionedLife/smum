@@ -258,7 +258,18 @@ function dbGetClients(searchTerm, slashCount){
 // }
 
 export function dbGetNewClientID(){
+
+    function postCallback(response, msg){
+        if (response !== "success") {
+            console.log("Last client ID not Saved - ", msg)
+            return 'failed'
+        }
+    }
+
     const lastIdJson = dbGetData(dbUrl + "/clients/lastid")
+
+console.log(lastIdJson)
+
     let newId = lastIdJson.lastId
     let notEmpty = true
     while (notEmpty) {
@@ -270,14 +281,8 @@ export function dbGetNewClientID(){
         }
     }
     let request = {}
-    newId = newId.toString()
-    request['lastId'] = newId
-    const result = dbPostData(dbUrl + "/clients/lastid", JSON.stringify(request))
-    console.log(result)
-    if (result !== "success") {
-        console.log("Last client ID not Saved")
-        return 'failed'
-    }
+    request['lastId'] = newId.toString()
+    dbPostData("/clients/lastid", JSON.stringify(request), postCallback)
     return newId
 }
 
@@ -362,7 +367,7 @@ async function dbPostData(subUrl, data, callback){
                 response.json()
                 if (response.status === 200) {
                     console.log('success:', "Save Confirmed")
-                    callback('success', "")
+                    callback('success', "Save Confirmed")
                 } 
             } else {
                 if (response.status === 400) {
@@ -411,11 +416,11 @@ async function dbPostData(subUrl, data, callback){
                     console.log('error:', 'Unauthorized Connection');
                     callback('error', 'Unauthorized Connection')
                 } else {
-                    console.log('Success:', data);
-                    callback('success', data)
+                    console.log('Success:', 'Save Confirmed');
+                    callback('success', 'Save Confirmed')
                 }
             } else {
-                callback('success', '')
+                callback('success', 'Save Confirmed')
             }
         })
         .catch((error) => {

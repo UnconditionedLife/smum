@@ -15,6 +15,7 @@ ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
     updateClient: PropTypes.func.isRequired,
     session: PropTypes.object.isRequired,
+    showAlert: PropTypes.func.isRequired,
 }
 
 export default function ClientPage(props) {
@@ -22,7 +23,7 @@ export default function ClientPage(props) {
     const updateClient = props.updateClient;
     const clientFormDiv = useRef(null);
     // const clientFormDiv2 = useRef(null);
-    const [expanded, setExpanded] = useState(false);
+    const [ expanded, setExpanded ] = useState(false);
     const [ saveMessage, setSaveMessage ] = useState({})
   
     const handleChange = (panel) => (event, isExpanded) => {

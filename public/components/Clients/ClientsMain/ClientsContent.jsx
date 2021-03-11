@@ -15,6 +15,7 @@ ClientsContent.propTypes = {
     showFound: PropTypes.bool.isRequired,
     showServices: PropTypes.bool.isRequired,
     showClient: PropTypes.bool.isRequired,
+    showAlert: PropTypes.func.isRequired,
 }
 
 export default function ClientsContent(props) {
@@ -34,7 +35,7 @@ export default function ClientsContent(props) {
                         <FoundPage
                             clientsFound={ props.clientsFound }
                             client={ props.client } changeClient={ props.changeClient }
-                            updateURL={ props.updateURL } />
+                            updateURL={ props.updateURL } showAlert={ props.showAlert } />
                     }
                     { !props.showFound && logoBox }
                 </Route>              
@@ -42,21 +43,21 @@ export default function ClientsContent(props) {
                     { props.showServices && 
                         <ServicesPage 
                             client={ props.client } updateClient={ props.updateClient }
-                            session={ props.session } />
+                            session={ props.session } showAlert={ props.showAlert }/>
                     }
                     { !props.showServices && logoBox }
                 </Route>
                 <Route path={`${match.path}/client/:clientId`}>
                     { props.showClient && 
                         <ClientPage client={props.client} updateClient={ props.updateClient }
-                            session={ props.session } />
+                            session={ props.session } showAlert={ props.showAlert } />
                     }
                     { !props.showClient && logoBox }
                 </Route>
                 <Route path={`${match.path}/history/:clientId`}>
                     { props.showClient && 
                         <HistoryPage client={props.client} updateClient={ props.updateClient }
-                            session={ props.session } />
+                            session={ props.session } showAlert={ props.showAlert } />
                     }
                     { !props.showClient && logoBox }
                 </Route>

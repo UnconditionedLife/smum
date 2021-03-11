@@ -10,6 +10,7 @@ import { Card, Fab } from '../../System';
 ServiceNotes.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,    
     session: PropTypes.object.isRequired,
+    showAlert: PropTypes.func.isRequired,
 }
 
 export default function ServiceNotes(props) {
@@ -88,6 +89,7 @@ export default function ServiceNotes(props) {
                             handleTextFieldChange = { handleTextFieldChange }
                             noteImportant = { noteImportant }
                             handleNoteImportantChange = { handleNoteImportantChange }
+                            showAlert={ props.showAlert }
                         /> 
                     </CardContent>
                 </Card>
@@ -101,6 +103,7 @@ export default function ServiceNotes(props) {
                 editMode={ editMode } handleEditModeChange = { handleEditModeChange }
                 noteText = { noteText } handleTextFieldChange = { handleTextFieldChange }
                 noteImportant = { noteImportant } handleNoteImportantChange = { handleNoteImportantChange }
+                showAlert={ props.showAlert }
             />
         </Fragment>
     )

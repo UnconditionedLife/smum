@@ -4,12 +4,13 @@ import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
 import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
 import { Card, IconButton } from '../../System';
 import { NoteForm } from '../../Clients';
+import { dbSaveClient } from '../../System/js/Database.js';
 
 NotesDisplay.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
     handleNoteCountChange: PropTypes.func.isRequired,
     session: PropTypes.object.isRequired,
-    
+    showAlert: PropTypes.func.isRequired,
 }
 
 export default function NotesDisplay(props) {
@@ -28,6 +29,13 @@ export default function NotesDisplay(props) {
 
     const userName = session.user.userName
 
+    function callback(response, msg){
+        console.log("IN CALLBACK")
+        console.log(response, msg)
+        if (response === 'success') msg = "Note successfully removed."
+        props.showAlert(response, msg);
+    }
+
     function handleDeleteNote(noteId) {
         let tempClient = client
         const notes = client.notes
@@ -35,10 +43,7 @@ export default function NotesDisplay(props) {
         tempClient.notes = filteredNotes
         updateClient(tempClient)
         handleNoteCountChange(client.notes.length)
-        const result = window.dbSaveCurrentClient(client)
-        if (result !== "success") {
-            alert("Client did not save properly");
-        }
+        dbSaveClient(client, callback)
     }
 
     function handleEditNote(noteId) {
@@ -109,6 +114,7 @@ export default function NotesDisplay(props) {
                                     handleTextFieldChange={ handleTextFieldChange }
                                     noteImportant={ noteImportant }
                                     handleNoteImportantChange={ handleNoteImportantChange }
+                                    showAlert={ props.showAlert }
                                 /> 
                             </CardContent>                               
                         </Fade>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Box } from '@material-ui/core';
+import { Box, Snackbar } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import { ClientsHeader, ClientsContent } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
@@ -30,6 +31,10 @@ export default function ClientsMain(props) {
     const [ showFound, setShowFound ] = useState(false);
     const [ showServices, setShowService ] = useState(false);
     const [ showClient, setShowClient ] = useState(false);
+
+    const [ openAlert, setOpenAlert ] = useState(false)
+    const [ alertSeverity, setAlertSeverity ] = useState("")
+    const [ alertMsg, setAlertMsg ] = useState("")
     
 
     useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(client); } }, [session, url])
@@ -175,9 +180,20 @@ console.log("{",newClient.clientId,"}")
 
 console.log("IN NEW CLIENT")
 
+        changeClientsFound([])        
         changeClient(emptyClient)
-        changeClientsFound([])
         updateURL(null, 2)
+    }
+
+
+    function showAlert(severity, msg){
+        setAlertSeverity(severity) // error, warning, info, success
+        setAlertMsg(msg)
+        setOpenAlert(true)
+    }
+
+    function handleAlertClose(){
+        setOpenAlert(false)
     }
 
     const passProps = {
@@ -193,8 +209,13 @@ console.log("IN NEW CLIENT")
 
     return (
         <Box key={ client.updatedDateTime } width="100%" p={2} >
+            
+            <Snackbar open={ openAlert } autoHideDuration={ 15000 } onClose={ handleAlertClose }>
+                <Alert onClose={ handleAlertClose } severity={ alertSeverity }>{ alertMsg }</Alert>
+            </Snackbar>
+
             <ClientsHeader { ...passProps } />
-            <ClientsContent { ...passProps } session={ session } />
+            <ClientsContent { ...passProps } session={ session } showAlert={ showAlert } />
         </Box>
     )
 }
