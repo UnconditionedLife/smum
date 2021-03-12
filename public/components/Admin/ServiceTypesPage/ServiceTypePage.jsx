@@ -1,15 +1,54 @@
-import React from 'react';
+import React, {useState} from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Typography } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
 import { getSvcTypes } from '../../System/js/Database.js';
+import { ServiceTypeFormDialog } from '../../Admin';
 
 ServiceTypeList.propTypes = {
     list: PropTypes.array.isRequired,
 }
 
 function ServiceTypeList(props) {
+    const [ editMode, setEditMode ] = useState('none');
+    const [ selectedService, setSelectedService ] = useState(null);
+    const [ editRecord, setEditRecord ] = useState(null);
+
+    function clearSelection(){
+        setSelectedService(null)
+        setEditRecord(null)
+    }
+
+    function handleEditRecord(newRecord){
+        setEditRecord(newRecord)
+        clearSelection()   
+    }
+
+    function handleEditMode(newEditMode) {
+        switch(newEditMode) {
+            case 'cancel':
+                setEditMode('none')
+                clearSelection()
+                break;
+            case 'message':
+                setEditMode('none')
+                clearSelection()
+        }
+    }
+
+    function handleSelectedService(event, newServiceId) {
+        setSelectedService(newServiceId)
+
+        const record = props.list.filter(function( obj ) {
+            return obj.serviceTypeId === newServiceId
+        })[0]
+        console.log(record)
+        // setEditMode('none')
+        setEditRecord(record)
+        setEditMode('edit')
+    }
+
     return (
         <Box width='100%' mx={ 2 }>
             <TableContainer> 
@@ -25,12 +64,17 @@ function ServiceTypeList(props) {
                     {props.list.map((row) => (
                     <TableRow 
                         key={ row.serviceTypeId }
-                    >
+                        onClick= { (event) => handleSelectedService(event, row.serviceTypeId)}
+                        selected= { row.serviceTypeId == selectedService } >
                         <TableCell component="th" scope="row">{row.serviceName}</TableCell>
                         <TableCell align="center">{row.serviceCategory}</TableCell>
                         <TableCell align="center">{row.serviceDescription}</TableCell>
                     </TableRow>
                     ))}
+                    { editMode === 'edit' &&
+                        <ServiceTypeFormDialog editMode={ editMode } handleEditMode={ handleEditMode } 
+                          serviceTypes={ props.list } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
+                    }
                 </TableBody>
                 </Table>
             </TableContainer>
