@@ -62,6 +62,10 @@ export function dbGetUser(session, userName) {
         return null;
 }
 
+export async function dbSaveUser(data, callback) {
+    await dbPostData('/users/', data, callback)
+}
+
 export function dbGetAllUsers(session) {
 	return dbFetchUrl(session, "/users").users;
 }
@@ -348,8 +352,31 @@ function dbGetDaysSvcs(dayDate){
     return dbGetData(dbUrl + subUrl).services
 }
 
-async function dbPostData(subUrl, data, callback){
-    callback('loading', '' )
+const statusMessages = [
+    {code: 200, msg: 'Save Confirmed'},
+    {code: 400, msg: 'Bad Request Exception'},
+    {code: 401, msg: 'Authentication Failed'},
+    {code: 403, msg: 'Access Denied Exception'},
+    {code: 404, msg: 'Not Found Exception'},
+    {code: 409, msg: 'Conflict Exception'},
+    {code: 413, msg: 'Request Too Large'},
+    {code: 429, msg: 'API Configuration Error/Throttled'},
+    {code: 500, msg: 'Internal Server Error'},
+    {code: 502, msg: 'Bad Gateway Exception'},
+    {code: 503, msg: 'Service Unavailable Exception'},
+    {code: 504, msg: 'Endpoint Request Timed-out Exception'},
+];
+
+function getMessage(code) {
+    const match = statusMessages.find(x => x.code == code);
+    if (match)
+        return match.msg;
+    else
+        return 'Unknown Error ' + code;
+}
+
+async function dbPostData(subUrl, data, callback) {
+    callback('working', '');
     if (cachedSession.auth) {
         return fetch(dbUrl + subUrl, {
             method: 'POST',
@@ -360,69 +387,32 @@ async function dbPostData(subUrl, data, callback){
             body: JSON.stringify(data),
         })
         .then(response => {
-
-            console.log(response)
+            let message = getMessage(response.status);
 
             if (response.ok) {
-                response.json()
-                if (response.status === 200) {
-                    console.log('success:', "Save Confirmed")
-                    callback('success', "Save Confirmed")
-                } 
+                console.log('success:', message);
+                callback('success', message);
             } else {
-                if (response.status === 400) {
-                    console.log('error:', "Bad Request Exception")
-                    callback('error', "Bad Request Exception")
-                } else if (response.status === 401) {
-                    console.log('error:', "Authentication Failed")
-                    callback('error', "Authentication Failed")
-                }else if (response.status === 403) {
-                    console.log('error:', "Access Denied Exception")
-                    callback('error', "Access Denied Exception")
-                } else if (response.status === 404) {
-                    console.log('error:', "Not Found Exception")
-                    callback('error', "Not Found Exception")
-                } else if (response.status === 409) {
-                    console.log('error:', "Conflict Exception")
-                    callback('error', "Conflict Exception")
-                } else if (response.status === 413) {
-                    console.log('error:', "Request Too Large")
-                } else if (response.status === 429) {
-                    console.log('error:', "API Configuration Error/Throttled")
-                    callback('error', "API Configuration Error/Throttled")
-                } else if (response.status === 500) {
-                    console.log('error:', "Bad Gateway Exception")
-                    callback('error', "Bad Gateway Exception")
-                } else if (response.status === 502) {
-                    console.log('error:', "Bad Gateway Exception")
-                    callback('error', "Bad Gateway Exception")
-                } else if (response.status === 503) {
-                    console.log('error:', "Service Unavailable Exception")
-                    callback('error', "Service Unavailable Exception")
-                } else if (response.status === 504) {
-                    console.log('error:', "Endpoint Request Timed-out Exception")
-                    callback('error', "Endpoint Request Timed-out Exception")
-                } else {
-                    console.log(response.status)
-                    console.log('error:', "Database can't be reached!")
-                    callback('error', "Database can't be reached!")
-                }
+                console.log('error:', message);
+                callback('error', message);
             }
         })
-        .then(data => {
-            console.log('Raw Data:', data);
-            if (data !== undefined) {
-                if (data.message === "Unauthorized") {
-                    console.log('error:', 'Unauthorized Connection');
-                    callback('error', 'Unauthorized Connection')
-                } else {
-                    console.log('Success:', 'Save Confirmed');
-                    callback('success', 'Save Confirmed')
-                }
-            } else {
-                callback('success', 'Save Confirmed')
-            }
-        })
+        // .then(data => {
+        //     XXX data is always undefined, so this always returns success
+        //     XXX Pretty sure this block of code should be deleted
+        //     console.log('Raw Data:', data);
+        //     if (data !== undefined) {
+        //         if (data.message === "Unauthorized") {
+        //             console.log('error:', 'Unauthorized Connection');
+        //             callback('error', 'Unauthorized Connection')
+        //         } else {
+        //             console.log('Success:', 'Save Confirmed');
+        //             callback('success', 'Save Confirmed')
+        //         }
+        //     } else {
+        //         callback('success', 'Save Confirmed')
+        //     }
+        // })
         .catch((error) => {
             console.error('Error:', error);
             callback('error', error)

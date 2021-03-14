@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, MenuItem, Typography } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
-import { dbGetUser, dbSetModifiedTime } from '../System/js/Database';
+import { dbGetUser, dbSaveUser, dbSetModifiedTime, cacheSessionVar } from '../System/js/Database';
 
 UserForm.propTypes = {
     session: PropTypes.object.isRequired,
@@ -16,7 +16,7 @@ export default function UserForm(props) {
     const isNewUser = (props.user == null);
     let initValues;
     let userData;
-    const initMsg = isNewUser ? {} : {lastUpdate: props.user.updatedDateTime};
+    const initMsg = isNewUser ? {} : {result: 'success', time: props.user.updatedDateTime};
     const [ saveMessage, setSaveMessage ] = useState(initMsg);
 
     if (isNewUser) {
@@ -37,6 +37,11 @@ export default function UserForm(props) {
     });
 
     function doSave(formValues) {
+        function saveCallback(result, text) {
+            setSaveMessage({ result: result, text: text, time: userData.updatedDateTime });
+            reset(formValues);
+        }
+
         // Validate form contents
         if (isNewUser && dbGetUser(props.session, formValues.userName) != null) {
             setError('userName', {type: 'manual', message: 'Username is already in use'});
@@ -49,13 +54,9 @@ export default function UserForm(props) {
             Object.assign(userData, unpackZipcode(formValues.zipcode));
             // Save user data and reset form state to new values
             dbSetModifiedTime(userData, isNewUser);
-            const result = 'OK' // saveUser(userData)
-            if (result === 'failed') {
-                setSaveMessage({severity: 'error', text: 'FAILED TO SAVE - try again!'});
-            } else {
-                setSaveMessage({lastUpdate: userData.updatedDateTime});
-            }
-            reset(formValues);
+            cacheSessionVar(props.session); // XXX cashedsession in database is lost after hotreload in development
+            dbSaveUser(userData, saveCallback);
+            // TODO update cognito if phone or email is modified
         }
     }
 
@@ -114,7 +115,7 @@ export default function UserForm(props) {
                 </Box>
             </form>
             <SaveCancel disabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : reset() } } 
-                message={ saveMessage }/>
+                message={ saveMessage } />
         </Fragment>
     );
 }

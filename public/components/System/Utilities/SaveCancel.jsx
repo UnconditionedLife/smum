@@ -14,9 +14,9 @@ import moment from 'moment';
 //      cancelDisabled - Disable negative button (default false)
 //      disabled - Disable both buttons (default false)
 //      message - Object with (text, severity, tooltip)
-//          severity: 'error', 'warning', 'info', or 'success'
-//          text: message string (NOT REQUIRED)
-//          tooltip: date or additional info (NOT REQUIRED)
+//          result: 'error', 'working', or 'success'
+//          time: last update time (if result == 'success')
+//          text: additional message string (optional)
 
 SaveCancel.propTypes = {
     onClick: PropTypes.func.isRequired,
@@ -40,28 +40,22 @@ export default function SaveCancel(props) {
     const saveDisabled = props.saveDisabled || props.disabled;
     const cancelDisabled = props.cancelDisabled || props.disabled;
 
-    //props.message = { result, text, time }
     let m = {}
-    if (props.message.result === 'success') {
-        m.severity = 'info'
-        m.text = "Saved " + moment(props.message.time).fromNow()
-        m.tooltip = moment(props.message.time).format("MMM DD, YYYY h:mma")
-    }
-
-    if (props.message.result === 'error') {
-        m.severity = 'error'
-        m.text = "FAILED TO SAVE - try again!"
-        if (typeof props.message.text === 'object') {
-            JSON.stringify(props.message.text)
-            m.tooltip = props.message.text.message
+    if (props.message?.result === 'success') {
+        m.severity = 'info';
+        if (props.message.time) {
+            m.text = "Saved " + moment(props.message.time).fromNow();
+            m.tooltip = moment(props.message.time).format("MMM DD, YYYY h:mma");
         } else {
-            m.tooltip = props.message.text
+            m.text = props.message.text;
         }
-    }
-
-    if (props.message.result === 'loading') {
-        m.severity = 'warning'
-        m.text = "SAVING TO DATABASE..."
+    } else if (props.message?.result === 'error') {
+        m.severity = 'error';
+        m.text = 'FAILED TO SAVE - try again!';
+        m.tooltip = props.message.text;
+    } else if (props.message?.result === 'working') {
+        m.severity = 'warning';
+        m.text = 'SAVING TO DATABASE...';
     }
 
     const alertBox = (
