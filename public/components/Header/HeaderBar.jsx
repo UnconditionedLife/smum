@@ -14,8 +14,7 @@ import jwt_decode from "jwt-decode";
 
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
-// import { dbGetSettings } from '../System/js/Database';
-import { cacheSessionVar, dbGetSvcTypes, dbGetSettings } from '../System/js/Database';
+import { cacheSessionVar, showCache } from '../System/js/Database';
 import { prnConnect } from '../System/js/Clients/Receipts'
 
 const useStyles = makeStyles((theme) => ({
@@ -117,23 +116,22 @@ export default function HeaderBar(props) {
     const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']);
 
     const session = cookies.user && cookies.auth && cookies.refresh ? 
-          {user:cookies.user,auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser} : null;
+          {user:cookies.user, auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser} : null;
     
     const setSession = (newSession) => {
-        console.log("Start")
+        console.log("Init session")
         if (newSession.user != null && newSession.auth != null) {
             let decodedTkn = jwt_decode(newSession.auth.accessToken)
             let currTime = new Date()
-            console.log( decodedTkn.exp*1000 - currTime.getTime() - 1000)
+
+            cacheSessionVar(newSession);
             window.utilInitAuth(newSession.auth)
             window.utilInitSession(newSession.user, newSession.cogUser);
-            console.log("Partial end...")
             setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
             setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
             setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' })
             setCogUser(newSession.cogUser)
             setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
-            console.log(newSession)
         } else {
             removeSession()
         }
@@ -151,7 +149,7 @@ export default function HeaderBar(props) {
     }
 
     const refreshUserSession = () => {
-        console.log("HERE refreshing: "+session)
+        console.log("Refresh session: "+session)
         if (session != null) {
             let token = cogGetRefreshToken(session.refresh)
             let tempUser = cogSetupUser(cookies.user.userName)
@@ -161,48 +159,49 @@ export default function HeaderBar(props) {
                 let uRefreshToken = result.refreshToken.token
                 uAuthorization.idToken = result.idToken.jwtToken
                 const newSession = { user: session.user, auth: uAuthorization, cogUser: tempUser, refresh: uRefreshToken }
-                console.log(newSession)
                 setSession(newSession);
-                cacheSessionVar(newSession)
             })
         }
     }
 
     useEffect(() => {
-        console.log("HERE")
+        console.log("App Start")
         const newSection = checkSectionURL();
         if (newSection != selectedSection) {
             setSelectedSection(newSection)
         }
-        if (session != null) {
-            
+        if (session != null) {           
             let decodedTkn = jwt_decode(cookies.auth.accessToken)
             let currTime = new Date()
             let tempUser = cogSetupUser(cookies.user.userName)
-            console.log(decodedTkn.exp*1000)
-            console.log(currTime.getTime())
+
             tempUser.getSession(function (err, cogSession) { 
                 if (err || !cogSession.isValid() || decodedTkn.exp*1000 < currTime.getTime() ) { 
                     console.log("Logging out")
                     handleLogout(tempUser)
                 } else {
-                    console.log("Init auth: "+session.auth.idToken)
-                    window.utilInitAuth(session.auth)
-                    if (cogUser == null) {
-                        console.log(tempUser)
-                        setCogUser(tempUser)
-                        window.utilInitSession(session.user, tempUser);
-                        console.log(session)
-                    }
-                    setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
+                    setSession(session);
+                    // console.log("Init auth: " + session.auth.idToken)
+                    // window.utilInitAuth(session.auth)
+                    // if (cogUser == null) {
+                    //     console.log(tempUser)
+                    //     setCogUser(tempUser)
+                    //     window.utilInitSession(session.user, tempUser);
+                    //     console.log(session)
+                    // }
+                    // setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
                 }
             });
-            cacheSessionVar(session) // first var to cache
-            dbGetSvcTypes()
-            dbGetSettings()
+            // cacheSessionVar(session) 
             prnConnect()
         }
     }, []);
+
+    useEffect(() => {
+        console.log('Hot Reload');
+        showCache();
+    }, ["hot"]);
+
 
     const handleSectionChange = (newValue) => {
         setSelectedSection(newValue);
@@ -231,11 +230,6 @@ export default function HeaderBar(props) {
     const isAdmin = session &&
         (session.user.userRole == 'Admin' || session.user.userRole == 'TechAdmin');
 
-    const login = (
-        <Dialog open={ session == null }>
-            <LoginForm onLogin={ (x) => setSession(x) } />
-        </Dialog>
-    );
 
     const appbarControls = (
         <Fragment>
@@ -302,7 +296,9 @@ export default function HeaderBar(props) {
 
     return (
         <ThemeProvider theme={theme}>
-            { login }
+            <Dialog open={ session == null }>
+                <LoginForm onLogin={ (x) => setSession(x) } />
+            </Dialog>
             <Box flexGrow={1} >
                 <AppBar position="fixed">
                     <Toolbar>

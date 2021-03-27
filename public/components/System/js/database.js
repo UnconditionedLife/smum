@@ -35,14 +35,28 @@ export function getSvcTypes(){
 
 // Session
 export function cacheSessionVar(newSession) {
-    cachedSession = newSession
+    cachedSession = newSession;
+    if (!isEmpty(cachedSession)) {
+        dbGetSvcTypes();
+        dbGetSettings();
+    }
+}
+
+export function showCache() {
+    console.log('Cached session: ');
+    console.log(JSON.stringify(cachedSession));
+    console.log('Settings: ');
+    console.log(JSON.stringify(cachedSettings));
+    console.log('DB URL: ' + dbUrl);
+    console.log('Service Types: ');
+    console.log(cachedSvcTypes);
 }
 
 // Utility Functions
 
 export function dbSetUrl(instance) {
     dbUrl = dbBase + instance;
-    console.log(dbUrl)
+    console.log('DB URL set to ' + dbUrl)
 }
 
 export function dbSetModifiedTime(obj, isNew) {
@@ -136,15 +150,14 @@ export function SettingsSchedule() {
 // ServiceTypes
 
 export function dbGetSvcTypes(){
-    console.log('GETTING SVCTYPES')
 	const temp = dbGetData(dbUrl + "/servicetypes").serviceTypes
 		.sort(function(a, b){
 			let nameA= a.serviceName.toLowerCase()
 			let nameB= b.serviceName.toLowerCase()
 			if (nameA < nameB) return -1
 			if (nameA > nameB) return 1
-		return 0; //default return value (no sorting)
-    })
+            return 0;
+        })
     cachedSvcTypes = temp
     return temp
 }

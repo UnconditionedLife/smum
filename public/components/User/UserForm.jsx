@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, MenuItem, Typography } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
-import { dbGetUser, dbSaveUser, dbSetModifiedTime, cacheSessionVar } from '../System/js/Database';
+import { dbGetUser, dbSaveUser, dbSetModifiedTime } from '../System/js/Database';
 
 UserForm.propTypes = {
     session: PropTypes.object.isRequired,
@@ -54,7 +54,6 @@ export default function UserForm(props) {
             Object.assign(userData, unpackZipcode(formValues.zipcode));
             // Save user data and reset form state to new values
             dbSetModifiedTime(userData, isNewUser);
-            cacheSessionVar(props.session); // XXX cashedsession in database is lost after hotreload in development
             dbSaveUser(userData, saveCallback);
             // TODO update cognito if phone or email is modified
         }

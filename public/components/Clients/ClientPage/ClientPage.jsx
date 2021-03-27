@@ -9,7 +9,7 @@ import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } 
     from '../../Clients';
 // import { saveClient } from '../../System/js/Clients/Clients';
-import { dbSaveClient, cacheSessionVar } from '../../System/js/Database';
+import { dbSaveClient } from '../../System/js/Database';
 
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
@@ -53,7 +53,6 @@ export default function ClientPage(props) {
             updateMessage({ result: result, text: text, time: data.updatedDateTime })
             if (result === 'success') updateClient(data)
         }
-        cacheSessionVar(props.session) // done because cashedsession in database is being lost after hotreload in development
         dbSaveClient(data, callback)
     }
 

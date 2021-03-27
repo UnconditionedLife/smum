@@ -6,11 +6,13 @@ import { dbSetUrl } from '../System/js/Database';
 export default function DbSwitch() {
     const [switchOn, setSwitchOn] = React.useState(false);
 
+    React.useEffect(() => {
+        dbSetUrl(switchOn ? 'prod' : 'dev');
+    }, [switchOn]);
+
     function onChange(event) {
         setSwitchOn(event.target.checked);
     }
-
-    dbSetUrl(switchOn ? 'prod' : 'dev');
 
     return (
         <Box display="flex" flexDirection="row" justifyContent="flex-end" 
