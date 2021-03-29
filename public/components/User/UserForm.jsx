@@ -7,7 +7,6 @@ import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from 
 import { dbGetUser, dbSaveUser, dbSetModifiedTime } from '../System/js/Database';
 
 UserForm.propTypes = {
-    session: PropTypes.object.isRequired,
     user: PropTypes.object,     // null to create new user
     selfEdit: PropTypes.bool,   // true if editing current session user
 }
@@ -43,7 +42,7 @@ export default function UserForm(props) {
         }
 
         // Validate form contents
-        if (isNewUser && dbGetUser(props.session, formValues.userName) != null) {
+        if (isNewUser && dbGetUser(formValues.userName) != null) {
             setError('userName', {type: 'manual', message: 'Username is already in use'});
         } else {
             // Convert form values to canonical format

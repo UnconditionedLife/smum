@@ -638,18 +638,18 @@ function uiSaveButton(form, action){
 	}
 };
 
-function uiSetMenusForUser(){
-	// TODO remove TechAmin from dropdown for admins that are not Tech
-	if (currentUser.isActive == "Active") {
-		if (currentUser.userRole == "Admin"){
-			$("#atabLable7").hide()
-		} else if (currentUser.userRole == "TechAdmin"){
-			$("#atabLable7").show()
-		} else if (currentUser.userRole == "Volunteer" || currentUser.userRole == "Staff") {
-			$("#atabLable7").hide()
-		}
-	}
-};
+// function uiSetMenusForUser(){
+// 	// TODO remove TechAmin from dropdown for admins that are not Tech
+// 	if (currentUser.isActive == "Active") {
+// 		if (currentUser.userRole == "Admin"){
+// 			$("#atabLable7").hide()
+// 		} else if (currentUser.userRole == "TechAdmin"){
+// 			$("#atabLable7").show()
+// 		} else if (currentUser.userRole == "Volunteer" || currentUser.userRole == "Staff") {
+// 			$("#atabLable7").hide()
+// 		}
+// 	}
+// };
 
 function uiShowFamilyCounts(totalAdults, totalChildren, totalOtherDependents, totalSeniors, totalSize){
 	if (document.getElementById("family.totalAdults") != null){
@@ -3988,18 +3988,18 @@ function utilInitAuth(auth) {
 function utilInitSession(user, cogUser) {
 	currentUser = user;
 	cognitoUser = cogUser;
-	utilLoginUserShowScreens();
+	// utilLoginUserShowScreens();
 }
 
-function utilLoginUserShowScreens() {
-	// uiShowHideLogin('hide')
-	navGotoSec('nav1')
-	// cogGetUserAttributes()
-	// dbGetServiceTypes() MOVED TO REACT --> clientGlobals
-	uiSetMenusForUser()
-	// settings = dbGetAppSettings() MOVED TO REACT --> clientGlobals
-	// prnConnect() MOVED TO REACT --> HeaderBar.jsx
-}
+// function utilLoginUserShowScreens() {
+// 	// uiShowHideLogin('hide')
+// 	navGotoSec('nav1')
+// 	// cogGetUserAttributes()
+// 	// dbGetServiceTypes() MOVED TO REACT --> clientGlobals
+// 	uiSetMenusForUser()
+// 	// settings = dbGetAppSettings() MOVED TO REACT --> clientGlobals
+// 	// prnConnect() MOVED TO REACT --> HeaderBar.jsx
+// }
 
 // MOVED TO REACT --> database.js as utilEmptyPlaceholders
 // function utilPadEmptyFields(data){

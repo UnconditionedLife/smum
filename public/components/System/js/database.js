@@ -36,10 +36,6 @@ export function getSvcTypes(){
 // Session
 export function cacheSessionVar(newSession) {
     cachedSession = newSession;
-    if (!isEmpty(cachedSession)) {
-        dbGetSvcTypes();
-        dbGetSettings();
-    }
 }
 
 export function showCache() {
@@ -68,8 +64,8 @@ export function dbSetModifiedTime(obj, isNew) {
 
 // Users
 
-export function dbGetUser(session, userName) {
-    let result = dbFetchUrl(session, "/users/" + userName).users;
+export function dbGetUser(userName) {
+    let result = dbFetchUrl(undefined, "/users/" + userName).users;
     if (result.length == 1)
         return result[0];
     else
@@ -82,15 +78,6 @@ export async function dbSaveUser(data, callback) {
 
 export function dbGetAllUsers(session) {
 	return dbFetchUrl(session, "/users").users;
-}
-
-export function utilGetCurrentUser(username) {
-	const users = dbGetUsers()
-	const userList = users.filter(obj => obj.userName == username)
-	if (userList.length == 1)
-		return userList[0]
-	else
-		return null
 }
 
 // Clients
@@ -118,26 +105,38 @@ export function dbGetSettings(session) {
 }
 
 export function SettingsSound() {
+    if (!cachedSettings)
+        dbGetSettings();
     return (cachedSettings.sounds == 'YES');
 }
 
 export function SettingsPrinter() {
+    if (!cachedSettings)
+        dbGetSettings();
     return (cachedSettings.printerIP);
 }
 
 export function SettingsSeniorAge() {
+    if (!cachedSettings)
+        dbGetSettings();
     return (parseInt(cachedSettings.seniorAge, 10));
 }
 
 export function SettingsServiceCats() {
+    if (!cachedSettings)
+        dbGetSettings();
     return (cachedSettings.serviceCat);
 }
 
 export function SettingsZipcodes() {
+    if (!cachedSettings)
+        dbGetSettings();
     return (cachedSettings.serviceZip);
 }
 
 export function SettingsSchedule() {
+    if (!cachedSettings)
+        dbGetSettings();
     return {
         closedDays: cachedSettings.closedDays,
         closedEveryDays: cachedSettings.closedEveryDays,
@@ -151,13 +150,8 @@ export function SettingsSchedule() {
 
 export function dbGetSvcTypes(){
 	const temp = dbGetData(dbUrl + "/servicetypes").serviceTypes
-		.sort(function(a, b){
-			let nameA= a.serviceName.toLowerCase()
-			let nameB= b.serviceName.toLowerCase()
-			if (nameA < nameB) return -1
-			if (nameA > nameB) return 1
-            return 0;
-        })
+        // case-insensitive sort
+        .sort((a, b) => a.serviceName.localeCompare(b.serviceName, undefined, {sensitivity: 'base'}));
     cachedSvcTypes = temp
     return temp
 }

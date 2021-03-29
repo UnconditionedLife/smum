@@ -1,24 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { dbGetUser } from '../../System/js/Database.js';
-import { Container, CardContent, CardHeader, Typography } from '@material-ui/core';
+import { Container, CardContent, CardHeader } from '@material-ui/core';
 import { Card } from '../../System';
 import { UserForm } from '../../User';
 
 UserPage.propTypes = {
-    session: PropTypes.object.isRequired,
     userName: PropTypes.string.isRequired,
 }
 
 export default function UserPage(props) {
-    const user = dbGetUser(props.session, props.userName);
+    const user = dbGetUser(props.userName);
 
     return (
         <Container maxWidth='md'>
             <Card>
                 <CardHeader title="User Account" />
                 <CardContent>
-                    <UserForm session={ props.session } user={ user } />
+                    <UserForm user={ user } />
                 </CardContent>
             </Card>
         </Container>
