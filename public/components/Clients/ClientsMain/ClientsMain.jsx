@@ -6,7 +6,7 @@ import { ClientsHeader, ClientsContent } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';
-import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime, utilEmptyPlaceholders } from '../../System/js/Database';
+import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime, utilEmptyPlaceholders, getSession } from '../../System/js/Database';
 import { getSvcsRendered } from '../../System/js/Clients/Services'
 
 ClientsMain.propTypes = {
@@ -33,18 +33,12 @@ export default function ClientsMain(props) {
     const [ openAlert, setOpenAlert ] = useState(false)
     const [ alertSeverity, setAlertSeverity ] = useState("")
     const [ alertMsg, setAlertMsg ] = useState("")
-    
+    const [ session, setSession ] = useState(getSession())
 
     useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(client); } }, [session, url])
 
     useEffect(() => {
-
-console.log(clientsFound)
-
         const foundEval = !isEmpty(clientsFound)
-
-console.log(foundEval)
-
         const clientEval = (!isEmpty(client) || client?.clientId === "0")
         const servicesEval = (!isEmpty(client) || client?.clientId !== "0")
         if (showFound !== foundEval) setShowFound(foundEval)
@@ -91,15 +85,8 @@ console.log(foundEval)
     }
 
     function changeClient(newClient, clientsTab){
-
-console.log("IN CHANGE CLIENT")
-
         if (!isEmpty(newClient)) {
-
             if ( newClient.clientId !== "0" ){
-
-    console.log("IN PREP CLIENT")
-
                 // TODO client should be sorted and have ids for nested arrays saved to the database
                 newClient = utilEmptyPlaceholders(newClient, "remove")
                 newClient = utilCalcAge(newClient)
@@ -110,20 +97,9 @@ console.log("IN CHANGE CLIENT")
                 newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
                 // add service handling objects
-
-                console.log(newClient)
-                console.log("GETTING HISTORY FOR CLIENT")
-
                 dbGetClientActiveServiceHistoryAsync(newClient.clientId).then( history => { 
-                    
-                    console.log("GOT HISTORY FOR CLIENT")
-                    console.log(history)
-                    
                     newClient.svcHistory = history
                     newClient.svcsRendered = getSvcsRendered(newClient.svcHistory)
-
-                    console.log(newClient)
-
                     keepAppJsInSync(newClient)
                     setClient(newClient)
                     updateURL(newClient.clientId, clientsTab)

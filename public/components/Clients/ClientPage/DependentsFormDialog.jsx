@@ -47,34 +47,9 @@ export default function DependentsFormDialog(props) {
     function doSave(values) {
         // Overwrite data structure with form values
         let data = Object.assign({}, props.client);
-
-
-console.log(props.editRecord)
-
         const index = data.dependents.map(function(e) { return e.depId; }).indexOf(props.editRecord.depId);
-
-console.log(index)
-
-// NEED TO PUT VALUES INTO THE RIGHT DEPENDENT
-
         Object.assign(data.dependents[index], values);
-
-console.log(data)
-
         const saved = props.saveAndUpdateClient(data)
-
-        // Save user data and reset form state to new values
-//         // dbSetModifiedTime(data, false);
-//         // const result = saveClient(data)
-
-// console.log(result)
-
-//         if (result === 'failed') {
-//             updateMessage("error", "FAILED TO SAVE - try again!", 'ERROR')
-//         } else {
-//             updateMessage("info", "Saved " + moment().fromNow(), moment().format("MMM DD, YYYY h:mma"))
-//             props.updateClient(data)
-//         }
         reset(values);
     }
 

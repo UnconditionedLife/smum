@@ -19,20 +19,6 @@ const MAX_ID_DIGITS = 5
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
-// svcTypes
-
-export function getSvcTypes(){
-    if (isEmpty(cachedSvcTypes) && !isEmpty(cachedSession)) {
-        cachedSvcTypes = dbGetSvcTypes()
-    }
-    return cachedSvcTypes
-}
-
-// Session
-export function cacheSessionVar(newSession) {
-    cachedSession = newSession;
-}
-
 export function showCache() {
     console.log('Cached session: ');
     console.log(JSON.stringify(cachedSession));
@@ -43,49 +29,8 @@ export function showCache() {
     console.log(cachedSvcTypes);
 }
 
-// Utility Functions
-
-export function dbSetUrl(instance) {
-    dbUrl = dbBase + instance;
-    console.log('DB URL set to ' + dbUrl)
-}
-
-export function dbSetModifiedTime(obj, isNew) {
-    const now = moment().format('YYYY-MM-DDTHH:mm');
-    obj.updatedDateTime = now;
-    if (isNew)
-        obj.createdDateTime = now;
-}
-
-// Users
-
-export function dbGetUser(userName) {
-    let result = dbFetchUrl(undefined, "/users/" + userName).users;
-    if (result.length == 1)
-        return result[0];
-    else
-        return null;
-}
-
-export async function dbSaveUser(data, callback) {
-    await dbPostData('/users/', data, callback)
-}
-
-export function dbGetAllUsers(session) {
-	return dbFetchUrl(session, "/users").users;
-}
-
-// Clients
-
-export function dbGetClient(session, clientId) {
-    let result = dbFetchUrl(session, "/clients/" + clientId).clients;
-    if (result.length == 1)
-
-        return result[0];
-    else
-        return null;
-//************************************************
 //******************* SESSION ********************
+//************************************************
 
 export function cacheSessionVar(newSession, callback) {
     cachedSession = newSession;
@@ -103,8 +48,8 @@ export function getSession(){
     return cachedSession
 }
 
-//************************************************
 //**************** APP SETTINGS ******************
+//************************************************
 
 export async function dbGetSettingsAsync() {
     return await dbGetDataAsync("/settings")
@@ -120,37 +65,31 @@ export async function dbGetSettingsAsync() {
 
 export function SettingsSound() {
     if (!cachedSettings)
-        dbGetSettings();
     return (cachedSettings.sounds == 'YES');
 }
 
 export function SettingsPrinter() {
     if (!cachedSettings)
-        dbGetSettings();
     return (cachedSettings.printerIP);
 }
 
 export function SettingsSeniorAge() {
     if (!cachedSettings)
-        dbGetSettings();
     return (parseInt(cachedSettings.seniorAge, 10));
 }
 
 export function SettingsServiceCats() {
     if (!cachedSettings)
-        dbGetSettings();
     return (cachedSettings.serviceCat);
 }
 
 export function SettingsZipcodes() {
     if (!cachedSettings)
-        dbGetSettings();
     return (cachedSettings.serviceZip);
 }
 
 export function SettingsSchedule() {
     if (!cachedSettings)
-        dbGetSettings();
     return {
         closedDays: cachedSettings.closedDays,
         closedEveryDays: cachedSettings.closedEveryDays,
@@ -169,24 +108,6 @@ export function getSvcTypes(){
     return cachedSvcTypes
 }
 
-export function dbGetSvcTypes(){
-	const temp = dbGetData(dbUrl + "/servicetypes").serviceTypes
-        // case-insensitive sort
-        .sort((a, b) => a.serviceName.localeCompare(b.serviceName, undefined, {sensitivity: 'base'}));
-    cachedSvcTypes = temp
-    return temp
-}
-
-// export function saveRecord(object, table){
-//     const data = JSON.stringify(object)
-//     let apiUrl
-//     switch (table){
-//         case 'services':
-//             apiUrl = dbUrl + "/clients/services"
-//     }
-//     const result = dbPostData(apiUrl, data)
-//     return result
-// }
 export async function dbGetSvcTypesAsync(){
 	return await dbGetDataAsync("/servicetypes")
         .then( data => {
@@ -221,17 +142,12 @@ export async function dbGetUserAsync(userName) {
     )
 }
 
-export async function dbSaveUserAsync(data, callback) {
-    return await dbPostDataAsync('/users/', data, callback)
-}
-
 export async function dbGetAllUsersAsync() {
-	return await dbGetDataAsync("/users").then( data => { 
-        return data.users });
+	return await dbGetDataAsync("/users").then( data => { return data.users });
 }
 
 export async function utilGetCurrentUserAsync(username) {
-    return await dbGetUsersAsync()
+    return await dbGetAllUsersAsync()
         .then( users => {
             const userList = users.filter(obj => obj.userName == username)
             if (userList.length == 1)
@@ -241,12 +157,12 @@ export async function utilGetCurrentUserAsync(username) {
         })
 }
 
-async function dbGetUsersAsync(){
-	return await dbGetDataAsync("/users").then( data => { return data.users })
+export async function dbSaveUserAsync(data, callback) {
+    return await dbPostDataAsync('/users/', data, callback)
 }
 
-//******************** CLIENTS *********************
-//**************************************************
+//******************** CLIENTS ********************
+//*************************************************
 
 export async function dbSearchClientsAsync(searchTerm) {
     const regex = /[/.]/g
@@ -292,100 +208,16 @@ async function dbGetClientsAsync(searchTerm, slashCount){
 	}
 }
 
-
-
-// Utility Functions
-
-export function dbSetUrl(instance) {
-    dbUrl = dbBase + instance;
-    console.log('DB URL set to ' + dbUrl)
+export async function dbGetSingleClientAsync(clientId) {
+    return await dbGetDataAsync("/clients/" + clientId)
+        .then( data => {
+            let result = data.clients
+            if (result.length == 1)
+                return result[0];
+            else
+                return null;
+        })
 }
-
-export function dbSetModifiedTime(obj, isNew) {
-    const now = moment().format('YYYY-MM-DDTHH:mm');
-    obj.updatedDateTime = now;
-    if (isNew)
-        obj.createdDateTime = now;
-}
-
-
-
-// Clients
-
-// export async function dbGetClientAsync(clientId) {
-//     return await dbGetDataAsync("/clients/" + clientId)
-//         .then( data => {
-//             let result = data.clients
-//             if (result.length == 1)
-        
-//                 return result[0];
-//             else
-//                 return null;
-
-//         }).clients;
-
-
-// }
-
-
-export async function dbGetClientActiveServiceHistoryAsync(clientId){
-    return await dbGetDataAsync("/clients/services/" + clientId).then(data => { 
-
-        console.log(data)
-        const svcs = data.services
-        const activeSvcs = svcs.filter(item => item.serviceValid == "true")
-            .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime))) 
-    
-        console.log(activeSvcs)
-        return activeSvcs
-    })
-}
-
-// export function dbGetAppSettings(){
-// 	let temp = dbGetData(aws+"/settings")
-// 	let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
-// 	for (var i = 0; i < fields.length; i++) {
-// 		let x = fields[i]
-// 		if (temp[x] == "*EMPTY*") {
-// 			temp[x] = []
-// 		} else {
-// 			temp[x] = utilStringToArray(temp[x])
-// 		}
-// 	}
-// 	return temp
-// }
-
-export async function dbSaveClient(data, callback){
-	if (data.clientId === "0") {
-        dbSetModifiedTime(data, true);
-        dbGetNewClientIDAsync()
-            .then( newClientId => {
-                
-                console.log("GET CLIENT ID")
-                console.log(data.clientId)
-
-                if (data.clientId === 'failed') { 
-                    callback('error', 'Unable to get new client ID')
-                    return
-                }
-                data.clientId = newClientId
-            }
-        )
-	} else {
-        dbSetModifiedTime(data, false);
-	}
-    await dbPostDataAsync("/clients/", data, callback)
-}
-
-// export function dbSaveClient(data){
-//     data = utilEmptyPlaceholders(data, "add") // "add" or "remove"
-// 	const URL = aws + "/clients/"
-// 	const result = dbPostData(URL,JSON.stringify(data))
-// 	if (result == "success") {
-// 		searchClients(data.clientId)
-// 	}
-// 	return result
-// }
 
 export async function dbGetNewClientIDAsync(){
     function postCallback(response, msg){
@@ -419,32 +251,92 @@ export async function dbGetNewClientIDAsync(){
         })
 }
 
+export async function dbGetClientActiveServiceHistoryAsync(clientId){
+    return await dbGetDataAsync("/clients/services/" + clientId).then(data => { 
+
+        console.log(data)
+        const svcs = data.services
+        const activeSvcs = svcs.filter(item => item.serviceValid == "true")
+            .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime))) 
+    
+        console.log(activeSvcs)
+        return activeSvcs
+    })
+}
+
+export async function dbSaveClient(data, callback){
+	if (data.clientId === "0") {
+        dbSetModifiedTime(data, true);
+        dbGetNewClientIDAsync()
+            .then( newClientId => {
+                
+                console.log("GET CLIENT ID")
+                console.log(data.clientId)
+
+                if (data.clientId === 'failed') { 
+                    callback('error', 'Unable to get new client ID')
+                    return
+                }
+                data.clientId = newClientId
+            }
+        )
+	} else {
+        dbSetModifiedTime(data, false);
+	}
+    await dbPostDataAsync("/clients/", data, callback)
+}
+
 export async function dbSaveServiceRecord(service){
 	return dbPostDataAsync("/clients/services", JSON.stringify(service))
+}
+
+async function dbGetDaysSvcsAsync(dayDate){
+    return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
 }
 
 // formerly utilGetServicesInMonth in app.js
 export async function dbGetSvcsInMonthAsync(monthYear){
 
-console.log("Month Year")
-console.log(monthYear)
-
-	const currentMonth = moment().format("YYYYMM")
-	let daysInMonth = moment(monthYear, "YYYYMM").daysInMonth()
-	if (monthYear == currentMonth) daysInMonth = moment().format("D")
-	let monthOfSvcs = []
-	daysInMonth = parseInt(daysInMonth) + 1
+    console.log("Month Year")
+    console.log(monthYear)
+    
+    const currentMonth = moment().format("YYYYMM")
+    let daysInMonth = moment(monthYear, "YYYYMM").daysInMonth()
+    if (monthYear == currentMonth) daysInMonth = moment().format("D")
+    let monthOfSvcs = []
+    daysInMonth = parseInt(daysInMonth) + 1
     // Loop through days of month
-	for (var i = 1; i < daysInMonth; i++) {
-		const day = String(i).padStart(2, '0')
-		const dayDate = monthYear + day
-		monthOfSvcs = monthOfSvcs.concat(await dbGetDaysSvcsAsync(dayDate).then( svcs => { return svcs }))
-	}
-	return monthOfSvcs
+    for (var i = 1; i < daysInMonth; i++) {
+        const day = String(i).padStart(2, '0')
+        const dayDate = monthYear + day
+        monthOfSvcs = monthOfSvcs.concat(await dbGetDaysSvcsAsync(dayDate).then( svcs => { return svcs }))
+    }
+    return monthOfSvcs
 }
 
 export async function dbGetServiceAsync(serviceId){
 	return await dbGetDataAsync("/clients/services/byid/" + serviceId).then( data => { return data.services})
+}
+
+// NOT CURRENTLY BEING CALLED
+// async function  dbGetDaysServicesAsync(dayDate){
+// 	dayDate = moment(dayDate).format("YYYYMMDD")
+// 	return dbGetDataAsync("/clients/services/byday/" + dayDate ).then( data => { return data.services })
+// }
+
+//******************* UTILITIES *******************
+//*************************************************
+
+export function dbSetUrl(instance) {
+    dbUrl = dbBase + instance;
+    console.log('DB URL set to ' + dbUrl)
+}
+
+export function dbSetModifiedTime(obj, isNew) {
+    const now = moment().format('YYYY-MM-DDTHH:mm');
+    obj.updatedDateTime = now;
+    if (isNew)
+        obj.createdDateTime = now;
 }
 
 export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove"
@@ -466,30 +358,6 @@ export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove
     }
     return obj
 }
-// *******************************************************************************************************
-// ************************************* UNEXPORTED FUNCTIONS ********************************************
-// *******************************************************************************************************
-
-async function dbGetDaysSvcsAsync(dayDate){
-    return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
-}
-
-
-
-function getMessage(code, method) {
-    let match = statusMessages.find(x => x.code == code);
-    if (match.msg === "Success") match.msg = (method === "GET") ? "Load Confirmed" : "Save Confirmed"
-    if (match)
-        return match.msg;
-    else
-        return 'Unknown Error ' + code;
-}
-
-// NOT CURRENTLY BEING CALLED
-// async function  dbGetDaysServicesAsync(dayDate){
-// 	dayDate = moment(dayDate).format("YYYYMMDD")
-// 	return dbGetDataAsync("/clients/services/byday/" + dayDate ).then( data => { return data.services })
-// }
 
 // *******************************************************************************************************
 // **************************************  DATABASE GET & POST FUNCTIONS *********************************
@@ -509,6 +377,15 @@ const statusMessages = [
     {code: 503, msg: 'Service Unavailable Exception'},
     {code: 504, msg: 'Endpoint Request Timed-out Exception'},
 ];
+
+function getMessage(code, method) {
+    let match = statusMessages.find(x => x.code == code);
+    if (match.msg === "Success") match.msg = (method === "GET") ? "Load Confirmed" : "Save Confirmed"
+    if (match)
+        return match.msg;
+    else
+        return 'Unknown Error ' + code;
+}
 
 async function dbPostDataAsync(subUrl, data, callback) {
     callback('working', '');

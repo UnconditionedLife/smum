@@ -35,11 +35,8 @@ export default function LoginForm(props) {
                     idToken: result.idToken.jwtToken,
                 };
                 const refreshToken = result.refreshToken.token;
-
                 setMessage("");
                 authorization.accessToken = result.getAccessToken().getJwtToken()
-                let refreshToken = result.refreshToken.token
-                console.log(refreshToken)
                 authorization.idToken = result.idToken.jwtToken
                 window.utilInitAuth(authorization)
                 utilGetCurrentUserAsync(username)
