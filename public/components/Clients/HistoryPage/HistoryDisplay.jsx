@@ -6,7 +6,7 @@ import { Card } from '../../System';
 import { HistoryFormDialog, HistoryPopupMenu } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils';
 import { updateLastServed, utilRemoveService } from '../../System/js/Clients/History';
-import { dbGetClientActiveServiceHistory } from '../../System/js/Database';
+import { dbGetClientActiveServiceHistoryAsync } from '../../System/js/Database';
 
 HistoryDisplay.propTypes = {
     session: PropTypes.object.isRequired,
@@ -91,10 +91,13 @@ export default function HistoryDisplay(props) {
     }
 
     function updateSvcHistory(){
-        const history = dbGetClientActiveServiceHistory(props.client.clientId)
-        let tempClient = client
-        tempClient.svcHistory = history
-        updateClient(tempClient)
+        dbGetClientActiveServiceHistoryAsync(props.client.clientId).then(
+            clientHistory => {
+                const tempClient = Object.create(client)
+                tempClient.svcHistory = clientHistory
+                updateClient(tempClient)
+            }
+        )
     }
 
     function setDelayTimer(boo){

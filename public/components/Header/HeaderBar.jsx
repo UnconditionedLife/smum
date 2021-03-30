@@ -11,7 +11,6 @@ import DbSwitch from './DbSwitch.jsx';
 import { useCookies } from 'react-cookie';
 import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
-
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
 import { cacheSessionVar, showCache } from '../System/js/Database';
@@ -123,8 +122,8 @@ export default function HeaderBar(props) {
         if (newSession) {
             let decodedTkn = jwt_decode(newSession.auth.accessToken)
             let currTime = new Date()
-
-            window.utilInitAuth(newSession.auth)
+            cacheSessionVar(newSession, prnConnect)
+            window.utilInitAuth(newSession.auth);
             window.utilInitSession(newSession.user, newSession.cogUser);
             cacheSessionVar(newSession);
             setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
@@ -144,7 +143,7 @@ export default function HeaderBar(props) {
     }
 
     function refreshUserSession() {
-        console.log("Refresh session: " + session);
+        console.log("Refresh session: " + session)
         if (session != null) {
             let token = cogGetRefreshToken(session.refresh);
             let tempUser = cogSetupUser(cookies.user.userName);
@@ -158,6 +157,11 @@ export default function HeaderBar(props) {
             });
         }
     }
+
+    // function sessionCallback(){
+    //     console.log("calling printer")
+    //     prnConnect()
+    // }
 
     useEffect(() => {
         console.log("App Start")
@@ -177,11 +181,21 @@ export default function HeaderBar(props) {
                 } else {
                     session.cogUser = tempUser;
                     setSession(session);
+                    // console.log("Init auth: " + session.auth.idToken)
+                    // window.utilInitAuth(session.auth)
+                    // if (cogUser == null) {
+                    //     console.log(tempUser)
+                    //     setCogUser(tempUser)
+                    //     window.utilInitSession(session.user, tempUser);
+                    //     console.log(session)
+                    // }
+                    // setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
                 }
             });
-            prnConnect();
+            // cacheSessionVar(session) 
         }
     }, []);
+
 
     useEffect(() => {
         console.log('Hot Reload');

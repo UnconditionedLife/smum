@@ -4,14 +4,19 @@
 import moment from  'moment';
 import cuid from 'cuid';
 import { utilNow } from '../GlobalUtils';
-import { dbGetClientActiveServiceHistory, dbGetService, dbSaveServiceRecord, getSvcTypes, dbSaveClient } from '../Database';
+import { dbGetClientActiveServiceHistoryAsync, dbGetServiceAsync, dbSaveServiceRecord, getSvcTypes, dbSaveClient } from '../Database';
 
 export function getServiceHistory(){
-	let clientHistory = dbGetClientActiveServiceHistory()
-	clientHistory = clientHistory
-		.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
-	//uiShowHistoryData(reactDIV, clientHistory)
-	return clientHistory
+	dbGetClientActiveServiceHistoryAsync().then(
+        clientHistory => {
+           return clientHistory
+           .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+        }
+    )
+	// clientHistory = clientHistory
+	// 	.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+	// //uiShowHistoryData(reactDIV, clientHistory)
+	// return clientHistory
 }
 
 export function updateLastServed(client){
@@ -53,9 +58,12 @@ export function saveHistoryForm(editRecord, formValues, client, userName){
 }
 
 export function utilRemoveService(serviceId){
-	let service = dbGetService(serviceId)[0]
-	service.serviceValid = false
-	const result = dbSaveServiceRecord(service)
-    if (result !== "success") return "error"
-    return null
+	dbGetServiceAsync(serviceId)
+        .then( serviceArray => {
+            let service = serviceArray[0]
+            service.serviceValid = false
+            const result = dbSaveServiceRecord(service)
+            if (result !== "success") return "error"
+            return null
+        })
 }

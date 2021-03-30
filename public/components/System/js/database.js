@@ -4,9 +4,8 @@
 
 import moment from 'moment';
 import { utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, isEmpty, utilStringToArray } from './GlobalUtils';
-import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
-import { searchClients } from './Clients/Clients';
-
+// import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
+// import { searchClients } from './Clients/Clients';
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 
@@ -17,10 +16,6 @@ let cachedSession = {}
 let cachedSettings = null;
 let cachedSvcTypes = []
 const MAX_ID_DIGITS = 5
-
-function dbFetchUrl(session, subUrl) {
-    return dbGetData(dbUrl + subUrl);
-}
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -89,19 +84,38 @@ export function dbGetClient(session, clientId) {
         return result[0];
     else
         return null;
+//************************************************
+//******************* SESSION ********************
+
+export function cacheSessionVar(newSession, callback) {
+    cachedSession = newSession;
+    if (!isEmpty(cachedSession)) {
+        dbGetSettingsAsync().then( settings => { cachedSettings = settings })
+        dbGetSvcTypesAsync()
+            .then( svcTypes => { 
+                cachedSvcTypes = svcTypes 
+                if (callback) callback()  // used to call prnConnect after settings have been stored in globalVar
+        })
+    }
 }
 
-// App settings
+export function getSession(){
+    return cachedSession
+}
 
-export function dbGetSettings(session) {
-    let temp = dbFetchUrl(session, "/settings")
-    let fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
-    
-    fields.forEach(x => {
-        temp[x] = utilStringToArray(temp[x]);
-    });
-    cachedSettings = temp;
-    return temp;
+//************************************************
+//**************** APP SETTINGS ******************
+
+export async function dbGetSettingsAsync() {
+    return await dbGetDataAsync("/settings")
+        .then( settings => {
+            const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+            fields.forEach(x => {
+                settings[x] = utilStringToArray(settings[x]);
+            });
+            cachedSettings = settings;
+            return settings;
+        })
 }
 
 export function SettingsSound() {
@@ -145,8 +159,15 @@ export function SettingsSchedule() {
     };
 }
 
+//************************************************
+//******************* SVCTYPES *******************
 
-// ServiceTypes
+export function getSvcTypes(){
+    if (isEmpty(cachedSvcTypes) && !isEmpty(cachedSession)) {
+        dbGetSvcTypesAsync().then( svcTypes => { cachedSvcTypes = svcTypes })
+    }
+    return cachedSvcTypes
+}
 
 export function dbGetSvcTypes(){
 	const temp = dbGetData(dbUrl + "/servicetypes").serviceTypes
@@ -166,14 +187,158 @@ export function dbGetSvcTypes(){
 //     const result = dbPostData(apiUrl, data)
 //     return result
 // }
+export async function dbGetSvcTypesAsync(){
+	return await dbGetDataAsync("/servicetypes")
+        .then( data => {
+            const svcTypes = data.serviceTypes
+            return svcTypes.sort(function(a, b){
+                let nameA= a.serviceName.toLowerCase()
+                let nameB= b.serviceName.toLowerCase()
+                if (nameA < nameB) return -1
+                if (nameA > nameB) return 1
+                return 0;
+            })
+        }
+    )
+}
 
-export function dbGetClientActiveServiceHistory(clientId){
+export function globalSvcTypes(){
+    return cachedSvcTypes
+}
 
-console.log('GET HISTORY FROM DB')
+//******************** USERS *********************
+//************************************************
 
-    let history = dbGetData(dbUrl + "/clients/services/" + clientId).services
-    return history.filter(item => item.serviceValid == "true")
-            .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+export async function dbGetUserAsync(userName) {
+    return await dbGetDataAsync("/users/" + userName)
+        .then( data => {
+            const users = data.users
+            if (users.length == 1)
+            return users[0];
+        else
+            return null;
+        }
+    )
+}
+
+export async function dbSaveUserAsync(data, callback) {
+    return await dbPostDataAsync('/users/', data, callback)
+}
+
+export async function dbGetAllUsersAsync() {
+	return await dbGetDataAsync("/users").then( data => { 
+        return data.users });
+}
+
+export async function utilGetCurrentUserAsync(username) {
+    return await dbGetUsersAsync()
+        .then( users => {
+            const userList = users.filter(obj => obj.userName == username)
+            if (userList.length == 1)
+                return userList[0]
+            else
+                return null
+        })
+}
+
+async function dbGetUsersAsync(){
+	return await dbGetDataAsync("/users").then( data => { return data.users })
+}
+
+//******************** CLIENTS *********************
+//**************************************************
+
+export async function dbSearchClientsAsync(searchTerm) {
+    const regex = /[/.]/g
+    const slashCount = (searchTerm.match(regex) || []).length    
+    return await dbGetClientsAsync(searchTerm, slashCount).then(
+        clients => {
+            if (clients == undefined || clients == null || clients.length == 0){
+                clients = []
+                window.servicesRendered = [] // used temporarily to keep global vars in sync
+                window.uiClearCurrentClient() // used temporarily to keep global vars in sync
+            }
+            return clients
+        }
+    )
+}
+
+async function dbGetClientsAsync(searchTerm, slashCount){
+	let clientData = []
+	if (slashCount == 2){
+		searchTerm = utilCleanUpDate(searchTerm)
+		searchTerm = moment(searchTerm, 'MM/DD/YYYY').format('YYYY-MM-DD')
+		return await dbGetDataAsync("/clients/dob/" + searchTerm).then(data => { return data.clients })
+	} else if (!isNaN(searchTerm) && searchTerm.length < MAX_ID_DIGITS){
+		return await dbGetDataAsync("/clients/" + searchTerm).then(data => { return data.clients })
+	} else if (searchTerm.includes(" ")){
+		searchTerm = utilChangeWordCase(searchTerm)
+		let split = searchTerm.split(" ")
+//*** TODO deal with more than two words ***
+		const d1 = await dbGetDataAsync("/clients/givenname/" + split[0]).then(data => { return data.clients })
+		const d2 = await dbGetDataAsync("/clients/familyname/" + split[0]).then(data => { return data.clients })
+		const d3 = await dbGetDataAsync("/clients/givenname/" + split[1]).then(data => { return data.clients })
+		const d4 = await dbGetDataAsync("/clients/familyname/" + split[1]).then(data => { return data.clients })
+		return utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
+	} else if (clientData==null||clientData.length==0){
+		searchTerm = utilChangeWordCase(searchTerm)
+		const d2 = await dbGetDataAsync("/clients/givenname/" + searchTerm).then(data => { return data.clients })
+		const d1 = await dbGetDataAsync("/clients/familyname/" + searchTerm).then(data => { return data.clients })
+		if (d1.length > 0 && d2.length < 1){
+			return utilRemoveDupClients(d1.concat(d2))
+		}	else if (d2.length > 0){
+			return utilRemoveDupClients(d2.concat(d1))
+		}
+	}
+}
+
+
+
+// Utility Functions
+
+export function dbSetUrl(instance) {
+    dbUrl = dbBase + instance;
+    console.log('DB URL set to ' + dbUrl)
+}
+
+export function dbSetModifiedTime(obj, isNew) {
+    const now = moment().format('YYYY-MM-DDTHH:mm');
+    obj.updatedDateTime = now;
+    if (isNew)
+        obj.createdDateTime = now;
+}
+
+
+
+// Clients
+
+// export async function dbGetClientAsync(clientId) {
+//     return await dbGetDataAsync("/clients/" + clientId)
+//         .then( data => {
+//             let result = data.clients
+//             if (result.length == 1)
+        
+//                 return result[0];
+//             else
+//                 return null;
+
+//         }).clients;
+
+
+// }
+
+
+export async function dbGetClientActiveServiceHistoryAsync(clientId){
+    return await dbGetDataAsync("/clients/services/" + clientId).then(data => { 
+
+        console.log(data)
+        const svcs = data.services
+        const activeSvcs = svcs.filter(item => item.serviceValid == "true")
+            .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime))) 
+    
+        console.log(activeSvcs)
+        return activeSvcs
+    })
 }
 
 // export function dbGetAppSettings(){
@@ -193,69 +358,23 @@ console.log('GET HISTORY FROM DB')
 export async function dbSaveClient(data, callback){
 	if (data.clientId === "0") {
         dbSetModifiedTime(data, true);
-        data.clientId = dbGetNewClientID()
+        dbGetNewClientIDAsync()
+            .then( newClientId => {
+                
+                console.log("GET CLIENT ID")
+                console.log(data.clientId)
 
-console.log("GET CLIENT ID")
-console.log(data.clientId)
-
-        if (data.clientId === 'failed') callback('error', 'Unable to get new client ID')
+                if (data.clientId === 'failed') { 
+                    callback('error', 'Unable to get new client ID')
+                    return
+                }
+                data.clientId = newClientId
+            }
+        )
 	} else {
         dbSetModifiedTime(data, false);
-        // DELETE svcHistory, svcsRendered from client before saving
-        // delete data.svcHistory
-        // delete data.svcsRendered
-        // Assign dependents, lastServed, and notes arrays if undefined
-		// if (data.dependents === undefined) data.dependents = []
-        // if (data.lastServed === undefined) data.lastServed = []
-        // if (data.notes === undefined) data.notes = []
-        // DELETE Age fields
-        // delete data.age
-		// for (var i = 0; i < data.dependents.length; i++) delete data.dependents[i].age
 	}
-    const subUrl = "/clients/"
-    await dbPostData(subUrl, data, callback)
-}
-
-export function dbSearchClients(searchTerm) {
-    const regex = /[/.]/g
-    const slashCount = (searchTerm.match(regex) || []).length    
-    let clientsFoundTemp = dbGetClients(searchTerm, slashCount)    
-    if (clientsFoundTemp == undefined || clientsFoundTemp==null || clientsFoundTemp.length==0){
-      clientsFoundTemp = []
-      window.servicesRendered = [] // used temporarily to keep global vars in sync
-      window.uiClearCurrentClient()
-    }
-    return clientsFoundTemp
-}
-
-function dbGetClients(searchTerm, slashCount){
-	let clientData = []
-	if (slashCount == 2){
-		searchTerm = utilCleanUpDate(searchTerm)
-		searchTerm = moment(searchTerm, 'MM/DD/YYYY').format('YYYY-MM-DD')
-		clientData = dbGetData(dbUrl + "/clients/dob/" + searchTerm).clients
-	} else if (!isNaN(searchTerm) && searchTerm.length < MAX_ID_DIGITS){
-		clientData = dbGetData(dbUrl + "/clients/" + searchTerm).clients
-	} else if (searchTerm.includes(" ")){
-		searchTerm = utilChangeWordCase(searchTerm)
-		let split = searchTerm.split(" ")
-//*** TODO deal with more than two words ***
-		let d1 = dbGetData(dbUrl + "/clients/givenname/" + split[0]).clients
-		let d2 = dbGetData(dbUrl + "/clients/familyname/" + split[0]).clients
-		let d3 = dbGetData(dbUrl + "/clients/givenname/" + split[1]).clients
-		let d4 = dbGetData(dbUrl + "/clients/familyname/" + split[1]).clients
-		clientData = utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
-	} else if (clientData==null||clientData.length==0){
-		searchTerm = utilChangeWordCase(searchTerm)
-		let d2 = dbGetData(dbUrl + "/clients/givenname/" + searchTerm).clients
-		let d1 = dbGetData(dbUrl + "/clients/familyname/" + searchTerm).clients
-		if (d1.length > 0 && d2.length < 1){
-			clientData = utilRemoveDupClients(d1.concat(d2))
-		}	else if (d2.length > 0){
-			clientData = utilRemoveDupClients(d2.concat(d1))
-		}
-	}
-	return clientData
+    await dbPostDataAsync("/clients/", data, callback)
 }
 
 // export function dbSaveClient(data){
@@ -268,8 +387,7 @@ function dbGetClients(searchTerm, slashCount){
 // 	return result
 // }
 
-export function dbGetNewClientID(){
-
+export async function dbGetNewClientIDAsync(){
     function postCallback(response, msg){
         if (response !== "success") {
             console.log("Last client ID not Saved - ", msg)
@@ -277,33 +395,36 @@ export function dbGetNewClientID(){
         }
     }
 
-    const lastIdJson = dbGetData(dbUrl + "/clients/lastid")
+    return await dbGetDataAsync("/clients/lastid")
+        .then( async data => {
 
-console.log(lastIdJson)
+            console.log(data)
 
-    let newId = lastIdJson.lastId
-    let notEmpty = true
-    while (notEmpty) {
-        const result = dbGetData(dbUrl + "/clients/exists/" + newId)
-        if (result.count == 0) {
-            notEmpty = false
-        } else {
-            newId++
-        }
-    }
-    let request = {}
-    request['lastId'] = newId.toString()
-    dbPostData("/clients/lastid", JSON.stringify(request), postCallback)
-    return newId
+            let newId = data.lastId
+            let notEmpty = true
+            while (notEmpty) {
+                return await dbGetDataAsync("/clients/exists/" + newId)
+                    .then( data => {
+                        if (data.count == 0) {
+                            notEmpty = false
+                        } else {
+                            newId++
+                        }
+                        let request = {}
+                        request['lastId'] = newId.toString()
+                        dbPostDataAsync("/clients/lastid", JSON.stringify(request), postCallback)
+                        return newId
+                    })
+            }
+        })
 }
 
-export function dbSaveServiceRecord(service){
-	const URL = dbUrl + "/clients/services"
-	return dbPostData(URL, JSON.stringify(service))
+export async function dbSaveServiceRecord(service){
+	return dbPostDataAsync("/clients/services", JSON.stringify(service))
 }
 
 // formerly utilGetServicesInMonth in app.js
-export function dbGetSvcsInMonth(monthYear){
+export async function dbGetSvcsInMonthAsync(monthYear){
 
 console.log("Month Year")
 console.log(monthYear)
@@ -317,15 +438,13 @@ console.log(monthYear)
 	for (var i = 1; i < daysInMonth; i++) {
 		const day = String(i).padStart(2, '0')
 		const dayDate = monthYear + day
-		const dayOfSvcs = dbGetDaysSvcs(dayDate)
-		monthOfSvcs = monthOfSvcs.concat(dayOfSvcs)
+		monthOfSvcs = monthOfSvcs.concat(await dbGetDaysSvcsAsync(dayDate).then( svcs => { return svcs }))
 	}
 	return monthOfSvcs
 }
 
-export function dbGetService(serviceId){
-	return dbGetData(dbUrl + "/clients/services/byid/" + serviceId).services
-    //return dbFetchUrl(cachedSession, "/clients/services/byid/" + serviceId).services;
+export async function dbGetServiceAsync(serviceId){
+	return await dbGetDataAsync("/clients/services/byid/" + serviceId).then( data => { return data.services})
 }
 
 export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove"
@@ -347,20 +466,37 @@ export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove
     }
     return obj
 }
+// *******************************************************************************************************
+// ************************************* UNEXPORTED FUNCTIONS ********************************************
+// *******************************************************************************************************
 
-// UNEXPORTED FUNCTIONS
-
-function dbGetUsers(){
-	return dbGetData(dbUrl + "/users").users
+async function dbGetDaysSvcsAsync(dayDate){
+    return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
 }
 
-function dbGetDaysSvcs(dayDate){
-	const subUrl = "/clients/services/byday/" + dayDate
-    return dbGetData(dbUrl + subUrl).services
+
+
+function getMessage(code, method) {
+    let match = statusMessages.find(x => x.code == code);
+    if (match.msg === "Success") match.msg = (method === "GET") ? "Load Confirmed" : "Save Confirmed"
+    if (match)
+        return match.msg;
+    else
+        return 'Unknown Error ' + code;
 }
+
+// NOT CURRENTLY BEING CALLED
+// async function  dbGetDaysServicesAsync(dayDate){
+// 	dayDate = moment(dayDate).format("YYYYMMDD")
+// 	return dbGetDataAsync("/clients/services/byday/" + dayDate ).then( data => { return data.services })
+// }
+
+// *******************************************************************************************************
+// **************************************  DATABASE GET & POST FUNCTIONS *********************************
+// *******************************************************************************************************
 
 const statusMessages = [
-    {code: 200, msg: 'Save Confirmed'},
+    {code: 200, msg: 'Success'},
     {code: 400, msg: 'Bad Request Exception'},
     {code: 401, msg: 'Authentication Failed'},
     {code: 403, msg: 'Access Denied Exception'},
@@ -374,226 +510,62 @@ const statusMessages = [
     {code: 504, msg: 'Endpoint Request Timed-out Exception'},
 ];
 
-function getMessage(code) {
-    const match = statusMessages.find(x => x.code == code);
-    if (match)
-        return match.msg;
-    else
-        return 'Unknown Error ' + code;
-}
-
-async function dbPostData(subUrl, data, callback) {
+async function dbPostDataAsync(subUrl, data, callback) {
     callback('working', '');
-    if (cachedSession.auth) {
-        return fetch(dbUrl + subUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',    
-                "Authorization": cachedSession.auth.idToken,
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => {
-            let message = getMessage(response.status);
 
-            if (response.ok) {
-                console.log('success:', message);
-                callback('success', message);
-            } else {
-                console.log('error:', message);
-                callback('error', message);
-            }
-        })
-        // .then(data => {
-        //     XXX data is always undefined, so this always returns success
-        //     XXX Pretty sure this block of code should be deleted
-        //     console.log('Raw Data:', data);
-        //     if (data !== undefined) {
-        //         if (data.message === "Unauthorized") {
-        //             console.log('error:', 'Unauthorized Connection');
-        //             callback('error', 'Unauthorized Connection')
-        //         } else {
-        //             console.log('Success:', 'Save Confirmed');
-        //             callback('success', 'Save Confirmed')
-        //         }
-        //     } else {
-        //         callback('success', 'Save Confirmed')
-        //     }
-        // })
-        .catch((error) => {
-            console.error('Error:', error);
-            callback('error', error)
-        })
-    } else {
-        console.error('Error:', 'Session Expired');
-        callback('error', 'Session Expired') 
-    }
-}
+    return fetch(dbUrl + subUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',    
+            "Authorization": cachedSession.auth.idToken,
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        const message = getMessage(response.status, "POST");
 
-function dbGetData(uUrl){
-	cogCheckSession()
-	let urlNew = uUrl;
-	let ans = null;
-// TODO /// move Ajax calls to [.done .fail . always syntax]
-	$.ajax({
-    type: "GET",
-    url: urlNew,
-		headers: {"Authorization": authorization.idToken},
-    async: false,
-    dataType: "json",
-		contentType:'application/json',
-    success: function(json){
-			if (json!==undefined) {
-				// console.log(urlNew)
-			}
-    	ans = json
-		},
-		statusCode: {
-			401: function() {
-console.log("Error: 401")
-				cogLogoutUser()
-				//$(loginError).html("Sorry, your session has expired.")
-				console.log("Session Expired")
-			},
-			0: function() {
-console.log("Error: 0")
-				console.log("Status code: 0")
-				cogLogoutUser()
-				$(loginError).html("Sorry, your session has expired.")
-				console.log("Unauthorized")
-			}
-		},
-		error: function(jqXHR, status, error){
-			// utilErrorHandler(message, status, error, "aws")
-			// console.log(jqXHR)
-			console.log(jqXHR.status)
-			// console.log(jqXHR + ", " + status + ", " + error)
-			// // alert(error);
-			// // TODO try to capture the error 401 - ????
-			// // TODO add same error handling to dbPostData
-			//
-			// console.log(typeof error)
-			//
-			// // if (error.indexOf("NetworkError: Failed to execute 'send' on 'XMLHttpRequest'") > -1) {
-			// 	cogLogoutUser()
-			// 	$('#nav5').html('Login')
-			// 	$('#nav4').html('')
-			// 	$(loginError).html("Sorry, your session has expired.")
-			// //}
-
-			// if (message.readyState == 0) {
-			// 	console.log("Error of some kind!")
-			// }
-		}
-	}).done(function(data, textStatus, jqXHR) {
-    //console.log("DONE")
-		//console.log(data)
-  }).fail(function (jqXHR, textStatus, errorThrown) {
-    console.log("status", jqXHR.status)
-		if (jqXHR.status == 0) {
-
+        if (response.ok) {
+            console.log('success:', message);
+            callback('success', message);
+        } else {
+            console.log('error:', message);
+            callback('error', message);
         }
-        if (errorThrown) {
-	    	console.log("errorThrown", errorThrown)
-            console.log("errorThrown", JSON.parse(errorThrown))
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        callback('error', error)
+    })
+}
+
+async function dbGetDataAsync(subUrl){
+    // callback('working', '' )
+    console.log("Starting fetch...")
+
+    return await fetch(dbUrl + subUrl, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',    
+            "Authorization": cachedSession.auth.idToken,
         }
-
-		// if (errorThrown.includes("DOMException: Failed to execute 'send' on 'XMLHttpRequest':")){
-		// 	console.log("ACCESS ERROR") // force logon
-		// }
-	}).always(function (data, textStatus, jqXHR) {
-    // TODO most likely remove .always
-	})
-// console.log(JSON.stringify(ans))
-	return ans
+    })
+    .then(response => {
+        const message = getMessage(response.status, "GET");
+        if (response.ok) {
+            console.log('success:', message);
+            // callback('success', message);
+        } else {
+            console.log('error:', message);
+            // callback('error', message);
+        }
+        return response.json()
+    })
+    .then(data => {
+        console.log(data)
+        return data
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        // callback('error', error)
+    })
 }
-
-function dbGetDaysServices(dayDate){
-	dayDate = moment(dayDate).format("YYYYMMDD")
-	return dbGetData(dbUrl + "/clients/services/byday/"+dayDate).services
-}
-
-
-// async function dbGetData(subUrl, data, callback){
-//     callback('loading', '' )
-//     if (cachedSession.auth) {
-//         return fetch(dbUrl + subUrl, {
-//             headers: {
-//                 'Content-Type': 'application/json',    
-//                 "Authorization": cachedSession.auth.idToken,
-//             },
-//             body: JSON.stringify(data),
-//         })
-//         .then(response => {
-
-//             console.log(response)
-
-//             if (response.ok) {
-//                 response.json()
-//                 if (response.status === 200) {
-//                     console.log('success:', "Save Confirmed")
-//                     callback('success', "")
-//                 } 
-//             } else {
-//                 if (response.status === 400) {
-//                     console.log('error:', "Bad Request Exception")
-//                     callback('error', "Bad Request Exception")
-//                 } else if (response.status === 401) {
-//                     console.log('error:', "Authentication Failed")
-//                     callback('error', "Authentication Failed")
-//                 }else if (response.status === 403) {
-//                     console.log('error:', "Access Denied Exception")
-//                     callback('error', "Access Denied Exception")
-//                 } else if (response.status === 404) {
-//                     console.log('error:', "Not Found Exception")
-//                     callback('error', "Not Found Exception")
-//                 } else if (response.status === 409) {
-//                     console.log('error:', "Conflict Exception")
-//                     callback('error', "Conflict Exception")
-//                 } else if (response.status === 413) {
-//                     console.log('error:', "Request Too Large")
-//                 } else if (response.status === 429) {
-//                     console.log('error:', "API Configuration Error/Throttled")
-//                     callback('error', "API Configuration Error/Throttled")
-//                 } else if (response.status === 500) {
-//                     console.log('error:', "Bad Gateway Exception")
-//                     callback('error', "Bad Gateway Exception")
-//                 } else if (response.status === 502) {
-//                     console.log('error:', "Bad Gateway Exception")
-//                     callback('error', "Bad Gateway Exception")
-//                 } else if (response.status === 503) {
-//                     console.log('error:', "Service Unavailable Exception")
-//                     callback('error', "Service Unavailable Exception")
-//                 } else if (response.status === 504) {
-//                     console.log('error:', "Endpoint Request Timed-out Exception")
-//                     callback('error', "Endpoint Request Timed-out Exception")
-//                 } else {
-//                     console.log(response.status)
-//                     console.log('error:', "Database can't be reached!")
-//                     callback('error', "Database can't be reached!")
-//                 }
-//             }
-//         })
-//         .then(data => {
-//             console.log('Raw Data:', data);
-//             if (data !== undefined) {
-//                 if (data.message === "Unauthorized") {
-//                     console.log('error:', 'Unauthorized Connection');
-//                     callback('error', 'Unauthorized Connection')
-//                 } else {
-//                     console.log('Success:', data);
-//                     callback('success', data)
-//                 }
-//             } else {
-//                 callback('error', 'No Data Returned')
-//             }
-//         })
-//         .catch((error) => {
-//             console.error('Error:', error);
-//             callback('error', error)
-//         })
-//     } else {
-//         console.error('Error:', 'Session Expired');
-//         callback('error', 'Session Expired') 
-//     }
-// }

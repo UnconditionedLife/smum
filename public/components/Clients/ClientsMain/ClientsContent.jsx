@@ -61,6 +61,13 @@ export default function ClientsContent(props) {
                     }
                     { !props.showClient && logoBox }
                 </Route>
+                <Route path={`${match.path}/clients`}>
+                    { console.log("CLIENTS URL") }
+                    <Box display="flex" width="100%" height="100%" justifyContent="center" p='30%' pt='4%'>
+                        <SmumLogo width='90%' />
+                    </Box>
+                </Route>
+
             </Switch>
         </Container>
     );

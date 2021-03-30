@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { dbGetUser } from '../../System/js/Database.js';
+import { dbGetUserAsync } from '../../System/js/Database.js';
 import { Container, CardContent, CardHeader } from '@material-ui/core';
 import { Card } from '../../System';
 import { UserForm } from '../../User';
@@ -10,7 +10,15 @@ UserPage.propTypes = {
 }
 
 export default function UserPage(props) {
-    const user = dbGetUser(props.userName);
+    const [ user, setUser ] = useState(null)
+    
+    useEffect(() => {
+        dbGetUserAsync(props.userName).then( userObj => { setUser(userObj) })
+    }, [])
+
+    if (user == null) return null
+
+    console.log(user)
 
     return (
         <Container maxWidth='md'>

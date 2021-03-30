@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, MenuItem, Typography } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
-import { dbGetUser, dbSaveUser, dbSetModifiedTime } from '../System/js/Database';
+import { dbGetUserAsync, dbSaveUserAsync, dbSetModifiedTime } from '../System/js/Database';
 
 UserForm.propTypes = {
     user: PropTypes.object,     // null to create new user
@@ -42,7 +42,13 @@ export default function UserForm(props) {
         }
 
         // Validate form contents
-        if (isNewUser && dbGetUser(formValues.userName) != null) {
+        let user = null
+        dbGetUserAsync(props.userName).then( userObj => { user = userObj })
+
+        console.log(user)
+
+
+        if (isNewUser && dbGetUserAsync(formValues.userName) != null) {
             setError('userName', {type: 'manual', message: 'Username is already in use'});
         } else {
             // Convert form values to canonical format
@@ -53,7 +59,7 @@ export default function UserForm(props) {
             Object.assign(userData, unpackZipcode(formValues.zipcode));
             // Save user data and reset form state to new values
             dbSetModifiedTime(userData, isNewUser);
-            dbSaveUser(userData, saveCallback);
+            dbSaveUserAsync(userData, saveCallback);
             // TODO update cognito if phone or email is modified
         }
     }

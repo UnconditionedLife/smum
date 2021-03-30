@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Table, TableBody,
      TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@material-ui/core';
 import { Add, ExpandMore } from '@material-ui/icons';
-import { dbGetAllUsers } from '../../System/js/Database.js';
+import { dbGetAllUsersAsync } from '../../System/js/Database.js';
 
 UserList.propTypes = {
     list: PropTypes.array.isRequired,
@@ -48,7 +48,16 @@ AllUsersPage.propTypes = {
 }
 
 export default function AllUsersPage(props) {
-    const users = dbGetAllUsers(props.session).sort((a, b) => a.userName.localeCompare(b.userName));
+    const [ users, setUsers ] = useState(null) 
+
+    useEffect(() => { 
+        dbGetAllUsersAsync(props.session)
+            .then( usersArray => { 
+                setUsers( usersArray.sort((a, b) => a.userName.localeCompare(b.userName)))
+            })
+    }, [])
+    
+    if (users === null) return null
 
     return (
         <Box mt={ 7 }>

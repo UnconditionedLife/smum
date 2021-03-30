@@ -8,7 +8,7 @@ import { Box, Grid, IconButton, InputAdornment, Typography, Link } from '@materi
 import Alert from '@material-ui/lab/Alert';
 import { Button, TextField, useInput } from '../System';
 import SmumLogo from "../Assets/SmumLogo";
-import { dbGetUser } from '../System/js/Database';
+import { utilGetCurrentUserAsync } from '../System/js/Database'
 
 LoginForm.propTypes = {
     onLogin: PropTypes.func.isRequired,
@@ -37,20 +37,25 @@ export default function LoginForm(props) {
                 const refreshToken = result.refreshToken.token;
 
                 setMessage("");
-                props.onLogin({ auth: authorization, cogUser: cogUser, refresh: refreshToken });
-                let user = dbGetUser(username);
-                // logout if user is set to Inactive
-                if (user == null || user.isActive == "Inactive") {
-                    cogUser.signOut();
-                    props.onLogin(null);
-                    setMessage("Sorry, your account is INACTIVE.");
-                } else {
-                    props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
-                    usernameInput.reset();
-                    passwordInput.reset();
-                    validationCodeInput.reset();
-                    newPasswordInput.reset();
-                }
+                authorization.accessToken = result.getAccessToken().getJwtToken()
+                let refreshToken = result.refreshToken.token
+                console.log(refreshToken)
+                authorization.idToken = result.idToken.jwtToken
+                window.utilInitAuth(authorization)
+                utilGetCurrentUserAsync(username)
+                    .then (user => {
+                        // logout if user is set to Inactive
+                        if (user == null || user.isActive == "Inactive") {
+                            cogUser.signOut();
+                            setMessage("Sorry, your account is INACTIVE.");
+                        } else {
+                            props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
+                            usernameInput.reset();
+                            passwordInput.reset();
+                            validationCodeInput.reset();
+                            newPasswordInput.reset();
+                        }
+                    })
             },
             onFailure: (err) => {
                 let message = undefined

@@ -6,9 +6,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar,
 import { ExpandMore, Add } from '@material-ui/icons';
 import { DependentsDisplay, SelectTestForm } from '../';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
-import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } 
-    from '../../Clients';
-// import { saveClient } from '../../System/js/Clients/Clients';
+import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } from '../../Clients';
 import { dbSaveClient } from '../../System/js/Database';
 
 ClientPage.propTypes = {
@@ -21,8 +19,7 @@ ClientPage.propTypes = {
 export default function ClientPage(props) {
     const client = props.client;
     const updateClient = props.updateClient;
-    const clientFormDiv = useRef(null);
-    // const clientFormDiv2 = useRef(null);
+    // const clientFormDiv = useRef(null);
     const [ expanded, setExpanded ] = useState(false);
     const [ saveMessage, setSaveMessage ] = useState({})
   
@@ -34,13 +31,13 @@ export default function ClientPage(props) {
         updateMessage({ result: 'success', time: client.updatedDateTime })
     }, [ client ])
 
-    useEffect(() => {
-        if (!isEmpty(client)) {
-            uiShowClientEdit(clientFormDiv.current, false)
-        } else {
-            uiShowClientEdit(clientFormDiv.current, true)
-        }
-    })
+    // useEffect(() => {
+    //     if (!isEmpty(client)) {
+    //         uiShowClientEdit(clientFormDiv.current, false)
+    //     } else {
+    //         uiShowClientEdit(clientFormDiv.current, true)
+    //     }
+    // })
 
     function updateMessage(msg){
         if (saveMessage !== msg) setSaveMessage(msg)

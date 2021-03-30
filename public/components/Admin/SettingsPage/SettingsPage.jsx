@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { Typography } from '../../System';
-import { dbGetSettings, SettingsSchedule } from '../../System/js/Database';
+import { dbGetSettingsAsync, SettingsSchedule } from '../../System/js/Database';
 import SettingsSched from './SettingsSched.jsx';
 
 SettingsPage.propTypes = {
@@ -10,7 +10,10 @@ SettingsPage.propTypes = {
 }
 
 export default function SettingsPage(props) {
-    const settings = dbGetSettings(props.session);
+    let settings = null
+    dbGetSettingsAsync().then( stgs => { settings = stgs });
+
+    if (settings == null) return
 
     return (
         <Box mt={ 7 }>
