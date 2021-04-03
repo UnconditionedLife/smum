@@ -4,7 +4,7 @@
 import { isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from '../Clients/ClientUtils'
-import { dbGetClientActiveServiceHistory, dbGetSettings, dbSaveServiceRecord, getSvcTypes } from '../Database';
+import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecord, globalSvcTypes } from '../Database';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
     prnPrintVoucherReceipt, prnFlush } 
     from '../Clients/Receipts';
@@ -13,8 +13,7 @@ import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
 
 export function addService(at){
     const { client, serviceTypeId, serviceCategory, svcButtons, svcsRendered } = at
-    const svcTypes = getSvcTypes()
-    const settings = dbGetSettings()
+    const svcTypes = globalSvcTypes()
 	let serviceType = getServiceTypeByID(svcTypes, serviceTypeId)
 	let serviceId = "" // new service
     let serviceValid = true
@@ -70,8 +69,8 @@ console.log(serviceRecord)
 			const targetService = utilCalcTargetServices([serviceType])
 			// TODO use function here
 			let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			prnPrintVoucherReceipt({ service: service, settings: settings })
-			prnPrintVoucherReceipt({ service: service, settings: settings })
+			prnPrintVoucherReceipt({ service: service })
+			prnPrintVoucherReceipt({ service: service })
 		} else if (serviceCategory == 'Christmas' && serviceType.target.service == 'Unselected') { // ignore fulfillment
 			const targetService = utilCalcTargetServices([serviceType])
 			let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
@@ -80,8 +79,8 @@ console.log(serviceRecord)
 				prnPrintVoucherReceipt(serviceType, dependents, 'age');
 				prnPrintVoucherReceipt(serviceType, dependents, 'age');
 			} else {
-				prnPrintVoucherReceipt({ service: service, settings: settings });
-				prnPrintVoucherReceipt({ service: service, settings: settings });
+				prnPrintVoucherReceipt({ service: service });
+				prnPrintVoucherReceipt({ service: service });
 			}
 		}
 		prnFlush();
@@ -107,7 +106,7 @@ export function getButtonData( at ) {
 }
 
 export function getFoodInterval(isUSDA){
-    const svcTypes = getSvcTypes()
+    const svcTypes = globalSvcTypes()
 	for (var i = 0; i < svcTypes.length; i++) {
 		if ((svcTypes[i].serviceButtons == "Primary") && (svcTypes[i].serviceCategory == "Food_Pantry") && (svcTypes[i].isUSDA == isUSDA)){
 			return svcTypes[i].serviceInterval
@@ -165,34 +164,31 @@ console.log(lastServed)
 function getActiveSvcTypes(){
 	// build Active Service Types array of Service Types which cover today's date
     let activeSvcTypes = []
-    const svcTypes = getSvcTypes()
-
-console.log(svcTypes)
-
-	for (let i=0; i < svcTypes.length; i++){
-		if (svcTypes[i].isActive == "Active"){
-			// FROM
-			let fromDateString = []
-			fromDateString.push(moment().year())
-			fromDateString.push(Number(svcTypes[i].available.dateFromMonth))
-			fromDateString.push(Number(svcTypes[i].available.dateFromDay))
-			let fromDate = moment(fromDateString).startOf('day')
-			// TO
-			let toDateString = []
-			toDateString.push(moment().year())
-			toDateString.push(Number(svcTypes[i].available.dateToMonth))
-			toDateString.push(Number(svcTypes[i].available.dateToDay))
-			let toDate = moment(toDateString).endOf('day')
-			// Adjust year dependent on months of TO and FROM
-			if (moment(fromDate).isAfter(toDate)) toDate = moment(toDate).add(1, 'y');
-			// Adjust year if FROM is after TODAY
-			if (moment(fromDate).isAfter()) {
-				fromDate = moment(fromDate).subtract(1, 'y');
-				toDate = moment(toDate).subtract(1, 'y');
-			}
-			// IN date range = ACTIVE
-			if (moment().isBetween(fromDate, toDate, null, '[]')) activeSvcTypes.push(svcTypes[i])
-		}
+    const svcTypes = globalSvcTypes()        
+    for (let i=0; i < svcTypes.length; i++){
+        if (svcTypes[i].isActive == "Active"){
+            // FROM
+            let fromDateString = []
+            fromDateString.push(moment().year())
+            fromDateString.push(Number(svcTypes[i].available.dateFromMonth))
+            fromDateString.push(Number(svcTypes[i].available.dateFromDay))
+            let fromDate = moment(fromDateString).startOf('day')
+            // TO
+            let toDateString = []
+            toDateString.push(moment().year())
+            toDateString.push(Number(svcTypes[i].available.dateToMonth))
+            toDateString.push(Number(svcTypes[i].available.dateToDay))
+            let toDate = moment(toDateString).endOf('day')
+            // Adjust year dependent on months of TO and FROM
+            if (moment(fromDate).isAfter(toDate)) toDate = moment(toDate).add(1, 'y');
+            // Adjust year if FROM is after TODAY
+            if (moment(fromDate).isAfter()) {
+                fromDate = moment(fromDate).subtract(1, 'y');
+                toDate = moment(toDate).subtract(1, 'y');
+            }
+            // IN date range = ACTIVE
+            if (moment().isBetween(fromDate, toDate, null, '[]')) activeSvcTypes.push(svcTypes[i])
+        }
     }
     return activeSvcTypes
 }
@@ -401,9 +397,12 @@ function calcValidAgeGrade(at){
 }
 
 function utilCalcVoucherServiceSignup(client, serviceType){
-	return dbGetClientActiveServiceHistory(client)
-		.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
-		.filter(item => item.serviceTypeId == serviceType.target.service)
+	dbGetClientActiveServiceHistoryAsync(client).then(
+        clientHistory => {
+            return clientHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
+                .filter(item => item.serviceTypeId == serviceType.target.service)
+        }
+    )
 }
 
 function utilCalcFoodInterval(isUSDA, activeServiceTypes) {

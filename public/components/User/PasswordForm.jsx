@@ -29,13 +29,16 @@ export default function PasswordForm(props) {
         <Fragment>
             <form>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField name="oldPassword" label="Current Password" error= {errors.oldPassword} type="password" 
+                    <FormTextField name="oldPassword" label="Current Password" error= {errors.oldPassword} 
+                        type="password" autoComplete="current-password"
                         control={ control } rules={ {required: 'Current password is required'} }/>
                 </Box>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField name="newPassword1" label="New Password" type="password" 
+                    <FormTextField name="newPassword1" label="New Password" 
+                        type="password" autoComplete="new-password"
                         control={ control } error= {errors.newPassword1} rules={ {required: 'New password is required'} }/>
-                    <FormTextField name="newPassword2" label="Confirm Password" error= {errors.newPassword2} type="password"
+                    <FormTextField name="newPassword2" label="Confirm Password" error= {errors.newPassword2} 
+                        type="password" autoComplete="new-password"
                         control={ control } rules={ {required: 'New password is required'} }/>
                 </Box>
             </form>

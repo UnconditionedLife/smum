@@ -1,7 +1,7 @@
 //************************************************
 //***** CLIENTS SECTION JAVASCRIPT FUNCTIONS *****
 //************************************************
-import { dbSaveClient, dbGetNewClientID } from '../../js/Database';
+import { dbSaveClient, dbGetNewClientID } from '../Database';
 import { utilNow } from '../GlobalUtils';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****

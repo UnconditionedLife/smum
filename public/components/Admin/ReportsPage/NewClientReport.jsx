@@ -4,7 +4,7 @@ import moment from 'moment';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Typography, TableFooter, Snackbar } from '@material-ui/core';
 import { DatePicker } from '@material-ui/pickers'
 import Button from '../../System/Core/Button.jsx';
-import { SettingsZipcodes, dbGetSvcsInMonth, dbSearchClients } from '../../System/js/Database'
+import { SettingsZipcodes, dbGetSvcsInMonthAsync, dbSearchClientsAsync } from '../../System/js/Database'
 import { NodeBaseExport } from 'readable-stream';
 
 export default function NewClientReport(props) {
@@ -38,50 +38,54 @@ export default function NewClientReport(props) {
     }
 
     function RunReport(){
-        const monthOfSvcs = dbGetSvcsInMonth(moment(yearMonth).format('YYYYMM'))
-        const monthOfValidSvcs = monthOfSvcs.filter(item => item.serviceValid == 'true')
-        const monthOfValidUSDASvcs = monthOfValidSvcs.filter(item => item.serviceTypeId == USDAServiceTypeId)
-        let newClients = []
+        dbGetSvcsInMonthAsync(moment(yearMonth).format('YYYYMM'))
+            .then(svcs => {
+                const monthOfValidSvcs = svcs.filter(item => item.serviceValid == 'true')
+                const monthOfValidUSDASvcs = monthOfValidSvcs.filter(item => item.serviceTypeId == USDAServiceTypeId)
+                let newClients = []
+                let tempList = []
 
-        let tempList = []
-        displayMsg("Loading clients services...")
-        monthOfValidUSDASvcs.forEach(svc => {    
-            const client = dbSearchClients(svc.clientServedId)[0]
-            const dividedYearMonth = moment(yearMonth).format('YYYYMM').substring(0,4) + "-" + moment(yearMonth).format('YYYYMM').substring(4)
-            const firstSeen = client.firstSeenDate
-            if (firstSeen.substring(0,7) == dividedYearMonth) {
-                console.log("matching MONTH")
-                tempList.push(svc.clientServedId)
-                newClients.push(client)
-            }
-        })
+                displayMsg("Loading clients services...")
+                monthOfValidUSDASvcs.forEach(svc => {    
+                    dbSearchClientsAsync(svc.clientServedId)
+                        .then(clients => {
+                            const client = clients[0]
+                            const dividedYearMonth = moment(yearMonth).format('YYYYMM').substring(0,4) + "-" + moment(yearMonth).format('YYYYMM').substring(4)
+                            const firstSeen = client.firstSeenDate
+                        if (firstSeen.substring(0,7) == dividedYearMonth) {
+                            console.log("matching MONTH")
+                            tempList.push(svc.clientServedId)
+                            newClients.push(client)
+                        }
+                        setClientIds(tempList.sort((b, a) => { return b-a }))
 
-        setClientIds(tempList.sort((b, a) => { return b-a }))
+                        displayMsg("Calculating...")
+                        zipCodes.forEach(zip => {
+                            let zipRecord = { area: zip }
+                            zipRecord.total = newClients.filter(client => client.zipcode == zip).length
+                            zipRecord.homeless = newClients.filter(client => client.zipcode == zip && client.homeless == "YES").length
+                            numNewClients.push(zipRecord)
+                            setCounts(numNewClients)
+                        })
 
-        displayMsg("Calculating...")
-        zipCodes.forEach(zip => {
-            let zipRecord = { area: zip }
-            zipRecord.total = newClients.filter(client => client.zipcode == zip).length
-            zipRecord.homeless = newClients.filter(client => client.zipcode == zip && client.homeless == "YES").length
-            numNewClients.push(zipRecord)
-            setCounts(numNewClients)
-        })
-
-        let zipRecord = { area: "Out Of Area" }
-        zipRecord.total = newClients.filter(client => !zipCodes.includes(client.zipcode)).length
-        zipRecord.homeless = newClients.filter(client => !zipCodes.includes(client.zipcode) && client.homeless == "YES").length
-        numNewClients.push(zipRecord)
-        setCounts(numNewClients)
-        let total = 0
-        let homeless = 0
-        numNewClients.forEach( item => {
-            total += item.total
-            homeless += item.homeless
-        })
-        setTotalNewClients(total)
-        setTotalNewHomeless(homeless)
-        
-        displayMsg("Report Complete...")
+                        let zipRecord = { area: "Out Of Area" }
+                        zipRecord.total = newClients.filter(client => !zipCodes.includes(client.zipcode)).length
+                        zipRecord.homeless = newClients.filter(client => !zipCodes.includes(client.zipcode) && client.homeless == "YES").length
+                        numNewClients.push(zipRecord)
+                        setCounts(numNewClients)
+                        let total = 0
+                        let homeless = 0
+                        numNewClients.forEach( item => {
+                            total += item.total
+                            homeless += item.homeless
+                        })
+                        setTotalNewClients(total)
+                        setTotalNewHomeless(homeless)
+                        
+                        displayMsg("Report Complete...")
+                    })
+                })
+            })
     }
 
     return (

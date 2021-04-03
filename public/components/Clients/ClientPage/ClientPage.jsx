@@ -6,10 +6,8 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar,
 import { ExpandMore, Add } from '@material-ui/icons';
 import { DependentsDisplay, SelectTestForm } from '../';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
-import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } 
-    from '../../Clients';
-// import { saveClient } from '../../System/js/Clients/Clients';
-import { dbSaveClient, cacheSessionVar } from '../../System/js/Database';
+import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } from '../../Clients';
+import { dbSaveClient } from '../../System/js/Database';
 
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
@@ -21,8 +19,7 @@ ClientPage.propTypes = {
 export default function ClientPage(props) {
     const client = props.client;
     const updateClient = props.updateClient;
-    const clientFormDiv = useRef(null);
-    // const clientFormDiv2 = useRef(null);
+    // const clientFormDiv = useRef(null);
     const [ expanded, setExpanded ] = useState(false);
     const [ saveMessage, setSaveMessage ] = useState({})
   
@@ -34,13 +31,13 @@ export default function ClientPage(props) {
         updateMessage({ result: 'success', time: client.updatedDateTime })
     }, [ client ])
 
-    useEffect(() => {
-        if (!isEmpty(client)) {
-            uiShowClientEdit(clientFormDiv.current, false)
-        } else {
-            uiShowClientEdit(clientFormDiv.current, true)
-        }
-    })
+    // useEffect(() => {
+    //     if (!isEmpty(client)) {
+    //         uiShowClientEdit(clientFormDiv.current, false)
+    //     } else {
+    //         uiShowClientEdit(clientFormDiv.current, true)
+    //     }
+    // })
 
     function updateMessage(msg){
         if (saveMessage !== msg) setSaveMessage(msg)
@@ -53,7 +50,6 @@ export default function ClientPage(props) {
             updateMessage({ result: result, text: text, time: data.updatedDateTime })
             if (result === 'success') updateClient(data)
         }
-        cacheSessionVar(props.session) // done because cashedsession in database is being lost after hotreload in development
         dbSaveClient(data, callback)
     }
 

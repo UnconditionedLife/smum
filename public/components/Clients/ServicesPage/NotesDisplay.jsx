@@ -4,17 +4,25 @@ import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
 import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
 import { Card, IconButton } from '../../System';
 import { NoteForm } from '../../Clients';
-import { dbSaveClient } from '../../System/js/Database.js';
+import { dbSaveClient, getSession } from '../../System/js/Database.js';
 
 NotesDisplay.propTypes = {
-    client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
+    client: PropTypes.object.isRequired, 
+    updateClient: PropTypes.func.isRequired,
     handleNoteCountChange: PropTypes.func.isRequired,
     session: PropTypes.object.isRequired,
     showAlert: PropTypes.func.isRequired,
+    editNote: PropTypes.object.isRequired,
+    handleEditNoteChange: PropTypes.func.isRequired,
+    editMode: PropTypes.string.isRequired,
+    handleEditModeChange: PropTypes.func.isRequired,
+    noteText: PropTypes.string.isRequired,
+    handleTextFieldChange: PropTypes.func.isRequired,
+    noteImportant: PropTypes.bool.isRequired,
+    handleNoteImportantChange: PropTypes.func.isRequired,
 }
 
 export default function NotesDisplay(props) {
-    const session = props.session;
     const client = props.client;
     const updateClient = props.updateClient;
     const handleNoteCountChange = props.handleNoteCountChange;
@@ -27,7 +35,7 @@ export default function NotesDisplay(props) {
     const noteImportant = props.noteImportant
     const handleNoteImportantChange = props.handleNoteImportantChange
 
-    const userName = session.user.userName
+    const userName = getSession().user.userName
 
     function callback(response, msg){
         console.log("IN CALLBACK")

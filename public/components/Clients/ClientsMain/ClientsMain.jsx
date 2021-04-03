@@ -6,11 +6,10 @@ import { ClientsHeader, ClientsContent } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';
-import { dbSearchClients, dbGetClientActiveServiceHistory, dbSetModifiedTime, utilEmptyPlaceholders } from '../../System/js/Database';
+import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime, utilEmptyPlaceholders, getSession } from '../../System/js/Database';
 import { getSvcsRendered } from '../../System/js/Clients/Services'
 
 ClientsMain.propTypes = {
-    session: PropTypes.object.isRequired,
     searchTerm: PropTypes.string.isRequired,
     handleSearchTermChange: PropTypes.func.isRequired,
     selectedTab: PropTypes.number.isRequired,
@@ -21,7 +20,6 @@ ClientsMain.propTypes = {
 
 export default function ClientsMain(props) {
     const searchTerm = props.searchTerm
-    const session = props.session
     const selectedTab = props.selectedTab
     const checkClientsURL = props.checkClientsURL
     const updateURL = props.updateURL
@@ -35,7 +33,7 @@ export default function ClientsMain(props) {
     const [ openAlert, setOpenAlert ] = useState(false)
     const [ alertSeverity, setAlertSeverity ] = useState("")
     const [ alertMsg, setAlertMsg ] = useState("")
-    
+    const [ session, setSession ] = useState(getSession())
 
     useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(client); } }, [session, url])
 
@@ -52,8 +50,7 @@ export default function ClientsMain(props) {
         if (searchTerm !== '') {
             if (window.stateCheckPendingEdit()) return // used temporarily to keep global vars in sync
             window.uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
-            const searchResults = dbSearchClients(searchTerm)
-            changeClientsFound(searchResults)
+            dbSearchClientsAsync(searchTerm).then(clients => { changeClientsFound(clients) })
         }
     }, [searchTerm]);
 
@@ -80,26 +77,16 @@ export default function ClientsMain(props) {
             window.clientData = newValue // used temporarily to keep global vars in sync
             window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
             if (newValue.length === 1) {
-                changeClient(newValue[0])
-                updateURL(newValue[0].clientId, 1)
+                changeClient(newValue[0], 1)
             } else {
-                changeClient({})
-                updateURL(null, 0)
+                changeClient({}, 0) // second aregument is tab to change URL to
             }
         }
     }
 
-    function changeClient(newClient){
-
-console.log("IN CHANGE CLIENT")
-console.log(newClient)
-console.log("{",newClient.clientId,"}")
+    function changeClient(newClient, clientsTab){
         if (!isEmpty(newClient)) {
-
             if ( newClient.clientId !== "0" ){
-
-    console.log("IN PREP CLIENT")
-
                 // TODO client should be sorted and have ids for nested arrays saved to the database
                 newClient = utilEmptyPlaceholders(newClient, "remove")
                 newClient = utilCalcAge(newClient)
@@ -110,13 +97,22 @@ console.log("{",newClient.clientId,"}")
                 newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
                 // add service handling objects
-                newClient.svcHistory = dbGetClientActiveServiceHistory(newClient.clientId)
-                newClient.svcsRendered = getSvcsRendered(newClient.svcHistory)
+                dbGetClientActiveServiceHistoryAsync(newClient.clientId).then( history => { 
+                    newClient.svcHistory = history
+                    newClient.svcsRendered = getSvcsRendered(newClient.svcHistory)
+                    keepAppJsInSync(newClient)
+                    setClient(newClient)
+                    updateURL(newClient.clientId, clientsTab)
+                })
+                
             } else {
                 dbSetModifiedTime(newClient, true);
+                keepAppJsInSync(newClient)
+                setClient(newClient)
+                updateURL(newClient.clientId, clientsTab)
             }
-            keepAppJsInSync(newClient)
-            setClient(newClient)
+            // keepAppJsInSync(newClient)
+            // setClient(newClient)
         }
     }
 
@@ -175,14 +171,12 @@ console.log("{",newClient.clientId,"}")
     }
 
     function isNewClientChange(){
-        // window.clickShowNewClientForm() // used temporarily - remove once clientPage forms have been converted
-        // NEED TOO CHECK FOR CLIENT EDIT FLAG
 
 console.log("IN NEW CLIENT")
 
         changeClientsFound([])        
-        changeClient(emptyClient)
-        updateURL(null, 2)
+        changeClient(emptyClient, 2) // second argument is tab to set URL to
+        // 
     }
 
 

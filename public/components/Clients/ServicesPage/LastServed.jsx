@@ -21,6 +21,9 @@ export default function LastServed(props) {
     function handleSetNextService(newValue){
         if (nextService !== newValue) setNextService(newValue)
     }
+
+    console.log("CLIENT IN LAST SERVED")
+    console.log(client)
  
     if (client.lastServed[0] !== undefined) {
         let lastServed = window.utilCalcLastServedDays()

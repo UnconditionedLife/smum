@@ -8,7 +8,7 @@ import { Box, Grid, IconButton, InputAdornment, Typography, Link } from '@materi
 import Alert from '@material-ui/lab/Alert';
 import { Button, TextField, useInput } from '../System';
 import SmumLogo from "../Assets/SmumLogo";
-import { utilGetCurrentUser } from '../System/js/Database'
+import { utilGetCurrentUserAsync } from '../System/js/Database'
 
 LoginForm.propTypes = {
     onLogin: PropTypes.func.isRequired,
@@ -30,26 +30,29 @@ export default function LoginForm(props) {
         let authDetails = cogSetupAuthDetails(username, password);
         cogUser.authenticateUser(authDetails, {
             onSuccess: (result) => {
-                console.log(result)
-                let authorization = {};
+                const authorization = {
+                    accessToken: result.getAccessToken().getJwtToken(),
+                    idToken: result.idToken.jwtToken,
+                };
+                const refreshToken = result.refreshToken.token;
                 setMessage("");
                 authorization.accessToken = result.getAccessToken().getJwtToken()
-                let refreshToken = result.refreshToken.token
-                console.log(refreshToken)
                 authorization.idToken = result.idToken.jwtToken
                 window.utilInitAuth(authorization)
-                let user = utilGetCurrentUser(username)
-                // logout if user is set to Inactive
-                if (user == null || user.isActive == "Inactive") {
-                    cogUser.signOut();
-                    setMessage("Sorry, your account is INACTIVE.");
-                } else {
-                    props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
-                    usernameInput.reset();
-                    passwordInput.reset();
-                    validationCodeInput.reset();
-                    newPasswordInput.reset();
-                }
+                utilGetCurrentUserAsync(username)
+                    .then (user => {
+                        // logout if user is set to Inactive
+                        if (user == null || user.isActive == "Inactive") {
+                            cogUser.signOut();
+                            setMessage("Sorry, your account is INACTIVE.");
+                        } else {
+                            props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
+                            usernameInput.reset();
+                            passwordInput.reset();
+                            validationCodeInput.reset();
+                            newPasswordInput.reset();
+                        }
+                    })
             },
             onFailure: (err) => {
                 let message = undefined
@@ -274,7 +277,7 @@ export default function LoginForm(props) {
                 <form noValidate> { displayLoginForms() } </form>
             </Box>
             { displaySubmitButtons() }
-            <Box width='100%' height='22px' mt={ -1 } mb={ 1.5 }>
+            <Box width='100%' mt={ -1 } mb={ 1.5 }>
                 { message ? <Alert severity="error">{ message }</Alert> : '' }
             </Box>
         </Box>

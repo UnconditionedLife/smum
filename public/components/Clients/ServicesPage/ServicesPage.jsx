@@ -14,6 +14,7 @@ ServicesPage.propTypes = {
 
 export default function ServicesPage(props) {
 
+    console.log(props.client)
 
     return (
         <Box display="flex" justifyContent="space-around" flexWrap="wrap">
