@@ -8,8 +8,10 @@ import { dbGetUser, dbSaveUser, dbSetModifiedTime, cacheSessionVar } from '../Sy
 
 UserForm.propTypes = {
     session: PropTypes.object.isRequired,
+    clearRecord: PropTypes.func.isRequired,  
     user: PropTypes.object,     // null to create new user
     selfEdit: PropTypes.bool,   // true if editing current session user
+    setDialogOpen: PropTypes.func.isRequired,   
 }
 
 export default function UserForm(props) {
@@ -61,7 +63,11 @@ export default function UserForm(props) {
     }
 
     const submitForm = handleSubmit(doSave);
-
+    const cancelFn = () => {
+        reset();
+        props.setDialogOpen(false);
+        props.clearRecord();
+    }
     return (
         <Fragment>
             <form>
@@ -114,7 +120,7 @@ export default function UserForm(props) {
                         control={ control } />
                 </Box>
             </form>
-            <SaveCancel disabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : reset() } } 
+            <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : cancelFn() } } 
                 message={ saveMessage } />
         </Fragment>
     );

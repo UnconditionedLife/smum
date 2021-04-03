@@ -8,6 +8,7 @@ import { ServiceTypeFormDialog } from '../../Admin';
 
 ServiceTypeList.propTypes = {
     list: PropTypes.array.isRequired,
+    session: PropTypes.object.isRequired,
 }
 
 function ServiceTypeList(props) {
@@ -82,7 +83,11 @@ function ServiceTypeList(props) {
     );
 }
 
-export default function ServiceTypePage() {
+ServiceTypePage.propTypes = {
+    session: PropTypes.object.isRequired,
+}
+
+export default function ServiceTypePage(props) {
     const svcTypes = getSvcTypes();
     return (
         <Box mt={7}>
@@ -92,6 +97,7 @@ export default function ServiceTypePage() {
                 </AccordionSummary>
                 <AccordionDetails>
                     <ServiceTypeList 
+                        session={props.session}
                         list={ svcTypes.filter(s => s.isActive == 'Active') }
                     />
                 </AccordionDetails>
@@ -102,6 +108,7 @@ export default function ServiceTypePage() {
                 </AccordionSummary>
                 <AccordionDetails>
                     <ServiceTypeList 
+                        session={props.session}
                         list={ svcTypes.filter(s => s.isActive != 'Active') } 
                     />
                 </AccordionDetails>

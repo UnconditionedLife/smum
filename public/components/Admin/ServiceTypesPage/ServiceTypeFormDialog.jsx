@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@material-ui/core';
 import { SettingsServiceCats } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
+import { dbSaveClient, cacheSessionVar } from '../../System/js/Database';
 
 ServiceTypeFormDialog.propTypes = {
     editMode: PropTypes.string.isRequired,              // 'edit' = display form
@@ -11,7 +12,7 @@ ServiceTypeFormDialog.propTypes = {
     handleEditMode: PropTypes.func.isRequired,          // editMode handler
     editRecord: PropTypes.object.isRequired,            // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
-    // handleClientHistory: PropTypes.func.isRequired,     // handles updating history
+    session: PropTypes.object.isRequired                 // session
 }
 
 export default function ServiceTypeFormDialog(props) {
@@ -28,12 +29,12 @@ export default function ServiceTypeFormDialog(props) {
         setDialogOpen(state)
     }
 
-    function unpackFromDate(record){
+    function packFromDate(record){
         let currYear = new Date().getFullYear()
         return (currYear) + "-" + (parseInt(record.available.dateFromMonth) + 1).toString().padStart(2, '0')+"-"+record.available.dateFromDay.toString().padStart(2, '0')
     }
 
-    function unpackToDate(record){
+    function packToDate(record){
         let currYear = new Date().getFullYear()
         let avail = record.available
         let fromMonth = parseInt(avail.dateFromMonth)
@@ -49,13 +50,13 @@ export default function ServiceTypeFormDialog(props) {
         return (currYear + 1)+"-"+(toMonth + 1).toString().padStart(2, '0')+"-"+toDay.toString().padStart(2, '0')
     }
 
-    const initValues = props.editRecord
-    initValues.fromdate = unpackFromDate(props.editRecord)
-    initValues.todate = unpackToDate(props.editRecord)
+    let defValues = { ...props.editRecord };
+    defValues.fromdate = packFromDate(props.editRecord)
+    defValues.todate = packToDate(props.editRecord)
     
     const { handleSubmit, reset, watch, control, errors, setError, formState } = useForm({
         mode: 'onBlur',
-        defaultValues: initValues, 
+        defaultValues: defValues, 
     })
 
     function getTargetServices() {
@@ -69,14 +70,52 @@ export default function ServiceTypeFormDialog(props) {
         if (saveMessage !== msg) setSaveMessage(msg)
     }
 
+    function unpackDates(fromdate, todate){
+        const fromsplit = fromdate.split("-")
+        const tosplit = todate.split("-")
+
+        return {"available": {
+                    "dateFromMonth": parseInt(fromsplit[1]) -1, 
+                    "dateFromDay": parseInt(fromsplit[2]),
+                    "dateToMonth": parseInt(tosplit[1]) -1, 
+                    "dateToDay": parseInt(tosplit[2]) 
+                    }
+               } 
+
+    }
+
     useEffect(() => { 
         updateMessage({ result: 'success', time: props.editRecord.updatedDateTime })
     }, [ props.editRecord ])
 
-    function doSave(formValues) {
-        console.log(svcCats)
-        alert("Changes saved (not really!)\n"+JSON.stringify(formValues));
-        updateMessage({text: 'History record was saved!', time: initValues.updatedDateTime, result: 'success'})
+    function saveSvcType(data){
+        const callback = (result, text) => {
+            //console.log(result)
+            //console.log(text)
+            updateMessage({ result: result, text: text, time: data.updatedDateTime })
+            if (result === 'success') props.handleEditRecord(data)
+        }
+        cacheSessionVar(props.session) // done because cashedsession in database is being lost after hotreload in development
+        dbSaveClient(data, callback)
+    }
+
+
+    function doSave(values) {
+        // Overwrite data structure with form values
+        let data = Object.assign({}, props.editRecord);
+        Object.assign(data, values);
+        Object.assign(data, unpackDates(values.fromdate, values.todate));
+        console.log(data)
+        const saved = saveSvcType(data)
+        // Save user data and reset form state to new values
+        // dbSetModifiedTime(data, false);
+        // if (result === 'failed') {
+        //     updateMessage("error", "FAILED TO SAVE - try again!", 'ERROR')
+        // } else {
+        //     updateMessage("info", "Saved " + moment().fromNow(), moment().format("MMM DD, YYYY h:mma"))
+        //     props.updateClient(data)
+        // }
+        reset(values);
     }
 
     function startMessageTimer(boo){

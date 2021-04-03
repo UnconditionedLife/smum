@@ -1,16 +1,31 @@
-import React from 'react';
+import React, {useState} from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Table, TableBody,
      TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@material-ui/core';
 import { Add, ExpandMore } from '@material-ui/icons';
 import { dbGetAllUsers } from '../../System/js/Database.js';
+import { UserPage } from '../../Admin';
 
 UserList.propTypes = {
     list: PropTypes.array.isRequired,
-    onSelect: PropTypes.func.isRequired,
+    session: PropTypes.object.isRequired,
 }
 
 function UserList(props) {
+    const [ editMode, setEditMode ] = useState('none');
+    const [ userName, setUserName ] = useState(null);
+
+    function handleEditRecord(newUserName){
+        setUserName(newUserName)
+        setEditMode("edit")   
+    }
+
+    function clearRecord() {
+        setEditMode('none')
+        setUserName(null)
+    }
+
+
     return (
         <Box width='100%' mx={ 2 }>
             <TableContainer> 
@@ -27,7 +42,8 @@ function UserList(props) {
                     {props.list.map((row) => (
                     <TableRow 
                         key={ row.userName }
-                        onClick={ () => props.onSelect(row.userName) }
+                        onClick={ () => handleEditRecord(row.userName) }
+                        selected={ row.userName == userName }
                     >
                         <TableCell component="th" scope="row">{row.userName}</TableCell>
                         <TableCell align="center">{row.givenName}</TableCell>
@@ -35,6 +51,10 @@ function UserList(props) {
                         <TableCell align="center">{row.userRole}</TableCell>
                     </TableRow>
                     ))}
+                    { editMode === 'edit' &&
+                        <UserPage clearRecord={ clearRecord } 
+                          session={ props.session }  userName={ userName } />
+                    }
                 </TableBody>
                 </Table>
             </TableContainer>
@@ -44,19 +64,23 @@ function UserList(props) {
 
 AllUsersPage.propTypes = {
     session: PropTypes.object.isRequired,
-    onSelect: PropTypes.func.isRequired,
 }
 
 export default function AllUsersPage(props) {
     const users = dbGetAllUsers(props.session).sort((a, b) => a.userName.localeCompare(b.userName));
+    const [ newUser, setNewUser ] = useState(false);
 
     return (
         <Box mt={ 7 }>
             <Tooltip title= 'Add User'>
-                <Fab onClick={() => props.onSelect('')}  size="small" color='default' >
+                <Fab onClick={()=>setNewUser(true)} size="small" color='default' >
                     <Add />
                 </Fab>
             </Tooltip>
+            { newUser &&
+                <UserPage clearRecord={ ()=>setNewUser(false) } 
+                    session={ props.session }  userName={ null } />
+            }
             <Accordion defaultExpanded={ true }>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
                     <Typography variant='button' >Active Users</Typography>
@@ -64,7 +88,7 @@ export default function AllUsersPage(props) {
                 <AccordionDetails>
                     <UserList 
                         list={ users.filter(u => u.isActive == 'Active') }
-                        onSelect= { props.onSelect }
+                        session={ props.session }
                     />
                 </AccordionDetails>
             </Accordion>
@@ -75,7 +99,7 @@ export default function AllUsersPage(props) {
                 <AccordionDetails>
                     <UserList 
                         list={ users.filter(u => u.isActive != 'Active') } 
-                        onSelect= { props.onSelect }
+                        session={ props.session }
                     />
                 </AccordionDetails>
             </Accordion>
