@@ -14,10 +14,10 @@ let printer = null;
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
-export function prnConnect() {
+export function prnConnect(settings) {
     // TODO UI ALERT CONNECTED TO PRINTER
     prnDrawCanvas('smum');
-    ePosDev.connect(SettingsPrinter(), '8008', prnCallback_connect);
+    ePosDev.connect(settings.printerIP, '8008', prnCallback_connect);
 }
 
 export function prnPrintFoodReceipt(at) {

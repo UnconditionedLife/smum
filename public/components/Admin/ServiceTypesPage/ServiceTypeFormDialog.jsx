@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@material-ui/core';
 import { SettingsServiceCats } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { dbSaveClient, cacheSessionVar } from '../../System/js/Database';
+import { dbSaveClient } from '../../System/js/Database';
 
 ServiceTypeFormDialog.propTypes = {
     editMode: PropTypes.string.isRequired,              // 'edit' = display form
@@ -12,7 +12,6 @@ ServiceTypeFormDialog.propTypes = {
     handleEditMode: PropTypes.func.isRequired,          // editMode handler
     editRecord: PropTypes.object.isRequired,            // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
-    session: PropTypes.object.isRequired                 // session
 }
 
 export default function ServiceTypeFormDialog(props) {
@@ -95,7 +94,6 @@ export default function ServiceTypeFormDialog(props) {
             updateMessage({ result: result, text: text, time: data.updatedDateTime })
             if (result === 'success') props.handleEditRecord(data)
         }
-        cacheSessionVar(props.session) // done because cashedsession in database is being lost after hotreload in development
         dbSaveClient(data, callback)
     }
 

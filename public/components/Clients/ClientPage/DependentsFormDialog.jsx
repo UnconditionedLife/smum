@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
-import { isEmpty } from '../../System/js/GlobalUtils';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { dbSetModifiedTime } from '../../System/js/Database';
-import { saveClient } from '../../System/js/Clients/Clients';
-
 
 DependentsFormDialog.propTypes = {
     session: PropTypes.object.isRequired,
@@ -49,7 +44,7 @@ export default function DependentsFormDialog(props) {
         let data = Object.assign({}, props.client);
         const index = data.dependents.map(function(e) { return e.depId; }).indexOf(props.editRecord.depId);
         Object.assign(data.dependents[index], values);
-        const saved = props.saveAndUpdateClient(data)
+        props.saveAndUpdateClient(data)
         reset(values);
     }
 

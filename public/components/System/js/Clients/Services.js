@@ -4,7 +4,7 @@
 import { isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from '../Clients/ClientUtils'
-import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecord, globalSvcTypes } from '../Database';
+import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecord, getSvcTypes } from '../Database';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
     prnPrintVoucherReceipt, prnFlush } 
     from '../Clients/Receipts';
@@ -13,7 +13,7 @@ import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
 
 export function addService(at){
     const { client, serviceTypeId, serviceCategory, svcButtons, svcsRendered } = at
-    const svcTypes = globalSvcTypes()
+    const svcTypes = getSvcTypes()
 	let serviceType = getServiceTypeByID(svcTypes, serviceTypeId)
 	let serviceId = "" // new service
     let serviceValid = true
@@ -106,7 +106,7 @@ export function getButtonData( at ) {
 }
 
 export function getFoodInterval(isUSDA){
-    const svcTypes = globalSvcTypes()
+    const svcTypes = getSvcTypes()
 	for (var i = 0; i < svcTypes.length; i++) {
 		if ((svcTypes[i].serviceButtons == "Primary") && (svcTypes[i].serviceCategory == "Food_Pantry") && (svcTypes[i].isUSDA == isUSDA)){
 			return svcTypes[i].serviceInterval
@@ -164,7 +164,7 @@ console.log(lastServed)
 function getActiveSvcTypes(){
 	// build Active Service Types array of Service Types which cover today's date
     let activeSvcTypes = []
-    const svcTypes = globalSvcTypes()        
+    const svcTypes = getSvcTypes()        
     for (let i=0; i < svcTypes.length; i++){
         if (svcTypes[i].isActive == "Active"){
             // FROM

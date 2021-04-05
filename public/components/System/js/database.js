@@ -34,13 +34,16 @@ export function showCache() {
 
 export function cacheSessionVar(newSession, callback) {
     cachedSession = newSession;
-    if (!isEmpty(cachedSession)) {
-        dbGetSettingsAsync().then( settings => { cachedSettings = settings })
-        dbGetSvcTypesAsync()
-            .then( svcTypes => { 
-                cachedSvcTypes = svcTypes 
-                if (callback) callback()  // used to call prnConnect after settings have been stored in globalVar
-        })
+    
+    if (cachedSettings === null) {
+        dbGetSettingsAsync(newSession)
+            .then( settings => { 
+                cachedSettings = settings 
+                if (callback) callback(settings)  // used to call prnConnect after settings have been stored in globalVar
+    })}
+    
+    if (cachedSvcTypes.length === 0) {
+        dbGetSvcTypesAsync(newSession).then( svcTypes => { cachedSvcTypes = svcTypes })
     }
 }
 
@@ -51,7 +54,7 @@ export function getSession(){
 //**************** APP SETTINGS ******************
 //************************************************
 
-export async function dbGetSettingsAsync() {
+export async function dbGetSettingsAsync( ) {
     return await dbGetDataAsync("/settings")
         .then( settings => {
             const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
@@ -64,32 +67,26 @@ export async function dbGetSettingsAsync() {
 }
 
 export function SettingsSound() {
-    if (!cachedSettings)
     return (cachedSettings.sounds == 'YES');
 }
 
 export function SettingsPrinter() {
-    if (!cachedSettings)
     return (cachedSettings.printerIP);
 }
 
 export function SettingsSeniorAge() {
-    if (!cachedSettings)
     return (parseInt(cachedSettings.seniorAge, 10));
 }
 
 export function SettingsServiceCats() {
-    if (!cachedSettings)
     return (cachedSettings.serviceCat);
 }
 
 export function SettingsZipcodes() {
-    if (!cachedSettings)
     return (cachedSettings.serviceZip);
 }
 
 export function SettingsSchedule() {
-    if (!cachedSettings)
     return {
         closedDays: cachedSettings.closedDays,
         closedEveryDays: cachedSettings.closedEveryDays,
@@ -101,29 +98,17 @@ export function SettingsSchedule() {
 //************************************************
 //******************* SVCTYPES *******************
 
-export function getSvcTypes(){
-    if (isEmpty(cachedSvcTypes) && !isEmpty(cachedSession)) {
-        dbGetSvcTypesAsync().then( svcTypes => { cachedSvcTypes = svcTypes })
-    }
-    return cachedSvcTypes
-}
-
 export async function dbGetSvcTypesAsync(){
 	return await dbGetDataAsync("/servicetypes")
         .then( data => {
             const svcTypes = data.serviceTypes
-            return svcTypes.sort(function(a, b){
-                let nameA= a.serviceName.toLowerCase()
-                let nameB= b.serviceName.toLowerCase()
-                if (nameA < nameB) return -1
-                if (nameA > nameB) return 1
-                return 0;
-            })
+            // case-insensitive sort
+            return  svcTypes.sort((a, b) => a.serviceName.localeCompare(b.serviceName, undefined, {sensitivity: 'base'}));
         }
     )
 }
 
-export function globalSvcTypes(){
+export function getSvcTypes(){
     return cachedSvcTypes
 }
 
@@ -146,7 +131,8 @@ export async function dbGetAllUsersAsync() {
 	return await dbGetDataAsync("/users").then( data => { return data.users });
 }
 
-export async function utilGetCurrentUserAsync(username) {
+// passing auth because it's first call to db after login
+export async function utilGetCurrentUserAsync(username) { 
     return await dbGetAllUsersAsync()
         .then( users => {
             const userList = users.filter(obj => obj.userName == username)
@@ -157,7 +143,7 @@ export async function utilGetCurrentUserAsync(username) {
         })
 }
 
-export async function dbSaveUserAsync(data, callback) {
+export async function dbSaveUserAsync(data, callback) { // callback is used to printer connect
     return await dbPostDataAsync('/users/', data, callback)
 }
 
@@ -415,9 +401,10 @@ async function dbPostDataAsync(subUrl, data, callback) {
     })
 }
 
-async function dbGetDataAsync(subUrl){
-    // callback('working', '' )
-    console.log("Starting fetch...")
+async function dbGetDataAsync(subUrl){ 
+
+    // console.log("Starting GET fetch...")
+    // console.log(subUrl)
 
     return await fetch(dbUrl + subUrl, {
         method: 'GET',

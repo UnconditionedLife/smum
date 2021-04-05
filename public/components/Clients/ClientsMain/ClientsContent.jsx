@@ -11,7 +11,6 @@ ClientsContent.propTypes = {
     client: PropTypes.object.isRequired, changeClient: PropTypes.func.isRequired,
     updateClient: PropTypes.func.isRequired,
     updateURL: PropTypes.func.isRequired,
-    session: PropTypes.object.isRequired,
     showFound: PropTypes.bool.isRequired,
     showServices: PropTypes.bool.isRequired,
     showClient: PropTypes.bool.isRequired,
@@ -43,21 +42,21 @@ export default function ClientsContent(props) {
                     { props.showServices && 
                         <ServicesPage 
                             client={ props.client } updateClient={ props.updateClient }
-                            session={ props.session } showAlert={ props.showAlert }/>
+                            showAlert={ props.showAlert }/>
                     }
                     { !props.showServices && logoBox }
                 </Route>
                 <Route path={`${match.path}/client/:clientId`}>
                     { props.showClient && 
                         <ClientPage client={props.client} updateClient={ props.updateClient }
-                            session={ props.session } showAlert={ props.showAlert } />
+                            showAlert={ props.showAlert } />
                     }
                     { !props.showClient && logoBox }
                 </Route>
                 <Route path={`${match.path}/history/:clientId`}>
                     { props.showClient && 
                         <HistoryPage client={props.client} updateClient={ props.updateClient }
-                            session={ props.session } showAlert={ props.showAlert } />
+                            showAlert={ props.showAlert } />
                     }
                     { !props.showClient && logoBox }
                 </Route>

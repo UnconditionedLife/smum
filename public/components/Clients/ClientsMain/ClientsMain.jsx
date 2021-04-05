@@ -18,6 +18,8 @@ ClientsMain.propTypes = {
     url: PropTypes.string,
 }
 
+console.log("CLIENTS MAIN")
+
 export default function ClientsMain(props) {
     const searchTerm = props.searchTerm
     const selectedTab = props.selectedTab
@@ -35,7 +37,11 @@ export default function ClientsMain(props) {
     const [ alertMsg, setAlertMsg ] = useState("")
     const [ session, setSession ] = useState(getSession())
 
-    useEffect(() => { if (session != null && !isEmpty(session)) { checkClientsURL(client); } }, [session, url])
+    useEffect(() => {
+        if (session != null && !isEmpty(session)){
+             checkClientsURL(client); 
+            } 
+    }, [session, url])
 
     useEffect(() => {
         const foundEval = !isEmpty(clientsFound)
@@ -179,7 +185,6 @@ console.log("IN NEW CLIENT")
         // 
     }
 
-
     function showAlert(severity, msg){
         setAlertSeverity(severity) // error, warning, info, success
         setAlertMsg(msg)
@@ -209,7 +214,7 @@ console.log("IN NEW CLIENT")
             </Snackbar>
 
             <ClientsHeader { ...passProps } />
-            <ClientsContent { ...passProps } session={ session } showAlert={ showAlert } />
+            <ClientsContent { ...passProps } showAlert={ showAlert } />
         </Box>
     )
 }

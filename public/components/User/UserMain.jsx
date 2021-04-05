@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import { Container, CardContent, CardHeader } from '@material-ui/core';
 import { Card } from '../System';
 import { UserForm, PasswordForm } from '../User';
+import { getSession } from '../System/js/Database';
 
 UserMain.propTypes = {
-    session: PropTypes.object.isRequired,
+
 }
 
 export default function UserMain(props) {
@@ -14,7 +15,7 @@ export default function UserMain(props) {
             <Card>
                 <CardHeader title="User Profile" />
                 <CardContent>
-                    <UserForm { ...props } user={ props.session.user } selfEdit />
+                    <UserForm { ...props } user={ getSession().user } selfEdit />
                 </CardContent>
             </Card>
             <Card>

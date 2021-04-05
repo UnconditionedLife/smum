@@ -1,21 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { AppBar, Box, Tab, Tabs } from '@material-ui/core';
 import { RoomService, AccountBox, AccountCircle, 
             Assessment, SettingsApplications, Input } from '@material-ui/icons';
 import { AllUsersPage, ImportPage, ReportsPage, 
             ServiceTypePage, SettingsPage } from '../../Admin';
+import { getSession } from '../../System/js/Database';
+import { isEmpty } from '../../System/js/GlobalUtils';
 
 AdminMain.propTypes = {
-    session: PropTypes.object.isRequired,
+
 }
 
 export default function AdminMain(props) {
-    const [ selectedTab, setSelectedTab ] = React.useState(0);
+    const [ selectedTab, setSelectedTab ] = useState(0);
+    const [ session, setSession ] = useState(null)
+
+
+    useEffect(() => {
+        console.log("ADMIN MAIN")
+        const sessionVar = isEmpty(getSession()) ? null : getSession()
+
+        console.log(sessionVar)
+        setSession(sessionVar)
+
+    })
 
     const handleChange = (event, newValue) => {
         setSelectedTab(newValue);
     };
+
+    if (session === null) return null // do not render admin if session is not set
 
     return (
         <Box width='100%' p={ 2 }>
@@ -34,11 +49,11 @@ export default function AdminMain(props) {
             <Tab icon={<Input/>} label="Import" />
             </Tabs>
         </AppBar>
-        {selectedTab === 0 && <ServiceTypePage session={ props.session } />}
-        {selectedTab === 1 && <ReportsPage session={ props.session } />}
-        {selectedTab === 2 && <AllUsersPage session={ props.session } />}
-        {selectedTab === 3 && <SettingsPage session={ props.session } />}
-        {selectedTab === 4 && <ImportPage session={ props.session } />}
+        {selectedTab === 0 && <ServiceTypePage />}
+        {selectedTab === 1 && <ReportsPage />}
+        {selectedTab === 2 && <AllUsersPage />}
+        {selectedTab === 3 && <SettingsPage />}
+        {selectedTab === 4 && <ImportPage />}
         </Box>
     );
 }

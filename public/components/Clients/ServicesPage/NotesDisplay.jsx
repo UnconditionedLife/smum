@@ -35,6 +35,8 @@ export default function NotesDisplay(props) {
     const noteImportant = props.noteImportant
     const handleNoteImportantChange = props.handleNoteImportantChange
 
+console.log("NOTES DISPLAY")
+
     const userName = getSession().user.userName
 
     function callback(response, msg){

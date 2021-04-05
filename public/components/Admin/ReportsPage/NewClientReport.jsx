@@ -4,7 +4,7 @@ import moment from 'moment';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, Typography, TableFooter, Snackbar } from '@material-ui/core';
 import { DatePicker } from '@material-ui/pickers'
 import Button from '../../System/Core/Button.jsx';
-import { SettingsZipcodes, dbGetSvcsInMonthAsync, dbSearchClientsAsync } from '../../System/js/Database'
+import { SettingsZipcodes, dbGetSvcsInMonthAsync, dbGetSingleClientAsync } from '../../System/js/Database'
 import { NodeBaseExport } from 'readable-stream';
 
 export default function NewClientReport(props) {
@@ -19,6 +19,11 @@ export default function NewClientReport(props) {
     let numNewClients = []
 
     const zipCodes = SettingsZipcodes()
+
+console.log(zipCodes)
+
+return null
+
     const USDAServiceTypeId = "cj86davnj00013k7zi3715rf4"
 
     function handleMsgClose(){ setOpenMsg(false) }
@@ -37,7 +42,7 @@ export default function NewClientReport(props) {
         }, 200)
     }
 
-    function RunReport(){
+    function RunReport(zipCodes){
         dbGetSvcsInMonthAsync(moment(yearMonth).format('YYYYMM'))
             .then(svcs => {
                 const monthOfValidSvcs = svcs.filter(item => item.serviceValid == 'true')
@@ -47,9 +52,8 @@ export default function NewClientReport(props) {
 
                 displayMsg("Loading clients services...")
                 monthOfValidUSDASvcs.forEach(svc => {    
-                    dbSearchClientsAsync(svc.clientServedId)
-                        .then(clients => {
-                            const client = clients[0]
+                    dbGetSingleClientAsync(svc.clientServedId)
+                        .then(client => {
                             const dividedYearMonth = moment(yearMonth).format('YYYYMM').substring(0,4) + "-" + moment(yearMonth).format('YYYYMM').substring(4)
                             const firstSeen = client.firstSeenDate
                         if (firstSeen.substring(0,7) == dividedYearMonth) {
@@ -60,6 +64,11 @@ export default function NewClientReport(props) {
                         setClientIds(tempList.sort((b, a) => { return b-a }))
 
                         displayMsg("Calculating...")
+
+                        const zipCodes = SettingsZipcodes()
+
+    console.log(zipCodes)
+
                         zipCodes.forEach(zip => {
                             let zipRecord = { area: zip }
                             zipRecord.total = newClients.filter(client => client.zipcode == zip).length

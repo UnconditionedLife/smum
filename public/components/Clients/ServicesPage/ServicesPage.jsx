@@ -6,7 +6,6 @@ import { LastServed, PrimaryButtons, SecondaryButtons, ServiceNotes } from '../'
 
 ServicesPage.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
-    session: PropTypes.object.isRequired,
     svcsRendered: PropTypes.object,
     updateSvcsRendered: PropTypes.func,
     showAlert: PropTypes.func.isRequired,

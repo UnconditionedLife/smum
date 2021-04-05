@@ -9,6 +9,9 @@ import Alert from '@material-ui/lab/Alert';
 import { Button, TextField, useInput } from '../System';
 import SmumLogo from "../Assets/SmumLogo";
 import { utilGetCurrentUserAsync } from '../System/js/Database'
+import { cacheSessionVar, showCache } from '../System/js/Database';
+import { prnConnect } from '../System/js/Clients/Receipts'
+
 
 LoginForm.propTypes = {
     onLogin: PropTypes.func.isRequired,
@@ -38,7 +41,14 @@ export default function LoginForm(props) {
                 setMessage("");
                 authorization.accessToken = result.getAccessToken().getJwtToken()
                 authorization.idToken = result.idToken.jwtToken
-                window.utilInitAuth(authorization)
+                //window.utilInitAuth(authorization)
+  
+                // setting partial cache before doing first db call
+                const partialSession = { auth: authorization }
+                // passing prnConnect as callback after settings are cached
+                cacheSessionVar(partialSession, prnConnect)
+
+                // passing auth before first call to db after login
                 utilGetCurrentUserAsync(username)
                     .then (user => {
                         // logout if user is set to Inactive
@@ -46,6 +56,7 @@ export default function LoginForm(props) {
                             cogUser.signOut();
                             setMessage("Sorry, your account is INACTIVE.");
                         } else {
+                            // sets session in HeaderBar component
                             props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
                             usernameInput.reset();
                             passwordInput.reset();
