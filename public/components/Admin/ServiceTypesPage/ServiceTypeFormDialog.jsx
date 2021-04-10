@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@material-ui/core';
 import { SettingsServiceCats } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { dbSaveSvcTypeAsync } from '../../System/js/Database';
+import { dbSaveSvcTypeAsync, dbSetModifiedTime } from '../../System/js/Database';
 
 ServiceTypeFormDialog.propTypes = {
     // editMode: PropTypes.string.isRequired,              // 'edit' = display form
@@ -12,6 +12,7 @@ ServiceTypeFormDialog.propTypes = {
     handleEditMode: PropTypes.func.isRequired,          // editMode handler
     editRecord: PropTypes.object.isRequired,            // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
+    updateSvcTypes: PropTypes.func.isRequired,
 }
 
 export default function ServiceTypeFormDialog(props) {
@@ -92,8 +93,12 @@ export default function ServiceTypeFormDialog(props) {
             //console.log(result)
             //console.log(text)
             updateMessage({ result: result, text: text, time: data.updatedDateTime })
-            if (result === 'success') props.handleEditRecord(data)
+            if (result === 'success') {
+                props.handleEditRecord(data)
+                props.updateSvcTypes()
+            }
         }
+        dbSetModifiedTime(data, false)
         dbSaveSvcTypeAsync(data, callback)
     }
 

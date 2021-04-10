@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Typography } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
-import { getSvcTypes } from '../../System/js/Database.js';
+import { dbGetSvcTypesAsync, getSvcTypes } from '../../System/js/Database.js';
 import { ServiceTypeFormDialog } from '../../Admin';
 
 ServiceTypeList.propTypes = {
     list: PropTypes.array.isRequired,
+    updateSvcTypes: PropTypes.func.isRequired
 }
 
 function ServiceTypeList(props) {
@@ -72,7 +73,7 @@ function ServiceTypeList(props) {
                     </TableRow>
                     ))}
                     { editMode === 'edit' &&
-                        <ServiceTypeFormDialog editMode={ editMode } handleEditMode={ handleEditMode } 
+                        <ServiceTypeFormDialog editMode={ editMode } handleEditMode={ handleEditMode } updateSvcTypes={ props.updateSvcTypes }
                           serviceTypes={ props.list } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
                     }
                 </TableBody>
@@ -89,8 +90,13 @@ ServiceTypePage.propTypes = {
 export default function ServiceTypePage(props) {
     const [ svcTypes, setSvcTypes ] = useState( getSvcTypes() )
 
+    function updateSvcTypes() {
+        dbGetSvcTypesAsync().then(
+            data => setSvcTypes(data)
+        )
+    }
 
-console.log(svcTypes)
+    console.log(svcTypes)
 
     return (
         <Box mt={7}>
@@ -100,6 +106,7 @@ console.log(svcTypes)
                 </AccordionSummary>
                 <AccordionDetails>
                     <ServiceTypeList 
+                        updateSvcTypes={ updateSvcTypes }
                         list={ svcTypes.filter(s => s.isActive == 'Active') }
                     />
                 </AccordionDetails>
@@ -109,7 +116,8 @@ console.log(svcTypes)
                     <Typography variant='button' >Inactive Service Types</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    <ServiceTypeList 
+                    <ServiceTypeList
+                        updateSvcTypes={ updateSvcTypes } 
                         list={ svcTypes.filter(s => s.isActive != 'Active') } 
                     />
                 </AccordionDetails>
