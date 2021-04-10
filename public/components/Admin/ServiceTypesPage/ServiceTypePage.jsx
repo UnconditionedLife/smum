@@ -22,7 +22,7 @@ function ServiceTypeList(props) {
 
     function handleEditRecord(newRecord){
         setEditRecord(newRecord)
-        clearSelection()   
+        //clearSelection()   
     }
 
     function handleEditMode(newEditMode) {

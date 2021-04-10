@@ -1,13 +1,9 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
 import { Box, MenuItem, Typography } from '@material-ui/core';
 import { FormTextField, SaveCancel, FormSelect } from '../../System';
-// import { saveClient } from '../../System/js/Clients/Clients';
 import { useForm } from "react-hook-form";
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../../System/js/Forms.js';
-// import { dbSetModifiedTime } from '../../System/js/Database';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 ClientInfoForm.propTypes = {
     client: PropTypes.object.isRequired,
@@ -15,18 +11,7 @@ ClientInfoForm.propTypes = {
     saveAndUpdateClient: PropTypes.func.isRequired,
 }
 
-export default function ClientInfoForm(props) {
-    // const [ saveMessage, setSaveMessage ] = useState({})
-
-    // if (isEmpty(saveMessage)) updateMessage("info", 
-    //     "Saved " + moment(props.client.updatedDateTime).fromNow(), 
-    //     moment(props.client.updatedDateTime).format("MMM DD, YYYY h:mma")
-    // )
-
-    // function updateMessage(severity, text, tooltip){
-    //     setSaveMessage({ severity: severity, text: text, tooltip: tooltip }) // severity: error, warning, info, success
-    // }
-    
+export default function ClientInfoForm(props) {   
     let defValues = { ...props.client };
     defValues.zipcode = packZipcode(defValues.zipcode, defValues.zipSuffix);
     const { handleSubmit, reset, control, errors, formState } = useForm({
@@ -42,17 +27,7 @@ export default function ClientInfoForm(props) {
         let data = Object.assign({}, props.client);
         Object.assign(data, values);
         Object.assign(data, unpackZipcode(values.zipcode));
-
-        const saved = props.saveAndUpdateClient(data)
-        // Save user data and reset form state to new values
-        // dbSetModifiedTime(data, false);
-        // const result = saveClient(data)
-        // if (result === 'failed') {
-        //     updateMessage("error", "FAILED TO SAVE - try again!", 'ERROR')
-        // } else {
-        //     updateMessage("info", "Saved " + moment().fromNow(), moment().format("MMM DD, YYYY h:mma"))
-        //     props.updateClient(data)
-        // }
+        props.saveAndUpdateClient(data)
         reset(values);
         values.telephone = formatPhone(values.telephone);
     }

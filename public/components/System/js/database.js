@@ -112,6 +112,10 @@ export function getSvcTypes(){
     return cachedSvcTypes
 }
 
+export async function dbSaveSvcTypeAsync(data, callback){
+    return await dbPostDataAsync('/servicetypes/', data, callback)
+}
+
 //******************** USERS *********************
 //************************************************
 

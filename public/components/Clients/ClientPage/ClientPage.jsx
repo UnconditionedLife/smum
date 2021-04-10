@@ -1,11 +1,8 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar,
-    Tooltip, Typography } from '@material-ui/core';
-import { ExpandMore, Add } from '@material-ui/icons';
-import { DependentsDisplay, SelectTestForm } from '../';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Snackbar, Typography } from '@material-ui/core';
+import { ExpandMore } from '@material-ui/icons';
+import { DependentsDisplay } from '../';
 import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } from '../../Clients';
 import { dbSaveClient } from '../../System/js/Database';
 
@@ -17,38 +14,25 @@ ClientPage.propTypes = {
 }
 
 export default function ClientPage(props) {
-    const client = props.client;
-    const updateClient = props.updateClient;
-    // const clientFormDiv = useRef(null);
     const [ expanded, setExpanded ] = useState(false);
     const [ saveMessage, setSaveMessage ] = useState({})
   
-    const handleChange = (panel) => (event, isExpanded) => {
-      setExpanded(isExpanded ? panel : false);
-    };
-
     useEffect(() => { 
-        updateMessage({ result: 'success', time: client.updatedDateTime })
-    }, [ client ])
-
-    // useEffect(() => {
-    //     if (!isEmpty(client)) {
-    //         uiShowClientEdit(clientFormDiv.current, false)
-    //     } else {
-    //         uiShowClientEdit(clientFormDiv.current, true)
-    //     }
-    // })
+        updateMessage({ result: 'success', time: props.client.updatedDateTime })
+    }, [ props.client ])
 
     function updateMessage(msg){
         if (saveMessage !== msg) setSaveMessage(msg)
     }
 
+    const handleChange = (panel) => (event, isExpanded) => {
+      setExpanded(isExpanded ? panel : false);
+    };
+
     function saveAndUpdateClient(data){
         const callback = (result, text) => {
-            //console.log(result)
-            //console.log(text)
             updateMessage({ result: result, text: text, time: data.updatedDateTime })
-            if (result === 'success') updateClient(data)
+            if (result === 'success') props.updateClient(data)
         }
         dbSaveClient(data, callback)
     }
@@ -56,7 +40,7 @@ export default function ClientPage(props) {
     return (
         <Fragment>
             <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true } style={{ marginBottom: "60px" }}>
-                <PrintClientInfo client={ client } />
+                <PrintClientInfo client={ props.client } />
             </Snackbar>
 
             <Box mt={ 6 } width={ 1 }>
@@ -66,7 +50,7 @@ export default function ClientPage(props) {
                     </AccordionSummary>
                     <AccordionDetails style={{justifyContent: "center"}}> 
                         <Box ml={ 3 } mr={ 3 }>
-                            <ClientInfoForm client={ client } saveAndUpdateClient={ saveAndUpdateClient } 
+                            <ClientInfoForm client={ props.client } saveAndUpdateClient={ saveAndUpdateClient } 
                                 saveMessage={ saveMessage } />
                         </Box>
                     </AccordionDetails>
@@ -77,7 +61,7 @@ export default function ClientPage(props) {
                         <Typography variant='button' ><b>Dependents</b></Typography>
                     </AccordionSummary>
                     <AccordionDetails  style={{ justifyContent: "center" }} >
-                        <DependentsDisplay client= { client } saveAndUpdateClient={ saveAndUpdateClient } 
+                        <DependentsDisplay client= { props.client } saveAndUpdateClient={ saveAndUpdateClient } 
                             session={ props.session } saveMessage={ saveMessage }/>
                     </AccordionDetails>
                 </Accordion>
@@ -87,7 +71,7 @@ export default function ClientPage(props) {
                         <Typography variant='button' ><b>Family Totals</b></Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <FamilyTotalsForm client={client}/>
+                        <FamilyTotalsForm client={props.client}/>
                     </AccordionDetails>
                 </Accordion>
 
@@ -98,7 +82,7 @@ export default function ClientPage(props) {
                         {/* This will show the financial info that currently only displays on edit */}
                         {/*  <SelectTestForm client={ client }/>*/}
                         <Box ml={ 3 } mr={ 3 } mb={ 2 }>
-                            <FinancialInfoForm client = { client } saveAndUpdateClient={ saveAndUpdateClient } 
+                            <FinancialInfoForm client = { props.client } saveAndUpdateClient={ saveAndUpdateClient } 
                             session={ props.session } saveMessage={ saveMessage }/>
                         </Box>
                 </Accordion>

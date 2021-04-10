@@ -2621,21 +2621,22 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 // 	return dbPostData(URL,JSON.stringify(data))
 // };
 
-function dbSaveServiceTypeForm(context){
-	uiClearAllErrorBubbles()
-	// populate dates
-	let fields = ["updatedDateTime", "createdDateTime"]
-	for (var i = 0; i < fields.length; i++) {
-		if ($("#" + fields[i] + ".serviceTypeForm").val() == "") {
-			$("#" + fields[i] + ".serviceTypeForm").val(utilNow())
-		}
-	}
-	if (utilValidateForm("serviceTypeForm", "serviceTypeForm")) return
-	let data = utilFormToJSON('.serviceTypeForm')
-	let URL = aws+"/servicetypes"
-	uiSaveButton('serviceType', 'Saving...')
-	dbPostData(URL,JSON.stringify(data))
-};
+// MOVED TO REACT JS AS dbSaveSvcTypeAsync
+// function dbSaveServiceTypeForm(context){
+// 	uiClearAllErrorBubbles()
+// 	// populate dates
+// 	let fields = ["updatedDateTime", "createdDateTime"]
+// 	for (var i = 0; i < fields.length; i++) {
+// 		if ($("#" + fields[i] + ".serviceTypeForm").val() == "") {
+// 			$("#" + fields[i] + ".serviceTypeForm").val(utilNow())
+// 		}
+// 	}
+// 	if (utilValidateForm("serviceTypeForm", "serviceTypeForm")) return
+// 	let data = utilFormToJSON('.serviceTypeForm')
+// 	let URL = aws+"/servicetypes"
+// 	uiSaveButton('serviceType', 'Saving...')
+// 	dbPostData(URL,JSON.stringify(data))
+// };
 
 function dbSaveSettingsForm(){
 	let data = utilFormToJSON('.settingsForm') // array fields are strings

@@ -4,10 +4,10 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@material-ui/core';
 import { SettingsServiceCats } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { dbSaveClient } from '../../System/js/Database';
+import { dbSaveSvcTypeAsync } from '../../System/js/Database';
 
 ServiceTypeFormDialog.propTypes = {
-    editMode: PropTypes.string.isRequired,              // 'edit' = display form
+    // editMode: PropTypes.string.isRequired,              // 'edit' = display form
     serviceTypes: PropTypes.array.isRequired,              // 'edit' = display form
     handleEditMode: PropTypes.func.isRequired,          // editMode handler
     editRecord: PropTypes.object.isRequired,            // history record being edited
@@ -94,7 +94,7 @@ export default function ServiceTypeFormDialog(props) {
             updateMessage({ result: result, text: text, time: data.updatedDateTime })
             if (result === 'success') props.handleEditRecord(data)
         }
-        dbSaveClient(data, callback)
+        dbSaveSvcTypeAsync(data, callback)
     }
 
 
@@ -104,15 +104,7 @@ export default function ServiceTypeFormDialog(props) {
         Object.assign(data, values);
         Object.assign(data, unpackDates(values.fromdate, values.todate));
         console.log(data)
-        const saved = saveSvcType(data)
-        // Save user data and reset form state to new values
-        // dbSetModifiedTime(data, false);
-        // if (result === 'failed') {
-        //     updateMessage("error", "FAILED TO SAVE - try again!", 'ERROR')
-        // } else {
-        //     updateMessage("info", "Saved " + moment().fromNow(), moment().format("MMM DD, YYYY h:mma"))
-        //     props.updateClient(data)
-        // }
+        saveSvcType(data)
         reset(values);
     }
 
