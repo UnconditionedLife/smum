@@ -13,7 +13,7 @@ import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
-import { cacheSessionVar, getSession, showCache } from '../System/js/Database';
+import { cacheSessionVar, showCache } from '../System/js/Database';
 import { prnConnect } from '../System/js/Clients/Receipts'
 
 const useStyles = makeStyles((theme) => ({
@@ -113,7 +113,6 @@ export default function HeaderBar(props) {
     const checkSectionURL = props.checkSectionURL;
     const updateRoute = props.updateRoute;
     const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']);
-    const [ sessionLoading, setSessionLoading ]= useState(false)
 
     let session = cookies.user && cookies.auth && cookies.refresh ? 
           {user:cookies.user, auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser} : null;
@@ -127,8 +126,7 @@ export default function HeaderBar(props) {
             window.utilInitSession(newSession.user, newSession.cogUser);
             // Update Local and Global Session vars
             session = newSession
-            cacheSessionVar(newSession);
-            setSessionLoading(true)
+            cacheSessionVar(newSession, prnConnect);
             setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
             setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
             setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' })
@@ -161,11 +159,6 @@ export default function HeaderBar(props) {
         }
     }
 
-    // function sessionCallback(){
-    //     console.log("calling printer")
-    //     prnConnect()
-    // }
-
     useEffect(() => {
         console.log("App Start")
         const newSection = checkSectionURL();
@@ -183,17 +176,7 @@ export default function HeaderBar(props) {
                     handleLogout(tempUser)
                 } else {
                     session.cogUser = tempUser;
-                    setSession(session);
-                    
-                    // console.log("Init auth: " + session.auth.idToken)
-                    // window.utilInitAuth(session.auth)
-                    // if (cogUser == null) {
-                    //     console.log(tempUser)
-                    //     setCogUser(tempUser)
-                    //     window.utilInitSession(session.user, tempUser);
-                    //     console.log(session)
-                    // }
-                    // setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
+                    setSession(session);             
                 }
             });
              
@@ -205,10 +188,6 @@ export default function HeaderBar(props) {
         console.log('Hot Reload');
         showCache();
     }, ["hot"]);
-
-    useEffect(() => {
-        if (getSession() !== null) setSessionLoading(false)
-    });
 
     const handleSectionChange = (newValue) => {
         setSelectedSection(newValue);

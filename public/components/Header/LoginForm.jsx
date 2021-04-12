@@ -8,9 +8,7 @@ import { Box, Grid, IconButton, InputAdornment, Typography, Link } from '@materi
 import Alert from '@material-ui/lab/Alert';
 import { Button, TextField, useInput } from '../System';
 import SmumLogo from "../Assets/SmumLogo";
-import { utilGetCurrentUserAsync } from '../System/js/Database'
-import { cacheSessionVar, showCache } from '../System/js/Database';
-import { prnConnect } from '../System/js/Clients/Receipts'
+import { cacheSessionVar, dbGetUserAsync } from '../System/js/Database';
 
 
 LoginForm.propTypes = {
@@ -18,7 +16,6 @@ LoginForm.propTypes = {
 }
 
 export default function LoginForm(props) {
-    let [showPrimaryForm, setShowPrimaryForm] = useState(true);
     let [passwordDisplay, setPasswordDisplay] = useState(false);
     let [appState, setAppState] = useState("login");
     let [message, setMessage] = useState("");
@@ -41,15 +38,11 @@ export default function LoginForm(props) {
                 setMessage("");
                 authorization.accessToken = result.getAccessToken().getJwtToken()
                 authorization.idToken = result.idToken.jwtToken
-                //window.utilInitAuth(authorization)
   
-                // setting partial cache before doing first db call
-                const partialSession = { auth: authorization }
-                // passing prnConnect as callback after settings are cached
-                cacheSessionVar(partialSession, prnConnect)
+                // set up minimal session for first db call
+                cacheSessionVar({ auth: authorization });
 
-                // passing auth before first call to db after login
-                utilGetCurrentUserAsync(username)
+                dbGetUserAsync(username)
                     .then (user => {
                         // logout if user is set to Inactive
                         if (user == null || user.isActive == "Inactive") {
@@ -63,7 +56,7 @@ export default function LoginForm(props) {
                             validationCodeInput.reset();
                             newPasswordInput.reset();
                         }
-                    })
+                    });
             },
             onFailure: (err) => {
                 let message = undefined
@@ -95,16 +88,6 @@ export default function LoginForm(props) {
             })
         }
 
-    function showViewPasswordIcon() {
-        return (
-            <i
-                className="fa fa-eye fa-lg"
-                style={{ float: "right" }}
-                aria-hidden="true"
-                onClick={() => setPasswordDisplay(!passwordDisplay)}
-            />
-        );
-    }
 
     function displaySubmitButtons() {
         return (
@@ -113,7 +96,7 @@ export default function LoginForm(props) {
                     <Button className="textLink" variant="contained" color="primary" style={{ textTransform: "none" }}
                         onClick={() => {
                             let cogUser = cogSetupUser(usernameInput.value);
-                            cogUser.resendConfirmationCode(function (err, result) {
+                            cogUser.resendConfirmationCode(err => {
                                 if (err)
                                     setMessage(err.toString());
                                 else
@@ -141,13 +124,13 @@ export default function LoginForm(props) {
                         <Button className="textLink" onClick={() => {
                         let cogUser = cogSetupUser(usernameInput.value);
                         cogUser.confirmRegistration(validationCodeInput.value, true,
-                            function (err, result) {
-                            if (err)
-                                setMessage(err.toString());
-                            else {
-                                setMessage("You're confirmed! Please Login.");
-                                setAppState("login");
-                            }
+                            err => {
+                                if (err)
+                                    setMessage(err.toString());
+                                else {
+                                    setMessage("You're confirmed! Please Login.");
+                                    setAppState("login");
+                                }
                             })
                         }} variant="outlined" color="primary" style={{ textTransform: "none" }}>VALIDATE</Button>
                     </span>
@@ -161,7 +144,7 @@ export default function LoginForm(props) {
                                 setPasswordDisplay(false);
                                 let cogUser = cogSetupUser(usernameInput.value);
                                 cogUser.confirmPassword(validationCodeInput.value, newPasswordInput.value, {
-                                    onSuccess: function (result) {
+                                    onSuccess: () => {
                                     setMessage("New Password set! Please Login.");
                                     setAppState("login");
                                     usernameInput.reset();
@@ -169,7 +152,7 @@ export default function LoginForm(props) {
                                     validationCodeInput.reset();
                                     newPasswordInput.reset();
                                 },
-                                onFailure: function (err) {
+                                onFailure: err => {
                                     if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.") {
                                         setMessage("Too many requests. Try again later!");
                                     } else {

@@ -8,7 +8,6 @@ import { dbGetAllUsersAsync } from '../../System/js/Database.js';
 
 UserList.propTypes = {
     list: PropTypes.array.isRequired,
-    session: PropTypes.object.isRequired,
 }
 
 function UserList(props) {
@@ -52,8 +51,7 @@ function UserList(props) {
                     </TableRow>
                     ))}
                     { editMode === 'edit' &&
-                        <UserPage clearRecord={ clearRecord } 
-                          session={ props.session }  userName={ userName } />
+                        <UserPage clearRecord={ clearRecord } userName={ userName } />
                     }
                 </TableBody>
                 </Table>
@@ -97,7 +95,6 @@ export default function AllUsersPage(props) {
                 <AccordionDetails>
                     <UserList 
                         list={ users.filter(u => u.isActive == 'Active') }
-                        session={ props.session }
                     />
                 </AccordionDetails>
             </Accordion>
@@ -108,7 +105,6 @@ export default function AllUsersPage(props) {
                 <AccordionDetails>
                     <UserList 
                         list={ users.filter(u => u.isActive != 'Active') } 
-                        session={ props.session }
                     />
                 </AccordionDetails>
             </Accordion>

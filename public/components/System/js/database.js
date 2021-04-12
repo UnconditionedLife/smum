@@ -135,19 +135,7 @@ export async function dbGetAllUsersAsync() {
 	return await dbGetDataAsync("/users").then( data => { return data.users });
 }
 
-// passing auth because it's first call to db after login
-export async function utilGetCurrentUserAsync(username) { 
-    return await dbGetAllUsersAsync()
-        .then( users => {
-            const userList = users.filter(obj => obj.userName == username)
-            if (userList.length == 1)
-                return userList[0]
-            else
-                return null
-        })
-}
-
-export async function dbSaveUserAsync(data, callback) { // callback is used to printer connect
+export async function dbSaveUserAsync(data, callback) { 
     return await dbPostDataAsync('/users/', data, callback)
 }
 
