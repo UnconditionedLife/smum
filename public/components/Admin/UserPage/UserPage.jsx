@@ -10,14 +10,14 @@ UserPage.propTypes = {
 }
 
 export default function UserPage(props) {
-    const [ user, setUser ] = useState(null)
+    const [ user, setUser ] = useState("")
     const [ dialogOpen, setDialogOpen ] = useState(true);
 
     useEffect(() => {
         dbGetUserAsync(props.userName).then( userObj => { setUser(userObj) })
     }, [])
 
-    if (user == null) return null
+    if (user == "") return null
 
     return (
         <Dialog maxWidth="md" open={ dialogOpen } aria-labelledby="form-dialog-title"> 

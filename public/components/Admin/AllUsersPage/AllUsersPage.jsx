@@ -61,7 +61,6 @@ function UserList(props) {
 }
 
 AllUsersPage.propTypes = {
-    session: PropTypes.object.isRequired,
 }
 
 export default function AllUsersPage(props) {
@@ -69,7 +68,7 @@ export default function AllUsersPage(props) {
     const [ users, setUsers ] = useState(null) 
 
     useEffect(() => { 
-        dbGetAllUsersAsync(props.session)
+        dbGetAllUsersAsync()
             .then( usersArray => { 
                 setUsers( usersArray.sort((a, b) => a.userName.localeCompare(b.userName)))
             })
@@ -85,8 +84,7 @@ export default function AllUsersPage(props) {
                 </Fab>
             </Tooltip>
             { newUser &&
-                <UserPage clearRecord={ ()=>setNewUser(false) } 
-                    session={ props.session }  userName={ null } />
+                <UserPage clearRecord={ ()=>setNewUser(false) } userName={ null } />
             }
             <Accordion defaultExpanded={ true }>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
