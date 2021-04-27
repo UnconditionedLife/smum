@@ -11,7 +11,6 @@ DependentsDisplay.propTypes = {
     client: PropTypes.object.isRequired,
     saveAndUpdateClient: PropTypes.func.isRequired,
     saveMessage: PropTypes.object.isRequired,
-    session: PropTypes.object.isRequired,
 }
 
 export default function DependentsDisplay(props) {
@@ -93,7 +92,7 @@ export default function DependentsDisplay(props) {
                                 </TableRow>
                                 
                                 { row.depId === selectedDependent &&
-                                    <DependentsFormDialog session={ props.session } client = { props.client } 
+                                    <DependentsFormDialog client = { props.client } 
                                         saveAndUpdateClient={ props.saveAndUpdateClient } saveMessage={ props.saveMessage }
                                         editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
                                 }

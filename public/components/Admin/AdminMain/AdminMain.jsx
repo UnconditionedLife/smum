@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { AppBar, Box, Tab, Tabs } from '@material-ui/core';
 import { RoomService, AccountBox, AccountCircle, 
             Assessment, SettingsApplications, Input } from '@material-ui/icons';
@@ -12,18 +11,13 @@ AdminMain.propTypes = {
 
 }
 
-export default function AdminMain(props) {
+export default function AdminMain() {
     const [ selectedTab, setSelectedTab ] = useState(0);
     const [ session, setSession ] = useState(null)
 
-
     useEffect(() => {
-        console.log("ADMIN MAIN")
         const sessionVar = isEmpty(getSession()) ? null : getSession()
-
-        console.log(sessionVar)
         setSession(sessionVar)
-
     })
 
     const handleChange = (event, newValue) => {

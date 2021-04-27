@@ -4,7 +4,6 @@ import { Box } from '@material-ui/core';
 import { HistoryHeader, HistoryDisplay } from '../../Clients';
 
 HistoryPage.propTypes = {
-    session: PropTypes.object.isRequired,
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired
 }
 

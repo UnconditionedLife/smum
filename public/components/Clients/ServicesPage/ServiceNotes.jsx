@@ -9,12 +9,10 @@ import { Card, Fab } from '../../System';
 
 ServiceNotes.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,    
-    session: PropTypes.object.isRequired,
     showAlert: PropTypes.func.isRequired,
 }
 
 export default function ServiceNotes(props) {
-    const session = props.session;
     const client = props.client;
     const updateClient = props.updateClient;
     const [ noteCount, setNoteCount ] = useState(0);
@@ -97,7 +95,6 @@ export default function ServiceNotes(props) {
             }   
             <NotesDisplay 
                 client={ client } updateClient = { updateClient }
-                session = { session }
                 handleNoteCountChange = { handleNoteCountChange }
                 editNote = { editNote } handleEditNoteChange = { handleEditNoteChange }
                 editMode={ editMode } handleEditModeChange = { handleEditModeChange }

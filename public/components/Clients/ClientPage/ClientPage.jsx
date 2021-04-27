@@ -9,7 +9,6 @@ import { dbSaveClient } from '../../System/js/Database';
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
     updateClient: PropTypes.func.isRequired,
-    session: PropTypes.object.isRequired,
     showAlert: PropTypes.func.isRequired,
 }
 
@@ -62,7 +61,7 @@ export default function ClientPage(props) {
                     </AccordionSummary>
                     <AccordionDetails  style={{ justifyContent: "center" }} >
                         <DependentsDisplay client= { props.client } saveAndUpdateClient={ saveAndUpdateClient } 
-                            session={ props.session } saveMessage={ saveMessage }/>
+                            saveMessage={ saveMessage }/>
                     </AccordionDetails>
                 </Accordion>
 
@@ -83,7 +82,7 @@ export default function ClientPage(props) {
                         {/*  <SelectTestForm client={ client }/>*/}
                         <Box ml={ 3 } mr={ 3 } mb={ 2 }>
                             <FinancialInfoForm client = { props.client } saveAndUpdateClient={ saveAndUpdateClient } 
-                            session={ props.session } saveMessage={ saveMessage }/>
+                            saveMessage={ saveMessage }/>
                         </Box>
                 </Accordion>
             </Box>

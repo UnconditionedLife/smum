@@ -6,7 +6,6 @@ import { dbGetSettingsAsync, SettingsSchedule } from '../../System/js/Database';
 import SettingsSched from './SettingsSched.jsx';
 
 SettingsPage.propTypes = {
-    session: PropTypes.object.isRequired,
 }
 
 export default function SettingsPage(props) {
