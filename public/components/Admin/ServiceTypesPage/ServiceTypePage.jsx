@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Typography, Tooltip, Fab } from '@material-ui/core';
@@ -83,11 +83,7 @@ function ServiceTypeList(props) {
     );
 }
 
-ServiceTypePage.propTypes = {
-    
-}
-
-export default function ServiceTypePage(props) {
+export default function ServiceTypePage() {
     const [ svcTypes, setSvcTypes ] = useState( getSvcTypes() )
 
     function updateSvcTypes() {
@@ -95,8 +91,6 @@ export default function ServiceTypePage(props) {
             data => setSvcTypes(data)
         )
     }
-
-    console.log(svcTypes)
 
     return (
         <Box mt={7}>
