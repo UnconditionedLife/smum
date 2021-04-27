@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Table, TableBody,
-    TableCell, TableContainer, TableHead, TableRow, Typography } from '@material-ui/core';
-import { ExpandMore } from '@material-ui/icons';
+    TableCell, TableContainer, TableHead, TableRow, Typography, Tooltip, Fab } from '@material-ui/core';
+import { ExpandMore, Add } from '@material-ui/icons';
 import { dbGetSvcTypesAsync, getSvcTypes } from '../../System/js/Database.js';
 import { ServiceTypeFormDialog } from '../../Admin';
 
@@ -100,6 +100,11 @@ export default function ServiceTypePage(props) {
 
     return (
         <Box mt={7}>
+            <Tooltip title= 'Add Service Type'>
+                <Fab size="small" color='default' >
+                    <Add />
+                </Fab>
+            </Tooltip>
             <Accordion defaultExpanded={ true }>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
                     <Typography variant='button' >Active Service Types</Typography>

@@ -8,7 +8,6 @@ import { dbGetAllUsersAsync } from '../../System/js/Database.js';
 
 UserList.propTypes = {
     list: PropTypes.array.isRequired,
-    session: PropTypes.object.isRequired,
 }
 
 function UserList(props) {
@@ -52,8 +51,7 @@ function UserList(props) {
                     </TableRow>
                     ))}
                     { editMode === 'edit' &&
-                        <UserPage clearRecord={ clearRecord } 
-                          session={ props.session }  userName={ userName } />
+                        <UserPage clearRecord={ clearRecord } userName={ userName } />
                     }
                 </TableBody>
                 </Table>
@@ -63,7 +61,6 @@ function UserList(props) {
 }
 
 AllUsersPage.propTypes = {
-    session: PropTypes.object.isRequired,
 }
 
 export default function AllUsersPage(props) {
@@ -71,7 +68,7 @@ export default function AllUsersPage(props) {
     const [ users, setUsers ] = useState(null) 
 
     useEffect(() => { 
-        dbGetAllUsersAsync(props.session)
+        dbGetAllUsersAsync()
             .then( usersArray => { 
                 setUsers( usersArray.sort((a, b) => a.userName.localeCompare(b.userName)))
             })
@@ -87,8 +84,7 @@ export default function AllUsersPage(props) {
                 </Fab>
             </Tooltip>
             { newUser &&
-                <UserPage clearRecord={ ()=>setNewUser(false) } 
-                    session={ props.session }  userName={ null } />
+                <UserPage clearRecord={ ()=>setNewUser(false) } userName={ null } />
             }
             <Accordion defaultExpanded={ true }>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
@@ -97,7 +93,6 @@ export default function AllUsersPage(props) {
                 <AccordionDetails>
                     <UserList 
                         list={ users.filter(u => u.isActive == 'Active') }
-                        session={ props.session }
                     />
                 </AccordionDetails>
             </Accordion>
@@ -108,7 +103,6 @@ export default function AllUsersPage(props) {
                 <AccordionDetails>
                     <UserList 
                         list={ users.filter(u => u.isActive != 'Active') } 
-                        session={ props.session }
                     />
                 </AccordionDetails>
             </Accordion>
