@@ -208,11 +208,11 @@ export default function PrimaryButtons(props) {
                 }
 
                 { isUsed(service.serviceTypeId) === true &&
-                    <Box m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#ddd' display='flex' >
-                            <Button m={ 0 } width='168px' height='168px' color='primary'
+                    <Box m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#FFF' display='flex' >
+                            <Button m={ 0 } width='168px' height='168px' color='primary' style={{ border: '5px dashed #ddd' }}
                                 onClick={ () => handleAddService(service.serviceTypeId, 
                                 service.serviceCategory, service.serviceButtons) }>
-                                <strong>{ service.serviceName.toUpperCase() }</strong>
+                                <strong> { "UNDO " + service.serviceName.toUpperCase() }</strong>
                             </Button>
 
                         {/* <span className={classes.imageButton}>

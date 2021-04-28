@@ -4,15 +4,15 @@
 import { isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from '../Clients/ClientUtils'
-import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecord, getSvcTypes } from '../Database';
+import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, getSession } from '../Database';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
-    prnPrintVoucherReceipt, prnFlush } 
-    from '../Clients/Receipts';
+            prnPrintVoucherReceipt, prnFlush } from '../Clients/Receipts';
+import cuid from 'cuid';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
-export function addService(at){
-    const { client, serviceTypeId, serviceCategory, svcButtons, svcsRendered } = at
+export function addService(props){
+    const { client, serviceTypeId, serviceCategory, svcButtons, svcsRendered } = props
     const svcTypes = getSvcTypes()
 	let serviceType = getServiceTypeByID(svcTypes, serviceTypeId)
 	let serviceId = "" // new service
@@ -30,13 +30,16 @@ export function addService(at){
         undoneService = true
 	}
 	// save service record
-	const servedCounts = calcServiceFamilyCounts(svcTypes, client, serviceTypeId)
-    const serviceRecord = utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid)
+	const servedCounts = calcServiceFamilyCounts( svcTypes, client, serviceTypeId)
+    const serviceRecord = utilBuildServiceRecord( serviceType, serviceId, servedCounts, serviceValid, client )
     
 console.log(serviceRecord)
 
+    function callback(result, msg){
+        console.log("dbSaveServiceAsync = " + result + " " + msg)
+    }
 
-	const result = dbSaveServiceRecord(serviceRecord)
+	const result = dbSaveServiceRecordAsync(serviceRecord, callback)
 	if (serviceType.serviceButtons == "Primary" && result == "success"){
 		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
 	}
@@ -486,4 +489,63 @@ function getServiceTypeByID(svcTypes, serviceTypeId){
 		return obj.serviceTypeId == serviceTypeId
 	})
 	return svcTypeArr[0]
+}
+
+function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid, client){
+	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
+	let emergencyFood = "NO",
+			// servicedMonth = moment().format("YYYYMM"),
+	servicedDay = moment().format("YYYYMMDD")
+	if (serviceId == "") serviceId = cuid()
+	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
+	// define fulfillment vars for non-vouchers
+	let pending = false
+    let fulfillmentDateTime = moment().format('YYYY-MM-DDTHH:mm')
+	let byUserName = getSession().user.userName
+	let itemCount = servedCounts.itemsServed
+	if (serviceType.fulfillment.type == "Voucher") {
+		pending = true
+		fulfillmentDateTime = "pending"
+		byUserName = "pending"
+		itemCount = "pending"
+	}
+	let serviceRecord = {
+		serviceId: serviceId,
+		serviceValid: serviceValid,
+		servicedDateTime: moment().format('YYYY-MM-DDTHH:mm'),
+		servicedDay: servicedDay,
+		clientServedId: client.clientId,
+		clientStatus: client.isActive,
+		clientGivenName: client.givenName,
+		clientFamilyName: client.familyName,
+		clientZipcode: client.zipcode,
+		servicedByUserName: getSession().user.userName,
+		serviceTypeId: serviceType.serviceTypeId,
+		serviceName: serviceType.serviceName,
+		serviceCategory: serviceType.serviceCategory,
+		serviceButtons: serviceType.serviceButtons,
+		isUSDA: serviceType.isUSDA,
+		itemsServed: servedCounts.itemsServed,
+		homeless: client.homeless,
+		emergencyFood: emergencyFood,
+		totalAdultsServed: servedCounts.adults,
+		totalChildrenServed: servedCounts.children,
+		totalSeniorsServed: servedCounts.seniors,
+        totalIndividualsServed: servedCounts.individuals,
+		fulfillment: {
+			pending: pending,
+			dateTime: fulfillmentDateTime,
+			voucherNumber: "XXXXX",
+			byUserName: byUserName,
+			itemCount: itemCount
+		}
+	}
+	// store for use during session
+	if (serviceValid) {
+		servicesRendered.push(serviceRecord)
+	} else {
+		const temp = servicesRendered.filter(item => item.serviceId !== serviceId)
+		servicesRendered = temp
+	}
+	return serviceRecord
 }
