@@ -17,6 +17,11 @@ let cachedSettings = null;
 let cachedSvcTypes = []
 const MAX_ID_DIGITS = 5
 
+let globalMsgFunc = null;
+
+console.log(globalMsgFunc)
+
+
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
 export function showCache() {
@@ -99,7 +104,7 @@ export function SettingsSchedule() {
 //******************* SVCTYPES *******************
 
 export async function dbGetSvcTypesAsync(){
-	return await dbGetDataAsync("/servicetypes")
+    return await dbGetDataAsync("/servicetypes")
         .then( data => {
             const svcTypes = data.serviceTypes
             // case-insensitive sort
@@ -157,7 +162,18 @@ export async function dbSearchClientsAsync(searchTerm) {
     )
 }
 
+//**************** GLOBAL MESSAGE *****************
+//*************************************************
+
+export function setGlobalMsgFunc(callback) {
+    globalMsgFunc = callback
+}
+
+
 async function dbGetClientsAsync(searchTerm, slashCount){
+    
+    globalMsgFunc("error", "HELLO WORLD!!")
+
 	let clientData = []
 	if (slashCount == 2){
 		searchTerm = utilCleanUpDate(searchTerm)
@@ -264,8 +280,8 @@ export async function dbSaveClient(data, callback){
     await dbPostDataAsync("/clients/", data, callback)
 }
 
-export async function dbSaveServiceRecord(service){
-	return dbPostDataAsync("/clients/services", JSON.stringify(service))
+export async function dbSaveServiceRecordAsync(service, callback){
+	return dbPostDataAsync("/clients/services", service, callback)
 }
 
 async function dbGetDaysSvcsAsync(dayDate){
