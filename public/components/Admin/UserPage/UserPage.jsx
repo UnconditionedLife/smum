@@ -13,8 +13,16 @@ export default function UserPage(props) {
     const [ user, setUser ] = useState("")
     const [ dialogOpen, setDialogOpen ] = useState(true);
 
+    function closeDialog() {
+        setDialogOpen(false);
+        props.clearRecord();
+    }
+
     useEffect(() => {
-        dbGetUserAsync(props.userName).then( userObj => { setUser(userObj) })
+        if (props.userName)
+            dbGetUserAsync(props.userName).then( userObj => { setUser(userObj) });
+        else   
+            setUser(null);
     }, [])
 
     if (user == "") return null
@@ -24,7 +32,7 @@ export default function UserPage(props) {
             <DialogTitle id="form-dialog-title">{user == null ? "New Record" : "Edit Record"}</DialogTitle>
             <DialogContent>
                 <Box>
-                    <UserForm clearRecord={props.clearRecord} setDialogOpen={setDialogOpen} user={ user } />
+                    <UserForm onClose={ closeDialog } user={ user } />
                 </Box>
             </DialogContent>
         </Dialog>

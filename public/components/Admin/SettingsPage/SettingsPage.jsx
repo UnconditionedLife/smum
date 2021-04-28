@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { Typography } from '../../System';
@@ -9,10 +9,13 @@ SettingsPage.propTypes = {
 }
 
 export default function SettingsPage(props) {
-    let settings = null
-    dbGetSettingsAsync().then( stgs => { settings = stgs });
+    const [ settings, setSettings ] = useState(null);
 
-    if (settings == null) return
+    useEffect(() => { 
+        dbGetSettingsAsync().then( stgs => { setSettings(stgs); });
+    }, []);
+
+    if (settings == null) return null;
 
     return (
         <Box mt={ 7 }>

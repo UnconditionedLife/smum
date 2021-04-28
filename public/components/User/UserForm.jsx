@@ -7,10 +7,9 @@ import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from 
 import { dbGetUserAsync, dbSaveUserAsync, dbSetModifiedTime } from '../System/js/Database';
 
 UserForm.propTypes = {
-    clearRecord: PropTypes.func.isRequired,  
     user: PropTypes.object,     // null to create new user
     selfEdit: PropTypes.bool,   // true if editing current session user
-    setDialogOpen: PropTypes.func.isRequired,   
+    onClose: PropTypes.func,    // callback when Cancel is pressed
 }
 
 export default function UserForm(props) {
@@ -21,7 +20,8 @@ export default function UserForm(props) {
     const [ saveMessage, setSaveMessage ] = useState(initMsg);
 
     if (isNewUser) {
-        userData = {userName: '', isActive: 'Active', userRole: 'Volunteer',
+        userData = {
+            userName: '', isActive: 'Active', userRole: 'Volunteer',
             givenName: '', familyName: '', dob: '2000-01-01',
             street: '', city: '', state: '', zipcode: '', zipSuffix: 0,
             telephone: '', email: '', notes: [],
@@ -37,41 +37,43 @@ export default function UserForm(props) {
         defaultValues: initValues, 
     });
 
-    function doSave(formValues) {
-        function saveCallback(result, text) {
-            setSaveMessage({ result: result, text: text, time: userData.updatedDateTime });
-            reset(formValues);
-        }
-
-        // Validate form contents
-        // let user = null
-        // dbGetUserAsync(props.userName).then( userObj => { user = userObj })
-
-        // console.log(user)
-
-
-        if (isNewUser && dbGetUserAsync(formValues.userName) != null) {
+    function validUsername(name) {
+        dbGetUserAsync(name)
+        .then( () => {
             setError('userName', {type: 'manual', message: 'Username is already in use'});
-        } else {
-            // Convert form values to canonical format
-            formValues.state = formValues.state.toUpperCase();
-            formValues.telephone = formatPhone(formValues.telephone);
-            // Overwrite user data structure with form values
-            Object.assign(userData, formValues);
-            Object.assign(userData, unpackZipcode(formValues.zipcode));
-            // Save user data and reset form state to new values
-            dbSetModifiedTime(userData, isNewUser);
-            dbSaveUserAsync(userData, saveCallback);
-            // TODO update cognito if phone or email is modified
-        }
+        })
+        .catch( () => {} );
+        return true;
     }
 
-    const submitForm = handleSubmit(doSave);
-    const cancelFn = () => {
-        reset();
-        props.setDialogOpen(false);
-        props.clearRecord();
+    function doSave(formValues) {
+        // Convert form values to canonical format
+        formValues.state = formValues.state.toUpperCase();
+        formValues.telephone = formatPhone(formValues.telephone);
+        // Overwrite user data structure with form values
+        Object.assign(userData, formValues);
+        Object.assign(userData, unpackZipcode(formValues.zipcode));
+        // Save user data and reset form state to new values
+        dbSetModifiedTime(userData, isNewUser);
+        setSaveMessage({ result: 'working' });
+        dbSaveUserAsync(userData)
+        .then( () => {
+            setSaveMessage({ result: 'success', time: userData.updatedDateTime });
+            reset(formValues);
+        })
+        .catch( message => {
+            setSaveMessage({ result: 'error', text: message });
+        });
+        // TODO update cognito if phone or email is modified
     }
+    const submitForm = handleSubmit(doSave);
+
+    function doCancel() {
+        reset();
+        if (props.onClose)
+            props.onClose();
+    }
+
     return (
         <Fragment>
             <form>
@@ -79,7 +81,7 @@ export default function UserForm(props) {
                 { !props.selfEdit && 
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
                     <FormTextField name="userName" label="Username" disabled={ !isNewUser } error={ errors.userName } 
-                        control={ control } rules={ {required: 'Required'}} />
+                        control={ control } rules={ {required: 'Required', validate: value => validUsername(value)} }/>
                     <FormSelect name="userRole" label="Role" error={ errors.userRole } 
                         control={ control } rules={ {required: 'Required'}} >
                             <MenuItem value="Volunteer">Volunteer</MenuItem>
@@ -124,7 +126,7 @@ export default function UserForm(props) {
                         control={ control } />
                 </Box>
             </form>
-            <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : cancelFn() } } 
+            <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : doCancel() } } 
                 message={ saveMessage } />
         </Fragment>
     );
