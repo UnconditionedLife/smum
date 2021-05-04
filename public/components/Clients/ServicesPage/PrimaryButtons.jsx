@@ -5,6 +5,7 @@ import { Box, ButtonBase } from '@material-ui/core';
 import { Button, Typography } from '../../System';
 import { getButtonData, addService, getSvcsRendered } from '../../System/js/Clients/Services'
 import { isEmpty } from '../../System/js/GlobalUtils.js';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -174,11 +175,21 @@ export default function PrimaryButtons(props) {
     }
 
     function isUsed(id){
-        if (svcsRendered.length === 0) return false
-        if (svcsRendered == undefined) return false
-        const index = svcsRendered.map(obj => { return obj.serviceTypeId }).indexOf(id);
-        if (index === -1) return false
-        return true
+        let found = false
+        if ((svcsRendered.length === 0) || (svcsRendered == undefined)) return found
+        
+        svcsRendered.forEach((obj) => { 
+            if (obj.serviceTypeId === id) {
+                console.log(moment().isSame(obj.servicedDateTime, "day"))
+                if (moment().isSame(obj.servicedDateTime, "day")) { 
+                    found = "today"
+                } else {
+                    found = "late"
+                }
+            }
+        })
+
+        return found
     }
 
     return (
@@ -207,7 +218,7 @@ export default function PrimaryButtons(props) {
                     </ButtonBase>
                 }
 
-                { isUsed(service.serviceTypeId) === true &&
+                { isUsed(service.serviceTypeId) === "today" &&
                     <Box m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#FFF' display='flex' >
                             <Button m={ 0 } width='168px' height='168px' color='primary' style={{ border: '5px dashed #ddd' }}
                                 onClick={ () => handleAddService(service.serviceTypeId, 

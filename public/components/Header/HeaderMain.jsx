@@ -26,11 +26,11 @@ function HeaderMain(){
     }
 
     function closeGlobalMsg(event, reason) {
-        setGlobalMsg("")
         if (reason === 'clickaway') {
             return;
         }
         setOpen(false);
+        setGlobalMsg("")
     }
 
     return (
