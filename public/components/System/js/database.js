@@ -246,14 +246,10 @@ export async function dbGetNewClientIDAsync(){
 }
 
 export async function dbGetClientActiveServiceHistoryAsync(clientId){
-    return await dbGetDataAsync("/clients/services/" + clientId).then(data => { 
-
-        console.log(data)
+    return await dbGetDataAsync("/clients/services/" + clientId).then(data => {
         const svcs = data.services
         const activeSvcs = svcs.filter(item => item.serviceValid == "true")
             .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime))) 
-    
-        console.log(activeSvcs)
         return activeSvcs
     })
 }

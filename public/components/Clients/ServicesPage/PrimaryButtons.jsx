@@ -90,21 +90,27 @@ PrimaryButtons.propTypes = {
 export default function PrimaryButtons(props) {
     const client = props.client
     const updateClient = props.updateClient
-    const svcsRendered = props.client.svcsRendered
-
-    console.log(svcsRendered)
-
+    
     // const updateSvcsRendered = props.updateSvcsRendered
     // const [ buttonData, setButtonData ] = useState(getButtonData({ client: props.client, buttons: 'primary' }))
     const [ buttonData, setButtonData ] = useState([])
     const [ buttonState, setButtonState ] = useState([])
     const [ update, setUpdate ] = useState(false)
+    const [ svcsRendered, setSvcsRendered ] = useState(props.client.svcsRendered)
 
     const classes = useStyles();
 
     useEffect(() => { 
          setButtonData(getButtonData({ client: props.client, buttons: 'primary' }))
     },[ props.client ])
+
+    useEffect(() => {
+        const tempSvcsRendered = props.client.svcsRendered
+        if (tempSvcsRendered !== svcsRendered) {
+            setSvcsRendered(tempSvcsRendered)
+            console.log(svcsRendered)
+        }
+    })
 
     const handleButtonState = (serviceTypeId, newState) => {
         let array = buttonState
@@ -179,16 +185,8 @@ export default function PrimaryButtons(props) {
         if ((svcsRendered.length === 0) || (svcsRendered == undefined)) return found
         
         svcsRendered.forEach((obj) => { 
-            if (obj.serviceTypeId === id) {
-                console.log(moment().isSame(obj.servicedDateTime, "day"))
-                if (moment().isSame(obj.servicedDateTime, "day")) { 
-                    found = "today"
-                } else {
-                    found = "late"
-                }
-            }
+            if (obj.serviceTypeId === id) found = true
         })
-
         return found
     }
 
@@ -218,21 +216,13 @@ export default function PrimaryButtons(props) {
                     </ButtonBase>
                 }
 
-                { isUsed(service.serviceTypeId) === "today" &&
-                    <Box m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#FFF' display='flex' >
+                { isUsed(service.serviceTypeId) === true &&
+                    <Box key={ svcsRendered[0].servicedDateTime } m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#FFF' display='flex' >
                             <Button m={ 0 } width='168px' height='168px' color='primary' style={{ border: '5px dashed #ddd' }}
                                 onClick={ () => handleAddService(service.serviceTypeId, 
                                 service.serviceCategory, service.serviceButtons) }>
                                 <strong> { "UNDO " + service.serviceName.toUpperCase() }</strong>
                             </Button>
-
-                        {/* <span className={classes.imageButton}>
-                            <Typography component="span" variant="button" color="inherit"
-                                className={classes.imageTitle} >
-                                <strong>{ service.serviceName.toUpperCase() }</strong>
-                                <span className={classes.imageMarked} />
-                            </Typography>
-                        </span> */}
                     </Box>
                 }
 

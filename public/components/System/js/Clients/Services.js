@@ -119,11 +119,11 @@ export function getFoodInterval(isUSDA){
 
 export function getSvcsRendered(svcHistory){
     let svcsRendered = []
-    for (var i = 0; i < svcHistory.length; i++) {
-		if (moment(svcHistory[i].serviceDateTime).format('DD') == moment().format('DD')) {
-            svcsRendered.push(svcHistory[i])
+    svcHistory.forEach((svc) => {
+        if (moment().isSame(svc.serviceDateTime, "day")) {
+            svcsRendered.push(svc)
 		}
-    }
+    })
     console.log(svcsRendered)
     return svcsRendered
 }
