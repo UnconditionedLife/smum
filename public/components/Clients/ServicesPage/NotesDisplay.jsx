@@ -10,7 +10,6 @@ NotesDisplay.propTypes = {
     client: PropTypes.object.isRequired, 
     updateClient: PropTypes.func.isRequired,
     handleNoteCountChange: PropTypes.func.isRequired,
-    session: PropTypes.object.isRequired,
     showAlert: PropTypes.func.isRequired,
     editNote: PropTypes.object.isRequired,
     handleEditNoteChange: PropTypes.func.isRequired,

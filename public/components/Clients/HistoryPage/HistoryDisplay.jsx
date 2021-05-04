@@ -9,7 +9,6 @@ import { updateLastServed, utilRemoveService } from '../../System/js/Clients/His
 import { dbGetClientActiveServiceHistoryAsync } from '../../System/js/Database';
 
 HistoryDisplay.propTypes = {
-    session: PropTypes.object.isRequired,
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
 }
 
@@ -173,7 +172,7 @@ export default function HistoryDisplay(props) {
                         </Fragment>
                     ))}
                     { editMode === 'edit' &&
-                        <HistoryFormDialog session={ props.session } client = { props.client } editMode={ editMode } 
+                        <HistoryFormDialog client = { props.client } editMode={ editMode } 
                         handleEditMode={ handleEditMode } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
                     }
                 </Fragment>

@@ -2522,63 +2522,65 @@ function dbSaveUser(context){
 	}
 };
 
-function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid){
-	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
-	let emergencyFood = "NO",
-			// servicedMonth = moment().format("YYYYMM"),
-	 		servicedDay = moment().format("YYYYMMDD")
-	if (serviceId == "") serviceId = cuid()
-	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
-	// define fulfillment vars for non-vouchers
-	let pending = false, fulfillmentDateTime = moment().format(dateTime)
-	let byUserName = currentUser.userName
-	let itemCount = servedCounts.itemsServed
-	if (serviceType.fulfillment.type == "Voucher") {
-		pending = true
-		fulfillmentDateTime = "pending"
-		byUserName = "pending"
-		itemCount = "pending"
-	}
-	let serviceRecord = {
-							serviceId: serviceId,
-					 serviceValid: serviceValid,
-			 servicedDateTime: moment().format(dateTime),
-					  servicedDay: servicedDay,
-			 	 clientServedId: client.clientId,
-				   clientStatus: client.isActive,
-				clientGivenName: client.givenName,
-			 clientFamilyName: client.familyName,
-			    clientZipcode: client.zipcode,
-		 servicedByUserName: currentUser.userName,
-			    serviceTypeId: serviceType.serviceTypeId,
-					  serviceName: serviceType.serviceName,
-				serviceCategory: serviceType.serviceCategory,
-				 serviceButtons: serviceType.serviceButtons,
-				         isUSDA: serviceType.isUSDA,
-				    itemsServed: servedCounts.itemsServed,
-				       homeless: client.homeless,
-				  emergencyFood: emergencyFood,
-		  totalAdultsServed: servedCounts.adults,
-		totalChildrenServed: servedCounts.children,
-		 totalSeniorsServed: servedCounts.seniors,
- totalIndividualsServed: servedCounts.individuals,
-					  fulfillment: {
-						        pending: pending,
-									 dateTime: fulfillmentDateTime,
-							voucherNumber: "XXXXX",
-						     byUserName: byUserName,
-						      itemCount: itemCount
-					  }
-	}
-	// store for use during session
-	if (serviceValid) {
-		servicesRendered.push(serviceRecord)
-	} else {
-		const temp = servicesRendered.filter(item => item.serviceId !== serviceId)
-		servicesRendered = temp
-	}
-	return serviceRecord
-};
+
+// MOVED TO REACT JS --> js/database.js
+// function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceValid){
+// 	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
+// 	let emergencyFood = "NO",
+// 			// servicedMonth = moment().format("YYYYMM"),
+// 	 		servicedDay = moment().format("YYYYMMDD")
+// 	if (serviceId == "") serviceId = cuid()
+// 	if (serviceType.isUSDA == "Emergency") emergencyFood = "YES"
+// 	// define fulfillment vars for non-vouchers
+// 	let pending = false, fulfillmentDateTime = moment().format(dateTime)
+// 	let byUserName = currentUser.userName
+// 	let itemCount = servedCounts.itemsServed
+// 	if (serviceType.fulfillment.type == "Voucher") {
+// 		pending = true
+// 		fulfillmentDateTime = "pending"
+// 		byUserName = "pending"
+// 		itemCount = "pending"
+// 	}
+// 	let serviceRecord = {
+// 							serviceId: serviceId,
+// 					 serviceValid: serviceValid,
+// 			 servicedDateTime: moment().format(dateTime),
+// 					  servicedDay: servicedDay,
+// 			 	 clientServedId: client.clientId,
+// 				   clientStatus: client.isActive,
+// 				clientGivenName: client.givenName,
+// 			 clientFamilyName: client.familyName,
+// 			    clientZipcode: client.zipcode,
+// 		 servicedByUserName: currentUser.userName,
+// 			    serviceTypeId: serviceType.serviceTypeId,
+// 					  serviceName: serviceType.serviceName,
+// 				serviceCategory: serviceType.serviceCategory,
+// 				 serviceButtons: serviceType.serviceButtons,
+// 				         isUSDA: serviceType.isUSDA,
+// 				    itemsServed: servedCounts.itemsServed,
+// 				       homeless: client.homeless,
+// 				  emergencyFood: emergencyFood,
+// 		  totalAdultsServed: servedCounts.adults,
+// 		totalChildrenServed: servedCounts.children,
+// 		 totalSeniorsServed: servedCounts.seniors,
+//  totalIndividualsServed: servedCounts.individuals,
+// 					  fulfillment: {
+// 						        pending: pending,
+// 									 dateTime: fulfillmentDateTime,
+// 							voucherNumber: "XXXXX",
+// 						     byUserName: byUserName,
+// 						      itemCount: itemCount
+// 					  }
+// 	}
+// 	// store for use during session
+// 	if (serviceValid) {
+// 		servicesRendered.push(serviceRecord)
+// 	} else {
+// 		const temp = servicesRendered.filter(item => item.serviceId !== serviceId)
+// 		servicesRendered = temp
+// 	}
+// 	return serviceRecord
+// };
 
 // MOVED TO REACT JS --> js/database.js
 // function dbSaveCurrentClient(data){

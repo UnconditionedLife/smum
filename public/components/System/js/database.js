@@ -17,6 +17,11 @@ let cachedSettings = null;
 let cachedSvcTypes = []
 const MAX_ID_DIGITS = 5
 
+let globalMsgFunc = null;
+
+console.log(globalMsgFunc)
+
+
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
 export function showCache() {
@@ -99,7 +104,7 @@ export function SettingsSchedule() {
 //******************* SVCTYPES *******************
 
 export async function dbGetSvcTypesAsync(){
-	return await dbGetDataAsync("/servicetypes")
+    return await dbGetDataAsync("/servicetypes")
         .then( data => {
             const svcTypes = data.serviceTypes
             // case-insensitive sort
@@ -113,7 +118,7 @@ export function getSvcTypes(){
 }
 
 export async function dbSaveSvcTypeAsync(data, callback){
-    return await dbPostDataAsync('/servicetypes/', data, callback)
+    return await dbPostDataAsyncCallback('/servicetypes/', data, callback)
 }
 
 //******************** USERS *********************
@@ -124,9 +129,9 @@ export async function dbGetUserAsync(userName) {
         .then( data => {
             const users = data.users
             if (users.length == 1)
-            return users[0];
-        else
-            return null;
+                return users[0];
+            else
+                return Promise.reject('User not found');
         }
     )
 }
@@ -135,8 +140,8 @@ export async function dbGetAllUsersAsync() {
 	return await dbGetDataAsync("/users").then( data => { return data.users });
 }
 
-export async function dbSaveUserAsync(data, callback) { 
-    return await dbPostDataAsync('/users/', data, callback)
+export async function dbSaveUserAsync(data) { 
+    return await dbPostDataAsync('/users/', data)
 }
 
 //******************** CLIENTS ********************
@@ -157,7 +162,18 @@ export async function dbSearchClientsAsync(searchTerm) {
     )
 }
 
+//**************** GLOBAL MESSAGE *****************
+//*************************************************
+
+export function setGlobalMsgFunc(callback) {
+    globalMsgFunc = callback
+}
+
+
 async function dbGetClientsAsync(searchTerm, slashCount){
+    
+    globalMsgFunc("error", "HELLO WORLD!!")
+
 	let clientData = []
 	if (slashCount == 2){
 		searchTerm = utilCleanUpDate(searchTerm)
@@ -222,7 +238,7 @@ export async function dbGetNewClientIDAsync(){
                         }
                         let request = {}
                         request['lastId'] = newId.toString()
-                        dbPostDataAsync("/clients/lastid", JSON.stringify(request), postCallback)
+                        dbPostDataAsyncCallback("/clients/lastid", JSON.stringify(request), postCallback)
                         return newId
                     })
             }
@@ -261,11 +277,11 @@ export async function dbSaveClient(data, callback){
 	} else {
         dbSetModifiedTime(data, false);
 	}
-    await dbPostDataAsync("/clients/", data, callback)
+    await dbPostDataAsyncCallback("/clients/", data, callback)
 }
 
-export async function dbSaveServiceRecord(service){
-	return dbPostDataAsync("/clients/services", JSON.stringify(service))
+export async function dbSaveServiceRecordAsync(service, callback){
+	return dbPostDataAsyncCallback("/clients/services", service, callback)
 }
 
 async function dbGetDaysSvcsAsync(dayDate){
@@ -341,7 +357,7 @@ export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove
 // **************************************  DATABASE GET & POST FUNCTIONS *********************************
 // *******************************************************************************************************
 
-const statusMessages = [
+const httpCodes = [
     {code: 200, msg: 'Success'},
     {code: 400, msg: 'Bad Request Exception'},
     {code: 401, msg: 'Authentication Failed'},
@@ -356,16 +372,39 @@ const statusMessages = [
     {code: 504, msg: 'Endpoint Request Timed-out Exception'},
 ];
 
-function getMessage(code, method) {
-    let match = statusMessages.find(x => x.code == code);
+function httpMessage(result, method) {
+    let match = httpCodes.find(x => x.code == result);
     if (match.msg === "Success") match.msg = (method === "GET") ? "Load Confirmed" : "Save Confirmed"
     if (match)
         return match.msg;
     else
-        return 'Unknown Error ' + code;
+        return 'Unknown Error ' + result;
 }
 
-async function dbPostDataAsync(subUrl, data, callback) {
+async function dbPostDataAsync(subUrl, data) {
+    return fetch(dbUrl + subUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',    
+            "Authorization": cachedSession.auth.idToken,
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        if (response.ok) {
+            return Promise.resolve();
+        } else {
+            const message = httpMessage(response.status, "POST");
+            return Promise.reject(message);
+        }
+    })
+    .catch((error) => {
+        console.error('dbPostData Error:', error);
+        return Promise.reject(error);
+    })
+}
+
+async function dbPostDataAsyncCallback(subUrl, data, callback) {
     callback('working', '');
 
     return fetch(dbUrl + subUrl, {
@@ -377,7 +416,7 @@ async function dbPostDataAsync(subUrl, data, callback) {
         body: JSON.stringify(data),
     })
     .then(response => {
-        const message = getMessage(response.status, "POST");
+        const message = httpMessage(response.status, "POST");
 
         if (response.ok) {
             console.log('success:', message);
@@ -393,11 +432,7 @@ async function dbPostDataAsync(subUrl, data, callback) {
     })
 }
 
-async function dbGetDataAsync(subUrl){ 
-
-    // console.log("Starting GET fetch...")
-    // console.log(subUrl)
-
+async function dbGetDataAsync(subUrl) { 
     return await fetch(dbUrl + subUrl, {
         method: 'GET',
         headers: {
@@ -406,22 +441,19 @@ async function dbGetDataAsync(subUrl){
         }
     })
     .then(response => {
-        const message = getMessage(response.status, "GET");
         if (response.ok) {
-            console.log('success:', message);
-            // callback('success', message);
+            return Promise.resolve(response.json());
         } else {
-            console.log('error:', message);
-            // callback('error', message);
+            const message = httpMessage(response.status, "GET");
+            return Promise.reject(message);
         }
-        return response.json()
     })
     .then(data => {
         console.log(data)
         return data
     })
     .catch((error) => {
-        console.error('Error:', error);
-        // callback('error', error)
+        console.error('dbGetData Error:', error);
+        Promise.reject(error);
     })
 }

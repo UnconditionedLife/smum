@@ -4,7 +4,7 @@
 import moment from  'moment';
 import cuid from 'cuid';
 import { utilNow } from '../GlobalUtils';
-import { dbGetClientActiveServiceHistoryAsync, dbGetServiceAsync, dbSaveServiceRecord, getSvcTypes, dbSaveClient } from '../Database';
+import { dbGetClientActiveServiceHistoryAsync, dbGetServiceAsync, dbSaveServiceRecordAsync, getSvcTypes, dbSaveClient } from '../Database';
 
 export function getServiceHistory(){
 	dbGetClientActiveServiceHistoryAsync().then(
@@ -45,8 +45,12 @@ export function saveHistoryForm(editRecord, formValues, client, userName){
     editRecord.servicedByUserName = userName
     editRecord.updatedDateTime = utilNow()
     editRecord.serviceId = cuid()
+
+    function callback(result, msg){
+        console.log("dbSaveServiceAsync = " + result + " " + msg)
+    }
     
-    const result = dbSaveServiceRecord(editRecord)
+    const result = dbSaveServiceRecordAsync(editRecord, callback)
 
 	if (result == "success") {
 		// disable old service record
@@ -62,8 +66,12 @@ export function utilRemoveService(serviceId){
         .then( serviceArray => {
             let service = serviceArray[0]
             service.serviceValid = false
-            const result = dbSaveServiceRecord(service)
-            if (result !== "success") return "error"
-            return null
+            // let returnValue = ""
+            function callback(result, msg){
+                // returnValue = (result !== "success") ? null : "error"
+                console.log("dbSaveServiceAsync = " + result + " " + msg)
+            }
+            dbSaveServiceRecordAsync(service, callback)
+            
         })
 }

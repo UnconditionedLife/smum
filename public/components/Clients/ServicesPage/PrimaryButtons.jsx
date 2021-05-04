@@ -94,16 +94,16 @@ export default function PrimaryButtons(props) {
     console.log(svcsRendered)
 
     // const updateSvcsRendered = props.updateSvcsRendered
-    const [ buttonData, setButtonData ] = useState(getButtonData({ client: props.client, buttons: 'primary' }))
+    // const [ buttonData, setButtonData ] = useState(getButtonData({ client: props.client, buttons: 'primary' }))
+    const [ buttonData, setButtonData ] = useState([])
     const [ buttonState, setButtonState ] = useState([])
     const [ update, setUpdate ] = useState(false)
 
     const classes = useStyles();
-    // const buttonType = "primary"
 
-    // useEffect(() => { 
-    //     setButtonData(getButtonData(buttonType))
-    // },[])
+    useEffect(() => { 
+         setButtonData(getButtonData({ client: props.client, buttons: 'primary' }))
+    },[ props.client ])
 
     const handleButtonState = (serviceTypeId, newState) => {
         let array = buttonState
@@ -153,7 +153,7 @@ export default function PrimaryButtons(props) {
     // }
      
     
-    // if (isEmpty(buttonData)) return null
+    if (isEmpty(buttonData)) return null
     
     let buttons = []
     if (buttonData.primary == "-1") { // dependents grades requirement
@@ -208,11 +208,11 @@ export default function PrimaryButtons(props) {
                 }
 
                 { isUsed(service.serviceTypeId) === true &&
-                    <Box m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#ddd' display='flex' >
-                            <Button m={ 0 } width='168px' height='168px' color='primary'
+                    <Box m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#FFF' display='flex' >
+                            <Button m={ 0 } width='168px' height='168px' color='primary' style={{ border: '5px dashed #ddd' }}
                                 onClick={ () => handleAddService(service.serviceTypeId, 
                                 service.serviceCategory, service.serviceButtons) }>
-                                <strong>{ service.serviceName.toUpperCase() }</strong>
+                                <strong> { "UNDO " + service.serviceName.toUpperCase() }</strong>
                             </Button>
 
                         {/* <span className={classes.imageButton}>

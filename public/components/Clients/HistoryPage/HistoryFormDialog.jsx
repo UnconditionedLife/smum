@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
 import { isEmpty } from '../../System/js/GlobalUtils';
-import { getSvcTypes } from '../../System/js/Database';
+import { getSvcTypes, getSession } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { saveHistoryForm } from '../../System/js/Clients/History';
 
 HistoryFormDialog.propTypes = {
-    session: PropTypes.object.isRequired,
     client: PropTypes.object.isRequired,                // current client
     editMode: PropTypes.string.isRequired,              // 'edit' = display form
     handleEditMode: PropTypes.func.isRequired,          // editMode handler
@@ -20,6 +19,7 @@ HistoryFormDialog.propTypes = {
 export default function HistoryFormDialog(props) {
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const [ message, setMessage ] = useState(null)
+    const userName = getSession().user.userName
 
     let delayInt
 
@@ -41,7 +41,7 @@ export default function HistoryFormDialog(props) {
     })
 
     function doSave(formValues) {
-        const newService = saveHistoryForm(props.editRecord, formValues, props.client, props.session.user.userName)
+        const newService = saveHistoryForm(props.editRecord, formValues, props.client, userName)
         startMessageTimer(true)
         if (!isEmpty(newService)) {
             setMessage({text: 'History record was saved!', severity: 'success'})
