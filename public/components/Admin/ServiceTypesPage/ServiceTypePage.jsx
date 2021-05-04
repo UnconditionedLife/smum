@@ -89,6 +89,8 @@ ServiceTypePage.propTypes = {
 
 export default function ServiceTypePage(props) {
     const [ svcTypes, setSvcTypes ] = useState( getSvcTypes() )
+    const [ isNew, setIsNew ] = useState(false)
+    const [ editRecord, setEditRecord ] = useState(null);
 
     function updateSvcTypes() {
         dbGetSvcTypesAsync().then(
@@ -96,15 +98,24 @@ export default function ServiceTypePage(props) {
         )
     }
 
+    function handleNewClick() {
+        setIsNew(true)
+        setEditRecord(null)
+    }
+
     console.log(svcTypes)
 
     return (
         <Box mt={7}>
             <Tooltip title= 'Add Service Type'>
-                <Fab size="small" color='default' >
+                <Fab onClick={()=>handleNewClick()} size="small" color='default' >
                     <Add />
                 </Fab>
             </Tooltip>
+            { isNew &&
+                <ServiceTypeFormDialog editMode={ "new" } handleEditMode={ ()=>{setIsNew(false)} } updateSvcTypes={ updateSvcTypes }
+                    serviceTypes={ svcTypes } editRecord={ editRecord } handleEditRecord={ setEditRecord } />
+            }
             <Accordion defaultExpanded={ true }>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
                     <Typography variant='button' >Active Service Types</Typography>
