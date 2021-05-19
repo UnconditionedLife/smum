@@ -4,7 +4,7 @@
 import moment from  'moment';
 import cuid from 'cuid';
 import { utilNow } from '../GlobalUtils';
-import { dbGetClientActiveServiceHistoryAsync, dbGetServiceAsync, dbSaveServiceRecordAsync, getSvcTypes, dbSaveClient } from '../Database';
+import { dbGetClientActiveServiceHistoryAsync, dbGetServiceAsync, dbSaveServiceRecordAsync, getSvcTypes, dbSaveClientAsync } from '../Database';
 
 export function getServiceHistory(){
 	dbGetClientActiveServiceHistoryAsync().then(
@@ -30,13 +30,15 @@ export function updateLastServed(client){
 		}
 	}
 	client.lastServed = topHist
-	return dbSaveClient(client)
+	return dbSaveClientAsync(client)
+        .then( () => {} )
+        .catch( () => {} );
 }
 
 export function saveHistoryForm(editRecord, formValues, client, userName){
     const oldServiceId = editRecord.serviceId
     Object.assign(editRecord, formValues)
-    const serviceType = getSvcTypes.filter(item => item.serviceName == editRecord.serviceName)[0]
+    const serviceType = getSvcTypes().filter(item => item.serviceName == editRecord.serviceName)[0]
     Object.assign(editRecord, {
         serviceTypeId: serviceType.serviceTypeId, serviceCategory: serviceType.serviceCategory, 
         isUSDA: serviceType.isUSDA })
@@ -45,20 +47,15 @@ export function saveHistoryForm(editRecord, formValues, client, userName){
     editRecord.servicedByUserName = userName
     editRecord.updatedDateTime = utilNow()
     editRecord.serviceId = cuid()
-
-    function callback(result, msg){
-        console.log("dbSaveServiceAsync = " + result + " " + msg)
-    }
     
-    const result = dbSaveServiceRecordAsync(editRecord, callback)
-
-	if (result == "success") {
-		// disable old service record
-        const oldSvc = utilRemoveService(oldServiceId)
-        if (oldSvc === "error") return null
-		return editRecord
-    }
-    return null
+    dbSaveServiceRecordAsync(editRecord)
+        .then( () => {
+            console.log("saveHistoryForm = success!");
+            utilRemoveService(oldServiceId);
+        })
+        .catch( message => {
+            console.log("saveHistoryForm = error: " + message);
+        });
 }
 
 export function utilRemoveService(serviceId){
@@ -66,12 +63,12 @@ export function utilRemoveService(serviceId){
         .then( serviceArray => {
             let service = serviceArray[0]
             service.serviceValid = false
-            // let returnValue = ""
-            function callback(result, msg){
-                // returnValue = (result !== "success") ? null : "error"
-                console.log("dbSaveServiceAsync = " + result + " " + msg)
-            }
-            dbSaveServiceRecordAsync(service, callback)
-            
-        })
+            dbSaveServiceRecordAsync(service)
+                .then( () => {
+                    console.log("utilRemoveService = success!");
+                })
+                .catch( message => {
+                    console.log("utilRemoveService = error: " + message);
+                });
+        });
 }

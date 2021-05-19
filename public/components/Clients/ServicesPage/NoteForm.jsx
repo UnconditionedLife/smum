@@ -4,7 +4,7 @@ import { Box, Checkbox, FormControlLabel } from '@material-ui/core';
 import { NotificationImportant } from '@material-ui/icons';
 import { Button, TextField } from '../../System';
 import { isEmpty, utilNow } from '../../System/js/GlobalUtils.js';
-import { dbSaveClient } from '../../System/js/Database.js';
+import { dbSaveClientAsync, getSession } from '../../System/js/Database.js';
 
 NoteForm.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
@@ -33,6 +33,7 @@ export default function NoteForm(props) {
     const [ stopEffect, setStopEffect ] = useState(false)
     
     const textLabel = isEmpty(editNote) ? "Add Note" : "Edit Note";
+    const userName = getSession().user.userName;
 
     useEffect(() => {
         if (!isEmpty(editNote) && !stopEffect) {
@@ -43,12 +44,7 @@ export default function NoteForm(props) {
             setStopEffect(true)
         }
     });
-
-    function callback(response, msg){
-        if (response === 'success') msg = "Note successfully added."
-        props.showAlert(response, msg);
-    }
-
+    
     function handleNoteSave(){
         let important = "false"
         let tempClient = client 
@@ -60,7 +56,7 @@ export default function NoteForm(props) {
             newNote.createdDateTime = utilNow() // moment().format(dateTime);
             newNote.updatedDateTime = utilNow() // moment().format(dateTime);
             newNote.isImportant = important;
-            newNote.noteByUserName = "jleal67";
+            newNote.noteByUserName = userName;
             newNote.noteId = noteId;
             newNote.noteText = noteText;
 
@@ -69,7 +65,7 @@ export default function NoteForm(props) {
             newNote.createdDateTime = editNote.createdDateTime;
             newNote.updatedDateTime = utilNow() // window.moment().format(dateTime);
             newNote.isImportant = important;
-            newNote.noteByUserName = "jleal67";
+            newNote.noteByUserName = userName;
             newNote.noteId = editNote.noteId;
             newNote.noteText = noteText;
 
@@ -80,7 +76,13 @@ export default function NoteForm(props) {
         updateClient(tempClient)
         handleNoteCountChange(tempClient.notes.length)
         handleNoteCancel()
-        dbSaveClient(client, callback)
+        dbSaveClientAsync(client)
+            .then( () => {
+                props.showAlert('success', 'Note successfully added.');
+            })
+            .catch( message => {
+                props.showAlert('error', message);
+            });
     }
 
     function handleNoteCancel(){

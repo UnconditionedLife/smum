@@ -3,7 +3,7 @@
 //************************************************
 
 import moment from 'moment';
-import { utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, isEmpty, utilStringToArray } from './GlobalUtils';
+import { utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray } from './GlobalUtils';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
 
@@ -117,8 +117,8 @@ export function getSvcTypes(){
     return cachedSvcTypes
 }
 
-export async function dbSaveSvcTypeAsync(data, callback){
-    return await dbPostDataAsyncCallback('/servicetypes/', data, callback)
+export async function dbSaveSvcTypeAsync(data) {
+    return await dbPostDataAsync('/servicetypes/', data)
 }
 
 //******************** USERS *********************
@@ -214,13 +214,6 @@ export async function dbGetSingleClientAsync(clientId) {
 }
 
 export async function dbGetNewClientIDAsync(){
-    function postCallback(response, msg){
-        if (response !== "success") {
-            console.log("Last client ID not Saved - ", msg)
-            return 'failed'
-        }
-    }
-
     return await dbGetDataAsync("/clients/lastid")
         .then( async data => {
 
@@ -238,7 +231,11 @@ export async function dbGetNewClientIDAsync(){
                         }
                         let request = {}
                         request['lastId'] = newId.toString()
-                        dbPostDataAsyncCallback("/clients/lastid", JSON.stringify(request), postCallback)
+                        dbPostDataAsync("/clients/lastid", JSON.stringify(request))
+                            .then()
+                            .catch( msg => {
+                                console.log("Last client ID not Saved - ", msg);
+                            });
                         return newId
                     })
             }
@@ -254,17 +251,13 @@ export async function dbGetClientActiveServiceHistoryAsync(clientId){
     })
 }
 
-export async function dbSaveClient(data, callback){
+export async function dbSaveClientAsync(data) {
 	if (data.clientId === "0") {
         dbSetModifiedTime(data, true);
         dbGetNewClientIDAsync()
             .then( newClientId => {
-                
-                console.log("GET CLIENT ID")
-                console.log(data.clientId)
-
                 if (data.clientId === 'failed') { 
-                    callback('error', 'Unable to get new client ID')
+                    console.log('Unable to get new client ID')
                     return
                 }
                 data.clientId = newClientId
@@ -273,11 +266,11 @@ export async function dbSaveClient(data, callback){
 	} else {
         dbSetModifiedTime(data, false);
 	}
-    await dbPostDataAsyncCallback("/clients/", data, callback)
+    return await dbPostDataAsync("/clients/", data)
 }
 
-export async function dbSaveServiceRecordAsync(service, callback){
-	return dbPostDataAsyncCallback("/clients/services", service, callback)
+export async function dbSaveServiceRecordAsync(service) {
+	return await dbPostDataAsync("/clients/services", service);
 }
 
 async function dbGetDaysSvcsAsync(dayDate){
@@ -368,9 +361,8 @@ const httpCodes = [
     {code: 504, msg: 'Endpoint Request Timed-out Exception'},
 ];
 
-function httpMessage(result, method) {
+function httpMessage(result) {
     let match = httpCodes.find(x => x.code == result);
-    if (match.msg === "Success") match.msg = (method === "GET") ? "Load Confirmed" : "Save Confirmed"
     if (match)
         return match.msg;
     else
@@ -390,41 +382,13 @@ async function dbPostDataAsync(subUrl, data) {
         if (response.ok) {
             return Promise.resolve();
         } else {
-            const message = httpMessage(response.status, "POST");
+            const message = httpMessage(response.status);
             return Promise.reject(message);
         }
     })
     .catch((error) => {
         console.error('dbPostData Error:', error);
         return Promise.reject(error);
-    })
-}
-
-async function dbPostDataAsyncCallback(subUrl, data, callback) {
-    callback('working', '');
-
-    return fetch(dbUrl + subUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',    
-            "Authorization": cachedSession.auth.idToken,
-        },
-        body: JSON.stringify(data),
-    })
-    .then(response => {
-        const message = httpMessage(response.status, "POST");
-
-        if (response.ok) {
-            console.log('success:', message);
-            callback('success', message);
-        } else {
-            console.log('error:', message);
-            callback('error', message);
-        }
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-        callback('error', error)
     })
 }
 
@@ -440,7 +404,7 @@ async function dbGetDataAsync(subUrl) {
         if (response.ok) {
             return Promise.resolve(response.json());
         } else {
-            const message = httpMessage(response.status, "GET");
+            const message = httpMessage(response.status);
             return Promise.reject(message);
         }
     })

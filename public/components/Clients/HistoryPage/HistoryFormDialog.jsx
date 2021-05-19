@@ -35,12 +35,13 @@ export default function HistoryFormDialog(props) {
     }
 
     const initValues = props.editRecord
-    const { handleSubmit, reset, control, errors, setError, formState } = useForm({
+    const { handleSubmit, control, errors, formState } = useForm({
         mode: 'onBlur',
         defaultValues: initValues, 
     })
 
     function doSave(formValues) {
+        // XXX - saveHistoryForm() does not return anything!
         const newService = saveHistoryForm(props.editRecord, formValues, props.client, userName)
         startMessageTimer(true)
         if (!isEmpty(newService)) {
@@ -73,8 +74,8 @@ export default function HistoryFormDialog(props) {
             <DialogContent>
                 <Box>
                 <form>
-                    <FormTextField name="servicedDateTime" label="Service Date/Time" type="datetime-local" error={ errors.servicedDateTime }
-                        control={ control } />
+                    <FormTextField name="servicedDateTime" label="Service Date/Time" type="datetime-local" fieldsize="xl"
+                        error={ errors.servicedDateTime } control={ control } />
 
                     <FormSelect name="serviceName" label="Service Name" error={ errors.serviceName } 
                         control={ control } rules={ {required: 'Service name is required'}} >

@@ -1,14 +1,9 @@
 import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Button } from '@material-ui/core';
 import { FormTextField } from '../System';
 
-PasswordForm.propTypes = {
-    session: PropTypes.object.isRequired,
-}
-
-export default function PasswordForm(props) {
+export default function PasswordForm() {
     const { reset, handleSubmit, control, formState, errors, setError } = useForm({
         mode: 'OnBlur',
         defaultValues: {oldPassword: '', newPassword1: '', newPassword2: ''},

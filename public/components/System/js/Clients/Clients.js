@@ -1,8 +1,8 @@
 //************************************************
 //***** CLIENTS SECTION JAVASCRIPT FUNCTIONS *****
 //************************************************
-import { dbSaveClient, dbGetNewClientID } from '../Database';
-import { utilNow } from '../GlobalUtils';
+// import { dbSaveClient, dbGetNewClientID } from '../Database';
+// import { utilNow } from '../GlobalUtils';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 

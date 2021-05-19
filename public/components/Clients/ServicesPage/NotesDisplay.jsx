@@ -4,7 +4,7 @@ import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
 import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
 import { Card, IconButton } from '../../System';
 import { NoteForm } from '../../Clients';
-import { dbSaveClient, getSession } from '../../System/js/Database.js';
+import { dbSaveClientAsync, getSession } from '../../System/js/Database.js';
 
 NotesDisplay.propTypes = {
     client: PropTypes.object.isRequired, 
@@ -36,14 +36,7 @@ export default function NotesDisplay(props) {
 
 console.log("NOTES DISPLAY")
 
-    const userName = getSession().user.userName
-
-    function callback(response, msg){
-        console.log("IN CALLBACK")
-        console.log(response, msg)
-        if (response === 'success') msg = "Note successfully removed."
-        props.showAlert(response, msg);
-    }
+    const userName = getSession().user.userName;
 
     function handleDeleteNote(noteId) {
         let tempClient = client
@@ -52,7 +45,13 @@ console.log("NOTES DISPLAY")
         tempClient.notes = filteredNotes
         updateClient(tempClient)
         handleNoteCountChange(client.notes.length)
-        dbSaveClient(client, callback)
+        dbSaveClientAsync(client)
+            .then( () => {
+                props.showAlert('success', 'Note successfully removed.');
+            })
+            .catch( message => {
+                props.showAlert('error', message);
+            });
     }
 
     function handleEditNote(noteId) {
@@ -60,7 +59,6 @@ console.log("NOTES DISPLAY")
         const editNote = notes.filter(note => note.noteId === noteId)
         handleEditNoteChange(editNote[0])
         handleEditModeChange('edit')
-        
     }
 
     function display(type, noteId) {

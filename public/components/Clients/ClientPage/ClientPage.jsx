@@ -1,10 +1,10 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Snackbar, Typography } from '@material-ui/core';
 import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay } from '../';
 import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } from '../../Clients';
-import { dbSaveClient } from '../../System/js/Database';
+import { dbSaveClientAsync } from '../../System/js/Database';
 
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
@@ -14,26 +14,23 @@ ClientPage.propTypes = {
 
 export default function ClientPage(props) {
     const [ expanded, setExpanded ] = useState(false);
-    const [ saveMessage, setSaveMessage ] = useState({})
+    const [ saveMessage, setSaveMessage ] = useState({ result: 'success', time: props.client.updatedDateTime });
   
-    useEffect(() => { 
-        updateMessage({ result: 'success', time: props.client.updatedDateTime })
-    }, [ props.client ])
-
-    function updateMessage(msg){
-        if (saveMessage !== msg) setSaveMessage(msg)
-    }
-
     const handleChange = (panel) => (event, isExpanded) => {
       setExpanded(isExpanded ? panel : false);
     };
 
     function saveAndUpdateClient(data){
-        const callback = (result, text) => {
-            updateMessage({ result: result, text: text, time: data.updatedDateTime })
-            if (result === 'success') props.updateClient(data)
-        }
-        dbSaveClient(data, callback)
+        setSaveMessage({ result: 'working' });
+        dbSaveClientAsync(data)
+            .then( () => {
+                setSaveMessage({ result: 'success', time: data.updatedDateTime });
+                props.updateClient(data);
+            })
+            .catch( message => {
+                setSaveMessage({ result: 'error', text: message });
+            });
+
     }
 
     return (

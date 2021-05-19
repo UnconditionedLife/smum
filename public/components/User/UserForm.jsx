@@ -57,13 +57,13 @@ export default function UserForm(props) {
         dbSetModifiedTime(userData, isNewUser);
         setSaveMessage({ result: 'working' });
         dbSaveUserAsync(userData)
-        .then( () => {
-            setSaveMessage({ result: 'success', time: userData.updatedDateTime });
-            reset(formValues);
-        })
-        .catch( message => {
-            setSaveMessage({ result: 'error', text: message });
-        });
+            .then( () => {
+                setSaveMessage({ result: 'success', time: userData.updatedDateTime });
+                reset(formValues);
+            })
+            .catch( message => {
+                setSaveMessage({ result: 'error', text: message });
+            });
         // TODO update cognito if phone or email is modified
     }
     const submitForm = handleSubmit(doSave);

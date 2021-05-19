@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@material-ui/core';
@@ -18,9 +18,10 @@ ServiceTypeFormDialog.propTypes = {
 
 export default function ServiceTypeFormDialog(props) {
     const [ dialogOpen, setDialogOpen ] = useState(true);
-    const [ saveMessage, setSaveMessage ] = useState({})
-    const svcCats = SettingsServiceCats();
     const isNewSvcType = (props.editRecord == null);
+    const initMsg = isNewSvcType ? {} : {result: 'success', time: props.editRecord.updatedDateTime};
+    const [ saveMessage, setSaveMessage ] = useState(initMsg);
+    const svcCats = SettingsServiceCats();
     let data;
 
     if (isNewSvcType) {
@@ -71,7 +72,7 @@ export default function ServiceTypeFormDialog(props) {
 
     let defValues = { ...data };
     
-    const { handleSubmit, reset, watch, control, errors, setError, formState } = useForm({
+    const { handleSubmit, reset, watch, control, errors, formState } = useForm({
         mode: 'onBlur',
         defaultValues: defValues, 
     })
@@ -81,10 +82,6 @@ export default function ServiceTypeFormDialog(props) {
         return props.serviceTypes.filter(function( obj ) {
             return obj.fulfillment.type == "Voucher"
         })
-    }
-
-    function updateMessage(msg){
-        if (saveMessage !== msg) setSaveMessage(msg)
     }
 
     function unpackDates(fromdate, todate){
@@ -101,29 +98,23 @@ export default function ServiceTypeFormDialog(props) {
 
     }
 
-    useEffect(() => { 
-        if (props.editRecord != null) {
-            updateMessage({ result: 'success', time: props.editRecord.updatedDateTime })
-        }
-    }, [ props.editRecord ])
-
-    function saveSvcType(data){
-        const callback = (result, text) => {
-            console.log(result)
-            console.log(text)
-            updateMessage({ result: result, text: text, time: data.updatedDateTime })
-            if (result === 'success') {
-                props.handleEditRecord(data)
-                props.updateSvcTypes()
-            }
-        }
+    function saveSvcType(data) {
         dbSetModifiedTime(data, isNewSvcType)
         console.log(data)
         if (isNewSvcType) {
             data.serviceTypeId = cuid()
         }
-        dbSaveSvcTypeAsync(data, callback)
-    }
+        setSaveMessage({ result: 'working' });
+        dbSaveSvcTypeAsync(data)
+            .then( () => {
+                setSaveMessage({ result: 'success', time: data.updatedDateTime });
+                props.handleEditRecord(data);
+                props.updateSvcTypes();
+            })
+            .catch( message => {
+                setSaveMessage({ result: 'error', text: message });
+            });
+}
 
 
     function doSave(values) {
