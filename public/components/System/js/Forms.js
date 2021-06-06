@@ -19,6 +19,13 @@ export function unpackZipcode(zip) {
     };
 }
 
+export function validBaseZipcode(zipcode) {
+    if (zipcode.match(/^\d{5}$/))
+        return true;
+    else
+        return false;
+}
+
 export function validState(state) {
     const state_abbr = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL",
         "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",

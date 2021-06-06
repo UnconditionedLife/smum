@@ -2,6 +2,7 @@
 //****** GLOBAL UTILITY JAVASCRIPT FUNCTIONS *****
 //************************************************
 
+import { SettingsSound } from './Database';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -46,4 +47,21 @@ export function utilStringToArray(str){
 	return arr
 }
 
+export function beepError() {
+    playSound("public/sounds/beep.wav");
+}
+
+export function beepSuccess() {
+	playSound("public/sounds/bloop.wav")
+}
+
 //**** JAVASCRIPT FUNCTIONS FOR USE WITH EXPORTABLE FUNCTIONS ****
+
+function playSound(soundFile) {
+    if (SettingsSound()) {
+		let sound  = new Audio(soundFile);
+		sound.volume= 0.1;
+		sound.loop = false;
+		sound.play();
+	}
+}

@@ -3,7 +3,7 @@
 //************************************************
 
 import moment from 'moment';
-import { utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray } from './GlobalUtils';
+import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray } from './GlobalUtils';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
 
@@ -59,16 +59,47 @@ export function getSession(){
 //**************** APP SETTINGS ******************
 //************************************************
 
-export async function dbGetSettingsAsync( ) {
+export async function dbGetSettingsAsync() {
     return await dbGetDataAsync("/settings")
         .then( settings => {
+            // console.log('Get Settings:')
+            // console.log(JSON.stringify(settings, undefined, 4));
+
             const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
             fields.forEach(x => {
                 settings[x] = utilStringToArray(settings[x]);
             });
+
+            // console.log('Canonicalized:')
+            // console.log(JSON.stringify(settings, undefined, 4));
+
             cachedSettings = settings;
             return settings;
         })
+}
+
+export async function dbSaveSettingsAsync(settings) {
+    // console.log('Save Settings:')
+    // console.log(JSON.stringify(settings, undefined, 4));
+
+    // let data = { ... settings };
+    // const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+    // fields.forEach(x => {
+    //     data[x] = utilArrayToObject(data[x]);
+    // });
+
+    // console.log('Canonicalized:')
+    // console.log(JSON.stringify(data, undefined, 4));
+    // let str = utilArrayToObject(settings.serviceZip);
+    // console.log('After conversion');
+    // console.log(str);
+    // let arr = utilStringToArray(str);
+    // console.log(utilStringToArray(str));
+
+    return await simulatedSave(50)
+        .then( () => {
+            cachedSettings = settings;
+        });
 }
 
 export function SettingsSound() {
@@ -408,12 +439,16 @@ async function dbGetDataAsync(subUrl) {
             return Promise.reject(message);
         }
     })
-    .then(data => {
-        console.log(data)
-        return data
-    })
     .catch((error) => {
         console.error('dbGetData Error:', error);
         Promise.reject(error);
     })
+}
+
+// Return success with prob% probability
+async function simulatedSave(prob) {
+    if (Math.random() * 100 > prob)
+        return Promise.reject('Simulated error');
+    else
+        return Promise.resolve();
 }

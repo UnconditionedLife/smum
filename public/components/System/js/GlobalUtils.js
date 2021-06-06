@@ -53,6 +53,17 @@ export function utilStringToArray(str){
 	return arr
 }
 
+export function utilArrayToObject(arr) {
+	return arr.reduce(function(acc, cur, i) {
+		if (Array.isArray(cur)) {
+			acc[i] = utilArrayToObject(cur)
+		} else {
+			acc[i] = cur
+		}
+		return acc
+	}, {});
+}
+
 // Date/Schedule Functions
 
 export function dateFindOpen(at) {

@@ -51,7 +51,7 @@ export default function SaveCancel(props) {
         }
     } else if (props.message?.result === 'error') {
         m.severity = 'error';
-        m.text = 'FAILED TO SAVE - try again!';
+        m.text = props.message.text || 'FAILED TO SAVE - try again!';
         m.tooltip = props.message.text;
     } else if (props.message?.result === 'working') {
         m.severity = 'warning';
