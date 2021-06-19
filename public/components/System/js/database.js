@@ -62,41 +62,24 @@ export function getSession(){
 export async function dbGetSettingsAsync() {
     return await dbGetDataAsync("/settings")
         .then( settings => {
-            // console.log('Get Settings:')
-            // console.log(JSON.stringify(settings, undefined, 4));
-
             const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
             fields.forEach(x => {
                 settings[x] = utilStringToArray(settings[x]);
             });
 
-            // console.log('Canonicalized:')
-            // console.log(JSON.stringify(settings, undefined, 4));
-
             cachedSettings = settings;
             return settings;
-        })
+        });
 }
 
 export async function dbSaveSettingsAsync(settings) {
-    // console.log('Save Settings:')
-    // console.log(JSON.stringify(settings, undefined, 4));
+    let data = { ... settings };
+    const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+    fields.forEach(x => {
+        data[x] = utilArrayToObject(data[x]);
+    });
 
-    // let data = { ... settings };
-    // const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
-    // fields.forEach(x => {
-    //     data[x] = utilArrayToObject(data[x]);
-    // });
-
-    // console.log('Canonicalized:')
-    // console.log(JSON.stringify(data, undefined, 4));
-    // let str = utilArrayToObject(settings.serviceZip);
-    // console.log('After conversion');
-    // console.log(str);
-    // let arr = utilStringToArray(str);
-    // console.log(utilStringToArray(str));
-
-    return await simulatedSave(50)
+    return await dbPostDataAsync('/settings/', data)
         .then( () => {
             cachedSettings = settings;
         });
@@ -446,6 +429,7 @@ async function dbGetDataAsync(subUrl) {
 }
 
 // Return success with prob% probability
+// eslint-disable-next-line no-unused-vars
 async function simulatedSave(prob) {
     if (Math.random() * 100 > prob)
         return Promise.reject('Simulated error');

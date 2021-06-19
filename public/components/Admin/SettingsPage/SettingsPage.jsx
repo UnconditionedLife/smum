@@ -6,7 +6,7 @@ import { Box, Card, CardContent, CardHeader, Container, MenuItem, Typography } f
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime } from '../../System/js/Database';
 import { validBaseZipcode } from '../../System/js/Forms';
-import { beepError } from '../../System/js/Utils';
+import { beepError } from '../../System/js/GlobalUtils';
 import SettingsSched from './SettingsSched.jsx';
 
 export default function SettingsPage() {
