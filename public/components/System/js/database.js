@@ -3,7 +3,7 @@
 //************************************************
 
 import moment from 'moment';
-import { utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray } from './GlobalUtils';
+import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray } from './GlobalUtils';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
 
@@ -63,16 +63,30 @@ export function getSession(){
 //**************** APP SETTINGS ******************
 //************************************************
 
-export async function dbGetSettingsAsync( ) {
+export async function dbGetSettingsAsync() {
     return await dbGetDataAsync("/settings")
         .then( settings => {
             const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
             fields.forEach(x => {
                 settings[x] = utilStringToArray(settings[x]);
             });
+
             cachedSettings = settings;
             return settings;
-        })
+        });
+}
+
+export async function dbSaveSettingsAsync(settings) {
+    let data = { ... settings };
+    const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+    fields.forEach(x => {
+        data[x] = utilArrayToObject(data[x]);
+    });
+
+    return await dbPostDataAsync('/settings/', data)
+        .then( () => {
+            cachedSettings = settings;
+        });
 }
 
 export function SettingsSound() {
@@ -440,13 +454,18 @@ async function dbGetDataAsync(subUrl) {
             return Promise.reject(message);
         }
     })
-    .then(data => {
-        console.log(data)
-        return data
-    })
     .catch((error) => {
         console.error('dbGetData Error:', error);
         globalMsgFunc('error', 'Error while loading - try again!!') 
         Promise.reject(error);
     })
+}
+
+// Return success with prob% probability
+// eslint-disable-next-line no-unused-vars
+async function simulatedSave(prob) {
+    if (Math.random() * 100 > prob)
+        return Promise.reject('Simulated error');
+    else
+        return Promise.resolve();
 }
