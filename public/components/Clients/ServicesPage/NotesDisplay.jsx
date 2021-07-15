@@ -33,10 +33,14 @@ export default function NotesDisplay(props) {
     const handleTextFieldChange = props.handleTextFieldChange;
     const noteImportant = props.noteImportant
     const handleNoteImportantChange = props.handleNoteImportantChange
+    const userName = getSession().user.userName
 
-console.log("NOTES DISPLAY")
-
-    const userName = getSession().user.userName;
+    function callback(response, msg){
+        console.log("IN CALLBACK")
+        console.log(response, msg)
+        if (response === 'success') msg = "Note successfully removed."
+        props.showAlert(response, msg);
+    }
 
     function handleDeleteNote(noteId) {
         let tempClient = client

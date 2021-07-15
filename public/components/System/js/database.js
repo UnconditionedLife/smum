@@ -17,10 +17,7 @@ let cachedSettings = null;
 let cachedSvcTypes = []
 const MAX_ID_DIGITS = 5
 
-let globalMsgFunc = null;
-
-console.log(globalMsgFunc)
-
+export let globalMsgFunc = null;
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -32,6 +29,13 @@ export function showCache() {
     console.log('DB URL: ' + dbUrl);
     console.log('Service Types: ');
     console.log(cachedSvcTypes);
+}
+
+//**************** GLOBAL MESSAGE *****************
+//*************************************************
+
+export function setGlobalMsgFunc(callback) {
+    globalMsgFunc = callback
 }
 
 //******************* SESSION ********************
@@ -162,18 +166,7 @@ export async function dbSearchClientsAsync(searchTerm) {
     )
 }
 
-//**************** GLOBAL MESSAGE *****************
-//*************************************************
-
-export function setGlobalMsgFunc(callback) {
-    globalMsgFunc = callback
-}
-
-
 async function dbGetClientsAsync(searchTerm, slashCount){
-    
-    globalMsgFunc("error", "HELLO WORLD!!")
-
 	let clientData = []
 	if (slashCount == 2){
 		searchTerm = utilCleanUpDate(searchTerm)
@@ -270,7 +263,7 @@ export async function dbSaveClientAsync(data) {
 }
 
 export async function dbSaveServiceRecordAsync(service) {
-	return await dbPostDataAsync("/clients/services", service);
+	return await dbPostDataAsync("/clients/services", service)
 }
 
 async function dbGetDaysSvcsAsync(dayDate){
@@ -299,6 +292,31 @@ export async function dbGetSvcsInMonthAsync(monthYear){
 
 export async function dbGetServiceAsync(serviceId){
 	return await dbGetDataAsync("/clients/services/byid/" + serviceId).then( data => { return data.services})
+}
+
+export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCategory, itemsServed, isUSDA){
+	const serviceDateTime = moment().format('YYYY-MM-DDTHH:mm')
+    const newClient = Object.assign({}, client)
+	const newRecord = { serviceTypeId, serviceDateTime, serviceCategory, itemsServed, isUSDA }
+	const newLastServed = []
+	let notPushed = true
+	if (newClient.lastServed) {
+		newClient.lastServed.forEach((svcRecord) => {
+            if (serviceTypeId == svcRecord.serviceTypeId) {
+				notPushed = false
+				newLastServed.push(newRecord)
+			} else {
+				newLastServed.push(svcRecord)
+			}
+        })
+	}
+	if (notPushed) newLastServed.push(newRecord)
+	newClient.lastServed = newLastServed
+	dbSaveClient(newClient, callback)
+}
+
+export async function dbGetEthnicGroupCountAsync(ethnicGroup){
+    return await dbGetDataAsync("/clients/ethnicgroup/" + ethnicGroup).then( data => { return data.count})
 }
 
 // NOT CURRENTLY BEING CALLED
@@ -380,14 +398,28 @@ async function dbPostDataAsync(subUrl, data) {
     })
     .then(response => {
         if (response.ok) {
-            return Promise.resolve();
+            if ( response.json().Message ) {
+                return Promise.resolve(response.json().Message);
+            } else {
+                return Promise.resolve(response.json());
+            }
         } else {
             const message = httpMessage(response.status);
             return Promise.reject(message);
         }
     })
+    // .then(result => {
+    //     if (result.Message) {
+    //         const msg = dbErrors(result.Message)
+    //         console.error("DynamoDB Error", msg)
+    //         console.log("Raw Error", result.Message)
+    //         return Promise.reject(msg);
+    //     }
+    // })
     .catch((error) => {
         console.error('dbPostData Error:', error);
+        globalMsgFunc('error', error) 
+        //globalMsgFunc('error', 'Error while saving - try again!!') 
         return Promise.reject(error);
     })
 }
@@ -414,6 +446,7 @@ async function dbGetDataAsync(subUrl) {
     })
     .catch((error) => {
         console.error('dbGetData Error:', error);
+        globalMsgFunc('error', 'Error while loading - try again!!') 
         Promise.reject(error);
     })
 }

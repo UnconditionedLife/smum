@@ -4,7 +4,8 @@
 import { isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from '../Clients/ClientUtils'
-import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, getSession } from '../Database';
+import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
+    getSession, dbSaveLastServedAsync } from '../Database';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt, prnFlush } from '../Clients/Receipts';
 import cuid from 'cuid';
@@ -17,82 +18,71 @@ export function addService(props){
 	let serviceType = getServiceTypeByID(svcTypes, serviceTypeId)
 	let serviceId = "" // new service
     let serviceValid = true
-    let undoneService = false
-    // check if service has already been rendered
-
+    
     console.log(svcsRendered)
     console.log(svcsRendered.indexOf(serviceTypeId))
 
-	if (svcsRendered.indexOf(serviceTypeId) !== -1) {
-		const serviceItem = svcsRendered.filter(obj => obj.serviceTypeId == serviceTypeId)
-		serviceValid = false
-        serviceId = serviceItem[0].serviceId
-        undoneService = true
-	}
 	// save service record
 	const servedCounts = calcServiceFamilyCounts( svcTypes, client, serviceTypeId)
     const serviceRecord = utilBuildServiceRecord( serviceType, serviceId, servedCounts, serviceValid, client )
     
-console.log(serviceRecord)
+console.log("SERVICE RECORD", serviceRecord)
 
     function callback(result, msg){
         console.log("dbSaveServiceAsync = " + result + " " + msg)
     }
 
-	const result = dbSaveServiceRecordAsync(serviceRecord, callback)
-	if (serviceType.serviceButtons == "Primary" && result == "success"){
-		dbSaveLastServed(serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
-	}
-	if (serviceId != "" && result == "success") {
-		// ungrayout button
-		uiToggleButtonColor("unGray", serviceTypeId, svcButtons)
-		if (svcButtons == "Primary") {
-			$("#image-"+serviceTypeId).removeClass("imageGrayOut")
-		}
-	} else if (serviceId == "" && result == "success") {
-		if (serviceCategory == 'Food_Pantry') {
-			// TODO Use function here
-			let service = svcTypes.filter(function( obj ) {
-					return obj.serviceTypeId == serviceTypeId
-				})[0]
-			prnPrintFoodReceipt({ client: client, isUSDA: service.isUSDA })
-			if (client.isActive == 'Client') {
-				prnPrintReminderReceipt( client )
-			}
-		} else if (serviceCategory == 'Clothes_Closet') {
-			prnPrintClothesReceipt({ client: client, serviceType: serviceType })
-		} else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
-			const targetService = utilCalcTargetServices([serviceType])
-			const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
-			// TODO use function here
-			let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			prnPrintVoucherReceipt({ client: client, serviceType: serviceType, dependents: dependents, gradeOrAge: 'grade' });
-			prnPrintVoucherReceipt(serviceType, dependents, 'grade');
-		} else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
-			const targetService = utilCalcTargetServices([serviceType])
-			// TODO use function here
-			let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			prnPrintVoucherReceipt({ service: service })
-			prnPrintVoucherReceipt({ service: service })
-		} else if (serviceCategory == 'Christmas' && serviceType.target.service == 'Unselected') { // ignore fulfillment
-			const targetService = utilCalcTargetServices([serviceType])
-			let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-			if (targetService[0].family_totalChildren == "Greater Than 0") {
-				const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
-				prnPrintVoucherReceipt(serviceType, dependents, 'age');
-				prnPrintVoucherReceipt(serviceType, dependents, 'age');
-			} else {
-				prnPrintVoucherReceipt({ service: service });
-				prnPrintVoucherReceipt({ service: service });
-			}
-		}
-		prnFlush();
-		// uiShowLastServed() *** Moved to REACT ***
-        uiToggleButtonColor("gray", serviceTypeId, svcButtons)
-        
-        if (undoneService === true) return 'undone'
-        if (serviceId == "" && result == "success") return serviceRecord
-	}
+	dbSaveServiceRecordAsync(serviceRecord, callback).then((result) => {
+        if (serviceType.serviceButtons == "Primary" && result == "success"){
+            dbSaveLastServedAsync(client, serviceTypeId, serviceType.serviceCategory, servedCounts.itemsServed, serviceType.isUSDA)
+        }
+
+        if (serviceId === "" && result === "success") {
+            if (serviceCategory === 'Food_Pantry') {
+                // TODO Use function here
+                let service = svcTypes.filter(function( obj ) {
+                        return obj.serviceTypeId === serviceTypeId
+                    })[0]
+                prnPrintFoodReceipt({ client: client, isUSDA: service.isUSDA })
+                if (client.isActive === 'Client') {
+                    prnPrintReminderReceipt( client )
+                }
+            } else if (serviceCategory == 'Clothes_Closet') {
+                prnPrintClothesReceipt({ client: client, serviceType: serviceType })
+            } else if (serviceCategory == 'Back_To_School' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+                const targetService = utilCalcTargetServices([serviceType])
+                const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
+                // TODO use function here
+                let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+                prnPrintVoucherReceipt({ client: client, serviceType: serviceType, dependents: dependents, gradeOrAge: 'grade' });
+                prnPrintVoucherReceipt(serviceType, dependents, 'grade');
+            } else if (serviceCategory == 'Thanksgiving' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+                const targetService = utilCalcTargetServices([serviceType])
+                // TODO use function here
+                let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+                prnPrintVoucherReceipt({ service: service })
+                prnPrintVoucherReceipt({ service: service })
+            } else if (serviceCategory == 'Christmas' && serviceType.target.service == 'Unselected') { // ignore fulfillment
+                const targetService = utilCalcTargetServices([serviceType])
+                let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+                if (targetService[0].family_totalChildren == "Greater Than 0") {
+                    const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
+                    prnPrintVoucherReceipt(serviceType, dependents, 'age');
+                    prnPrintVoucherReceipt(serviceType, dependents, 'age');
+                } else {
+                    prnPrintVoucherReceipt({ service: service });
+                    prnPrintVoucherReceipt({ service: service });
+                }
+            }
+            prnFlush();
+            
+            
+            // if (undoneService === true) return 'undone'
+            if (serviceId === "" && result == "success") return serviceRecord
+        }
+    })
+
+	
 }
 
 export function getButtonData( at ) {
@@ -120,14 +110,36 @@ export function getFoodInterval(isUSDA){
 export function getSvcsRendered(svcHistory){
     let svcsRendered = []
     svcHistory.forEach((svc) => {
-        if (moment().isSame(svc.serviceDateTime, "day")) {
+        if (moment().isSame(svc.servicedDateTime, "day")) {
             svcsRendered.push(svc)
 		}
     })
-    console.log(svcsRendered)
     return svcsRendered
 }
 
+export function utilCalcLastServedDays(client) {
+	// get Last Served Date from client object & calculate number of days
+	const lastServed = { daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000 }
+	if (client.lastServed[0] === undefined) return lastServed
+	const lastServedFood = client.lastServed.filter(obj => obj.serviceCategory == "Food_Pantry")
+	lastServedFood.forEach((svcItem) => {
+		if (svcItem !== "Emergency") {
+			let lastServedDay = moment(svcItem.serviceDateTime).startOf('day')
+			if (svcItem.isUSDA === "USDA") {
+				lastServed.daysUSDA = moment().diff(lastServedDay, 'days')
+			} else {
+				lastServed.daysNonUSDA = moment().diff(lastServedDay, 'days')
+			}
+		}
+	})
+	lastServed.lowestDays = lastServed.daysUSDA
+	if (lastServed.daysNonUSDA < lastServed.daysUSDA) lastServed.lowestDays = lastServed.daysNonUSDA
+	let lastServedBackToSchool = client.lastServed.filter(obj => obj.serviceCategory == "Back_To_School")
+	if (lastServedBackToSchool.length > 0) {
+		lastServed.backToSchool = moment(lastServedBackToSchool[0].serviceDateTime).startOf('day')
+	}
+	return lastServed
+}
 
 //******************************************************************
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
@@ -549,3 +561,4 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 	}
 	return serviceRecord
 }
+

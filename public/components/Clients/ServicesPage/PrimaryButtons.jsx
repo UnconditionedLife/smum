@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
     imageMarked: {
       height: 3,
       width: 18,
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: theme.palette.common.red,
       position: 'absolute',
       bottom: -2,
       left: 'calc(50% - 9px)',
@@ -92,8 +92,9 @@ export default function PrimaryButtons(props) {
     const updateClient = props.updateClient
     
     // const updateSvcsRendered = props.updateSvcsRendered
-    // const [ buttonData, setButtonData ] = useState(getButtonData({ client: props.client, buttons: 'primary' }))
-    const [ buttonData, setButtonData ] = useState([])
+    
+    const [ buttonData, setButtonList ] = useState([])
+    const [ buttons, setButtons ] = useState([])
     const [ buttonState, setButtonState ] = useState([])
     const [ update, setUpdate ] = useState(false)
     const [ svcsRendered, setSvcsRendered ] = useState(props.client.svcsRendered)
@@ -101,14 +102,49 @@ export default function PrimaryButtons(props) {
     const classes = useStyles();
 
     useEffect(() => { 
-         setButtonData(getButtonData({ client: props.client, buttons: 'primary' }))
+        setButtonList(getButtonData({ client: props.client, buttons: 'primary' }))
     },[ props.client ])
+
+    useEffect(() => {
+        if (buttonData.primary !== undefined) {
+            let buts = []
+            if (buttonData.primary == "-1") { // dependents grades requirement
+                // TODO TURN THIS INTO SERVICE TYPE
+                let btnClass = "btnAlert"
+                buts += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
+            } else {
+            buttonData.primary.forEach((svcIndex) => {
+                    const theButton = buttonData.activeServiceTypes[svcIndex]
+                    const svcCategory = theButton.serviceCategory
+                    theButton.btnType = "normal"
+                    if ((svcCategory === "Administration") || (theButton.isUSDA == "Emergency")) {
+                        theButton.btnType = "highlight"
+                    }
+                    
+                    // handleButtonState(buttonData.activeServiceTypes[x].serviceTypeId, false)
+                
+                    if ((svcsRendered.length !== 0) && (svcsRendered !== undefined)) {
+                        svcsRendered.forEach((obj) => { 
+
+
+                            console.log("SERVED", obj)
+
+                            if (obj.serviceTypeId === theButton.serviceTypeId) {
+                                theButton.btnType = "undo"
+                            }
+                        })
+                    }
+                    buts.push(theButton)
+                })
+                if (buttons !== buts) setButtons(buts)
+            }
+        }
+    },[ buttonData, svcsRendered ])
 
     useEffect(() => {
         const tempSvcsRendered = props.client.svcsRendered
         if (tempSvcsRendered !== svcsRendered) {
             setSvcsRendered(tempSvcsRendered)
-            console.log(svcsRendered)
         }
     })
 
@@ -141,87 +177,89 @@ export default function PrimaryButtons(props) {
         const newClient = client
         newClient.svcsRendered = getSvcsRendered(client.svcHistory)
         updateClient(newClient)
+        setSvcsRendered(newClient.svcsRendered)
     } 
 
-    // function handleUndoService(serviceTypeId, serviceCategory, serviceButtons){
-    //     console.log('UNDO SERVICE')
-    //     const service = window.utilRemoveService(selectedService)
-    //     if (service !== ""){
-    //         // TODO show alert success message
-    //         console.log("Saving removal worked.")
-    //         setClientHistory(getServiceHistory())
-    //         const result = window.utilUpdateLastServed()
-    //         if (result == "failed") return
-    //     } else {
-    //         // TODO show alert with error message
-    //         console.log("Saving delete failed.")
-    //         return
-    //     }
-    // }
-     
-    
-    if (isEmpty(buttonData)) return null
-    
-    let buttons = []
-    if (buttonData.primary == "-1") { // dependents grades requirement
-        // TODO TURN THIS INTO SERVICE TYPE
-        let btnClass = "btnAlert"
-        buttons += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
-    } else {
-        for (let i=0; i < buttonData.primary.length; i++){
-            let x = buttonData.primary[i]
-            const serviceCategory = buttonData.activeServiceTypes[x].serviceCategory
-            
-            let btnColor = "primary"
-            if ((serviceCategory === "Administration") || (buttonData.activeServiceTypes[x].isUSDA == "Emergency")) btnColor = "secondary"
-            buttonData.activeServiceTypes[x].btnColor = btnColor
-            buttons.push(buttonData.activeServiceTypes[x])
-            // handleButtonState(buttonData.activeServiceTypes[x].serviceTypeId, false)
+    function handleUndoService(serviceTypeId, serviceCategory, serviceButtons){
+
+        console.log('UNDO SERVICE')
+        
+        return null
+
+        const service = window.utilRemoveService(selectedService)
+        if (service !== ""){
+            // TODO show alert success message
+            console.log("Saving removal worked.")
+            setClientHistory(getServiceHistory())
+            const result = window.utilUpdateLastServed()
+            if (result == "failed") return
+        } else {
+            // TODO show alert with error message
+            console.log("Saving delete failed.")
+            return
         }
     }
+     
 
-    function isUsed(id){
-        let found = false
-        if ((svcsRendered.length === 0) || (svcsRendered == undefined)) return found
-        
-        svcsRendered.forEach((obj) => { 
-            if (obj.serviceTypeId === id) found = true
-        })
-        return found
-    }
+    console.log("BUTTON DATA", buttonData)
+    console.log("BUTTONS", buttons)
+    
+    if (buttons.length === 0) return null
 
     return (
         <Fragment>
-        { buttons.map((service) => (
-            <Fragment key={ service.serviceTypeId }>
-                { isUsed(service.serviceTypeId) === false &&
+        { buttons.map((button) => (
+            <Fragment key={ button.serviceTypeId }>
+                { (button.btnType === 'normal') &&
                     <ButtonBase
                         focusRipple
-                        key={ service.serviceTypeId }
+                        key={ button.serviceTypeId }
                         className={ classes.image }
                         focusVisibleClassName={ classes.focusVisible }
-                        onClick={ () => handleAddService(service.serviceTypeId, 
-                            service.serviceCategory, service.serviceButtons) }
+                        onClick={ () => handleAddService(button.serviceTypeId, 
+                            button.serviceCategory, button.serviceButtons) }
                     >
                         <span className={classes.imageSrc}
-                            style={{ backgroundImage: "url(/" + service.serviceCategory + ".jpg)" }} />
+                            style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
                         <span className={classes.imageBackdrop} />
                         <span className={classes.imageButton}>
                             <Typography component="span" variant="button" color="inherit"
                                 className={classes.imageTitle} >
-                                <strong>{ service.serviceName.toUpperCase() }</strong>
+                                <strong>{ button.serviceName.toUpperCase() }</strong>
                                 <span className={classes.imageMarked} />
                             </Typography>
                         </span>
                     </ButtonBase>
                 }
 
-                { isUsed(service.serviceTypeId) === true &&
+                { (button.btnType === 'highlight') &&
+                    <ButtonBase
+                        focusRipple
+                        key={ button.serviceTypeId }
+                        className={ classes.image }
+                        focusVisibleClassName={ classes.focusVisible }
+                        onClick={ () => handleUndoService(button.serviceTypeId, 
+                            button.serviceCategory, button.serviceButtons) }
+                    >
+                        <span className={classes.imageSrc}
+                            style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
+                        <span className={classes.imageBackdrop} />
+                        <span className={classes.imageButton}>
+                            <Typography component="span" variant="button" color="inherit"
+                                className={classes.imageTitle} >
+                                <strong>{ button.serviceName.toUpperCase() }</strong>
+                                <span className={classes.imageMarked} />
+                            </Typography>
+                        </span>
+                    </ButtonBase>
+                }
+
+                { (button.btnType === 'undo') &&
                     <Box key={ svcsRendered[0].servicedDateTime } m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#FFF' display='flex' >
                             <Button m={ 0 } width='168px' height='168px' color='primary' style={{ border: '5px dashed #ddd' }}
-                                onClick={ () => handleAddService(service.serviceTypeId, 
-                                service.serviceCategory, service.serviceButtons) }>
-                                <strong> { "UNDO " + service.serviceName.toUpperCase() }</strong>
+                                onClick={ () => handleAddService(button.serviceTypeId, 
+                                    button.serviceCategory, button.serviceButtons) }>
+                                <strong> { "UNDO " + button.serviceName.toUpperCase() }</strong>
                             </Button>
                     </Box>
                 }

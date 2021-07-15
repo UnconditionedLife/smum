@@ -5,7 +5,7 @@ import { Popper, Table, TableBody, TableCell, TableContainer,
 import { Card } from '../../System';
 import { HistoryFormDialog, HistoryPopupMenu } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils';
-import { updateLastServed, utilRemoveService } from '../../System/js/Clients/History';
+import { updateLastServed, utilRemoveServiceAsync } from '../../System/js/Clients/History';
 import { dbGetClientActiveServiceHistoryAsync } from '../../System/js/Database';
 
 HistoryDisplay.propTypes = {
@@ -69,7 +69,7 @@ export default function HistoryDisplay(props) {
     }
 
     function removeService(){
-        const service = utilRemoveService(selectedService)
+        const service = utilRemoveServiceAsync(selectedService)
         if (service !== ""){
             handleMessage({ text: "Service successfully removed!", severity: "success" })
             setDelayTimer(true)
