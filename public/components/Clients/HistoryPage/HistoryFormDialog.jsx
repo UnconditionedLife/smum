@@ -5,7 +5,7 @@ import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/
 import { isEmpty } from '../../System/js/GlobalUtils';
 import { getSvcTypes, getSession, globalMsgFunc } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { saveHistoryFormAsync, utilRemoveServiceSync } from '../../System/js/Clients/History';
+import { saveHistoryFormAsync, utilRemoveServiceAsync } from '../../System/js/Clients/History';
 
 HistoryFormDialog.propTypes = {
     client: PropTypes.object.isRequired,                // current client
@@ -46,7 +46,7 @@ export default function HistoryFormDialog(props) {
                 const msg = message ? message : undefined
                 if (msg === undefined) {
                     globalMsgFunc('success', 'History record was saved!')
-                    utilRemoveServiceSync(props.editRecord.serviceId)
+                    utilRemoveServiceAsync(props.editRecord.serviceId)
                         .then( removeMessage => {
                             console.log("REMOVED:", removeMessage)
                             const removeMsg = message ? message : undefined

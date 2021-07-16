@@ -54,7 +54,7 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
         // })
 }
 
-export async function utilRemoveServiceSync(serviceId){
+export async function utilRemoveServiceAsync(serviceId){
 	return await dbGetServiceAsync(serviceId)
         .then( async (serviceArray) => {
             let service = serviceArray[0]

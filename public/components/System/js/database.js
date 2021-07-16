@@ -329,8 +329,15 @@ export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCatego
 	dbSaveClient(newClient, callback)
 }
 
+//******************* REPORTS *********************
+//*************************************************
+
 export async function dbGetEthnicGroupCountAsync(ethnicGroup){
-    return await dbGetDataAsync("/clients/ethnicgroup/" + ethnicGroup).then( data => { return data.count})
+
+    console.log("CACHED SESSION", cachedSession)
+
+    return await dbGetDataAsync("/clients/ethnicgroup/" + ethnicGroup)
+        .then( data => { return data.count})
 }
 
 // NOT CURRENTLY BEING CALLED
