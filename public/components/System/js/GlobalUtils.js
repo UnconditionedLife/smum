@@ -76,6 +76,16 @@ export function utilArrayToString(arr) {
     return '{' + withIndex.join(', ') + '}'
 }
 
+// Return the ordinal string for a number.
+// Not sure who is the original author of this clever implementation, but 
+// see https://leancrew.com/all-this/2020/06/ordinal-numerals-and-javascript/
+// for an explanation of the special cases it handles and how it works.
+export function utilOrdinal(n) {
+    var s = ["th", "st", "nd", "rd"];
+    var v = n % 100;
+    return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+
 // Date/Schedule Functions
 
 export function dateFindOpen(at) {

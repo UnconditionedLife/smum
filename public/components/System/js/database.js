@@ -3,6 +3,7 @@
 //************************************************
 
 import moment from 'moment';
+import { calConvertLegacyEvents } from './Calendar';
 import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray } from './GlobalUtils';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
@@ -70,6 +71,8 @@ export async function dbGetSettingsAsync() {
             fields.forEach(x => {
                 settings[x] = utilStringToArray(settings[x]);
             });
+            if (!(settings.calDaily || settings.calWeekly || settings.calMonthly))
+                Object.assign(settings, calConvertLegacyEvents(settings));
 
             cachedSettings = settings;
             return settings;
