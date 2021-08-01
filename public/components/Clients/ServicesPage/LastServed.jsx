@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { Typography } from '../../System'
-import { getFoodInterval } from '../../System/js/Clients/Services'
+import { getFoodInterval, utilCalcLastServedDays } from '../../System/js/Clients/Services'
 import { Box } from '@material-ui/core';
 
 LastServed.propTypes = {
@@ -21,12 +21,9 @@ export default function LastServed(props) {
     function handleSetNextService(newValue){
         if (nextService !== newValue) setNextService(newValue)
     }
-
-    console.log("CLIENT IN LAST SERVED")
-    console.log(client)
  
     if (client.lastServed[0] !== undefined) {
-        let lastServed = window.utilCalcLastServedDays()
+        let lastServed = utilCalcLastServedDays(client)
         if (lastServed.lowestDays != 10000) {
             if (lastServed.lowestDays == 0) {
                 handleSetLastVisit('LAST SERVED TODAY')

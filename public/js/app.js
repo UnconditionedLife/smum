@@ -16,10 +16,10 @@
 // TODO add number of Notes to Notes tab ie. Note(3) ... do not show () if 0
 // TODO confirm that lastIdCheck is being updated when that service is clicked.
 
-const ver = '?v=1.0.5'
-$('#versionNum').html(ver.split('=')[1]) // display version number on top right
-const aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/dev"
-const MAX_ID_DIGITS = 5
+//const ver = '?v=1.0.5'
+//$('#versionNum').html(ver.split('=')[1]) // display version number on top right
+//const aws = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/dev"
+//const MAX_ID_DIGITS = 5
 const uiDate = 'MM/DD/YYYY'
 const uiDateTime = 'MM/DD/YYYY H:mma'
 const uiDateTimeShort = 'MM/DD/YY H:mma'
@@ -2464,25 +2464,26 @@ function dbGetServicesByIdAndYear(serviceTypeId, year) {
 // 	return ans
 // };
 
-function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
-	let serviceDateTime = moment().format(dateTime)
-	let newRecord = {serviceTypeId, serviceDateTime, serviceCategory, itemsServed, isUSDA}
-	let newLastServed = []
-	let notPushed = true
-	if (client.lastServed.length > 0) {
-		for (var i = 0; i < client.lastServed.length; i++) {
-			if (serviceTypeId == client.lastServed[i].serviceTypeId) {
-				notPushed = false
-				newLastServed.push(newRecord)
-			} else {
-				newLastServed.push(client.lastServed[i])
-			}
-		}
-	}
-	if (notPushed) newLastServed.push(newRecord)
-	client.lastServed = newLastServed
-	return dbSaveCurrentClient(client)
-};
+// MOVED TO REACT Services.js
+// function dbSaveLastServed(serviceTypeId, serviceCategory, itemsServed, isUSDA){
+// 	let serviceDateTime = moment().format(dateTime)
+// 	let newRecord = {serviceTypeId, serviceDateTime, serviceCategory, itemsServed, isUSDA}
+// 	let newLastServed = []
+// 	let notPushed = true
+// 	if (client.lastServed.length > 0) {
+// 		for (var i = 0; i < client.lastServed.length; i++) {
+// 			if (serviceTypeId == client.lastServed[i].serviceTypeId) {
+// 				notPushed = false
+// 				newLastServed.push(newRecord)
+// 			} else {
+// 				newLastServed.push(client.lastServed[i])
+// 			}
+// 		}
+// 	}
+// 	if (notPushed) newLastServed.push(newRecord)
+// 	client.lastServed = newLastServed
+// 	return dbSaveCurrentClient(client)
+// };
 
 function dbSaveUser(context){
 	// TODO Add uiResetUserForm functionality
@@ -4179,30 +4180,30 @@ function utilSetLastServedFood(){
 	client.lastServedFoodDateTime = lastServedFoodDateTime
 };
 
-function utilCalcLastServedDays() {   // TODO DELETE AFTER SERVICE PAGE IS REACTED
-	// get Last Served Date from client object & calculate number of days
-	let lastServed = {daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000}
-	if (client.lastServed[0] == undefined) return lastServed
-	let lastServedFood = client.lastServed.filter(obj => obj.serviceCategory == "Food_Pantry")
+// function utilCalcLastServedDays() {   // TODO DELETE AFTER SERVICE PAGE IS REACTED
+// 	// get Last Served Date from client object & calculate number of days
+// 	let lastServed = {daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000}
+// 	if (client.lastServed[0] == undefined) return lastServed
+// 	let lastServedFood = client.lastServed.filter(obj => obj.serviceCategory == "Food_Pantry")
 
-	for (var i = 0; i < lastServedFood.length; i++) {
-		if (lastServedFood[i].isUSDA != "Emergency") {
-			let lastServedDay = moment(lastServedFood[i].serviceDateTime).startOf('day')
-			if (lastServedFood[i].isUSDA == "USDA") {
-				lastServed.daysUSDA = moment().diff(lastServedDay, 'days')
-			} else {
-				lastServed.daysNonUSDA = moment().diff(lastServedDay, 'days')
-			}
-		}
-	}
-	lastServed.lowestDays = lastServed.daysUSDA
-	if (lastServed.daysNonUSDA < lastServed.daysUSDA) lastServed.lowestDays = lastServed.daysNonUSDA
-	let lastServedBackToSchool = client.lastServed.filter(obj => obj.serviceCategory == "Back_To_School")
-	if (lastServedBackToSchool.length > 0) {
-		lastServed.backToSchool = moment(lastServedBackToSchool[0].serviceDateTime).startOf('day')
-	}
-	return lastServed
-};
+// 	for (var i = 0; i < lastServedFood.length; i++) {
+// 		if (lastServedFood[i].isUSDA != "Emergency") {
+// 			let lastServedDay = moment(lastServedFood[i].serviceDateTime).startOf('day')
+// 			if (lastServedFood[i].isUSDA == "USDA") {
+// 				lastServed.daysUSDA = moment().diff(lastServedDay, 'days')
+// 			} else {
+// 				lastServed.daysNonUSDA = moment().diff(lastServedDay, 'days')
+// 			}
+// 		}
+// 	}
+// 	lastServed.lowestDays = lastServed.daysUSDA
+// 	if (lastServed.daysNonUSDA < lastServed.daysUSDA) lastServed.lowestDays = lastServed.daysNonUSDA
+// 	let lastServedBackToSchool = client.lastServed.filter(obj => obj.serviceCategory == "Back_To_School")
+// 	if (lastServedBackToSchool.length > 0) {
+// 		lastServed.backToSchool = moment(lastServedBackToSchool[0].serviceDateTime).startOf('day')
+// 	}
+// 	return lastServed
+// };
 
 // MOVED TO REACT JS -- Clients/ClientUtils.js
 // function utilCalcTargetServices(activeServiceTypes) { // TODO DELETE AFTER MOVING ALL UTILS TO REACT

@@ -35,7 +35,7 @@ export function updateLastServed(client){
         .catch( () => {} );
 }
 
-export function saveHistoryForm(editRecord, formValues, client, userName){
+export async function saveHistoryFormAsync(editRecord, formValues, client, userName){
     const oldServiceId = editRecord.serviceId
     Object.assign(editRecord, formValues)
     const serviceType = getSvcTypes().filter(item => item.serviceName == editRecord.serviceName)[0]
@@ -48,27 +48,20 @@ export function saveHistoryForm(editRecord, formValues, client, userName){
     editRecord.updatedDateTime = utilNow()
     editRecord.serviceId = cuid()
     
-    dbSaveServiceRecordAsync(editRecord)
-        .then( () => {
-            console.log("saveHistoryForm = success!");
-            utilRemoveService(oldServiceId);
-        })
-        .catch( message => {
-            console.log("saveHistoryForm = error: " + message);
-        });
+    return await dbSaveServiceRecordAsync(editRecord)
+        // .then( () => {
+        //     utilRemoveService(oldServiceId);
+        // })
 }
 
-export function utilRemoveService(serviceId){
-	dbGetServiceAsync(serviceId)
-        .then( serviceArray => {
+export async function utilRemoveServiceAsync(serviceId){
+	return await dbGetServiceAsync(serviceId)
+        .then( async (serviceArray) => {
             let service = serviceArray[0]
             service.serviceValid = false
-            dbSaveServiceRecordAsync(service)
-                .then( () => {
-                    console.log("utilRemoveService = success!");
-                })
-                .catch( message => {
-                    console.log("utilRemoveService = error: " + message);
-                });
-        });
+            return await dbSaveServiceRecordAsync(service)
+                // .then( () => {
+                //     console.log("utilRemoveService = success!");
+                // })
+        })
 }

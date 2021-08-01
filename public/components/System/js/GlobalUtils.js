@@ -2,8 +2,8 @@
 //****** GLOBAL UTILITIES JAVASCRIPT FUNCTIONS *****
 //**************************************************
 
-//import { dbGetSvcTypes, dbGetSettings } from "./Database";
 import moment from "moment";
+import { SettingsSound } from './Database';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -22,7 +22,7 @@ export function utilStringToArray(str){
 	if (str !== "{}" && str !== "*EMPTY*") {
 		str = str.replace(/=/g, '":"').replace(/\{/g, '{"').replace(/\}/g, '"}').replace(/, /g, '", "')
 		// split the string if there are nested faux objects
-		let stringArr = str.split(/\"\{|\}\"/g)
+		let stringArr = str.split(/"\{|\}"/g)
 		let newStr = ""
 		if (stringArr.length > 1) {
 			for (var i = 0; i < stringArr.length; i++) {
@@ -64,6 +64,28 @@ export function utilArrayToObject(arr) {
 	}, {});
 }
 
+// Not used - An array value POSTed with the previous function is saved in
+// the database with a format like the output of this function.
+export function utilArrayToString(arr) {
+	let i = 0;
+    let withIndex = arr.map(elem => {
+        if (Array.isArray(elem))
+            elem = utilArrayToString(elem);
+        return (i++).toString() + '=' + elem;
+    });
+    return '{' + withIndex.join(', ') + '}'
+}
+
+// Return the ordinal string for a number.
+// Not sure who is the original author of this clever implementation, but 
+// see https://leancrew.com/all-this/2020/06/ordinal-numerals-and-javascript/
+// for an explanation of the special cases it handles and how it works.
+export function utilOrdinal(n) {
+    var s = ["th", "st", "nd", "rd"];
+    var v = n % 100;
+    return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+
 // Date/Schedule Functions
 
 export function dateFindOpen(at) {
@@ -79,6 +101,7 @@ export function dateFindOpen(at) {
 	}
 	// Select the first open date after target
 	proposed = moment(targetDate).add(1, 'days');
+	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		if (dateIsClosed(schedule, proposed)) {
 			proposed.add(1, 'days');
@@ -155,13 +178,13 @@ export function utilCleanUpDate(a) {
 	return date
 }
 
-export function utilChangeWordCase(str){
+export function utilChangeWordCase(str) {
 	str = str.replace(/[^\s]+/g, function(word) {
-	  return word.replace(/^./, function(first) {
-	    return first.toUpperCase();
-	  });
+        return word.replace(/^./, function(first) {
+            return first.toUpperCase();
+        });
 	});
-	return str
+	return str;
 }
 
 export function utilRemoveDupClients(clients) {
@@ -174,4 +197,25 @@ export function utilRemoveDupClients(clients) {
 		}
 	}
 	return undupClients
+}
+
+// Sound effects
+
+export function beepError() {
+    playSound("public/sounds/beep.wav");
+}
+
+export function beepSuccess() {
+	playSound("public/sounds/bloop.wav")
+}
+
+//**** JAVASCRIPT FUNCTIONS FOR USE WITH EXPORTABLE FUNCTIONS ****
+
+function playSound(soundFile) {
+    if (SettingsSound()) {
+		let sound  = new Audio(soundFile);
+		sound.volume= 0.1;
+		sound.loop = false;
+		sound.play();
+	}
 }

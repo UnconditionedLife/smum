@@ -1,78 +1,93 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Popper, Dialog, DialogTitle, List, ListItem } from '@material-ui/core';
-import { Card, Typography } from '../../System';
 import moment from 'moment-timezone';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import rrulePlugin from '@fullcalendar/rrule';
 import interactionPlugin from "@fullcalendar/interaction";
-import { findRule, loadRules, toCalendar } from '../../System/js/Calendar';
+import { utilOrdinal } from '../../System/js/GlobalUtils';
+import { calAddSingleRule, calAddMonthlyRule, calAddWeeklyRule, calConvertWeekday, 
+    calDeleteSingleRule, calDeleteWeeklyRule, calDeleteMonthlyRule, calToEvents, calFindRule } from '../../System/js/Calendar';
 
-// const events = [
-//     {
-//         // id: '1',
-//         title: 'Closed',
-//         rrule: {
-//             dtstart: '2021-02-01',
-//             freq: 'daily',
-//             count: 1,
-//         }    
-//     },
-//     {
-//         // id: '2',
-//         title: 'Closed',
-//         rrule: {
-//             freq: 'weekly',
-//             interval: 1,
-//             byweekday: ['we'],
-//         }
-//     },
-// ];
-
-function onEventClick(e) {
-    alert('Event ' + JSON.stringify(e.event));
+SettingsSched.propTypes = {
+    rules: PropTypes.object.isRequired,
+    onUpdate: PropTypes.func.isRequired,
 }
 
-
 export default function SettingsSched(props) {
-    const [hover, setHover] = React.useState({el: null, event: null});
-    const [foo, setAnchor] = React.useState(null);
+    // const [hover, setHover] = React.useState({el: null, event: null});
+    // const [foo, setAnchor] = React.useState(null);
     const [editDate, setEditDate] = React.useState(null);
-    const [rules, setRules] = React.useState(loadRules());
+    const [editEvent, setEditEvent] = React.useState(null);
+    const rules = props.rules;
+    const onUpdate = props.onUpdate;
 
-    function DateEdit(props) {
-        const open = Boolean(props.date);
+    EventEdit.propTypes = {
+        event: PropTypes.object
+    }
+
+    function EventEdit(props) {
+        const open = Boolean(props.event);
     
-        function finish() {
-            props.onClose();
+        function finish(modified=false) {
+            if (modified)
+                onUpdate(rules);
+            setEditEvent(null);
         }
     
         if (open) {
-            let status = 'Open';
-            const m = moment(props.date).tz('UTC');
+            const date = new Date(props.event.start);
+            let status = props.event.extendedProps.type;
+            let title;
+            const m = moment(date).tz('UTC');
             const fullDate = m.format('MMMM Do');
-            const weekday = m.format('dddd');
-            const rule = findRule(rules, props.date);
-            console.log(rule);
-            if (rule && rule.options.byweekday == null)
-                status = 'Closed Single Day';
-            else if (rule && rule.options.byweekday)
-                status = 'Closed Weekly';
-        
+            const weekdayName = m.format('dddd');
+            const weekNum = Math.floor((m.date()+6)/7);
+            const weekOrdinal = utilOrdinal(weekNum);
+
+            let rule = null;
+            if (status == 'monthly') {
+                title = `Closed ${weekOrdinal} ${weekdayName} Each Month`;
+                rule = calFindRule(rules.calMonthly, date);
+            }
+            else if (status == 'weekly') {
+                title = `Closed Every ${weekdayName}`;
+                rule = calFindRule(rules.calWeekly, date);
+            }
+            else {
+                title = 'Closed Single Day';
+                rule = calFindRule(rules.calDaily, date);
+            }
+            if (!rule) {
+                alert('Rule not found!');
+                return;
+            }
+
             return (
-                <Dialog open={ Boolean(props.date) } onClose={ props.onClose }>
-                    <DialogTitle>{ fullDate }: { status }</DialogTitle>
-                    {status == 'Open' && <List>
-                        <ListItem onClick={finish}>Close { fullDate } only</ListItem>
-                        <ListItem onClick={finish}>Close every { weekday }</ListItem>
-                        <ListItem onClick={finish}>Close nth { weekday } of each month</ListItem>
+                // <Dialog open={ Boolean(props.date) } onClose={ () => finish()) }>
+                <Dialog open={ true } onClose={ () => finish(false) }>
+                    <DialogTitle>{ fullDate }: { title }</DialogTitle>
+                    {status == 'single' && <List>
+                        <ListItem onClick={ () => { calDeleteSingleRule(rules, rule); finish(true); }} >
+                            Open { fullDate }
+                        </ListItem>
                     </List>}
-                    {status == 'Closed Single Day' && <List>
-                        <ListItem onClick={finish}>Open { fullDate }</ListItem>
+                    {status == 'weekly' && <List>
+                        <ListItem>
+                            Open { fullDate } only
+                        </ListItem>
+                        <ListItem onClick={ () => { calDeleteWeeklyRule(rules, rule); finish(true); }} >
+                            Remove weekly rule
+                        </ListItem>
                     </List>}
-                    {status == 'Closed Weekly' && <List>
-                        <ListItem onClick={finish}>Open { fullDate } only</ListItem>
-                        <ListItem onClick={finish}>Remove weekly rule</ListItem>
+                    {status == 'monthly' && <List>
+                        <ListItem>
+                            Open { fullDate } only
+                        </ListItem>
+                        <ListItem onClick={ () => { calDeleteMonthlyRule(rules, rule); finish(true); }} >
+                            Remove weekly rule
+                        </ListItem>
                     </List>}
                 </Dialog>
             );
@@ -81,35 +96,67 @@ export default function SettingsSched(props) {
             return (<></>);
     }
     
-    function hoverStart(info) {
-        console.log(info.jsEvent)
-        setHover({el: info.jsEvent.relatedTarget, event: info.event});
-        setAnchor(info.el);
-    }
+    function DateEdit(props) {
+        const open = Boolean(props.date);
     
-    function hoverStop(info) {
-        console.log('Stop')
-        setHover({el: null, event: null});
-        setAnchor(null);
+        function finish(modified=false) {
+            if (modified)
+                onUpdate(rules);
+            setEditDate(null);
+        }
+    
+        if (open) {
+            const m = moment(props.date).tz('UTC');
+            const fullDate = m.format('MMMM Do');
+            const weekday = calConvertWeekday(m.day());
+            const weekdayName = m.format('dddd');
+            const weekNum = Math.floor((m.date()+6)/7);
+            const weekOrdinal = utilOrdinal(weekNum);
+        
+            return (
+                <Dialog open={ true } onClose={ () => finish(false) }>
+                    <DialogTitle>{ fullDate }: Add Closure Event</DialogTitle>
+                    <List>
+                        <ListItem onClick={ () => { calAddSingleRule(rules, props.date); finish(true); }} >
+                            Close { fullDate } only
+                        </ListItem>
+                        <ListItem onClick={ () => { calAddWeeklyRule(rules, weekday); finish(true); }} >
+                            Close every { weekdayName }
+                        </ListItem>
+                        <ListItem onClick={ () => { calAddMonthlyRule(rules, weekday, weekNum); finish(true); }} >
+                            Close { weekOrdinal } { weekdayName } of each month
+                        </ListItem>
+                    </List>
+                </Dialog>
+            );
+        }
+        else
+            return (<></>);
     }
 
+    DateEdit.propTypes = {
+        date: PropTypes.object,
+    };
+
+    
+    // function hoverStart(info) {
+    //     console.log(info.jsEvent)
+    //     setHover({el: info.jsEvent.relatedTarget, event: info.event});
+    //     setAnchor(info.el);
+    // }
+    
+    // function hoverStop(info) {
+    //     console.log('Stop')
+    //     setHover({el: null, event: null});
+    //     setAnchor(null);
+    // }
+
     function doEdit(info) {
-        console.log('Clicked on ' + info.date)
         setEditDate(info.date)
     }
 
-    function SchedDebug(props) {
-        const d1 = new Date('2021-02-10')
-        const d2 = new Date('2021-02-11')
-        return (<div>
-            <pre>
-                Weekly rule
-                { JSON.stringify(rules[1].all(), undefined, 4) }
-                Between
-                { d1.toString() } and {d2.toString()}
-                { JSON.stringify(rules[1].between(d1, d1, true), undefined, 4) }
-            </pre>
-        </div>);
+    function onEventClick(e) {
+        setEditEvent(e.event);
     }
 
     return (
@@ -119,23 +166,19 @@ export default function SettingsSched(props) {
                     <pre>{JSON.stringify(hover.event, 4, undefined)}</pre>
                 </Card>
             </Popper> */}
-            {/* <SchedDebug/> */}
-            <DateEdit date={ editDate } onClose={ () => setEditDate(null) }/>
             <FullCalendar
                 plugins={[ dayGridPlugin, rrulePlugin, interactionPlugin ]}
                 initialView="dayGridMonth"
-                editable={true}
-                selectable={true}
-                selectMirror={true}
                 dayMaxEvents={true}
                 weekends={true}
+                fixedWeekCount={false}
                 timeZone="UTC"
-                events={ toCalendar(rules) }
+                events={ calToEvents(rules) }
                 dateClick={ doEdit }
                 eventClick={ onEventClick }
-                eventMouseEnter={ hoverStart }
-                eventMouseLeave={ hoverStop }
             />
+            <DateEdit date={ editDate } />
+            <EventEdit event={ editEvent } />
         </>
     );
 }

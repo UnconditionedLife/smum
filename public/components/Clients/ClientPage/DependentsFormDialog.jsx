@@ -18,37 +18,12 @@ DependentsFormDialog.propTypes = {
 
 export default function DependentsFormDialog(props) {
     const [ dialogOpen, setDialogOpen ] = useState(true);
-    // const [ saveMessage, setSaveMessage ] = useState({})
 
-    // if (isEmpty(saveMessage)) updateMessage("info", 
-    //     "Saved " + moment(props.client.updatedDateTime).fromNow(), 
-    //     moment(props.client.updatedDateTime).format("MMM DD, YYYY h:mma")
-    // )
-
-    // function updateMessage(severity, text, tooltip){
-    //     setSaveMessage({ severity: severity, text: text, tooltip: tooltip }) // severity: error, warning, info, success
-    // }
 
     function handleDialog(state){
         if (dialogOpen !== state) setDialogOpen(state)
     }
 
-    const initValues = props.editRecord
-    const { handleSubmit, reset, control, errors, setError, formState } = useForm({
-        mode: 'onBlur',
-        defaultValues: initValues, 
-    })
-
-    function doSave(values) {
-        // Overwrite data structure with form values
-        let data = Object.assign({}, props.client);
-        const index = data.dependents.map(function(e) { return e.depId; }).indexOf(props.editRecord.depId);
-        Object.assign(data.dependents[index], values);
-        props.saveAndUpdateClient(data)
-        reset(values);
-    }
-
-    const submitForm = handleSubmit(doSave);
 
     return (
         <Dialog open={ dialogOpen } aria-labelledby="form-dialog-title"> 

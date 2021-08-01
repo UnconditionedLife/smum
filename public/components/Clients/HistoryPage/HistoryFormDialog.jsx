@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
 import { isEmpty } from '../../System/js/GlobalUtils';
-import { getSvcTypes, getSession } from '../../System/js/Database';
+import { getSvcTypes, getSession, globalMsgFunc } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { saveHistoryForm } from '../../System/js/Clients/History';
+import { saveHistoryFormAsync, utilRemoveServiceAsync } from '../../System/js/Clients/History';
 
 HistoryFormDialog.propTypes = {
     client: PropTypes.object.isRequired,                // current client
@@ -41,30 +41,36 @@ export default function HistoryFormDialog(props) {
     })
 
     function doSave(formValues) {
-        // XXX - saveHistoryForm() does not return anything!
-        const newService = saveHistoryForm(props.editRecord, formValues, props.client, userName)
-        startMessageTimer(true)
-        if (!isEmpty(newService)) {
-            setMessage({text: 'History record was saved!', severity: 'success'})
-        } else {
-            setMessage({text: 'Error while saving - try again!!', severity: 'error'})
-        }
+        saveHistoryFormAsync(props.editRecord, formValues, props.client, userName)
+            .then( message => {
+                const msg = message ? message : undefined
+                if (msg === undefined) {
+                    globalMsgFunc('success', 'History record was saved!')
+                    utilRemoveServiceAsync(props.editRecord.serviceId)
+                        .then( removeMessage => {
+                            console.log("REMOVED:", removeMessage)
+                            const removeMsg = message ? message : undefined
+                            if (removeMsg === undefined) globalMsgFunc('success', 'Saved and old history record removed!')
+                        })
+                    handleDialog(false)
+                }
+            }) 
     }
 
-    function startMessageTimer(boo){
-        if (boo === false) {
-            if (message.severity === 'success') {
-                // props.handleClientHistory()
-                handleDialog(false)
-                props.handleEditMode('cancel')
-            }
-            clearTimeout(delayInt)
-        } else {
-            delayInt = setTimeout(function(){
-                startMessageTimer(false)
-            }, 1200)
-        }
-    }
+    // function startMessageTimer(boo){
+    //     if (boo === false) {
+    //         if (message.severity === 'success') {
+    //             // props.handleClientHistory()
+    //             handleDialog(false)
+    //             props.handleEditMode('cancel')
+    //         }
+    //         clearTimeout(delayInt)
+    //     } else {
+    //         delayInt = setTimeout(function(){
+    //             startMessageTimer(false)
+    //         }, 1200)
+    //     }
+    // }
 
     const submitForm = handleSubmit(doSave);
 

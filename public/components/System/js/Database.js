@@ -3,6 +3,7 @@
 //************************************************
 
 import moment from 'moment';
+import { calConvertLegacyEvents } from './Calendar';
 import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray } from './GlobalUtils';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
@@ -17,10 +18,7 @@ let cachedSettings = null;
 let cachedSvcTypes = []
 const MAX_ID_DIGITS = 5
 
-let globalMsgFunc = null;
-
-console.log(globalMsgFunc)
-
+export let globalMsgFunc = null;
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -32,6 +30,13 @@ export function showCache() {
     console.log('DB URL: ' + dbUrl);
     console.log('Service Types: ');
     console.log(cachedSvcTypes);
+}
+
+//**************** GLOBAL MESSAGE *****************
+//*************************************************
+
+export function setGlobalMsgFunc(callback) {
+    globalMsgFunc = callback
 }
 
 //******************* SESSION ********************
@@ -62,41 +67,26 @@ export function getSession(){
 export async function dbGetSettingsAsync() {
     return await dbGetDataAsync("/settings")
         .then( settings => {
-            // console.log('Get Settings:')
-            // console.log(JSON.stringify(settings, undefined, 4));
-
             const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
             fields.forEach(x => {
                 settings[x] = utilStringToArray(settings[x]);
             });
-
-            // console.log('Canonicalized:')
-            // console.log(JSON.stringify(settings, undefined, 4));
+            if (!(settings.calDaily || settings.calWeekly || settings.calMonthly))
+                Object.assign(settings, calConvertLegacyEvents(settings));
 
             cachedSettings = settings;
             return settings;
-        })
+        });
 }
 
 export async function dbSaveSettingsAsync(settings) {
-    // console.log('Save Settings:')
-    // console.log(JSON.stringify(settings, undefined, 4));
+    let data = { ... settings };
+    const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+    fields.forEach(x => {
+        data[x] = utilArrayToObject(data[x]);
+    });
 
-    // let data = { ... settings };
-    // const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
-    // fields.forEach(x => {
-    //     data[x] = utilArrayToObject(data[x]);
-    // });
-
-    // console.log('Canonicalized:')
-    // console.log(JSON.stringify(data, undefined, 4));
-    // let str = utilArrayToObject(settings.serviceZip);
-    // console.log('After conversion');
-    // console.log(str);
-    // let arr = utilStringToArray(str);
-    // console.log(utilStringToArray(str));
-
-    return await simulatedSave(50)
+    return await dbPostDataAsync('/settings/', data)
         .then( () => {
             cachedSettings = settings;
         });
@@ -193,18 +183,7 @@ export async function dbSearchClientsAsync(searchTerm) {
     )
 }
 
-//**************** GLOBAL MESSAGE *****************
-//*************************************************
-
-export function setGlobalMsgFunc(callback) {
-    globalMsgFunc = callback
-}
-
-
 async function dbGetClientsAsync(searchTerm, slashCount){
-    
-    globalMsgFunc("error", "HELLO WORLD!!")
-
 	let clientData = []
 	if (slashCount == 2){
 		searchTerm = utilCleanUpDate(searchTerm)
@@ -301,7 +280,7 @@ export async function dbSaveClientAsync(data) {
 }
 
 export async function dbSaveServiceRecordAsync(service) {
-	return await dbPostDataAsync("/clients/services", service);
+	return await dbPostDataAsync("/clients/services", service)
 }
 
 async function dbGetDaysSvcsAsync(dayDate){
@@ -330,6 +309,38 @@ export async function dbGetSvcsInMonthAsync(monthYear){
 
 export async function dbGetServiceAsync(serviceId){
 	return await dbGetDataAsync("/clients/services/byid/" + serviceId).then( data => { return data.services})
+}
+
+export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCategory, itemsServed, isUSDA){
+	const serviceDateTime = moment().format('YYYY-MM-DDTHH:mm')
+    const newClient = Object.assign({}, client)
+	const newRecord = { serviceTypeId, serviceDateTime, serviceCategory, itemsServed, isUSDA }
+	const newLastServed = []
+	let notPushed = true
+	if (newClient.lastServed) {
+		newClient.lastServed.forEach((svcRecord) => {
+            if (serviceTypeId == svcRecord.serviceTypeId) {
+				notPushed = false
+				newLastServed.push(newRecord)
+			} else {
+				newLastServed.push(svcRecord)
+			}
+        })
+	}
+	if (notPushed) newLastServed.push(newRecord)
+	newClient.lastServed = newLastServed
+	dbSaveClient(newClient, callback)
+}
+
+//******************* REPORTS *********************
+//*************************************************
+
+export async function dbGetEthnicGroupCountAsync(ethnicGroup){
+
+    console.log("CACHED SESSION", cachedSession)
+
+    return await dbGetDataAsync("/clients/ethnicgroup/" + ethnicGroup)
+        .then( data => { return data.count})
 }
 
 // NOT CURRENTLY BEING CALLED
@@ -411,14 +422,28 @@ async function dbPostDataAsync(subUrl, data) {
     })
     .then(response => {
         if (response.ok) {
-            return Promise.resolve();
+            if ( response.json().Message ) {
+                return Promise.resolve(response.json().Message);
+            } else {
+                return Promise.resolve(response.json());
+            }
         } else {
             const message = httpMessage(response.status);
             return Promise.reject(message);
         }
     })
+    // .then(result => {
+    //     if (result.Message) {
+    //         const msg = dbErrors(result.Message)
+    //         console.error("DynamoDB Error", msg)
+    //         console.log("Raw Error", result.Message)
+    //         return Promise.reject(msg);
+    //     }
+    // })
     .catch((error) => {
         console.error('dbPostData Error:', error);
+        globalMsgFunc('error', error) 
+        //globalMsgFunc('error', 'Error while saving - try again!!') 
         return Promise.reject(error);
     })
 }
@@ -441,11 +466,13 @@ async function dbGetDataAsync(subUrl) {
     })
     .catch((error) => {
         console.error('dbGetData Error:', error);
+        globalMsgFunc('error', 'Error while loading - try again!!') 
         Promise.reject(error);
     })
 }
 
 // Return success with prob% probability
+// eslint-disable-next-line no-unused-vars
 async function simulatedSave(prob) {
     if (Math.random() * 100 > prob)
         return Promise.reject('Simulated error');
