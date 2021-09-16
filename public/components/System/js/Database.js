@@ -162,7 +162,7 @@ export async function dbGetAllUsersAsync() {
 }
 
 export async function dbSaveUserAsync(data) { 
-    return await dbPostDataAsync('/users/', data)
+    return await dbPostDataAsync('/users/', data);
 }
 
 //******************** CLIENTS ********************
@@ -422,29 +422,22 @@ async function dbPostDataAsync(subUrl, data) {
     })
     .then(response => {
         if (response.ok) {
-            if ( response.json().Message ) {
-                return Promise.resolve(response.json().Message);
+            let json = response.json();
+            if ( json.Message ) {
+                console.log('Caught an error')
+                return Promise.reject(json.Message);
             } else {
-                return Promise.resolve(response.json());
+                return Promise.resolve(json);
             }
         } else {
             const message = httpMessage(response.status);
             return Promise.reject(message);
         }
     })
-    // .then(result => {
-    //     if (result.Message) {
-    //         const msg = dbErrors(result.Message)
-    //         console.error("DynamoDB Error", msg)
-    //         console.log("Raw Error", result.Message)
-    //         return Promise.reject(msg);
-    //     }
-    // })
     .catch((error) => {
-        console.error('dbPostData Error:', error);
-        globalMsgFunc('error', error) 
-        //globalMsgFunc('error', 'Error while saving - try again!!') 
-        return Promise.reject(error);
+        console.error('dbPostData Error: ' + JSON.stringify(error));
+        globalMsgFunc('error', 'Database Failure') 
+        return Promise.reject('Save Failed');
     })
 }
 
