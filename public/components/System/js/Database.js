@@ -422,16 +422,17 @@ async function dbPostDataAsync(subUrl, data) {
     })
     .then(response => {
         if (response.ok) {
-            let json = response.json();
-            if ( json.Message ) {
-                console.log('Caught an error')
-                return Promise.reject(json.Message);
-            } else {
-                return Promise.resolve(json);
-            }
+            return response.json();
         } else {
             const message = httpMessage(response.status);
             return Promise.reject(message);
+        }
+    })
+    .then(json => {
+        if ( json.message ) {
+            return Promise.reject(json.message);
+        } else {
+            return Promise.resolve(json);
         }
     })
     .catch((error) => {

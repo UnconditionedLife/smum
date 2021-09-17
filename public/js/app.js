@@ -78,10 +78,11 @@ $(document.body).on('focusout','.userForm',function(){utilValidateField($(this).
 $(document.body).on('focusout','.serviceTypeForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
 $(document.body).on('focusout','.passwordForm',function(){utilValidateField($(this).attr("id"), $(this).attr("class"))})
 
-$(document).ready(function(){
-	uiShowServicesDateTime()
-  setInterval(uiShowServicesDateTime, 10000)
-})
+// REMOVED IN REACT
+// $(document).ready(function(){
+// 	uiShowServicesDateTime()
+//   setInterval(uiShowServicesDateTime, 10000)
+// })
 
 // **********************************************************************************************************
 // ********************************************** NAV FUNCTIONS *********************************************
