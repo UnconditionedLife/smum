@@ -15,60 +15,61 @@ class ClientInfoSheet extends React.PureComponent {
         return (
             <Box m={2}>
                 <Typography variant="h2" align="center">Santa Maria Urban Ministry</Typography>
-                <Typography>
-                    <table width="100%">
+                
+                <table width="100%">
                     <tbody>
                         <tr>
-                            <td><b>Name:</b> {client.givenName + " " + client.familyName}</td>
-                            <td><b>Client ID:</b> {client.clientId}</td>
+                            <td><Typography><b>Name:</b> {client.givenName + " " + client.familyName}</Typography></td>
+                            <td><Typography><b>Client ID:</b> {client.clientId}</Typography></td>
                         </tr>                       
                         <tr>
-                            <td><b>Date of Birth:</b> {client.dob} </td>
+                            <td><Typography><b>Date of Birth:</b> {client.dob}</Typography> </td>
                         </tr>
                         <tr>
                             <td>
+                            <Typography>
                                 <b>Address:</b><br/>
                                 {(client.homeless == 'YES') ? '(Homeless)' : ''} {client.street}<br/>
                                 {client.city}, {client.state} {client.zipcode+client.zipSuffix}
+                                </Typography>
                             </td>
                         </tr>
                         <tr>
-                            <td><b>Email:</b> { client.email }</td>
-                            <td><b>Telephone:</b> { client.telephone }</td>
+                            <td><Typography><b>Email:</b> { client.email }</Typography></td>
+                            <td><Typography><b>Telephone:</b> { client.telephone }</Typography></td>
                         </tr>
                         <tr>
-                            <td><b>Ethnicity:</b> {client.ethnicGroup} </td>
+                            <td><Typography><b>Ethnicity:</b> {client.ethnicGroup} </Typography></td>
                         </tr>
                     </tbody>
-                    </table>
-                </Typography>
-
+                </table>
                 <Typography><b>Family Members</b></Typography>
-                <Typography>
-                    <table width="100%">
-                    <thead>
-                        <tr>
-                            <th align="left">Name</th>
-                            <th align="left">Relationship</th>
-                            <th align="left">Gender</th>
-                            <th align="left">Birthdate</th>
-                            <th align="left">Age</th>
-                            <th align="left">Grade</th>
+                
+                <table width="100%">
+                <thead>
+                    <tr>
+                        <th align="left"><Typography>Name</Typography></th>
+                        <th align="left"><Typography>Relationship</Typography></th>
+                        <th align="left"><Typography>Gender</Typography></th>
+                        <th align="left"><Typography>Birthdate</Typography></th>
+                        <th align="left"><Typography>Age</Typography></th>
+                        <th align="left"><Typography>Grade</Typography></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {(client?.dependents ?? []).map((row) => (row.isActive == 'Active' ? (
+                        <tr key={ row.depId } >
+                            <td><Typography>{row.givenName} {row.familyName}</Typography></td>
+                            <td><Typography>{row.relationship}</Typography></td>
+                            <td><Typography>{row.gender}</Typography></td>
+                            <td><Typography>{row.dob}</Typography></td>
+                            <td><Typography>{row.age}</Typography></td>
+                            <td><Typography>{row.grade}</Typography></td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {(client?.dependents ?? []).map((row) => (row.isActive == 'Active' ? (
-                            <tr key={ row.depId } >
-                                <td>{row.givenName} {row.familyName}</td>
-                                <td>{row.relationship}</td>
-                                <td>{row.gender}</td>
-                                <td>{row.dob}</td>
-                                <td>{row.age}</td>
-                                <td>{row.grade}</td>
-                            </tr>
-                        ) : null))}
-                    </tbody>
-                    </table>
+                    ) : null))}
+                </tbody>
+                </table>
+                <Typography>
                     <b>Adults:</b> {client?.family?.totalAdults} &nbsp;
                     <b>Children:</b> {client?.family?.totalChildren} &nbsp;
                     <b>Seniors:</b> {client?.family?.totalSeniors} &nbsp;
@@ -76,28 +77,27 @@ class ClientInfoSheet extends React.PureComponent {
                 </Typography>
 
                 <Typography><b>Financial Information</b></Typography>
-                <Typography>
-                    <table>
+                
+                <table>
                     <tbody>
                         <tr>
-                            <td><b>Income:</b></td>
-                            <td>${client?.financials?.income} / month</td>
+                            <td><Typography><b>Income:</b></Typography></td>
+                            <td><Typography>${client?.financials?.income} / month</Typography></td>
                         </tr>
                         <tr>
-                            <td><b>Rent:</b></td>
-                            <td>${client?.financials?.rent} / month</td>
+                            <td><Typography><b>Rent:</b></Typography></td>
+                            <td><Typography>${client?.financials?.rent} / month</Typography></td>
                         </tr>
                         <tr>
-                            <td><b>Food Stamps:</b></td>
-                            <td>${client?.financials?.foodStamps} / month</td>
+                            <td><Typography><b>Food Stamps:</b></Typography></td>
+                            <td><Typography>${client?.financials?.foodStamps} / month</Typography></td>
                         </tr>
                         <tr>
-                            <td><b>Other Assistance:</b></td>
-                            <td>${client?.financials?.govtAssistance} / month</td>
+                            <td><Typography><b>Other Assistance:</b></Typography></td>
+                            <td><Typography>${client?.financials?.govtAssistance} / month</Typography></td>
                         </tr>
                     </tbody>
-                    </table>
-                </Typography>
+                </table>
 
                 <Typography>
                     I certify that the information provided above is accurate and true, and I agree to provide
@@ -108,16 +108,16 @@ class ClientInfoSheet extends React.PureComponent {
                     <i>Yo certifico que toda la información escrita anteriormente es correcta y verdadera y estoy de
                     acuerdo de proveer información adicional cuando sea pedido. Además, estoy de acuerdo con las
                     polizas del Ministerio Urbano de Santa Maria.</i>
-                    <br/><br/><br/>            
+                    <br/><br/><br/>     
+                </Typography>       
                     <table width="100%">
                     <tbody>
                         <tr>
-                            <td>Signature (Firma) ____________________________________</td>
-                            <td>Date (Fecha) {moment().format('YYYY-MM-DD')}</td>
+                            <td><Typography>Signature (Firma) ____________________________________</Typography></td>
+                            <td><Typography>Date (Fecha) {moment().format('YYYY-MM-DD')}</Typography></td>
                         </tr>
                     </tbody>
                     </table>
-                </Typography>
                 <Typography>Last update: {client.updatedDateTime}</Typography>
             </Box>
         );
