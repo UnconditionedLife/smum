@@ -7,6 +7,7 @@ import { calConvertLegacyEvents } from './Calendar';
 import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray } from './GlobalUtils';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
+import { prnConnect } from './Clients/Receipts';
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 
@@ -42,19 +43,27 @@ export function setGlobalMsgFunc(callback) {
 //******************* SESSION ********************
 //************************************************
 
-export function cacheSessionVar(newSession, callback) {
+export function cacheSessionVar(newSession) {
     cachedSession = newSession;
+}
+
+export function initCache() {
+    dbGetSettingsAsync()
+        .then( settings => { 
+            cachedSettings = settings;
+            prnConnect(settings);
+        });
     
-    if (cachedSettings === null) {
-        dbGetSettingsAsync(newSession)
-            .then( settings => { 
-                cachedSettings = settings 
-                if (callback) callback(settings)  // used to call prnConnect after settings have been stored in globalVar
-    })}
-    
-    if (cachedSvcTypes.length === 0) {
-        dbGetSvcTypesAsync(newSession).then( svcTypes => { cachedSvcTypes = svcTypes })
-    }
+    dbGetSvcTypesAsync()
+        .then( svcTypes => { 
+            cachedSvcTypes = svcTypes;
+        });
+}
+
+export function clearCache() {
+    cachedSession = {};
+    cachedSettings = null;
+    cachedSvcTypes = [];
 }
 
 export function getSession(){

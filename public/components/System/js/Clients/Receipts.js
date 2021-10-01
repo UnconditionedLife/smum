@@ -11,12 +11,14 @@ const svcTypes = getSvcTypes()
 
 let ePosDev = new window.epson.ePOSDevice();
 let printer = null;
+let logo;
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
 export function prnConnect(settings) {
-    // TODO UI ALERT CONNECTED TO PRINTER
-    prnDrawCanvas('smum');
+    logo = prnGetLogo();
+
+    console.log('Printer IP', settings.printerIP);
     ePosDev.connect(settings.printerIP, '8008', prnCallback_connect);
 }
 
@@ -102,15 +104,15 @@ export function prnPrintReminderReceipt(client) {
 	// Determine next visit date
 	let targetDate = moment().add(14, 'days');
 	let earliestDate = moment().add(7, 'days');
-	let nextVisit = dateFindOpen({ targetDate: targetDate, eraliestDate: earliestDate, schedule: SettingsSchedule() });
+	let nextVisit = dateFindOpen({ targetDate: targetDate, earliestDate: earliestDate, schedule: SettingsSchedule() });
 	prnStartReceipt();
 	prnServiceHeader(client, 'NEXT VISIT REMINDER');
 	prnFeed(1);
-  prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
-  prnTextLine('**************************************')
-  prnTextLine(' ' + nextVisit.format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
-  prnTextLine('**************************************');
-  prnEndReceipt();
+    prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
+    prnTextLine('**************************************')
+    prnTextLine(' ' + nextVisit.format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
+    prnTextLine('**************************************');
+    prnEndReceipt();
 }
 
 export function prnFlush() {
@@ -120,8 +122,14 @@ export function prnFlush() {
 
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 
+export function prnTest() {
+    prnStartReceipt();
+	prnFeed(2);
+	prnTextLine('* Test Receipt *', 1, 2);
+    prnEndReceipt();
+}
+
 function prnStartReceipt() {
-	let logo = document.getElementById('smum');
 	if (printer) {
 		printer.addTextAlign(printer.ALIGN_CENTER);
 		printer.addTextSmooth(true);
@@ -227,47 +235,54 @@ function prnPickupTimes(fromDateTime, toDateTime) {
 
 // PRINTER FUNCTIONS
 
-function prnCallback_connect(resultConnect){
-    var deviceId = 'local_printer';
-    var options = {'crypto' : false, 'buffer' : false};
-    if ((resultConnect == 'OK') || (resultConnect == 'SSL_CONNECT_OK')) {
-        //Retrieves the Printer object
-        ePosDev.createDevice(deviceId, ePosDev.DEVICE_TYPE_PRINTER, options, prnCallback_createDevice);
-    } else {
-        //Displays error messages
-        // TODO ADD UI ALERT
-        console.log("Error in callback_connect");
- }
-}
-
 function prnGetWindow() {
 	let win = window.open('', 'Receipt Printer', 'width=550,height=1000');
 	win.document.title = 'Receipt Printer';
 	return win;
 }
 
-function prnCallback_createDevice(deviceObj, errorCode){
+function prnCallback_connect(result) {
+    var deviceId = 'local_printer';
+    var options = {'crypto' : false, 'buffer' : false};
+    if ((result == 'OK') || (result == 'SSL_CONNECT_OK')) {
+        // Retrieves the Printer object
+        ePosDev.createDevice(deviceId, ePosDev.DEVICE_TYPE_PRINTER, options, prnCallback_createDevice);
+    } else {
+        // Displays error messages
+        // TODO ADD UI ALERT
+        console.log('Printer connect error', result);
+    }
+}
+
+function prnCallback_createDevice(deviceObj, result) {
     if (deviceObj === null) {
-       //Displays an error message if the system fails to retrieve the Printer object
-        console.log("error in callback_createDevice 1");
+        console.log('Printer create device error', result);
         return;
     }
     printer = deviceObj;
     //Registers the print complete event
-    printer.onreceive = function(response){
-        if (response.success) {
-            console.log("success in callback_createDevice");
-        } else {
-           console.log("error in callback_createDevice 1");
-        }
-    }
+    // printer.onreceive = function(response){
+    //     if (response.success) {
+    //         console.log("success in callback_createDevice");
+    //     } else {
+    //        console.log("error in callback_createDevice 1");
+    //     }
+    // }
 }
 
-function prnDrawCanvas(name) {
-   let canvas = document.getElementById(name);
-   let img = document.getElementById(name + 'img');
-   // img.setAttribute('crossOrigin', 'Anonymous');
-   canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+function prnGetLogo() {
+    // The following works, but only if the image is also included in the HTML.
+    // Therefore, we just refer to the existing DOM node instead.
+    // let img = document.createElement('img');
+    // img.src = '/public/images/receipt-logo.png';
+    // img.setAttribute('crossOrigin', 'Anonymous');
+    let img = document.getElementById('smumlogo');
+
+    let logo = document.createElement('canvas');
+    logo.width = 336;
+    logo.height = 112;
+    logo.getContext('2d').drawImage(img, 0, 0, logo.width, logo.height);
+    return logo;
 }
 
 // Printer testing

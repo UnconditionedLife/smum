@@ -13,8 +13,7 @@ import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
-import { cacheSessionVar, showCache } from '../System/js/Database';
-import { prnConnect } from '../System/js/Clients/Receipts'
+import { cacheSessionVar, clearCache, initCache, showCache } from '../System/js/Database';
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -118,29 +117,30 @@ export default function HeaderBar(props) {
           {user:cookies.user, auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser} : null;
     
     function setSession(newSession) {
-        console.log("Init session")
         if (newSession) {
+            console.log("Init session")
             let decodedTkn = jwt_decode(newSession.auth.accessToken)
             let currTime = new Date()
             window.utilInitAuth(newSession.auth);
             window.utilInitSession(newSession.user, newSession.cogUser);
             // Update Local and Global Session vars
             session = newSession
-            cacheSessionVar(newSession, prnConnect);
+            cacheSessionVar(newSession);
+            initCache();
             setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
             setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
             setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' })
             setCogUser(newSession.cogUser)
-            setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000)
+            setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000);
+            console.log("End")
         } else {
             removeCookie("user", { path: '/' });
             removeCookie("auth", { path: '/' });
             removeCookie("refresh", { path: '/' });
             window.utilInitAuth(null);
             setCogUser(null);
-            cacheSessionVar({});
+            clearCache();
         }
-        console.log("End")
     }
 
     function refreshUserSession() {
