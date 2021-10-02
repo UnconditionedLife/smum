@@ -18,7 +18,7 @@ ClientsMain.propTypes = {
     url: PropTypes.string,
 }
 
-console.log("CLIENTS MAIN")
+// console.log("CLIENTS MAIN")
 
 export default function ClientsMain(props) {
     const searchTerm = props.searchTerm
@@ -69,13 +69,15 @@ export default function ClientsMain(props) {
                 if (moment(lastServed[0].serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')) {
                     // 
                     const svcHistoryToday = client.svcHistory.filter( obj => moment(obj.serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD'))
-                    console.log(svcHistoryToday)
+                    
+console.log("SVC HIST TODAY:", svcHistoryToday)
+
                     // get history and build services rendered array from records that have today's date
 
                 }
             }
         }
-    })
+    }, [client.lastServed])
 
     function changeClientsFound(newValue, shouldUpdateURL) {
         if (clientsFound !== newValue) {

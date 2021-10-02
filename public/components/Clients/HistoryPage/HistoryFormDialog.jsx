@@ -21,8 +21,6 @@ export default function HistoryFormDialog(props) {
     const [ message, setMessage ] = useState(null)
     const userName = getSession().user.userName
 
-    let delayInt
-
     const serviceNames = getSvcTypes()
         .filter(obj => obj.serviceButtons == "Primary")
         .map(obj => obj.serviceName)
@@ -47,8 +45,7 @@ export default function HistoryFormDialog(props) {
                 if (msg === undefined) {
                     globalMsgFunc('success', 'History record was saved!')
                     utilRemoveServiceAsync(props.editRecord.serviceId)
-                        .then( removeMessage => {
-                            console.log("REMOVED:", removeMessage)
+                        .then( message => {
                             const removeMsg = message ? message : undefined
                             if (removeMsg === undefined) globalMsgFunc('success', 'Saved and old history record removed!')
                         })
@@ -56,21 +53,6 @@ export default function HistoryFormDialog(props) {
                 }
             }) 
     }
-
-    // function startMessageTimer(boo){
-    //     if (boo === false) {
-    //         if (message.severity === 'success') {
-    //             // props.handleClientHistory()
-    //             handleDialog(false)
-    //             props.handleEditMode('cancel')
-    //         }
-    //         clearTimeout(delayInt)
-    //     } else {
-    //         delayInt = setTimeout(function(){
-    //             startMessageTimer(false)
-    //         }, 1200)
-    //     }
-    // }
 
     const submitForm = handleSubmit(doSave);
 

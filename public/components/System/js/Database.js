@@ -288,8 +288,8 @@ export async function dbSaveClientAsync(data) {
     return await dbPostDataAsync("/clients/", data)
 }
 
-export async function dbSaveServiceRecordAsync(service) {
-	return await dbPostDataAsync("/clients/services", service)
+export async function dbSaveServiceRecordAsync(svc) {
+	return await dbPostDataAsync("/clients/services", svc)
 }
 
 async function dbGetDaysSvcsAsync(dayDate){
@@ -338,7 +338,10 @@ export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCatego
 	}
 	if (notPushed) newLastServed.push(newRecord)
 	newClient.lastServed = newLastServed
-	dbSaveClient(newClient, callback)
+
+console.log("SAVING CLIENT LASTSERVED")
+
+	dbSaveClientAsync(newClient)
 }
 
 //******************* REPORTS *********************
@@ -421,6 +424,9 @@ function httpMessage(result) {
 }
 
 async function dbPostDataAsync(subUrl, data) {
+
+console.log("POSTING:", data)
+
     return fetch(dbUrl + subUrl, {
         method: 'POST',
         headers: {

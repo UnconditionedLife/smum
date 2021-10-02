@@ -1,11 +1,12 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { Popper, Table, TableBody, TableCell, TableContainer, 
             TableHead, TableRow } from '@material-ui/core';
 import { Card } from '../../System';
 import { HistoryFormDialog, HistoryPopupMenu } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils';
-import { updateLastServed, utilRemoveServiceAsync } from '../../System/js/Clients/History';
+import { getServiceHistoryAsync, updateLastServed, utilRemoveServiceAsync } from '../../System/js/Clients/History';
 import { dbGetClientActiveServiceHistoryAsync } from '../../System/js/Database';
 
 HistoryDisplay.propTypes = {
@@ -22,11 +23,30 @@ export default function HistoryDisplay(props) {
     const [ anchorEl, setAnchorEl ] = useState(null);
     const [ editRecord, setEditRecord ] = useState(null);
     const [ message, setMessage ] = useState({})
-    const [ delay, setDelay ] = useState(false)
+    const [ delay, setDelay ] = useState(false) // NOT SURE IF THIS IS NEEDED
     
-    let delayInt
-    let reloadHistory = false
-    
+    useEffect(() => {
+        if (!isEmpty(client)) {
+            const lastServed = client.lastServed
+            if (lastServed.length > 0) {
+                lastServed.sort((a, b) => moment.utc(b.serviceDateTime).diff(moment.utc(a.serviceDateTime)))
+                // if last service is same day as today - UPDATE HISTORY
+                if (moment(lastServed[0].serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')) {
+                    getServiceHistoryAsync(client.clientId)
+                        .then((currentHistory) => {
+                            const newClient = Object.assign({}, client)
+                            newClient.svcHistory = currentHistory
+                            updateClient(newClient)
+        
+                            //const svcHistoryToday = client.svcHistory.filter( obj => moment(obj.serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD'))
+                            // get history and build services rendered array from records that have today's date
+                        }
+                    )
+                }
+            }
+        }
+    }, [client.lastServed])
+
     function handleSelectedService(event, newServiceId) {
         setSelectedService(newServiceId)
         const record = svcHistory.filter(function( obj ) {
@@ -58,31 +78,38 @@ export default function HistoryDisplay(props) {
                 break;
             case 'confirm':
                 removeService()
-                setEditMode('message')
                 break;
-            case 'message':
-                if (delay === false) {
-                    setEditMode('none')
-                    clearSelection()
-                }
+            case 'message':             
+                setEditMode('none')
+                clearSelection()
+                setDelay(false)
         }
     }
 
     function removeService(){
-        const service = utilRemoveServiceAsync(selectedService)
-        if (service !== ""){
-            handleMessage({ text: "Service successfully removed!", severity: "success" })
-            setDelayTimer(true)
-            reloadHistory = true
-        } else {
-            handleMessage({ text: "Failed to remove service!", severity: "error" })
-        }
+        utilRemoveServiceAsync(selectedService)
+            .then((svcRecord) => {
+
+//console.log("RETURN FROM REMOVE SERVICE")
+                
+                if (svcRecord !== ""){
+                    setDelay(true)
+                    handleMessage({ text: "Service successfully removed!", severity: "success" })
+                    setEditMode('none')
+                    setAnchorEl(null)
+                    updateSvcHistory()
+                    updateLastServed(client)
+                    setEditMode('message')
+                } else {
+                    handleMessage({ text: "Failed to remove service!", severity: "error" })
+                }
+            }
+        )
     }
 
     function handleEditRecord(newRecord){
         setEditRecord(newRecord)
         clearSelection()
-        
     }
 
     function handleMessage(newMessage){
@@ -90,34 +117,41 @@ export default function HistoryDisplay(props) {
     }
 
     function updateSvcHistory(){
-        dbGetClientActiveServiceHistoryAsync(props.client.clientId).then(
-            clientHistory => {
-                const tempClient = Object.create(client)
-                tempClient.svcHistory = clientHistory
-                updateClient(tempClient)
-            }
+        dbGetClientActiveServiceHistoryAsync(client.clientId)
+            .then((clientHistory) => {
+
+// console.log("UPDATING SVC HST IN CLINET OBJ")
+
+                    const tempClient = Object.create(client)
+                    tempClient.svcHistory = clientHistory
+                    updateClient(tempClient)
+                }
         )
     }
 
-    function setDelayTimer(boo){
-        if (boo === false) {
-            if  (reloadHistory) {
-                setEditMode('none')
-                setAnchorEl(null)
-                updateSvcHistory()
-                const result = updateLastServed(client)
-                reloadHistory = false
-                if (result == "failed") return
-            }
-            clearTimeout(delayInt)
-            setDelay(false)
-        } else {
-            delayInt = setTimeout(function(){
-                setDelayTimer(false);
-            }, 1000)
-            setDelay(true)
-        }
-    }
+//  WAS USED PRIOR TO ASYNC FUNCTIONS - NOT SURE IF DELAY NEEDS RO BE PASSED TO CHILD COMPONENT
+//     function setDelayTimer(delay){
+
+// console.log("DELAY HISTORY???")
+
+//         if (!delay) {
+//             if  (reloadHistory) {
+//                 setEditMode('none')
+//                 setAnchorEl(null)
+//                 updateSvcHistory()
+//                 const result = updateLastServed(client)
+//                 setReloadHistory(false)
+//                 if (result === "failed") return
+//             }
+//             clearTimeout(delayInt)
+//             setDelay(false)
+//         } else {
+//             delayInt = setTimeout(function(){
+//                 setDelayTimer(false);
+//             }, 1000)
+//             setDelay(true)
+//         }
+//     }
 
     const menuOpen = Boolean(anchorEl);
     const id = menuOpen ? 'simple-popper' : undefined;
@@ -149,7 +183,7 @@ export default function HistoryDisplay(props) {
                 </TableRow>
             </TableHead>
             <TableBody>
-                <Fragment>
+                <Fragment key={ svcHistory }>
                     { svcHistory.map((row) => (
                         <Fragment key={row.serviceId} >
                             <TableRow 

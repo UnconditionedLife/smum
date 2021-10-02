@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles'
 import { Box, ButtonBase } from '@material-ui/core';
 import { Button, Typography } from '../../System';
-import { getButtonData, addService, getSvcsRendered } from '../../System/js/Clients/Services'
+import { getButtonData, addServiceAsync, getSvcsRendered } from '../../System/js/Clients/Services'
+import { getServiceHistoryAsync } from '../../System/js/Clients/History';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
-import moment from 'moment';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -107,13 +107,13 @@ export default function PrimaryButtons(props) {
 
     useEffect(() => {
         if (buttonData.primary !== undefined) {
-            let buts = []
-            if (buttonData.primary == "-1") { // dependents grades requirement
+            let btns = []
+            if (buttonData.primary === "-1") { // dependents grades requirement === -1
                 // TODO TURN THIS INTO SERVICE TYPE
                 let btnClass = "btnAlert"
-                buts += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
+                btns += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
             } else {
-            buttonData.primary.forEach((svcIndex) => {
+                buttonData.primary.forEach((svcIndex) => {
                     const theButton = buttonData.activeServiceTypes[svcIndex]
                     const svcCategory = theButton.serviceCategory
                     theButton.btnType = "normal"
@@ -123,20 +123,34 @@ export default function PrimaryButtons(props) {
                     
                     // handleButtonState(buttonData.activeServiceTypes[x].serviceTypeId, false)
                 
-                    if ((svcsRendered.length !== 0) && (svcsRendered !== undefined)) {
-                        svcsRendered.forEach((obj) => { 
+                    console.log("SVCS Rendered", svcsRendered)
 
+                    // WAS USED FOR 24 HOUR UNDO - NOT IMPLEMENTED IN React-v1
+                    // if ((svcsRendered.length !== 0) && (svcsRendered !== undefined)) {
+                    //     svcsRendered.forEach((svcObj) => { 
 
-                            console.log("SERVED", obj)
+                    //         console.log("Service", svcObj)
+                    //         console.log("Button", theButton)
 
-                            if (obj.serviceTypeId === theButton.serviceTypeId) {
-                                theButton.btnType = "undo"
-                            }
-                        })
-                    }
-                    buts.push(theButton)
+                    //         if (theButton.serviceCategory === "Food_Pantry"
+                    //             && svcObj.serviceCategory === "Food_Pantry" ) {
+
+                    //             theButton.btnType = "undo"
+
+                    //         } else {
+                                
+                    //             if (svcObj.serviceTypeId === theButton.serviceTypeId) {
+
+                    //                 console.log("DONE TODAY")
+
+                    //                 theButton.btnType = "undo"
+                    //             }
+                    //         }
+                    //     })
+                    // }
+                    btns.push(theButton)
                 })
-                if (buttons !== buts) setButtons(buts)
+                if (buttons !== btns) setButtons(btns)
             }
         }
     },[ buttonData, svcsRendered ])
@@ -160,17 +174,21 @@ export default function PrimaryButtons(props) {
     }
 
     function handleAddService(serviceTypeId, serviceCategory, svcButtons){
-        const serviceRecord = addService( { client: client, serviceTypeId: serviceTypeId, 
+        addServiceAsync( { client: client, serviceTypeId: serviceTypeId, 
             serviceCategory: serviceCategory, svcButtons: svcButtons, svcsRendered: svcsRendered })
-        if (serviceRecord === undefined) return
-        const svcsArray = svcsRendered
-        if (serviceRecord === 'undone') {
-            svcsArray.splice(svcsArray.indexOf(serviceTypeId), 1)
-        } else if (!isEmpty(serviceRecord)) {
-            svcsArray.push(serviceRecord)
-        }        
-        updateSvcsRendered(svcsArray)
-        setUpdate(!update)
+            .then((svcRecord) => {
+
+                console.log("SVC RECORD - primaryButtons:180", svcRecord)
+                const svcsArray = svcsRendered
+
+                if (svcRecord === 'undone') {
+                    svcsArray.splice(svcsArray.indexOf(serviceTypeId), 1)
+                } else if (!isEmpty(svcRecord)) {
+                    svcsArray.push(svcRecord)
+                }        
+                updateSvcsRendered(svcsArray)
+                setUpdate(!update)
+            })
     }
 
     function updateSvcsRendered(){
@@ -180,25 +198,25 @@ export default function PrimaryButtons(props) {
         setSvcsRendered(newClient.svcsRendered)
     } 
 
-    function handleUndoService(serviceTypeId, serviceCategory, serviceButtons){
+    // function handleUndoService(serviceTypeId, serviceCategory, serviceButtons){
 
-        console.log('UNDO SERVICE')
+    //     console.log('UNDO SERVICE')
         
-        return null
+    //     return null
 
-        const service = window.utilRemoveService(selectedService)
-        if (service !== ""){
-            // TODO show alert success message
-            console.log("Saving removal worked.")
-            setClientHistory(getServiceHistory())
-            const result = window.utilUpdateLastServed()
-            if (result == "failed") return
-        } else {
-            // TODO show alert with error message
-            console.log("Saving delete failed.")
-            return
-        }
-    }
+    //     const service = window.utilRemoveService(selectedService)
+    //     if (service !== ""){
+    //         // TODO show alert success message
+    //         console.log("Saving removal worked.")
+    //         setClientHistory(getServiceHistory())
+    //         const result = window.utilUpdateLastServed()
+    //         if (result == "failed") return
+    //     } else {
+    //         // TODO show alert with error message
+    //         console.log("Saving delete failed.")
+    //         return
+    //     }
+    // }
      
 
     console.log("BUTTON DATA", buttonData)
@@ -238,7 +256,7 @@ export default function PrimaryButtons(props) {
                         key={ button.serviceTypeId }
                         className={ classes.image }
                         focusVisibleClassName={ classes.focusVisible }
-                        onClick={ () => handleUndoService(button.serviceTypeId, 
+                        onClick={ () => handleAddService(button.serviceTypeId, 
                             button.serviceCategory, button.serviceButtons) }
                     >
                         <span className={classes.imageSrc}
@@ -254,7 +272,7 @@ export default function PrimaryButtons(props) {
                     </ButtonBase>
                 }
 
-                { (button.btnType === 'undo') &&
+                {/* { (button.btnType === 'undo') &&
                     <Box key={ svcsRendered[0].servicedDateTime } m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#FFF' display='flex' >
                             <Button m={ 0 } width='168px' height='168px' color='primary' style={{ border: '5px dashed #ddd' }}
                                 onClick={ () => handleAddService(button.serviceTypeId, 
@@ -262,7 +280,7 @@ export default function PrimaryButtons(props) {
                                 <strong> { "UNDO " + button.serviceName.toUpperCase() }</strong>
                             </Button>
                     </Box>
-                }
+                } */}
 
             </Fragment>
         ))}
