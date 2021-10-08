@@ -10,8 +10,16 @@ import NewClientsReport from './Reports/NewClientsReport.jsx';
 
 
 export default function ReportsPage() {
+    const [ dayType, handleDayType ] = useState("ALL")
+    const [ reportDay, handleReportDayChange ] = useState(moment().format('YYYYMMDD'))
+    
     const [ foodYearMonth, handleFoodYearMonthChange ] = useState(moment().subtract(1, 'month').format('YYYYMM'))
     const [ foodType, handleFoodType ] = useState("FOOD")
+    
+    const [ yearType, handleYearType ] = useState("FOOD")
+    const [ reportYear, handleReportYearChange ] = useState(moment().format('YYYY'))
+
+    
     const [reportOpen, setReportOpen] = useState(false)
     const [reportHeading, setReportHeading] = useState('')
     const [reportBody, setReportBody] = useState(null)
@@ -35,11 +43,24 @@ export default function ReportsPage() {
             <CardHeader title="Distribution Reports" />
             <CardContent>
                 <Box>
-                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Daily Reports</Typography></Box>
+                <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Daily Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
-                        <Select value={foodType} onChange={handleFoodType} width={ 240 } name="report" label="Report">
+                        <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
+                                <MenuItem value="ALL">All Services</MenuItem>
+                                <MenuItem value="FOOD">Food Only</MenuItem>
+                        </Select>
+                        </FormControl>
+                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" InputLabelProps={{ shrink: true }} value={ reportDay } onChange={ handleReportDayChange } />
+                        <Button variant="contained" color="primary">Run</Button>
+                    </Box>
+
+                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Monthly Reports</Typography></Box>
+                    <Box display="flex" flexDirection="row" flexWrap="wrap">
+                        <FormControl variant='outlined' size='small'>
+                        <InputLabel>Report</InputLabel>
+                        <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                         </Select>
                         </FormControl>
@@ -47,32 +68,15 @@ export default function ReportsPage() {
                         <Button onClick={runFoodReport} variant="contained" color="primary">Run</Button>
                     </Box>
 
-                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Monthly Reports</Typography></Box>
-                    <Box display="flex" flexDirection="row" flexWrap="wrap">
-                        <FormControl variant='outlined' size='small'>
-                        <InputLabel>Report</InputLabel>
-                        <Select width={ 240 } name="report" label="Report">
-                                <MenuItem value="ALL">All Services</MenuItem>
-                                <MenuItem value="FOOD">Food Only</MenuItem>
-                        </Select>
-                        </FormControl>
-                        <FormControl variant='outlined'>
-                        <TextField width={ 240 } m={ 0 } size='small' label="Month" InputLabelProps={{ shrink: true }} type="month" />
-                        </FormControl>
-                        <Button variant="contained" color="primary">Run</Button>
-                    </Box>
-
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Annual Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
-                        <Select width={ 240 } name="report" label="Report">
+                        <Select value={yearType} onChange={(event) => handleYearType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                         </Select>
                         </FormControl>
-                        <FormControl variant='outlined'>
-                        <TextField width={ 240 } m={ 0 } size='small' label="Year" InputLabelProps={{ shrink: true }} type="number" />
-                        </FormControl>
+                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportYear } onChange={ handleReportYearChange } />
                         <Button variant="contained" color="primary">Run</Button>
                     </Box>
                     <Box mt={ 10 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Voucher Distribution Reports</Typography></Box>

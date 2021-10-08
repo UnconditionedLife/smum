@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { dbGetSingleClientAsync, dbGetSvcsInMonthAsync, SettingsZipcodes } from '../../../System/js/Database';
 import moment from 'moment';
+import { ReportsHeader } from "../..";
 
 NewClientsReport.propTypes = {
     yearMonth: PropTypes.string
@@ -104,19 +105,9 @@ export default function NewClientsReport(props) {
         <Box m={ 1 } maxWidth="100%">
         <TableContainer align="center"> 
             <Table align="center">
-                <TableHead>
-                    <TableRow>
-                        <TableCell colSpan="3" style={{ alignContent: "center" }}>
-                            <Typography variant='h5' align='center'>New Clients - { moment(props.yearMonth).format('MMMM YYYY')}</Typography>
-                            <Typography variant='button' align='center'>Generated { moment().format("MMM DD, YYYY, HH:MM a") }</Typography>
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell align="center">Zipcode</TableCell>
-                        <TableCell align="center">Total</TableCell>
-                        <TableCell align="center">Homeless</TableCell>
-                    </TableRow>
-                </TableHead>
+                <ReportsHeader reportType="MONTHLY REPORT" 
+                    reportCategory="FOOD PANTRY" 
+                    columns={["Zipcode", "Total", "Homeless"]} />
                 <TableBody>
                     { counts.map((item) => (
                         <TableRow key={ item.area } >
