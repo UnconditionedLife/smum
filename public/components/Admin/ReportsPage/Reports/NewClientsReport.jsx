@@ -104,7 +104,7 @@ export default function NewClientsReport(props) {
     return (
         <Box m={ 1 } maxWidth="100%">
         <TableContainer align="center"> 
-            <Table align="center">
+            <Table size="small" align="center">
                 <ReportsHeader reportType="MONTHLY REPORT" 
                     reportCategory="FOOD PANTRY" 
                     columns={["Zipcode", "Total", "Homeless"]} />

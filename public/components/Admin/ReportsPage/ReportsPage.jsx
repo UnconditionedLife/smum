@@ -7,10 +7,11 @@ import MomentUtils from '@date-io/moment';
 import moment from 'moment';
 import ReportDialog from './ReportDialog.jsx';
 import NewClientsReport from './Reports/NewClientsReport.jsx';
+import DailyDistributionReport from './Reports/DailyDistributionReport.jsx';
 
 
 export default function ReportsPage() {
-    const [ dayType, handleDayType ] = useState("ALL")
+    const [ dayType, handleDayType ] = useState("FOOD")
     const [ reportDay, handleReportDayChange ] = useState(moment().format('YYYYMMDD'))
     
     const [ foodYearMonth, handleFoodYearMonthChange ] = useState(moment().subtract(1, 'month').format('YYYYMM'))
@@ -36,6 +37,15 @@ export default function ReportsPage() {
         setReportActions(buttonCode);
     }
 
+    const runDailyReport = () => {
+        setReportHeading("Distribution " + moment(reportDay).format('MMM, DD, YYYY') + " Report");
+        setReportOpen(true);
+        setReportBody(<DailyDistributionReport />);
+        const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+        setReportActions(buttonCode);
+    }
+
+
     return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
         <Container maxWidth='md'>
@@ -48,12 +58,11 @@ export default function ReportsPage() {
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
                         <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
-                                <MenuItem value="ALL">All Services</MenuItem>
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                         </Select>
                         </FormControl>
                         <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" InputLabelProps={{ shrink: true }} value={ reportDay } onChange={ handleReportDayChange } />
-                        <Button variant="contained" color="primary">Run</Button>
+                        <Button onClick={runDailyReport} variant="contained" color="primary">Run</Button>
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Monthly Reports</Typography></Box>
@@ -62,6 +71,7 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
+                                <MenuItem value="ALL">All Services</MenuItem>
                         </Select>
                         </FormControl>
                         <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["year", "month"]} value={ foodYearMonth } onChange={ handleFoodYearMonthChange } />

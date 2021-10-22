@@ -45,6 +45,13 @@ theme.overrides = {
             },
         },
     },  
+    MuiTableCell: {
+        ...theme.MuiTableCell,
+        head: {
+            ...theme.head,
+            border: '1px solid black'
+        }
+    },  
     MuiCard: {
         ...theme.MuiCard,
         root: {
