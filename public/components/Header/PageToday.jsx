@@ -13,8 +13,13 @@ export default function PageToday() {
     return (
         <div>
             TODAY PAGE<br/>
-            <Button key="print" m={ .5 } variant="outlined" color="primary" size="large" minWidth="168px" onClick={ prnTest } >
-                    Printer Test
+            <Button key="print1" m={ .5 } variant="outlined" color="primary" size="large" minWidth="168px" 
+            onClick={ () => prnTest('minimal') } >
+                    Minimal Printer Test
+            </Button>
+            <Button key="print2" m={ .5 } variant="outlined" color="primary" size="large" minWidth="168px" 
+            onClick={ () => prnTest('full') } >
+                    Full Printer Test
             </Button>
         </div>
     );

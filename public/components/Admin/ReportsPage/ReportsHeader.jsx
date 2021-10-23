@@ -5,21 +5,23 @@ import logo from '../../../images/receipt-logo.png';
 import PropTypes from 'prop-types';
 
 ReportsHeader.propTypes = {
-    reportType: PropTypes.string,
-    reportCategory: PropTypes.string,
-    columns: PropTypes.array
+    reportType: PropTypes.string.isRequired,
+    reportCategory: PropTypes.string.isRequired,
+    groupColumns: PropTypes.array,
+    columns: PropTypes.array.isRequired
 }
 
 export default function ReportsHeader(props) {
     const reportType = props.reportType
     const reportCategory = props.reportCategory
     const columns = props.columns
+    const groupColumns = props.groupColumns
 
     return (
         <TableHead>
             <TableRow>
                 <TableCell colSpan={columns.length} style={{ alignContent: "center" }}>
-                    <Box style={{ display: 'grid', gridTemplateColumns: 'repeat('+columns.length+', 1fr)' }}>
+                    <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
                         <Box style={{fontSize: '2rem', 
                             display: 'flex',
                             justifyContent: 'center',
@@ -29,8 +31,7 @@ export default function ReportsHeader(props) {
                             {reportCategory}
                         </Box>
                         <Box>
-                            <Box align="center"><img width='40%' src={logo} /></Box>
-                            <Typography style={{ fontWeight: 'bold' }} align='center'>SANTA MARIA URBAN MINISTRY</Typography>
+                            <Box align="center"><img width='50%' src={logo} /></Box>
                             <Typography style={{ fontWeight: 'bold' }} align='center'>{ moment().format("MMMM DD, YYYY | HH:MM a") }</Typography>
                         </Box>
                         <Box style={{fontSize: '2rem', 
@@ -44,9 +45,14 @@ export default function ReportsHeader(props) {
                     </Box>
                 </TableCell>
             </TableRow>
+            {groupColumns ? (<TableRow>
+                {groupColumns.map((item) =>
+                    <TableCell key={item.name} colSpan={item.length} align="center">{item.name}</TableCell>
+                )}
+            </TableRow>) : null}
             <TableRow>
                 {columns.map((item) =>
-                    <TableCell key={item} align="center">{item}</TableCell>
+                    <TableCell style={groupColumns ? {background:"white"} : null} key={item} align="center">{item}</TableCell>
                 )}
             </TableRow>
         </TableHead>

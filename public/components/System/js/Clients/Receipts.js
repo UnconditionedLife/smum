@@ -4,7 +4,7 @@
 import moment from  'moment';
 import { utilSortDependentsByGrade, utilCalcGradeGrouping, utilSortDependentsByAge,
     utilCalcAgeGrouping, utilPadTrimString } from '../Clients/ClientUtils'
-import { getSvcTypes, SettingsPrinter, SettingsSchedule } from '../Database';
+import { getSvcTypes, SettingsSchedule } from '../Database';
 import { dateFindOpen } from '../GlobalUtils'
 
 let ePosDev = new window.epson.ePOSDevice();
@@ -116,18 +116,21 @@ export function prnFlush() {
 		printer.send();
 }
 
-//**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
-
-export function prnTest() {
-    prnStartReceipt();
-	prnFeed(2);
-	prnTextLine('* Test Receipt *', 1, 2);
-    prnEndReceipt();
-
-	for (let i=0; i < 6; i++)
-		prnTestReceipt(i);
+export function prnTest(type) {
+    if (type == 'minimal') {
+        prnStartReceipt();
+        prnFeed(2);
+        prnTextLine('* Test Receipt *', 1, 2);
+        prnEndReceipt();
+    }
+    if (type == 'full') {
+        for (let i=0; i < 6; i++)
+            prnTestReceipt(i);
+    }
 	prnFlush();
 }
+
+//**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 
 function prnStartReceipt() {
 	if (printer) {
@@ -337,6 +340,7 @@ const testClient = {
 
 function prnTestReceipt(receiptType) {
 	let service;
+    const children = testClient.dependents.filter(d => d.age < 18);
 	switch(receiptType) {
 		case 0:
 			service = getSvcTypes().filter(obj => obj.serviceName == 'Clothes')[0];
@@ -354,11 +358,11 @@ function prnTestReceipt(receiptType) {
 			break;
 		case 4:
 			service = getSvcTypes().filter(obj => obj.serviceName == 'Christmas Toy')[0];
-			prnPrintVoucherReceipt(testClient, service, testClient.dependents, 'age');
+			prnPrintVoucherReceipt(testClient, service, children, 'age');
 			break;
 		case 5:
 			service = getSvcTypes().filter(obj => obj.serviceName == 'First Step')[0];
-			prnPrintVoucherReceipt(testClient, service, testClient.dependents, 'grade');
+			prnPrintVoucherReceipt(testClient, service, children, 'grade');
 			break;
 	}
 }
