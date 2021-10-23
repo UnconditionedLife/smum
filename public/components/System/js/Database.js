@@ -285,6 +285,7 @@ export async function dbSaveClientAsync(data) {
 	} else {
         dbSetModifiedTime(data, false);
 	}
+    
     return await dbPostDataAsync("/clients/", data)
 }
 
@@ -341,7 +342,9 @@ export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCatego
 
 console.log("SAVING CLIENT LASTSERVED")
 
-	dbSaveClientAsync(newClient)
+    return await dbSaveClientAsync(newClient).then(() => {
+        return newLastServed
+    })
 }
 
 //******************* REPORTS *********************
