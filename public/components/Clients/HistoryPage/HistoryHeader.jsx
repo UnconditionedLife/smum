@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
+import { utilSetLastServedFood } from '../../System/js/Clients/Services.js';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -36,8 +37,7 @@ export default function HistoryHeader(props) {
 
     const intViewportWidth = window.clientWidth;
 
-
-    window.utilSetLastServedFood()
+    utilSetLastServedFood(client)
 
     return (
         <Fragment>
