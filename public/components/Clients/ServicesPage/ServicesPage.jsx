@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@material-ui/core';
 import { Card } from '../../System';
@@ -12,8 +12,6 @@ ServicesPage.propTypes = {
 }
 
 export default function ServicesPage(props) {
-
-    console.log(props.client)
 
     return (
         <Box display="flex" justifyContent="space-around" flexWrap="wrap">
