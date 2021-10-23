@@ -2,10 +2,8 @@ import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles'
 import { Box, ButtonBase } from '@material-ui/core';
-import { Button, Typography } from '../../System';
+import { Typography } from '../../System';
 import { getButtonData, addServiceAsync, getSvcsRendered } from '../../System/js/Clients/Services'
-import { getServiceHistoryAsync } from '../../System/js/Clients/History';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -90,77 +88,43 @@ PrimaryButtons.propTypes = {
 export default function PrimaryButtons(props) {
     const client = props.client
     const updateClient = props.updateClient
-    
-    // const updateSvcsRendered = props.updateSvcsRendered
-    
-    const [ buttonData, setButtonList ] = useState([])
+    const classes = useStyles();    
+    // const [ buttonList, setButtonList ] = useState([])
     const [ buttons, setButtons ] = useState([])
     const [ buttonState, setButtonState ] = useState([])
     const [ update, setUpdate ] = useState(false)
-    const [ svcsRendered, setSvcsRendered ] = useState(props.client.svcsRendered)
-
-    const classes = useStyles();
-
-    useEffect(() => { 
-        setButtonList(getButtonData({ client: props.client, buttons: 'primary' }))
-    },[ props.client ])
+    const [ clickedButton, setClickedButton ] = useState(null)
 
     useEffect(() => {
-        if (buttonData.primary !== undefined) {
+        const newButtonList = getButtonData({ client: props.client, buttons: 'primary' })
+        
+        if (newButtonList.primary !== undefined) {
             let btns = []
-            if (buttonData.primary === "-1") { // dependents grades requirement === -1
+            if (newButtonList.primary === "-1") { // dependents grades requirement === -1
                 // TODO TURN THIS INTO SERVICE TYPE
                 let btnClass = "btnAlert"
                 btns += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
             } else {
-                buttonData.primary.forEach((svcIndex) => {
-                    const theButton = buttonData.activeServiceTypes[svcIndex]
+                newButtonList.primary.forEach((svcIndex) => {
+                    const theButton = newButtonList.activeServiceTypes[svcIndex]
                     const svcCategory = theButton.serviceCategory
                     theButton.btnType = "normal"
                     if ((svcCategory === "Administration") || (theButton.isUSDA == "Emergency")) {
                         theButton.btnType = "highlight"
                     }
-                    
-                    // handleButtonState(buttonData.activeServiceTypes[x].serviceTypeId, false)
-                
-                    console.log("SVCS Rendered", svcsRendered)
-
-                    // WAS USED FOR 24 HOUR UNDO - NOT IMPLEMENTED IN React-v1
-                    // if ((svcsRendered.length !== 0) && (svcsRendered !== undefined)) {
-                    //     svcsRendered.forEach((svcObj) => { 
-
-                    //         console.log("Service", svcObj)
-                    //         console.log("Button", theButton)
-
-                    //         if (theButton.serviceCategory === "Food_Pantry"
-                    //             && svcObj.serviceCategory === "Food_Pantry" ) {
-
-                    //             theButton.btnType = "undo"
-
-                    //         } else {
-                                
-                    //             if (svcObj.serviceTypeId === theButton.serviceTypeId) {
-
-                    //                 console.log("DONE TODAY")
-
-                    //                 theButton.btnType = "undo"
-                    //             }
-                    //         }
-                    //     })
-                    // }
                     btns.push(theButton)
                 })
                 if (buttons !== btns) setButtons(btns)
             }
         }
-    },[ buttonData, svcsRendered ])
+    },[ props.client.lastServed, update ])
 
-    useEffect(() => {
-        const tempSvcsRendered = props.client.svcsRendered
-        if (tempSvcsRendered !== svcsRendered) {
-            setSvcsRendered(tempSvcsRendered)
-        }
-    })
+    // useEffect(() => {
+    //     const tempSvcsRendered = props.client.svcsRendered
+    //     if (tempSvcsRendered !== svcsRendered) {
+    //         setSvcsRendered(tempSvcsRendered)
+    //     }
+    // })
 
     const handleButtonState = (serviceTypeId, newState) => {
         let array = buttonState
@@ -174,30 +138,22 @@ export default function PrimaryButtons(props) {
     }
 
     function handleAddService(serviceTypeId, serviceCategory, svcButtons){
+        setClickedButton(serviceTypeId)
         addServiceAsync( { client: client, serviceTypeId: serviceTypeId, 
-            serviceCategory: serviceCategory, svcButtons: svcButtons, svcsRendered: svcsRendered })
-            .then((svcRecord) => {
+            serviceCategory: serviceCategory, svcButtons: svcButtons })
+            .then((updatedClient) => {
 
-                console.log("SVC RECORD - primaryButtons:180", svcRecord)
-                const svcsArray = svcsRendered
+                // console.log("UPDATED CLIENT - primaryButtons", updatedClient)
 
-                if (svcRecord === 'undone') {
-                    svcsArray.splice(svcsArray.indexOf(serviceTypeId), 1)
-                } else if (!isEmpty(svcRecord)) {
-                    svcsArray.push(svcRecord)
-                }        
-                updateSvcsRendered(svcsArray)
+                updateClient(updatedClient)
+                // setButtonList(getButtonData({ client: newClient, buttons: 'primary' }))
+                // force rerender
                 setUpdate(!update)
+                setClickedButton(null)
             })
     }
 
-    function updateSvcsRendered(){
-        const newClient = client
-        newClient.svcsRendered = getSvcsRendered(client.svcHistory)
-        updateClient(newClient)
-        setSvcsRendered(newClient.svcsRendered)
-    } 
-
+    // WAS USED TO DO UNDO REMOVED FOR NOW
     // function handleUndoService(serviceTypeId, serviceCategory, serviceButtons){
 
     //     console.log('UNDO SERVICE')
@@ -217,12 +173,18 @@ export default function PrimaryButtons(props) {
     //         return
     //     }
     // }
-     
 
-    console.log("BUTTON DATA", buttonData)
-    console.log("BUTTONS", buttons)
+// console.log("CLICKED", clickedButton)
     
-    if (buttons.length === 0) return null
+    if (buttons.length === 0) {
+        return (
+            <Box height="168px" display="flex" alignItems="center" >
+                <Box>
+                <Typography color="secondary"><strong>NO FOOD SERVICE AVAILABLE TODAY</strong></Typography>
+                </Box>
+            </Box>
+        )
+    }
 
     return (
         <Fragment>
@@ -237,16 +199,37 @@ export default function PrimaryButtons(props) {
                         onClick={ () => handleAddService(button.serviceTypeId, 
                             button.serviceCategory, button.serviceButtons) }
                     >
+                               
+                    { (button.serviceTypeId !== clickedButton ) &&
+                        <>
                         <span className={classes.imageSrc}
-                            style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
+                        style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
                         <span className={classes.imageBackdrop} />
                         <span className={classes.imageButton}>
-                            <Typography component="span" variant="button" color="inherit"
-                                className={classes.imageTitle} >
-                                <strong>{ button.serviceName.toUpperCase() }</strong>
-                                <span className={classes.imageMarked} />
-                            </Typography>
+                        <Typography component="span" variant="button" color="inherit"
+                        className={classes.imageTitle} >
+                        <strong>{ button.serviceName.toUpperCase() }</strong>
+                        <span className={classes.imageMarked} />
+                        </Typography>
                         </span>
+                        </>
+                    }
+
+                    { (button.serviceTypeId === clickedButton ) &&
+                        <>
+                        <span className={classes.imageSrc}
+                        style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
+                        <span className={classes.imageBackdrop} />
+                        <span className={classes.imageButton}>
+                        <Typography component="span" variant="button" color="inherit"
+                        className={classes.imageTitle} >
+                        <strong>SAVING...</strong>
+                        <span className={classes.imageMarked} />
+                        </Typography>
+                        </span>
+                        </>
+                    }
+
                     </ButtonBase>
                 }
 
@@ -272,7 +255,9 @@ export default function PrimaryButtons(props) {
                     </ButtonBase>
                 }
 
-                {/* { (button.btnType === 'undo') &&
+                {/* WAS USED FOR UNDO REMOVED FOR NOW
+                
+                    { (button.btnType === 'undo') &&
                     <Box key={ svcsRendered[0].servicedDateTime } m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#FFF' display='flex' >
                             <Button m={ 0 } width='168px' height='168px' color='primary' style={{ border: '5px dashed #ddd' }}
                                 onClick={ () => handleAddService(button.serviceTypeId, 
