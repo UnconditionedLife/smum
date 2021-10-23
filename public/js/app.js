@@ -4164,22 +4164,22 @@ function utilUpdateService(serviceId){
 // 	return dbSaveCurrentClient(client)
 // };
 
-function utilSetLastServedFood(){
-	// TODO too much duplicated code with utilCalcLastServedDays()
-	let lastServedFoodDateTime = "1900-01-01"
-	if (client.lastServed[0] == undefined) return lastServedFoodDateTime
-	let lastServedFood = client.lastServed.filter(function( obj ) {
-		return obj.serviceCategory == "Food_Pantry"
-	})
-	for (var i = 0; i < lastServedFood.length; i++) {
-		if (lastServedFood[i].isUSDA != "Emergency") {
-			if (moment(lastServedFood[i].serviceDateTime).isAfter(lastServedFoodDateTime)){
-				lastServedFoodDateTime = lastServedFood[i].serviceDateTime
-			}
-		}
-	}
-	client.lastServedFoodDateTime = lastServedFoodDateTime
-};
+// function utilSetLastServedFood(){
+// 	// TODO too much duplicated code with utilCalcLastServedDays()
+// 	let lastServedFoodDateTime = "1900-01-01"
+// 	if (client.lastServed[0] == undefined) return lastServedFoodDateTime
+// 	let lastServedFood = client.lastServed.filter(function( obj ) {
+// 		return obj.serviceCategory == "Food_Pantry"
+// 	})
+// 	for (var i = 0; i < lastServedFood.length; i++) {
+// 		if (lastServedFood[i].isUSDA != "Emergency") {
+// 			if (moment(lastServedFood[i].serviceDateTime).isAfter(lastServedFoodDateTime)){
+// 				lastServedFoodDateTime = lastServedFood[i].serviceDateTime
+// 			}
+// 		}
+// 	}
+// 	client.lastServedFoodDateTime = lastServedFoodDateTime
+// };
 
 // function utilCalcLastServedDays() {   // TODO DELETE AFTER SERVICE PAGE IS REACTED
 // 	// get Last Served Date from client object & calculate number of days
