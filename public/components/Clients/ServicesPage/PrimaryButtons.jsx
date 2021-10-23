@@ -149,7 +149,7 @@ export default function PrimaryButtons(props) {
                 // setButtonList(getButtonData({ client: newClient, buttons: 'primary' }))
                 // force rerender
                 setUpdate(!update)
-                setClickedButton(null)
+                // setClickedButton(null)
             })
     }
 

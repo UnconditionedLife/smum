@@ -353,9 +353,10 @@ function validateServiceInterval( props ){
 				return false
 			}
 		}
-		if (serviceCategory == "Clothes_Closet") {
-			if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
-		}
+        // MAY NOT NEED TO CHECK CLOTHES INTERVAL OR CHECK LAST CLOTHES SERVICE ???
+		// if (serviceCategory == "Clothes_Closet") {
+		// 	if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
+		// }
 		// validate that a voucher was already registered for
 		if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
 			//serviceHistory = dbGetClientActiveServiceHistory(client)
