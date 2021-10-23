@@ -6,8 +6,9 @@ import { ClientsHeader, ClientsContent } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';
-import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime, utilEmptyPlaceholders, getSession } from '../../System/js/Database';
-import { getSvcsRendered } from '../../System/js/Clients/Services'
+import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime,
+     utilEmptyPlaceholders, getSession, globalMsgFunc } from '../../System/js/Database';
+// import { getSvcsRendered } from '../../System/js/Clients/Services'
 
 ClientsMain.propTypes = {
     searchTerm: PropTypes.string.isRequired,
@@ -56,7 +57,12 @@ export default function ClientsMain(props) {
         if (searchTerm !== '') {
             if (window.stateCheckPendingEdit()) return // used temporarily to keep global vars in sync
             window.uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
-            dbSearchClientsAsync(searchTerm).then(clients => { changeClientsFound(clients) })
+            dbSearchClientsAsync(searchTerm).then(clients => { 
+                changeClientsFound(clients)
+                if (clients.length === 0) {
+                    globalMsgFunc('error', "No clients found matching: '"+ searchTerm + "'")
+                }
+             })
         }
     }, [searchTerm]);
 
@@ -65,16 +71,17 @@ export default function ClientsMain(props) {
             const lastServed = client.lastServed
             if (lastServed.length > 0) {
                 lastServed.sort((a, b) => moment.utc(b.serviceDateTime).diff(moment.utc(a.serviceDateTime)))
+                // NOT SURE IF ANY OF THIS IS NEEDED
                 // if last service is same day as today - build the svcsRendered state (??? Store svcType & svcId & maybe svcName ????)
-                if (moment(lastServed[0].serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')) {
-                    // 
-                    const svcHistoryToday = client.svcHistory.filter( obj => moment(obj.serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD'))
+//                 if (moment(lastServed[0].serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')) {
+//                     // 
+//                     const svcHistoryToday = client.svcHistory.filter( obj => moment(obj.serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD'))
                     
-console.log("SVC HIST TODAY:", svcHistoryToday)
+// console.log("SVC HIST TODAY:", svcHistoryToday)
 
                     // get history and build services rendered array from records that have today's date
 
-                }
+                // }
             }
         }
     }, [client.lastServed])
@@ -107,7 +114,7 @@ console.log("SVC HIST TODAY:", svcHistoryToday)
                 // add service handling objects
                 dbGetClientActiveServiceHistoryAsync(newClient.clientId).then( history => { 
                     newClient.svcHistory = history
-                    newClient.svcsRendered = getSvcsRendered(newClient.svcHistory)
+                    // newClient.svcsRendered = getSvcsRendered(newClient.svcHistory)
                     keepAppJsInSync(newClient)
                     setClient(newClient)
                     updateURL(newClient.clientId, clientsTab)
@@ -175,7 +182,7 @@ console.log("SVC HIST TODAY:", svcHistoryToday)
             totalSize: 0,
         },
         svcHistory: [],
-        svcsRendered: []
+        // svcsRendered: []
     }
 
     function isNewClientChange(){
