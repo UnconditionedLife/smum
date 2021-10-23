@@ -23,7 +23,10 @@ export default function HistoryDisplay(props) {
     const [ anchorEl, setAnchorEl ] = useState(null);
     const [ editRecord, setEditRecord ] = useState(null);
     const [ message, setMessage ] = useState({})
-    const [ delay, setDelay ] = useState(false) // NOT SURE IF THIS IS NEEDED
+    const [ delay, setDelay ] = useState(false)
+    const [ reloadHistory, setReloadHistory ] = useState(false)
+
+    let delayInt = 1500
     
     useEffect(() => {
         if (!isEmpty(client)) {
@@ -82,6 +85,7 @@ export default function HistoryDisplay(props) {
             case 'message':             
                 setEditMode('none')
                 clearSelection()
+                setReloadHistory(true)
                 setDelay(false)
         }
     }
@@ -94,6 +98,7 @@ export default function HistoryDisplay(props) {
                 
                 if (svcRecord !== ""){
                     setDelay(true)
+                    setDelayTimer(true)
                     handleMessage({ text: "Service successfully removed!", severity: "success" })
                     setEditMode('none')
                     setAnchorEl(null)
@@ -130,28 +135,28 @@ export default function HistoryDisplay(props) {
     }
 
 //  WAS USED PRIOR TO ASYNC FUNCTIONS - NOT SURE IF DELAY NEEDS RO BE PASSED TO CHILD COMPONENT
-//     function setDelayTimer(delay){
+    function setDelayTimer(delay){
 
-// console.log("DELAY HISTORY???")
+console.log("DELAY HISTORY???")
 
-//         if (!delay) {
-//             if  (reloadHistory) {
-//                 setEditMode('none')
-//                 setAnchorEl(null)
-//                 updateSvcHistory()
-//                 const result = updateLastServed(client)
-//                 setReloadHistory(false)
-//                 if (result === "failed") return
-//             }
-//             clearTimeout(delayInt)
-//             setDelay(false)
-//         } else {
-//             delayInt = setTimeout(function(){
-//                 setDelayTimer(false);
-//             }, 1000)
-//             setDelay(true)
-//         }
-//     }
+        if (!delay) {
+            if  (reloadHistory) {
+                setEditMode('none')
+                setAnchorEl(null)
+                updateSvcHistory()
+                const result = updateLastServed(client)
+                setReloadHistory(false)
+                if (result === "failed") return
+            }
+            clearTimeout(delayInt)
+            setDelay(false)
+        } else {
+            delayInt = setTimeout(function(){
+                setDelayTimer(false);
+            }, 1000)
+            setDelay(true)
+        }
+    }
 
     const menuOpen = Boolean(anchorEl);
     const id = menuOpen ? 'simple-popper' : undefined;
