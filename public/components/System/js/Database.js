@@ -297,6 +297,15 @@ async function dbGetDaysSvcsAsync(dayDate){
     return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
 }
 
+export async function dbGetSvcsByIdAndYear(serviceTypeId, year) {
+	return await dbGetDataAsync("/clients/services/byservicetype/" + serviceTypeId)
+            .then( data => { 
+                return data.services
+                .filter(item => item.serviceValid == 'true')
+                .filter(item => moment(item.servicedDateTime).year() == year)
+            })					
+}
+
 // formerly utilGetServicesInMonth in app.js
 export async function dbGetSvcsInMonthAsync(monthYear){
 
