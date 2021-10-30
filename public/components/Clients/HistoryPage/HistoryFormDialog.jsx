@@ -40,14 +40,21 @@ export default function HistoryFormDialog(props) {
 
     function doSave(formValues) {
         saveHistoryFormAsync(props.editRecord, formValues, props.client, userName)
-            .then( message => {
-                const msg = message ? message : undefined
+            .then( result => {
+                const msg = result ? result : undefined
                 if (msg === undefined) {
                     globalMsgFunc('success', 'History record was saved!')
                     utilRemoveServiceAsync(props.editRecord.serviceId)
                         .then( message => {
                             const removeMsg = message ? message : undefined
                             if (removeMsg === undefined) globalMsgFunc('success', 'Saved and old history record removed!')
+
+                            // client.svcHistory.forEach((svc, index) => {
+                            //     if (svc.serviceId === oldServiceId) {
+                            //         client.svcHistory[index] = editRecord
+                            //     }
+                            // })
+
                         })
                     handleDialog(false)
                 }

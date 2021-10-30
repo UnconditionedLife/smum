@@ -7,7 +7,7 @@ import { Card } from '../../System';
 import { HistoryFormDialog, HistoryPopupMenu } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils';
 import { getServiceHistoryAsync, updateLastServed, utilRemoveServiceAsync } from '../../System/js/Clients/History';
-import { dbGetClientActiveServiceHistoryAsync } from '../../System/js/Database';
+// import { dbGetClientActiveServiceHistoryAsync } from '../../System/js/Database';
 
 HistoryDisplay.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
@@ -28,28 +28,6 @@ export default function HistoryDisplay(props) {
 
     let delayInt = 1500
     
-    useEffect(() => {
-        if (!isEmpty(client)) {
-            const lastServed = client.lastServed
-            if (lastServed.length > 0) {
-                lastServed.sort((a, b) => moment.utc(b.serviceDateTime).diff(moment.utc(a.serviceDateTime)))
-                // if last service is same day as today - UPDATE HISTORY
-                if (moment(lastServed[0].serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')) {
-                    getServiceHistoryAsync(client.clientId)
-                        .then((currentHistory) => {
-                            const newClient = Object.assign({}, client)
-                            newClient.svcHistory = currentHistory
-                            updateClient(newClient)
-        
-                            //const svcHistoryToday = client.svcHistory.filter( obj => moment(obj.serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD'))
-                            // get history and build services rendered array from records that have today's date
-                        }
-                    )
-                }
-            }
-        }
-    }, [client.lastServed])
-
     function handleSelectedService(event, newServiceId) {
         setSelectedService(newServiceId)
         const record = svcHistory.filter(function( obj ) {
@@ -92,17 +70,14 @@ export default function HistoryDisplay(props) {
 
     function removeService(){
         utilRemoveServiceAsync(selectedService)
-            .then((svcRecord) => {
-
-//console.log("RETURN FROM REMOVE SERVICE")
-                
-                if (svcRecord !== ""){
+            .then((svcRecord) => {                
+                if (svcRecord !== null){
                     setDelay(true)
                     setDelayTimer(true)
                     handleMessage({ text: "Service successfully removed!", severity: "success" })
                     setEditMode('none')
                     setAnchorEl(null)
-                    updateSvcHistory()
+                    removeSvcFromHistory(svcRecord)
                     updateLastServed(client)
                     setEditMode('message')
                 } else {
@@ -121,17 +96,13 @@ export default function HistoryDisplay(props) {
         setMessage(newMessage)
     }
 
-    function updateSvcHistory(){
-        dbGetClientActiveServiceHistoryAsync(client.clientId)
-            .then((clientHistory) => {
-
-// console.log("UPDATING SVC HST IN CLINET OBJ")
-
-                    const tempClient = Object.create(client)
-                    tempClient.svcHistory = clientHistory
-                    updateClient(tempClient)
-                }
-        )
+    function removeSvcFromHistory(serviceRecord){
+        const newHistory = client.svcHistory.filter(function( obj ) {
+            return obj.serviceId !== serviceRecord.serviceId;
+        });
+        const tempClient = Object.create(client)
+        tempClient.svcHistory = newHistory
+        updateClient(tempClient)
     }
 
 //  WAS USED PRIOR TO ASYNC FUNCTIONS - NOT SURE IF DELAY NEEDS RO BE PASSED TO CHILD COMPONENT

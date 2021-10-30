@@ -34,7 +34,11 @@ console.log("UPDATE LAST SERVED", client)
 			topHist.push(lsItem)
 		}
 	}
+
 	client.lastServed = topHist
+
+console.log("AFTER UPDATE", client)
+
 	return dbSaveClientAsync(client)
         .then( () => {
             globalMsgFunc('info', 'Last served updated')
@@ -66,5 +70,12 @@ export async function utilRemoveServiceAsync(svcId){
             let svc = svcArray[0]
             svc.serviceValid = false
             return await dbSaveServiceRecordAsync(svc)
+                .then((saved) => {
+                    if (Object.keys(saved).length === 0) {
+                        return svc
+                    } else {
+                        return null
+                    }
+                })
         })
 }
