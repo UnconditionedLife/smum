@@ -62,20 +62,32 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
     editRecord.serviceId = cuid()
     
     return await dbSaveServiceRecordAsync(editRecord)
+        .then((savedSvc) => {
+            console.log("SAVED SERVICE:", savedSvc )
+
+            if (Object.keys(savedSvc).length === 0) {
+                return editRecord
+            } else {
+                return null
+            }
+        })
 }
 
-export async function utilRemoveServiceAsync(svcId){
-	return await dbGetServiceAsync(svcId)
-        .then( async (svcArray) => {
-            let svc = svcArray[0]
+export async function removeSvcAsync(svc){
+	// return await dbGetServiceAsync(svcId)
+    //     .then( async (svcArray) => {
+    //         let svc = svcArray[0]
             svc.serviceValid = false
             return await dbSaveServiceRecordAsync(svc)
-                .then((saved) => {
-                    if (Object.keys(saved).length === 0) {
+                .then((savedSvc) => {
+
+                    console.log("REMOVED SERVICE:", savedSvc )
+
+                    if (Object.keys(savedSvc).length === 0) {
                         return svc
                     } else {
                         return null
                     }
                 })
-        })
+        // })
 }
