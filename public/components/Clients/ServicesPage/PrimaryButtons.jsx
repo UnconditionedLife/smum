@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles'
 import { Box, ButtonBase } from '@material-ui/core';
 import { Typography } from '../../System';
-import { getButtonData, addServiceAsync, getSvcsRendered } from '../../System/js/Clients/Services'
-import { now } from 'moment';
+import { getButtonData } from '../../System/js/Clients/Services'
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -83,12 +82,14 @@ const useStyles = makeStyles((theme) => ({
   }));
 
 PrimaryButtons.propTypes = {
-    client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
+    client: PropTypes.object.isRequired, 
+    updateClient: PropTypes.func.isRequired,
+    handleAddSvc: PropTypes.func.isRequired,
 }
 
 export default function PrimaryButtons(props) {
     const client = props.client
-    const updateClient = props.updateClient
+    const handleAddSvc = props.handleAddSvc
     const classes = useStyles();    
     // const [ buttonList, setButtonList ] = useState([])
     const [ buttons, setButtons ] = useState([])
@@ -97,7 +98,7 @@ export default function PrimaryButtons(props) {
     const [ clickedButton, setClickedButton ] = useState(null)
 
     useEffect(() => {
-        const newButtonList = getButtonData({ client: props.client, buttons: 'primary' })
+        const newButtonList = getButtonData({ client: client, buttons: 'primary' })
 
         if (newButtonList.primary !== undefined) {
             let btns = []
@@ -128,9 +129,7 @@ export default function PrimaryButtons(props) {
                 if (hasClickedButton === false) {
                     setClickedButton(null)
                 }
-
             }
-
         }
     },[ props.client.lastServed ])
 
@@ -151,20 +150,6 @@ export default function PrimaryButtons(props) {
     //     }
     //     setButtonState(array)
     // }
-
-    function handleAddService(serviceTypeId, serviceCategory, svcButtons){        
-        setClickedButton(serviceTypeId)
-        addServiceAsync( { client: client, serviceTypeId: serviceTypeId, 
-            serviceCategory: serviceCategory, svcButtons: svcButtons })
-            .then((updatedClient) => {
-
-// console.log("UPDATED CLIENT - primaryButtons", updatedClient)
-
-                updateClient(updatedClient)
-                
-            })
-
-    }
 
     // WAS USED TO DO UNDO -- REMOVED FOR NOW
     // function handleUndoService(serviceTypeId, serviceCategory, serviceButtons){
@@ -209,7 +194,7 @@ export default function PrimaryButtons(props) {
                         key={ button.serviceTypeId }
                         className={ classes.image }
                         focusVisibleClassName={ classes.focusVisible }
-                        onClick={ () => handleAddService(button.serviceTypeId, 
+                        onClick={ () => handleAddSvc(button.serviceTypeId, 
                             button.serviceCategory, button.serviceButtons) }
                     >
                                
@@ -252,7 +237,7 @@ export default function PrimaryButtons(props) {
                         key={ button.serviceTypeId }
                         className={ classes.image }
                         focusVisibleClassName={ classes.focusVisible }
-                        onClick={ () => handleAddService(button.serviceTypeId, 
+                        onClick={ () => handleAddSvc(button.serviceTypeId, 
                             button.serviceCategory, button.serviceButtons) }
                     >
                         <span className={classes.imageSrc}

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@material-ui/core';
 import { Card } from '../../System';
+import { addServiceAsync } from '../../System/js/Clients/Services'
 import { LastServed, PrimaryButtons, SecondaryButtons, ServiceNotes } from '../';
+
 
 ServicesPage.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
@@ -12,6 +14,19 @@ ServicesPage.propTypes = {
 }
 
 export default function ServicesPage(props) {
+    const client = props.client
+    const updateClient = props.updateClient
+    const [ clickedButton, setClickedButton ] = useState(null)
+
+    function handleAddSvc(serviceTypeId, serviceCategory, svcButtons){        
+        setClickedButton(serviceTypeId)
+        addServiceAsync( { client: client, serviceTypeId: serviceTypeId, 
+            serviceCategory: serviceCategory, svcButtons: svcButtons })
+            .then((updatedClient) => {
+//  console.log("UPDATED CLIENT - Button", updatedClient)
+                updateClient(updatedClient)
+            })
+    }
 
     return (
         <Box display="flex" justifyContent="space-around" flexWrap="wrap">
@@ -23,10 +38,10 @@ export default function ServicesPage(props) {
                     </Box>
                 </Card>
                 <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
-                    <PrimaryButtons { ...props } />
+                    <PrimaryButtons { ...props } handleAddSvc={ handleAddSvc } clickedButton={ clickedButton }/>
                 </Box>
                 <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
-                    <SecondaryButtons { ...props } />
+                    <SecondaryButtons { ...props } handleAddSvc={ handleAddSvc } clickedButton={ clickedButton } />
                 </Box>
             </Box>
             <Box maxWidth="500px" mt={ 5 } justifyContent="center">

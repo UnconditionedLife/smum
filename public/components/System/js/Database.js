@@ -348,9 +348,7 @@ export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCatego
 	}
 	if (notPushed) newLastServed.push(newRecord)
 	newClient.lastServed = newLastServed
-
-console.log("SAVING CLIENT LASTSERVED")
-
+// console.log("SAVING CLIENT LASTSERVED")
     return await dbSaveClientAsync(newClient).then(() => {
         return newLastServed
     })
