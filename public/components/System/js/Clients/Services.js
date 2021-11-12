@@ -5,7 +5,7 @@ import { isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from '../Clients/ClientUtils'
 import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
-    getSession, dbSaveLastServedAsync, globalMsgFunc } from '../Database';
+    getSession, dbSaveLastServedAsync, globalMsgFunc, dbGetSvcsByIdAndYear } from '../Database';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt, prnFlush } from '../Clients/Receipts';
 import cuid from 'cuid';
@@ -76,7 +76,7 @@ export async function addServiceAsync(props){
                 
                 // if (undoneService === true) return 'undone'
                 // if (serviceId === "" && result == "success")
-                newClient.svcHistory.push(svcRecord)
+                newClient.svcHistory.unshift(svcRecord)
 
                 return newClient
             }
@@ -98,8 +98,9 @@ export function getButtonData( props ) {
     return buttonData
 }
 
-export function getFoodInterval(isUSDA){
-    const svcTypes = getSvcTypes()
+export function getFoodInterval(isUSDA, svcTypesProp){
+    let svcTypes = svcTypesProp ? svcTypesProp : getSvcTypes()
+    
 	for (var i = 0; i < svcTypes.length; i++) {
 		if ((svcTypes[i].serviceButtons == "Primary") && (svcTypes[i].serviceCategory == "Food_Pantry") && (svcTypes[i].isUSDA == isUSDA)){
 			return svcTypes[i].serviceInterval
@@ -156,7 +157,7 @@ export function utilSetLastServedFood(client){
 		}
 	}
 	client.lastServedFoodDateTime = lastServedFoodDateTime
-};
+}
 
 //******************************************************************
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
@@ -165,8 +166,6 @@ export function utilSetLastServedFood(client){
 function getLastServedDays(client) {
 	// get Last Served Date from client & calculate number of days
     let lastServed = { daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000 }
-// console.log(client.lastServed)
-
 	if(client === undefined) { return null; }
 	if (client.lastServed[0] == undefined) return lastServed;
 	let lastServedFood = client.lastServed.filter(obj => obj.serviceCategory === "Food_Pantry")
@@ -279,9 +278,13 @@ function getActiveServicesButtons( props ) {
 	for (let i = 0; i < activeServiceTypes.length; i++) {
 		let display = true;
 		// check for not a valid service based on interval between services
+        const intervals = {}
+        intervals.nonUSDA = getFoodInterval("NonUSDA", activeServiceTypes)
+        intervals.USDA = getFoodInterval("USDA", activeServiceTypes)
+        intervals.emergency = getFoodInterval("Emergency", activeServiceTypes)
 		if (!validateServiceInterval(
             { client: client, activeServiceType: activeServiceTypes[i], 
-                activeServiceTypes: activeServiceTypes, lastServed: lastServed })) continue;
+                lastServed: lastServed, intervals: intervals })) continue;
 		// loop through each property in each targetServices
 		for (let prop in targetServices[i]) {
 			if (prop=="family_totalChildren") {
@@ -333,23 +336,32 @@ function getActiveServicesButtons( props ) {
 }
 
 function validateServiceInterval( props ){
-    const { client, activeServiceType, activeServiceTypes, lastServed } = props
+    const { client, activeServiceType, lastServed, intervals } = props
+
 	if (activeServiceType.serviceButtons == "Primary") {
 		const serviceCategory = activeServiceType.serviceCategory
 		if (serviceCategory == "Food_Pantry") {
-			const nonUSDAServiceInterval = utilCalcFoodInterval("NonUSDA", activeServiceTypes)
-			const USDAServiceInterval = utilCalcFoodInterval("USDA", activeServiceTypes)
-            const emergencyServiceInterval = utilCalcFoodInterval("Emergency", activeServiceTypes)
-			if (lastServed.daysUSDA >= USDAServiceInterval) {
-				if (activeServiceType.isUSDA == "USDA") return true
-				return false
-			}
-			if (lastServed.lowestDays >= nonUSDAServiceInterval) {
-				if (activeServiceType.isUSDA == "NonUSDA") return true
-				return false
-			}
+            if ( intervals.USDA > intervals.nonUSDA ) {
+                if (activeServiceType.isUSDA == "USDA") {
+                    if (lastServed.daysUSDA >= intervals.USDA) return true
+                    return false
+                }
+                if (activeServiceType.isUSDA == "NonUSDA") return false
+            } else {
+                if (activeServiceType.isUSDA == "USDA") {
+                    if (lastServed.daysUSDA >= intervals.USDA) return true
+                    return false
+                }
+                if (activeServiceType.isUSDA == "NonUSDA") {
+                    if (lastServed.lowestDays >= intervals.nonUSDA) return true
+                    return false
+                }
+            }
+
             if (activeServiceType.isUSDA === "Emergency") {
-			    if (lastServed.lowestDays > emergencyServiceInterval) return true
+                if (lastServed.daysUSDA >= intervals.USDA) return false
+                if (lastServed.lowestDays >= intervals.nonUSDA) return false
+                if (lastServed.lowestDays >= intervals.emergency) return true
 				return false
 			}
 		}
@@ -374,8 +386,11 @@ function validateServiceInterval( props ){
 		}
 		//TODO: this is a workaround due to last served not tracking id. Need last served to track by service id.
 		if (activeServiceType.fulfillment.type == "Voucher"){
-			let service = dbGetServicesByIdAndYear(activeServiceType.serviceTypeId, moment().year())
-				.filter(obj => obj.clientServedId == client.clientId)
+			let service = dbGetSvcsByIdAndYear(activeServiceType.serviceTypeId, moment().year())
+                .then((svcs) => {
+                    return svcs.filter(obj => obj.clientServedId == client.clientId)
+                })
+				
 			if (service.length == 0){
 				return true;
 			}
@@ -404,7 +419,10 @@ function validateServiceInterval( props ){
 		if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.serviceInterval) return false
 	} else {
 		// secondary buttons
-		if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
+        // Greater than 0 lowest day is used to provide same day buffer for secondary buttons
+        if (lastServed.lowestDays > 0) {
+            if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
+        }
 	}
 	// default: show button
 	return true
@@ -442,23 +460,8 @@ async function utilCalcVoucherServiceSignupAsync(client, serviceType){
     )
 }
 
-function utilCalcFoodInterval(isUSDA, activeServiceTypes) {
-	let foodServiceInterval = ""
-	for (var i = 0; i < activeServiceTypes.length; i++) {
-		if (activeServiceTypes[i].serviceCategory == "Food_Pantry" 
-            && activeServiceTypes[i].serviceButtons == "Primary" 
-            && activeServiceTypes[i].isUSDA == isUSDA) {
-                foodServiceInterval = activeServiceTypes[i].serviceInterval
-		}
-	}
-	return foodServiceInterval
-}
-
-function utilGetVoucherTargetService(at){
-    const { svcHistory, serviceType } = at
-console.log(at)
-console.log(svcHistory)
-
+function utilGetVoucherTargetService(props){
+    const { svcHistory, serviceType } = props
     return svcHistory
         .filter(item => moment(item.servicedDateTime).year() == moment().year())
         .filter(item => item.serviceTypeId == serviceType.target.service)

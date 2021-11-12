@@ -297,6 +297,15 @@ export async function dbGetDaysSvcsAsync(dayDate){
     return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
 }
 
+export async function dbGetSvcsByIdAndYear(serviceTypeId, year) {
+	return await dbGetDataAsync("/clients/services/byservicetype/" + serviceTypeId)
+            .then( data => { 
+                return data.services
+                .filter(item => item.serviceValid == 'true')
+                .filter(item => moment(item.servicedDateTime).year() == year)
+            })					
+}
+
 // formerly utilGetServicesInMonth in app.js
 export async function dbGetSvcsInMonthAsync(monthYear){
 
@@ -339,9 +348,7 @@ export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCatego
 	}
 	if (notPushed) newLastServed.push(newRecord)
 	newClient.lastServed = newLastServed
-
-console.log("SAVING CLIENT LASTSERVED")
-
+// console.log("SAVING CLIENT LASTSERVED")
     return await dbSaveClientAsync(newClient).then(() => {
         return newLastServed
     })

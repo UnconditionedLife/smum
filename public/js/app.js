@@ -2391,12 +2391,13 @@ function uiResetServiceTypeForm(){
 // 	})
 // };
 
-function dbGetServicesByIdAndYear(serviceTypeId, year) {
-	// TODO // catch error from dbGetData
-	return dbGetData(aws+"/clients/services/byservicetype/" + serviceTypeId).services
-					.filter(item => item.serviceValid == 'true')
-					.filter(item => moment(item.servicedDateTime).year() == year)
-};
+// MOVED TO REACT JS
+// function dbGetServicesByIdAndYear(serviceTypeId, year) {
+// 	// TODO // catch error from dbGetData
+// 	return dbGetData(aws+"/clients/services/byservicetype/" + serviceTypeId).services
+// 					.filter(item => item.serviceValid == 'true')
+// 					.filter(item => moment(item.servicedDateTime).year() == year)
+// };
 
 // function dbGetUsers(){
 // 	return dbGetData(aws+"/users").users

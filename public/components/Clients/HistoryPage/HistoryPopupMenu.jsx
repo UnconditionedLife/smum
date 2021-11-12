@@ -2,14 +2,11 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Box,  Tooltip, Typography } from '@material-ui/core';
 import { Delete, Edit, Cancel, CheckCircle } from '@material-ui/icons';
-import Alert from '@material-ui/lab/Alert';
 import { IconButton } from '../../System';
 
 HistoryPopupMenu.propTypes = {
     editMode: PropTypes.string.isRequired,          //  'edit', 'confirm', 'message' ] display form
     handleEditMode: PropTypes.func.isRequired,      //  handles setting edit mode
-    message: PropTypes.object.isRequired,           //  Alert message { text, severity }
-    delay: PropTypes.bool.isRequired                //  delay flag for message display
 }
 
 export default function HistoryPopupMenu(props) {
@@ -56,13 +53,6 @@ export default function HistoryPopupMenu(props) {
                 }
                 
             </Box>
-
-            { props.delay &&
-                <Box width='100%'>
-                    <Alert severity={ props.message.severity }>{ props.message.text }</Alert> 
-                </Box>
-            }
-            
         </Box>
     )
 }

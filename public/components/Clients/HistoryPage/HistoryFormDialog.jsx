@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
-import { isEmpty } from '../../System/js/GlobalUtils';
 import { getSvcTypes, getSession, globalMsgFunc } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { saveHistoryFormAsync, utilRemoveServiceAsync } from '../../System/js/Clients/History';
+import { saveHistoryFormAsync, removeSvcAsync } from '../../System/js/Clients/History';
 
 HistoryFormDialog.propTypes = {
     client: PropTypes.object.isRequired,                // current client
@@ -17,6 +16,7 @@ HistoryFormDialog.propTypes = {
 }
 
 export default function HistoryFormDialog(props) {
+    const editRecord = props.editRecord
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const [ message, setMessage ] = useState(null)
     const userName = getSession().user.userName
@@ -32,24 +32,35 @@ export default function HistoryFormDialog(props) {
         setDialogOpen(state)
     }
 
-    const initValues = props.editRecord
+    const initValues = editRecord
     const { handleSubmit, control, errors, formState } = useForm({
         mode: 'onBlur',
         defaultValues: initValues, 
     })
 
     function doSave(formValues) {
-        saveHistoryFormAsync(props.editRecord, formValues, props.client, userName)
-            .then( message => {
-                const msg = message ? message : undefined
-                if (msg === undefined) {
-                    globalMsgFunc('success', 'History record was saved!')
-                    utilRemoveServiceAsync(props.editRecord.serviceId)
-                        .then( message => {
-                            const removeMsg = message ? message : undefined
-                            if (removeMsg === undefined) globalMsgFunc('success', 'Saved and old history record removed!')
+        saveHistoryFormAsync(editRecord, formValues, props.client, userName)
+            .then( savedSvc => {
+                if (savedSvc !== null) { 
+                    removeSvcAsync(editRecord)
+                        .then( oldSvc => {
+                            if (oldSvc !== null) { 
+                                globalMsgFunc('success', 'Saved and old history record removed!')
+                                handleDialog(false)
+
+                            // TODO UPDATE SERVICE HISTORY TO UPDATED RECORD to => savedSvc
+                            // client.svcHistory.forEach((svc, index) => {
+                            //     if (svc.serviceId === oldServiceId) {
+                            //         client.svcHistory[index] = editRecord
+                            //     }
+                            // })
+
+                            } else {
+                                globalMsgFunc('error', 'Failed to removed old service history!')
+                            }
                         })
-                    handleDialog(false)
+                } else {
+                    globalMsgFunc('error', 'Failed to save edited service history!')
                 }
             }) 
     }
@@ -103,7 +114,7 @@ export default function HistoryFormDialog(props) {
                     <FormTextField width='160px' name="servicedByUserName" label="Serviced By" error={ errors.servicedByUserName } 
                         control={ control } disabled={ true } />
                     </form>
-                    <SaveCancel saveDisabled={ !formState.isDirty } message={ message } onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
+                    <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
                 </Box>
             </DialogContent>
         </Dialog>
