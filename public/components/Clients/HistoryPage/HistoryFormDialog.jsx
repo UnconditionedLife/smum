@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
 import { getSvcTypes, getSession, globalMsgFunc } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { saveHistoryFormAsync, removeSvcAsync } from '../../System/js/Clients/History';
+import { saveHistoryFormAsync, removeSvcAsync, updateLastServed } from '../../System/js/Clients/History';
 
 HistoryFormDialog.propTypes = {
     client: PropTypes.object.isRequired,                // current client
@@ -12,13 +12,16 @@ HistoryFormDialog.propTypes = {
     handleEditMode: PropTypes.func.isRequired,          // editMode handler
     editRecord: PropTypes.object.isRequired,            // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
+    updateClient: PropTypes.func.isRequired,
     // handleClientHistory: PropTypes.func.isRequired,     // handles updating history
 }
 
 export default function HistoryFormDialog(props) {
     const editRecord = props.editRecord
+    const updateClient = props.updateClient
+    const client = props.client
     const [ dialogOpen, setDialogOpen ] = useState(true);
-    const [ message, setMessage ] = useState(null)
+    // const [ message, setMessage ] = useState(null)
     const userName = getSession().user.userName
 
     const serviceNames = getSvcTypes()
@@ -42,19 +45,18 @@ export default function HistoryFormDialog(props) {
         saveHistoryFormAsync(editRecord, formValues, props.client, userName)
             .then( savedSvc => {
                 if (savedSvc !== null) { 
-                    removeSvcAsync(editRecord)
+                    // update client history to reflect edits
+                    const tempClient = Object.create(client)
+                    const index = tempClient.svcHistory.findIndex((svc) => svc.serviceId === editRecord.serviceId)
+                    tempClient.svcHistory[index] = savedSvc
+                    if (savedSvc.serviceButtons === 'primary') updateLastServed(client)
+                    updateClient(tempClient)
+                    const oldRecord = Object.assign({}, editRecord)
+                    removeSvcAsync(oldRecord)
                         .then( oldSvc => {
                             if (oldSvc !== null) { 
-                                globalMsgFunc('success', 'Saved and old history record removed!')
+                                globalMsgFunc('success', 'Saved changes and archived old history record!')
                                 handleDialog(false)
-
-                            // TODO UPDATE SERVICE HISTORY TO UPDATED RECORD to => savedSvc
-                            // client.svcHistory.forEach((svc, index) => {
-                            //     if (svc.serviceId === oldServiceId) {
-                            //         client.svcHistory[index] = editRecord
-                            //     }
-                            // })
-
                             } else {
                                 globalMsgFunc('error', 'Failed to removed old service history!')
                             }

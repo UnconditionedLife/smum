@@ -49,24 +49,29 @@ console.log("AFTER UPDATE", client)
 }
 
 export async function saveHistoryFormAsync(editRecord, formValues, client, userName){
-    const oldServiceId = editRecord.serviceId
-    Object.assign(editRecord, formValues)
+    // const oldServiceId = editRecord.serviceId
+    const modRecord = Object.assign({}, editRecord)
+    Object.assign(modRecord, formValues)
     const serviceType = getSvcTypes().filter(item => item.serviceName == editRecord.serviceName)[0]
-    Object.assign(editRecord, {
+    Object.assign(modRecord, {
         serviceTypeId: serviceType.serviceTypeId, serviceCategory: serviceType.serviceCategory, 
         isUSDA: serviceType.isUSDA })
 
-    editRecord.servicedDay = moment(editRecord.servicedDateTime).format("YYYYMMDD")
-    editRecord.servicedByUserName = userName
-    editRecord.updatedDateTime = utilNow()
-    editRecord.serviceId = cuid()
+    modRecord.servicedDay = moment(editRecord.servicedDateTime).format("YYYYMMDD")
+    modRecord.servicedByUserName = userName
+    modRecord.updatedDateTime = utilNow()
+    modRecord.serviceId = cuid()
+    // modRecord.serviceValid = true
+
+    console.log(modRecord)
+
     
-    return await dbSaveServiceRecordAsync(editRecord)
+    return await dbSaveServiceRecordAsync(modRecord)
         .then((savedSvc) => {
             console.log("SAVED SERVICE:", savedSvc )
 
             if (Object.keys(savedSvc).length === 0) {
-                return editRecord
+                return modRecord
             } else {
                 return null
             }

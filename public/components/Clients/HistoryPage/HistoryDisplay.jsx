@@ -146,7 +146,7 @@ export default function HistoryDisplay(props) {
                         </Fragment>
                     ))}
                     { editMode === 'edit' &&
-                        <HistoryFormDialog client = { props.client } editMode={ editMode } 
+                        <HistoryFormDialog client = { client } editMode={ editMode } updateClient = {props.updateClient}
                         handleEditMode={ handleEditMode } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
                     }
                 </Fragment>
