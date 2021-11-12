@@ -293,7 +293,7 @@ export async function dbSaveServiceRecordAsync(svc) {
 	return await dbPostDataAsync("/clients/services", svc)
 }
 
-async function dbGetDaysSvcsAsync(dayDate){
+export async function dbGetDaysSvcsAsync(dayDate){
     return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
 }
 

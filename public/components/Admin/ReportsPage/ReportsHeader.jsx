@@ -46,13 +46,13 @@ export default function ReportsHeader(props) {
                 </TableCell>
             </TableRow>
             {groupColumns ? (<TableRow>
-                {groupColumns.map((item) =>
-                    <TableCell key={item.name} colSpan={item.length} align="center">{item.name}</TableCell>
+                {groupColumns.map((item, ind) =>
+                    <TableCell key={item.name+ind} colSpan={item.length} align="center">{item.name}</TableCell>
                 )}
             </TableRow>) : null}
             <TableRow>
-                {columns.map((item) =>
-                    <TableCell style={groupColumns ? {background:"white"} : null} key={item} align="center">{item}</TableCell>
+                {columns.map((item, ind) =>
+                    <TableCell style={groupColumns ? {background:"white"} : null} key={item+ind} align="center">{item}</TableCell>
                 )}
             </TableRow>
         </TableHead>
