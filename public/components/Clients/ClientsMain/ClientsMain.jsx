@@ -114,14 +114,14 @@ export default function ClientsMain(props) {
                 dbGetClientActiveServiceHistoryAsync(newClient.clientId).then( history => { 
                     newClient.svcHistory = history
                     // newClient.svcsRendered = getSvcsRendered(newClient.svcHistory)
-                    keepAppJsInSync(newClient)
+                    // keepAppJsInSync(newClient)
                     setClient(newClient)
                     updateURL(newClient.clientId, clientsTab)
                 })
                 
             } else {
                 dbSetModifiedTime(newClient, true);
-                keepAppJsInSync(newClient)
+                // keepAppJsInSync(newClient)
                 setClient(newClient)
                 updateURL(newClient.clientId, clientsTab)
             }
@@ -129,7 +129,7 @@ export default function ClientsMain(props) {
     }
 
     function updateClient(newClient){
-        keepAppJsInSync(newClient)
+        // keepAppJsInSync(newClient)
         newClient = utilCalcAge(newClient)
         setClient(newClient);
     }
