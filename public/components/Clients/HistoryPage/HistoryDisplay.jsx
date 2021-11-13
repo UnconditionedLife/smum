@@ -7,6 +7,7 @@ import { HistoryFormDialog, HistoryPopupMenu } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils';
 import { updateLastServed, removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc } from '../../System/js/Database';
+import moment from 'moment';
 
 HistoryDisplay.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
@@ -131,7 +132,7 @@ export default function HistoryDisplay(props) {
                                 onClick= { (event) => handleSelectedService(event, svc)}
                                 selected= { svc.serviceId == selectedService } >
                                 <TableCell align="center">
-                                        { window.moment(svc.servicedDateTime).format("MMM DD, YYYY - h:mm a") }
+                                        { moment(svc.servicedDateTime).format("MMM DD, YYYY - h:mm a") }
                                 </TableCell>
                                 <TableCell align="center">{ svc.serviceName }</TableCell>
                                 <TableCell align="center">{ svc.clientStatus }</TableCell>

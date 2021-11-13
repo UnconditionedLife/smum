@@ -5,6 +5,7 @@ import { NotificationImportant } from '@material-ui/icons';
 import { Button, TextField } from '../../System';
 import { isEmpty, utilNow } from '../../System/js/GlobalUtils.js';
 import { dbSaveClientAsync, getSession } from '../../System/js/Database.js';
+import cuid from 'cuid';
 
 NoteForm.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
@@ -52,7 +53,7 @@ export default function NoteForm(props) {
         let newNote = {}
         if (noteImportant) important = "true"
         if (isEmpty(editNote)) {
-            const noteId = window.cuid()
+            const noteId = cuid()
             newNote.createdDateTime = utilNow() // moment().format(dateTime);
             newNote.updatedDateTime = utilNow() // moment().format(dateTime);
             newNote.isImportant = important;
@@ -63,7 +64,7 @@ export default function NoteForm(props) {
             tempNotes.unshift(newNote)
         } else {
             newNote.createdDateTime = editNote.createdDateTime;
-            newNote.updatedDateTime = utilNow() // window.moment().format(dateTime);
+            newNote.updatedDateTime = utilNow()
             newNote.isImportant = important;
             newNote.noteByUserName = userName;
             newNote.noteId = editNote.noteId;

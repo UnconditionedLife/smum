@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography } from '@material-ui/core';
+import moment from 'moment';
 
 export default function DateTime(props) {
     const size = props.size
     const color = props.color
-    const [ dateTime, setDateTime ] = useState(window.moment().format('MMMM DD, YYYY - h:mm a'));
+    const [ dateTime, setDateTime ] = useState(moment().format('MMMM DD, YYYY - h:mm a'));
       
     useEffect(() => {
-         let dateTimer = setInterval(() => setDateTime(window.moment().format('MMMM DD, YYYY - h:mm a')), 5000)
+         let dateTimer = setInterval(() => setDateTime(moment().format('MMMM DD, YYYY - h:mm a')), 5000)
    
          // this will clear Timeout when component unmounts
          return () => {

@@ -56,7 +56,6 @@ export default function ClientsMain(props) {
     useEffect(() => {
         if (searchTerm !== '') {
             if (window.stateCheckPendingEdit()) return // used temporarily to keep global vars in sync
-            window.uiShowHideClientMessage('hide')   // hide ClientMessage overlay in case it's open
             dbSearchClientsAsync(searchTerm).then(clients => { 
                 changeClientsFound(clients)
                 if (clients.length === 0) {
@@ -89,8 +88,8 @@ export default function ClientsMain(props) {
     function changeClientsFound(newValue, shouldUpdateURL) {
         if (clientsFound !== newValue) {
             setClientsFound(newValue);
-            window.clientData = newValue // used temporarily to keep global vars in sync
-            window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
+            // window.clientData = newValue // used temporarily to keep global vars in sync
+            // window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
             if (newValue.length === 1) {
                 changeClient(newValue[0], 1)
             } else {
@@ -126,8 +125,6 @@ export default function ClientsMain(props) {
                 setClient(newClient)
                 updateURL(newClient.clientId, clientsTab)
             }
-            // keepAppJsInSync(newClient)
-            // setClient(newClient)
         }
     }
 
@@ -138,12 +135,12 @@ export default function ClientsMain(props) {
     }
 
     // TODO - TO BE REMOVED
-    function keepAppJsInSync(newClient){
-        window.client = newClient // used temporarily to keep global vars in sync
-        window.servicesRendered = [] // used temporarily to keep global vars in sync
+    // function keepAppJsInSync(newClient){
+        // window.client = newClient // used temporarily to keep global vars in sync
+        // window.servicesRendered = [] // used temporarily to keep global vars in sync
         // window.uiResetNotesTab() // used temporarily to keep global vars in sync
-        window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
-    }
+        // window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
+    // }
 
     const emptyClient = {
         clientId: "0",

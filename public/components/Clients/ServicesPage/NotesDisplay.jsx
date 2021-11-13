@@ -5,6 +5,7 @@ import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/c
 import { Card, IconButton } from '../../System';
 import { NoteForm } from '../../Clients';
 import { dbSaveClientAsync, getSession } from '../../System/js/Database.js';
+import moment from 'moment';
 
 NotesDisplay.propTypes = {
     client: PropTypes.object.isRequired, 
@@ -85,10 +86,10 @@ export default function NotesDisplay(props) {
                                 }        
                                 <Box>
                                     <Typography variant="caption" color="textSecondary" gutterBottom>
-                                        Added { window.moment(row.createdDateTime).fromNow() }
+                                        Added { moment(row.createdDateTime).fromNow() }
                                         <br/><b>{row.noteByUserName}</b>
                                         { row.createdDateTime !== row.updatedDateTime &&
-                                            <Tooltip title= { window.moment(row.updatedDateTime).fromNow() } >
+                                            <Tooltip title= { moment(row.updatedDateTime).fromNow() } >
                                                 <span> (Edited)</span>
                                             </Tooltip>   
                                         }

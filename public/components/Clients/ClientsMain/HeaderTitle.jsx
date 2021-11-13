@@ -4,6 +4,7 @@ import { Box, Chip, Typography } from '@material-ui/core';
 import { House } from '@material-ui/icons';
 import { HeaderDateTime } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
+import moment from 'moment';
 
 HeaderTitle.propTypes = {
     client: PropTypes.object.isRequired,
@@ -13,7 +14,7 @@ HeaderTitle.propTypes = {
 export default function HeaderTitle(props) {
     const client = props.client
     const clientsFound = props.clientsFound
-    const todaysDate = window.moment().format("dddd, MMM DD YYYY")
+    const todaysDate = moment().format("dddd, MMM DD YYYY")
     const [ headerMessage, setHeaderMessage ] = useState(todaysDate)
     let titleType = 'nonclient';
 

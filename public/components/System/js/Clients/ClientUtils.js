@@ -3,6 +3,7 @@
 //******************************************************************
 import moment from  'moment';
 import { SettingsSeniorAge } from '../Database.js';
+import cuid from 'cuid';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -14,7 +15,7 @@ export function arrayAddIds(array, id) {
 		if (typeof array[0][id] === "undefined" ) {
 			let newArray = []
 			array.forEach((item) => {
-				item[id] = window.cuid();
+				item[id] = cuid();
 				newArray.push(item);
 			})
 			return newArray

@@ -137,7 +137,7 @@ export default function HeaderBar(props) {
             removeCookie("user", { path: '/' });
             removeCookie("auth", { path: '/' });
             removeCookie("refresh", { path: '/' });
-            window.utilInitAuth(null);
+            // window.utilInitAuth(null);
             setCogUser(null);
             clearCache();
         }
