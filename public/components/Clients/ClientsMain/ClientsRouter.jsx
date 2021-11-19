@@ -31,6 +31,7 @@ export default function ClientsRouter(props) {
         if (newURL != url) {
             history.push(newURL)
         }
+        handleTabChange(newTab)
     }
 
     const checkClientsURL = (client) => {
@@ -66,11 +67,16 @@ export default function ClientsRouter(props) {
             setSelectedTab(tabId);
         }
     }
+
+    const handleTabChange = (newValue) => {
+        setSelectedTab(newValue);
+    };
     
     return (    
           <ClientsMain {...props}
             checkClientsURL={checkClientsURL}
-            selectedTab={selectedTab} url={url}
+            selectedTab={selectedTab}
+            url={url}
             updateURL={updateURL} />
     )
 }
