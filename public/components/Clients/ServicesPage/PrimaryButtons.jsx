@@ -11,10 +11,11 @@ const useStyles = makeStyles((theme) => ({
       flexWrap: 'wrap',
       minWidth: 300,
       width: '100%',
+      borderRadius: '20px',
     },
     image: {
       position: 'relative',
-      margin: 4,
+      margin: 0,
       width: 168,
       height: 168,
         [theme.breakpoints.down('xs')]: {
@@ -173,6 +174,10 @@ export default function PrimaryButtons(props) {
     // }
 
 // console.log("CLICKED", clickedButton)
+
+    const buttonStyleNormal = { padding: '0', margin: '4px', border: 'solid Gainsboro 5px', borderRadius: '15px', overflow: 'hidden' }
+    const buttonStyleHighlight = Object.assign({}, buttonStyleNormal)
+    buttonStyleHighlight.border = 'solid red 5px'
     
     if (buttons.length === 0) {
         return (
@@ -189,68 +194,72 @@ export default function PrimaryButtons(props) {
         { buttons.map((button) => (
             <Fragment key={ button.serviceTypeId }>
                 { (button.btnType === 'normal') &&
-                    <ButtonBase
-                        focusRipple
-                        key={ button.serviceTypeId }
-                        className={ classes.image }
-                        focusVisibleClassName={ classes.focusVisible }
-                        onClick={ () => handleAddSvc(button.serviceTypeId, 
-                            button.serviceCategory, button.serviceButtons) }
-                    >
+                    <Box style={ buttonStyleNormal }>
+                        <ButtonBase
+                            focusRipple
+                            key={ button.serviceTypeId }
+                            className={ classes.image }
+                            focusVisibleClassName={ classes.focusVisible }
+                            onClick={ () => handleAddSvc(button.serviceTypeId, 
+                                button.serviceCategory, button.serviceButtons) }
+                        >
                                
-                    { (button.serviceTypeId !== clickedButton ) &&
-                        <>
-                        <span className={classes.imageSrc}
-                        style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
-                        <span className={classes.imageBackdrop} />
-                        <span className={classes.imageButton}>
-                        <Typography component="span" variant="button" color="inherit"
-                        className={classes.imageTitle} >
-                        <strong>{ button.serviceName.toUpperCase() }</strong>
-                        <span className={classes.imageMarked} />
-                        </Typography>
-                        </span>
-                        </>
-                    }
+                            { (button.serviceTypeId !== clickedButton ) &&
+                                <>
+                                    <span className={classes.imageSrc}
+                                    style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
+                                    <span className={classes.imageBackdrop} />
+                                    <span className={classes.imageButton}>
+                                    <Typography component="span" variant="button" color="inherit"
+                                    className={classes.imageTitle} >
+                                    <strong>{ button.serviceName.toUpperCase() }</strong>
+                                    <span className={classes.imageMarked} />
+                                    </Typography>
+                                    </span>
+                                </>
+                            }
 
-                    { (button.serviceTypeId === clickedButton ) &&
-                        <>
-                        <span className={classes.imageSrc}
-                        style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
-                        <span className={classes.imageBackdrop} />
-                        <span className={classes.imageButton}>
-                        <Typography component="span" variant="button" color="inherit"
-                        className={classes.imageTitle} >
-                        <strong>SAVING...</strong>
-                        <span className={classes.imageMarked} />
-                        </Typography>
-                        </span>
-                        </>
-                    }
+                            { (button.serviceTypeId === clickedButton ) &&
+                                <>
+                                <span className={classes.imageSrc}
+                                style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
+                                <span className={classes.imageBackdrop} />
+                                <span className={classes.imageButton}>
+                                <Typography component="span" variant="button" color="inherit"
+                                className={classes.imageTitle} >
+                                <strong>SAVING...</strong>
+                                <span className={classes.imageMarked} />
+                                </Typography>
+                                </span>
+                                </>
+                            }
 
-                    </ButtonBase>
+                        </ButtonBase>
+                    </Box>
                 }
 
                 { (button.btnType === 'highlight') &&
-                    <ButtonBase
-                        focusRipple
-                        key={ button.serviceTypeId }
-                        className={ classes.image }
-                        focusVisibleClassName={ classes.focusVisible }
-                        onClick={ () => handleAddSvc(button.serviceTypeId, 
-                            button.serviceCategory, button.serviceButtons) }
-                    >
-                        <span className={classes.imageSrc}
-                            style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
-                        <span className={classes.imageBackdrop} />
-                        <span className={classes.imageButton}>
-                            <Typography component="span" variant="button" color="inherit"
-                                className={classes.imageTitle} >
-                                <strong>{ button.serviceName.toUpperCase() }</strong>
-                                <span className={classes.imageMarked} />
-                            </Typography>
-                        </span>
-                    </ButtonBase>
+                    <Box style={ buttonStyleHighlight }>
+                        <ButtonBase
+                            focusRipple
+                            key={ button.serviceTypeId }
+                            className={ classes.image }
+                            focusVisibleClassName={ classes.focusVisible }
+                            onClick={ () => handleAddSvc(button.serviceTypeId, 
+                                button.serviceCategory, button.serviceButtons) }
+                        >
+                            <span className={classes.imageSrc}
+                                style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
+                            <span className={classes.imageBackdrop} />
+                            <span className={classes.imageButton}>
+                                <Typography component="span" variant="button" color="inherit"
+                                    className={classes.imageTitle} >
+                                    <strong>{ button.serviceName.toUpperCase() }</strong>
+                                    <span className={classes.imageMarked} />
+                                </Typography>
+                            </span>
+                        </ButtonBase>
+                    </Box>
                 }
 
                 {/* WAS USED FOR UNDO REMOVED FOR NOW

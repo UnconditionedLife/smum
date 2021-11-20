@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { getButtonData } from '../../System/js/Clients/Services'
 import { Button } from '../../System';
@@ -13,26 +13,27 @@ SecondaryButtons.propTypes = {
 export default function SecondaryButtons(props) {
     const client = props.client
     const handleAddSvc = props.handleAddSvc
+    const [ buttons, setButtons ] = useState([])
 
-    const buttonData = getButtonData({ client: client, buttons: "secondary" })
+    useEffect(() => {
+        const buttonData = getButtonData({ client: client, buttons: "secondary" })
 
-    if (isEmpty(buttonData.secondary)) return null
+        if (isEmpty(buttonData.secondary)) return null
 
-    let buttons = []
-    if (buttonData.secondary == "-1") { // dependents grades requirement
-        let btnClass = "btnAlert"
-        buttons += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
-    } else {
-        for (let i=0; i < buttonData.secondary.length; i++){
-            let x = buttonData.secondary[i]
-            let btnClass = "btnSecondary"
-            if ((buttonData.activeServiceTypes[x].serviceCategory == "Administration") || (buttonData.activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
-            let attribs = "\'" + buttonData.activeServiceTypes[x].serviceTypeId + "\', \'" + buttonData.activeServiceTypes[x].serviceCategory + "\', \'" + buttonData.activeServiceTypes[x].serviceButtons + "\'";
-            //let image = "<img id=\'image-" + buttonData.activeServiceTypes[x].serviceTypeId + "\' src='public/images/PrimaryButton" + buttonData.activeServiceTypes[x].serviceCategory + ".png" + ver + "'>";
-            //primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
-            buttons.push(buttonData.activeServiceTypes[x])
+        let btns = []
+        if (buttonData.secondary == "-1") { // dependents grades requirement
+            let btnClass = "btnAlert"
+            btns += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
+        } else {
+            for (let i=0; i < buttonData.secondary.length; i++){
+                let x = buttonData.secondary[i]
+                // let btnClass = "btnSecondary"
+                // let attribs = "\'" + buttonData.activeServiceTypes[x].serviceTypeId + "\', \'" + buttonData.activeServiceTypes[x].serviceCategory + "\', \'" + buttonData.activeServiceTypes[x].serviceButtons + "\'";
+                btns.push(buttonData.activeServiceTypes[x])
+            }
         }
-    }
+        setButtons(btns)
+    },[ props.client.lastServed ])
 
     return (
         <Fragment>
