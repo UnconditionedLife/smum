@@ -34,7 +34,7 @@
 // let client = {} // current client
 let editFlag = {}
 // uiClearCurrentClient()
-let currentUser = {}
+// let currentUser = {}
 // let users = [] // all users
 // let adminUser = {}
 // let serviceType = null
@@ -49,8 +49,8 @@ let currentUser = {}
 // };
 // let userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 // let session = {}
-let cognitoUser = {}
-let authorization = {}
+// let cognitoUser = {}
+// let authorization = {}
 // let closedEvent = {
 // 	id : "closed",
 // 	title: "Closed",
@@ -3987,15 +3987,15 @@ function stateCheckPendingEdit() {
 // 	return parseInt(grade);
 // };
 
-function utilInitAuth(auth) {
-	authorization = auth;
-}
+// function utilInitAuth(auth) {
+// 	authorization = auth;
+// }
 
-function utilInitSession(user, cogUser) {
-	currentUser = user;
-	cognitoUser = cogUser;
+// function utilInitSession(user, cogUser) {
+// 	currentUser = user;
+// 	cognitoUser = cogUser;
 	// utilLoginUserShowScreens();
-}
+// }
 
 // function utilLoginUserShowScreens() {
 // 	// uiShowHideLogin('hide')
