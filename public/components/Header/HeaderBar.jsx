@@ -121,8 +121,8 @@ export default function HeaderBar(props) {
             console.log("Init session")
             let decodedTkn = jwt_decode(newSession.auth.accessToken)
             let currTime = new Date()
-            window.utilInitAuth(newSession.auth);
-            window.utilInitSession(newSession.user, newSession.cogUser);
+            //window.utilInitAuth(newSession.auth);
+            //window.utilInitSession(newSession.user, newSession.cogUser);
             // Update Local and Global Session vars
             session = newSession
             cacheSessionVar(newSession);

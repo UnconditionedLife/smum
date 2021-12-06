@@ -2,8 +2,8 @@ import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles'
 import { Box, ButtonBase } from '@material-ui/core';
-import { Typography } from '../../System';
-import { getButtonData } from '../../System/js/Clients/Services'
+import { Button, Typography } from '../../System';
+import { getButtonData, sortButtons } from '../../System/js/Clients/Services'
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -86,94 +86,21 @@ PrimaryButtons.propTypes = {
     client: PropTypes.object.isRequired, 
     updateClient: PropTypes.func.isRequired,
     handleAddSvc: PropTypes.func.isRequired,
+    handleUndoSvc: PropTypes.func.isRequired,
 }
 
 export default function PrimaryButtons(props) {
     const client = props.client
     const handleAddSvc = props.handleAddSvc
-    const classes = useStyles();    
-    // const [ buttonList, setButtonList ] = useState([])
-    const [ buttons, setButtons ] = useState([])
-    // const [ buttonState, setButtonState ] = useState([])
-    // const [ update, setUpdate ] = useState(false)
-    const [ clickedButton, setClickedButton ] = useState(null)
+    const handleUndoSvc = props.handleUndoSvc
+    const classes = useStyles();
+    const [ buttons, setButtons ] = useState([]);
 
     useEffect(() => {
-        const newButtonList = getButtonData({ client: client, buttons: 'primary' })
-
-        if (newButtonList.primary !== undefined) {
-            let btns = []
-            if (newButtonList.primary === "-1") { // dependents grades requirement === -1
-                // TODO TURN THIS INTO SERVICE TYPE
-                let btnClass = "btnAlert"
-                btns += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
-            } else {
-                let hasClickedButton = undefined
-                if (clickedButton !== null) hasClickedButton = false
-
-                newButtonList.primary.forEach((svcIndex) => {
-                    const theButton = newButtonList.activeServiceTypes[svcIndex]
-                    const svcCategory = theButton.serviceCategory
-                    theButton.btnType = "normal"
-                    if ((svcCategory === "Administration") || (theButton.isUSDA == "Emergency")) {
-                        theButton.btnType = "highlight"
-                    }
-                    if (hasClickedButton === false) {
-                        if (clickedButton ===  theButton.serviceTypeId) {
-                            hasClickedButton = true
-                        }
-                    }
-                    btns.push(theButton)
-                })
-                if (buttons !== btns) setButtons(btns)
-
-                if (hasClickedButton === false) {
-                    setClickedButton(null)
-                }
-            }
-        }
-    },[ props.client.lastServed ])
-
-    // useEffect(() => {
-    //     const tempSvcsRendered = props.client.svcsRendered
-    //     if (tempSvcsRendered !== svcsRendered) {
-    //         setSvcsRendered(tempSvcsRendered)
-    //     }
-    // })
-
-    // const handleButtonState = (serviceTypeId, newState) => {
-    //     let array = buttonState
-    //     if (newState === 'used') {
-    //         array.push(serviceTypeId)
-    //     } else {
-    //         const index = array.indexOf(serviceTypeId);
-    //         if (index !== -1) array.splice(index, 1)
-    //     }
-    //     setButtonState(array)
-    // }
-
-    // WAS USED TO DO UNDO -- REMOVED FOR NOW
-    // function handleUndoService(serviceTypeId, serviceCategory, serviceButtons){
-
-    //     console.log('UNDO SERVICE')
-        
-    //     return null
-
-    //     const service = window.utilRemoveService(selectedService)
-    //     if (service !== ""){
-    //         // TODO show alert success message
-    //         console.log("Saving removal worked.")
-    //         setClientHistory(getServiceHistory())
-    //         const result = window.utilUpdateLastServed()
-    //         if (result == "failed") return
-    //     } else {
-    //         // TODO show alert with error message
-    //         console.log("Saving delete failed.")
-    //         return
-    //     }
-    // }
-
-// console.log("CLICKED", clickedButton)
+        const buttonData = getButtonData({ client: client, buttons: 'primary' })
+        // do deep comparison before setting state
+        if (JSON.stringify(buttons) !== JSON.stringify(buttonData)) setButtons(buttonData)
+    },[ JSON.stringify(client.svcHistory) ])
 
     const buttonStyleNormal = { padding: '0', margin: '4px', border: 'solid Gainsboro 5px', borderRadius: '15px', overflow: 'hidden' }
     const buttonStyleHighlight = Object.assign({}, buttonStyleNormal)
@@ -190,71 +117,51 @@ export default function PrimaryButtons(props) {
     }
 
     return (
-        <Fragment>
-        { buttons.map((button) => (
-            <Fragment key={ button.serviceTypeId }>
-                { (button.btnType === 'normal') &&
+        <Fragment key={ buttons } >
+        { buttons.map((svc) => (
+            <Fragment key={ svc.serviceTypeId }>
+                { (svc.btnType === 'normal') &&
                     <Box style={ buttonStyleNormal }>
                         <ButtonBase
                             focusRipple
-                            key={ button.serviceTypeId }
+                            key={ svc.serviceTypeId }
                             className={ classes.image }
                             focusVisibleClassName={ classes.focusVisible }
-                            onClick={ () => handleAddSvc(button.serviceTypeId, 
-                                button.serviceCategory, button.serviceButtons) }
-                        >
-                               
-                            { (button.serviceTypeId !== clickedButton ) &&
+                            onClick={ () => handleAddSvc(svc.serviceTypeId, 
+                                svc.serviceCategory, svc.serviceButtons) }>
                                 <>
                                     <span className={classes.imageSrc}
-                                    style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
+                                    style={{ backgroundImage: "url(/" + svc.serviceCategory + ".jpg)" }} />
                                     <span className={classes.imageBackdrop} />
                                     <span className={classes.imageButton}>
                                     <Typography component="span" variant="button" color="inherit"
                                     className={classes.imageTitle} >
-                                    <strong>{ button.serviceName.toUpperCase() }</strong>
+                                    <strong>{ svc.serviceName.toUpperCase() }</strong>
                                     <span className={classes.imageMarked} />
                                     </Typography>
                                     </span>
                                 </>
-                            }
-
-                            { (button.serviceTypeId === clickedButton ) &&
-                                <>
-                                <span className={classes.imageSrc}
-                                style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
-                                <span className={classes.imageBackdrop} />
-                                <span className={classes.imageButton}>
-                                <Typography component="span" variant="button" color="inherit"
-                                className={classes.imageTitle} >
-                                <strong>SAVING...</strong>
-                                <span className={classes.imageMarked} />
-                                </Typography>
-                                </span>
-                                </>
-                            }
-
                         </ButtonBase>
                     </Box>
                 }
 
-                { (button.btnType === 'highlight') &&
+                { (svc.btnType === 'highlight') &&
                     <Box style={ buttonStyleHighlight }>
                         <ButtonBase
                             focusRipple
-                            key={ button.serviceTypeId }
+                            key={ svc.serviceTypeId }
                             className={ classes.image }
                             focusVisibleClassName={ classes.focusVisible }
-                            onClick={ () => handleAddSvc(button.serviceTypeId, 
-                                button.serviceCategory, button.serviceButtons) }
+                            onClick={ () => handleAddSvc(svc.serviceTypeId, 
+                                svc.serviceCategory, svc.serviceButtons) }
                         >
                             <span className={classes.imageSrc}
-                                style={{ backgroundImage: "url(/" + button.serviceCategory + ".jpg)" }} />
+                                style={{ backgroundImage: "url(/" + svc.serviceCategory + ".jpg)" }} />
                             <span className={classes.imageBackdrop} />
                             <span className={classes.imageButton}>
                                 <Typography component="span" variant="button" color="inherit"
                                     className={classes.imageTitle} >
-                                    <strong>{ button.serviceName.toUpperCase() }</strong>
+                                    <strong>{ svc.serviceName.toUpperCase() }</strong>
                                     <span className={classes.imageMarked} />
                                 </Typography>
                             </span>
@@ -262,17 +169,14 @@ export default function PrimaryButtons(props) {
                     </Box>
                 }
 
-                {/* WAS USED FOR UNDO REMOVED FOR NOW
-                
-                    { (button.btnType === 'undo') &&
-                    <Box key={ svcsRendered[0].servicedDateTime } m={ .5 } p={ 0 } width='168px' height='168px' bgcolor='#FFF' display='flex' >
-                            <Button m={ 0 } width='168px' height='168px' color='primary' style={{ border: '5px dashed #ddd' }}
-                                onClick={ () => handleAddService(button.serviceTypeId, 
-                                    button.serviceCategory, button.serviceButtons) }>
-                                <strong> { "UNDO " + button.serviceName.toUpperCase() }</strong>
+                { (svc.btnType === 'used') &&
+                    <Box m={ .5 } p={ 0 } width='176px' height='176px' bgcolor='#FFF' display='flex' >
+                            <Button m={ 0 } width='176px' height='176px' color='primary' style={{ borderRadius: '15px', border: '5px dashed #ddd' }}
+                                onClick={ () => handleUndoSvc( svc ) }>
+                                <strong> { "UNDO " + "\n" + svc.serviceName.toUpperCase() }</strong>
                             </Button>
                     </Box>
-                } */}
+                }
 
             </Fragment>
         ))}

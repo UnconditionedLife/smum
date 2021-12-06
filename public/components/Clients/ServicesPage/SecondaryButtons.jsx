@@ -8,43 +8,45 @@ SecondaryButtons.propTypes = {
     client: PropTypes.object.isRequired,
     updateClient: PropTypes.func.isRequired,
     handleAddSvc: PropTypes.func.isRequired,
+    handleUndoSvc: PropTypes.func.isRequired,
 }
 
 export default function SecondaryButtons(props) {
     const client = props.client
     const handleAddSvc = props.handleAddSvc
+    const handleUndoSvc = props.handleUndoSvc
     const [ buttons, setButtons ] = useState([])
 
     useEffect(() => {
         const buttonData = getButtonData({ client: client, buttons: "secondary" })
-
         if (isEmpty(buttonData.secondary)) return null
-
-        let btns = []
-        if (buttonData.secondary == "-1") { // dependents grades requirement
-            let btnClass = "btnAlert"
-            btns += '<div class=\"' + btnClass + '\" id=\"btn-NeedGrade\">DEPENDENTS NEED GRADE UPDATED</div>';
-        } else {
-            for (let i=0; i < buttonData.secondary.length; i++){
-                let x = buttonData.secondary[i]
-                // let btnClass = "btnSecondary"
-                // let attribs = "\'" + buttonData.activeServiceTypes[x].serviceTypeId + "\', \'" + buttonData.activeServiceTypes[x].serviceCategory + "\', \'" + buttonData.activeServiceTypes[x].serviceButtons + "\'";
-                btns.push(buttonData.activeServiceTypes[x])
-            }
+        // do deep comparison before setting state
+        if (JSON.stringify(buttons) !== JSON.stringify(buttonData)) {
+            setButtons(buttonData)
         }
-        setButtons(btns)
-    },[ props.client.lastServed ])
+    },[ JSON.stringify(client.svcHistory) ])
 
     return (
-        <Fragment>
-            {buttons.map((service) => {
+        <Fragment key={ buttons }>
+            {buttons.map((svc) => {
                 return (
-                    <Button key={ service.serviceTypeId } m={ .5 } variant="outlined" color="primary" size="large" minWidth="168px"
-                        onClick={ () => handleAddSvc(service.serviceTypeId, 
-                            service.serviceCategory, service.serviceButtons) }
-                    >
-                        { service.serviceName }
-                    </Button>
+                    <Fragment key={ svc.serviceTypeId }>
+                        { (svc.btnType === 'normal') &&
+                            <Button key={ svc.serviceTypeId } m={ .5 } variant="contained" 
+                                color="primary" size="large" minWidth="176px"
+                                onClick={ () => handleAddSvc( svc.serviceTypeId ) }>
+                                    { svc.serviceName }
+                            </Button>
+                        }
+
+                        { (svc.btnType === 'used') &&
+                            <Button key={ svc.serviceTypeId + "used" } m={ .25 } variant="outlined" 
+                                color="primary" size="large" minWidth="176px"
+                                onClick={ () => handleUndoSvc(svc) }>
+                                    { svc.serviceName }
+                            </Button>
+                        }
+                    </Fragment>
                 )
             })}
         </Fragment>

@@ -12,75 +12,37 @@ import cuid from 'cuid';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
-export async function addServiceAsync(props){
-    const { client, serviceTypeId, serviceCategory, svcButtons } = props
+export async function addServiceAsync( client, serviceTypeId ){
+    // const { client, serviceTypeId, serviceCategory } = props
     const svcTypes = getSvcTypes()
 	const svcType = getServiceTypeByID(svcTypes, serviceTypeId)
+    const serviceCategory = svcType.serviceCategory
 	const serviceId = "" // new service
     const serviceValid = true
-    const newClient = client
+    const newClient = Object.assign({}, client) 
     
 	// save service record
 	const servedCounts = calcServiceFamilyCounts( svcTypes, client, serviceTypeId)
     const svcRecord = utilBuildServiceRecord( svcType, serviceId, servedCounts, serviceValid, client )
 
 	return await dbSaveServiceRecordAsync(svcRecord)
-        .then(() => {
-
-            if (svcType.serviceButtons === "Primary"){
-                dbSaveLastServedAsync(client, serviceTypeId, svcType.serviceCategory, servedCounts.itemsServed, svcType.isUSDA)
-                    .then((newLastServed) => {
-                        globalMsgFunc('success', "Last Served Updated!")
-                        newClient.lastServed = newLastServed
-                    })
-            }
-
-            if (serviceId === "") {
-                if (serviceCategory === 'Food_Pantry') {
-                    // TODO Use function here
-                    let service = svcTypes.filter(function( obj ) {
-                            return obj.serviceTypeId === serviceTypeId
-                        })[0]
-                    prnPrintFoodReceipt(client, service.isUSDA )
-                    if (client.isActive === 'Client') {
-                        prnPrintReminderReceipt( client )
-                    }
-                } else if (serviceCategory == 'Clothes_Closet') {
-                    prnPrintClothesReceipt({ client: client, serviceType: svcType })
-                } else if (serviceCategory == 'Back_To_School' && svcType.target.service == 'Unselected') { // ignore fulfillment
-                    const targetService = utilCalcTargetServices([svcType])
-                    const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
-                    // TODO use function here
-                    //let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-                    prnPrintVoucherReceipt({ client: client, serviceType: svcType, dependents: dependents, gradeOrAge: 'grade' });
-                    prnPrintVoucherReceipt(svcType, dependents, 'grade');
-                } else if (serviceCategory == 'Thanksgiving' && svcType.target.service == 'Unselected') { // ignore fulfillment
-                    //const targetService = utilCalcTargetServices([svcType])
-                    // TODO use function here
-                    let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-                    prnPrintVoucherReceipt({ service: service })
-                    prnPrintVoucherReceipt({ service: service })
-                } else if (serviceCategory == 'Christmas' && svcType.target.service == 'Unselected') { // ignore fulfillment
-                    const targetService = utilCalcTargetServices([svcType])
-                    let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
-                    if (targetService[0].family_totalChildren == "Greater Than 0") {
-                        const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
-                        prnPrintVoucherReceipt(svcType, dependents, 'age');
-                        prnPrintVoucherReceipt(svcType, dependents, 'age');
-                    } else {
-                        prnPrintVoucherReceipt({ service: service });
-                        prnPrintVoucherReceipt({ service: service });
-                    }
+        .then((savedSvc) => {
+            if (Object.keys(savedSvc).length === 0) {
+                if (svcType.serviceButtons === "Primary"){
+                    dbSaveLastServedAsync(client, serviceTypeId, svcType.serviceCategory, servedCounts.itemsServed, svcType.isUSDA)
+                        .then((newLastServed) => {
+                            newClient.lastServed = newLastServed
+                        })
                 }
-                prnFlush();
-                
-                // if (undoneService === true) return 'undone'
-                // if (serviceId === "" && result == "success")
-                newClient.svcHistory.unshift(svcRecord)
 
-                return newClient
+                if (serviceId === "") {
+                    printSvcReceipt(client, svcTypes, svcType, serviceTypeId, serviceCategory)                    
+                    newClient.svcHistory.unshift(svcRecord)
+                    return newClient
+                } else {
+                    return null
+                }
             }
-
         })
 }
 
@@ -89,18 +51,50 @@ export function getButtonData( props ) {
     const { client, buttons } = props
 	if (isEmpty(client)) return
     let buttonData = {}
-    buttonData.lastServed = getLastServedDays(client) // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
-    buttonData.activeServiceTypes = getActiveSvcTypes() // reduces serviceTypes list if today is NOT active date range
-    const targetServices = getTargetServices(buttonData.activeServiceTypes); // list of target properties for each serviceType
+    // Returns number of days since for USDA, NonUSDA, lowest & BackToSchool
+    buttonData.lastServed = getLastServedDays(client)
+    // reduces serviceTypes list if today is NOT active date range
+    buttonData.activeServiceTypes = getActiveSvcTypes()
+    // list of target properties for each serviceType
+    const targetServices = getTargetServices(buttonData.activeServiceTypes); 
     buttonData[buttons] = getActiveServicesButtons(
         { client: client, buttons: buttons, activeServiceTypes: buttonData.activeServiceTypes, 
             targetServices: targetServices, lastServed: buttonData.lastServed });
-    return buttonData
+    if (buttonData[buttons].length > 0 ) {
+        // list of buttns that have been used today
+        buttonData[buttons] = getUsedServicesButtons(client, buttons, buttonData)
+        // sort the button in category and alpha order
+        buttonData[buttons] = sortButtons(buttonData[buttons])
+    }
+    return buttonData[buttons]
+}
+
+export function sortButtons(btns){
+    const cats = { food: [], clothes: [], admin: [], misc: [] }  
+    if (btns[0].serviceButtons === "Primary") {
+        btns.forEach(svc => {
+            if (svc.serviceCategory === "Food_Pantry") {
+                cats.food.push(svc)
+            } else if (svc.serviceCategory === "Clothes_Closet") {
+                cats.clothes.push(svc)
+            } else if (svc.serviceCategory === "Administration") {
+                cats.admin.push(svc)
+            } else {
+                cats.misc.push(svc)
+            }
+        })
+        return cats.food.concat(cats.clothes, cats.admin, cats.misc)
+    } else {
+        return btns.sort(function(a, b){
+            if (a.serviceName < b.serviceName) return -1;
+            if (a.serviceName > b.serviceName) return 1;
+            return 0;
+        })
+    }
 }
 
 export function getFoodInterval(isUSDA, svcTypesProp){
     let svcTypes = svcTypesProp ? svcTypesProp : getSvcTypes()
-    
 	for (var i = 0; i < svcTypes.length; i++) {
 		if ((svcTypes[i].serviceButtons == "Primary") && (svcTypes[i].serviceCategory == "Food_Pantry") && (svcTypes[i].isUSDA == isUSDA)){
 			return svcTypes[i].serviceInterval
@@ -275,7 +269,7 @@ function getActiveServicesButtons( props ) {
 	let btnSecondary = [];
     let validDependents = []
       
-	for (let i = 0; i < activeServiceTypes.length; i++) {
+	activeServiceTypes.forEach((svc, i) => {
 		let display = true;
 		// check for not a valid service based on interval between services
         const intervals = {}
@@ -283,8 +277,8 @@ function getActiveServicesButtons( props ) {
         intervals.USDA = getFoodInterval("USDA", activeServiceTypes)
         intervals.emergency = getFoodInterval("Emergency", activeServiceTypes)
 		if (!validateServiceInterval(
-            { client: client, activeServiceType: activeServiceTypes[i], 
-                lastServed: lastServed, intervals: intervals })) continue;
+            { client: client, activeServiceType: svc, 
+                lastServed: lastServed, intervals: intervals })) return;
 		// loop through each property in each targetServices
 		for (let prop in targetServices[i]) {
 			if (prop=="family_totalChildren") {
@@ -301,7 +295,7 @@ function getActiveServicesButtons( props ) {
 			if (prop == "service") { // targeting a voucher fulfill service
 				// let servicesVouchers = utilCalcVoucherServiceSignup(client, activeServiceTypes[i])
 				// if (servicesVouchers.length !== 1) display = false
-                utilCalcVoucherServiceSignupAsync(client, activeServiceTypes[i]).then(
+                utilCalcVoucherServiceSignupAsync(client, svc).then(
                     vouchers => {
                         if (vouchers.length !== 1) display = false
                     }
@@ -311,28 +305,73 @@ function getActiveServicesButtons( props ) {
 					&& prop.includes("dependents")==false) display = false
 		}
 		if (display) {
-			if (activeServiceTypes[i].serviceButtons == "Primary") {
-				if (activeServiceTypes[i].serviceCategory == "Food_Pantry") {
-					btnPrimary.unshift(i)
-				} else {
-					btnPrimary.push(i)
-				}
-			} else {
-				btnSecondary.push(i)
-			}
+            let btn = Object.assign({}, svc)
+            // btnType is used to display "normal" button (grey outline), "highlight" button (red outline), 
+            // or "used" button, (undo icon)
+            btn.btnType = "normal"
+            
+            if (svc.serviceButtons == "Primary") {
+                if ((btn.serviceCategory === "Administration") || (btn.isUSDA == "Emergency")) {
+                    btn.btnType = "highlight"
+                }      
+                btnPrimary.push(btn)
+            } else {
+                btnSecondary.push(btn)
+            }
 		}
+
+    })
+    return (buttons == "primary") ? btnPrimary : btnSecondary
+}
+
+function getUsedServicesButtons( client, buttons, buttonData ) {
+    const svcHist = client.svcHistory
+    const servedCount = svcHist ? svcHist.length : false
+
+    let btn = null
+
+    if (buttons == "primary") {
+        if (servedCount) {
+            svcHist.forEach((histItem) => {
+                if (moment(histItem.servicedDateTime).isSame(new Date(), "day")) {
+                    // if record is from today
+                    if (histItem.serviceButtons == "Primary") {
+                        let exists = false
+                        buttonData[buttons].forEach((btnSvc) => {
+                            if (histItem.serviceTypeId === btnSvc.serviceTypeId) {
+                                exists = true
+                            }
+                        })
+                        if (!exists) {
+                            btn = Object.assign({}, histItem)
+                            btn.btnType = "used"
+                            buttonData[buttons].push(btn)
+                        }
+                    }
+                }
+            })
+        }
+    } else {
+        if (servedCount) {
+            svcHist.forEach((histItem) => {
+                // const isToday = moment(histItem.servicedDateTime).isSame(new Date(), "day")
+                if (moment(histItem.servicedDateTime).isSame(new Date(), "day")) {
+                // if ((svc.serviceTypeId == histItem.serviceTypeId) && (isToday)) {
+                    if (histItem.serviceButtons == "Secondary") {
+                        buttonData[buttons].forEach((btnSvc, i) => {
+                            if (histItem.serviceTypeId === btnSvc.serviceTypeId) {
+                                btn = Object.assign({}, histItem)
+                                btn.btnType = "used"
+                                buttonData[buttons][i] = btn 
+                            }
+                        })
+                    }
+                }
+            })
+        } 
     }
-	// used to prompt service if a dependent child's grade is not set
-	if (client.dependents.length > 0) {
-		for (var i = 0; i < client.dependents.length; i++) {
-			if (client.dependents[i].age < 18 && (client.dependents[i].grade == undefined || client.dependents[i].grade == "")) {
-				btnPrimary = "-1"
-				btnSecondary = ""
-			}
-		}
-    }
-	if (buttons == "primary") return btnPrimary
-	if (buttons == "secondary") return btnSecondary
+    
+    return buttonData[buttons]
 }
 
 function validateServiceInterval( props ){
@@ -583,3 +622,42 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 	return serviceRecord
 }
 
+function printSvcReceipt(client, svcTypes, svcType, serviceTypeId, serviceCategory) {
+    if (serviceCategory === 'Food_Pantry') {
+        // TODO Use function here
+        let service = svcTypes.filter(function( obj ) {
+                return obj.serviceTypeId === serviceTypeId
+            })[0]
+        prnPrintFoodReceipt(client, service.isUSDA )
+        if (client.isActive === 'Client') {
+            prnPrintReminderReceipt( client )
+        }
+    } else if (serviceCategory == 'Clothes_Closet') {
+        prnPrintClothesReceipt( client, svcType )
+    } else if (serviceCategory == 'Back_To_School' && svcType.target.service == 'Unselected') { // ignore fulfillment
+        const targetService = utilCalcTargetServices([svcType])
+        const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
+        // TODO use function here
+        //let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+        prnPrintVoucherReceipt( client, svcType, dependents, 'grade' );
+        prnPrintVoucherReceipt( svcType, dependents, 'grade');
+    } else if (serviceCategory == 'Thanksgiving' && svcType.target.service == 'Unselected') { // ignore fulfillment
+        //const targetService = utilCalcTargetServices([svcType])
+        // TODO use function here
+        let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+        prnPrintVoucherReceipt({ service: service })
+        prnPrintVoucherReceipt({ service: service })
+    } else if (serviceCategory == 'Christmas' && svcType.target.service == 'Unselected') { // ignore fulfillment
+        const targetService = utilCalcTargetServices([svcType])
+        let service = svcTypes.filter(obj => obj.serviceTypeId == serviceTypeId)[0]
+        if (targetService[0].family_totalChildren == "Greater Than 0") {
+            const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
+            prnPrintVoucherReceipt(svcType, dependents, 'age');
+            prnPrintVoucherReceipt(svcType, dependents, 'age');
+        } else {
+            prnPrintVoucherReceipt({ service: service });
+            prnPrintVoucherReceipt({ service: service });
+        }
+    }
+    prnFlush();
+}
