@@ -5,7 +5,7 @@ import { Popper, Table, TableBody, TableCell, TableContainer,
 import { Card } from '../../System';
 import { HistoryFormDialog, HistoryPopupMenu } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils';
-import { updateLastServed, removeSvcAsync } from '../../System/js/Clients/History';
+import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc } from '../../System/js/Database';
 import moment from 'moment';
 
@@ -61,16 +61,16 @@ export default function HistoryDisplay(props) {
     }
 
     function handleRemoveSvc(){
-        removeSvcAsync(selectedService)
-            .then((svc) => {                
-                if (svc !== null){
+        removeSvcAsync(client, selectedService)
+            .then((newClient) => {                
+                if (newClient !== null){
                     setEditMode('none')
                     setAnchorEl(null)
-                    removeSvcFromHistory(svc)
-                    globalMsgFunc('success', "Succesfully removed service ")
+                    updateClient(newClient)
+                    globalMsgFunc('success', "Service removed")
                 } else {
                     setEditMode('none')
-                    globalMsgFunc('error', "FAILED to service ")
+                    globalMsgFunc('error', "FAILED to remove service")
                 }
                 clearSelection()
             }
@@ -80,16 +80,6 @@ export default function HistoryDisplay(props) {
     function handleEditRecord(newRecord){
         setEditRecord(newRecord)
         clearSelection()
-    }
-
-    function removeSvcFromHistory(svcRecord){
-        const newHistory = client.svcHistory.filter(function( obj ) {
-            return obj.serviceId !== svcRecord.serviceId;
-        });
-        if (svcRecord.serviceButtons === 'primary') updateLastServed(client)
-        const tempClient = Object.create(client)
-        tempClient.svcHistory = newHistory
-        updateClient(tempClient)
     }
 
     const menuOpen = Boolean(anchorEl);

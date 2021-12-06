@@ -4,52 +4,42 @@
 import moment from  'moment';
 import cuid from 'cuid';
 import { utilNow } from '../GlobalUtils';
-import { dbGetClientActiveServiceHistoryAsync, dbGetServiceAsync, dbSaveServiceRecordAsync, 
+import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, 
             getSvcTypes, dbSaveClientAsync, globalMsgFunc } from '../Database';
 
 export async function getServiceHistoryAsync(clientId){
-	return await dbGetClientActiveServiceHistoryAsync(clientId).then(
-        clientHistory => {
-           return clientHistory
-           .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+	return await dbGetClientActiveServiceHistoryAsync(clientId)
+        .then(
+            clientHistory => {
+                return clientHistory.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
         }
     )
-	// clientHistory = clientHistory
-	// 	.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
-	// //uiShowHistoryData(reactDIV, clientHistory)
-	// return clientHistory
 }
 
 export function updateLastServed(client){
-
-console.log("UPDATE LAST SERVED", client)
-
 	// get the service history
 	const h = client.svcHistory.filter(item => item.serviceButtons == "Primary")
 	let topHist = []
-	for (var a = 0; a < h.length; a++) {
-		if (topHist.findIndex(item => item.serviceTypeId == h[a].serviceTypeId) < 0) {
-			let lsItem = {serviceTypeId: h[a].serviceTypeId, serviceDateTime: h[a].servicedDateTime, 
-                serviceCategory: h[a].serviceCategory, isUSDA: h[a].isUSDA}
+	h.forEach((hSvc) => {
+		if (topHist.findIndex(item => item.serviceTypeId == hSvc.serviceTypeId) < 0) {
+			let lsItem = {serviceTypeId: hSvc.serviceTypeId, serviceDateTime: hSvc.servicedDateTime, 
+                serviceCategory: hSvc.serviceCategory, isUSDA: hSvc.isUSDA}
 			topHist.push(lsItem)
 		}
-	}
+    })
 
-	client.lastServed = topHist
-
-console.log("AFTER UPDATE", client)
-
-	return dbSaveClientAsync(client)
+	dbSaveClientAsync(client)
         .then( () => {
-            globalMsgFunc('info', 'Last served updated')
+            // globalMsgFunc('info', 'Last served updated')
         } )
         .catch( () => {
-            globalMsgFunc('error', 'ERROR: Client not updated')
+            globalMsgFunc('error', 'FAILED to update client')
         } );
+
+    return topHist
 }
 
 export async function saveHistoryFormAsync(editRecord, formValues, client, userName){
-    // const oldServiceId = editRecord.serviceId
     const modRecord = Object.assign({}, editRecord)
     Object.assign(modRecord, formValues)
     const serviceType = getSvcTypes().filter(item => item.serviceName == editRecord.serviceName)[0]
@@ -61,11 +51,7 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
     modRecord.servicedByUserName = userName
     modRecord.updatedDateTime = utilNow()
     modRecord.serviceId = cuid()
-    // modRecord.serviceValid = true
 
-    console.log(modRecord)
-
-    
     return await dbSaveServiceRecordAsync(modRecord)
         .then((savedSvc) => {
             console.log("SAVED SERVICE:", savedSvc )
@@ -78,21 +64,20 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
         })
 }
 
-export async function removeSvcAsync(svc){
-	// return await dbGetServiceAsync(svcId)
-    //     .then( async (svcArray) => {
-    //         let svc = svcArray[0]
-            svc.serviceValid = false
-            return await dbSaveServiceRecordAsync(svc)
-                .then((savedSvc) => {
-
-                    console.log("REMOVED SERVICE:", savedSvc )
-
-                    if (Object.keys(savedSvc).length === 0) {
-                        return svc
-                    } else {
-                        return null
-                    }
-                })
-        // })
+export async function removeSvcAsync(client, svc){
+    svc.serviceValid = false
+    return await dbSaveServiceRecordAsync(svc)
+        .then((savedSvc) => {
+            if (Object.keys(savedSvc).length === 0) {
+                const newHistory = client.svcHistory.filter(function( obj ) {
+                    return obj.serviceId !== svc.serviceId;
+                });
+                if (svc.serviceButtons === 'Primary') updateLastServed(client)
+                const tempClient = Object.assign({}, client)
+                tempClient.svcHistory = newHistory
+                return tempClient
+            } else {
+                return null
+            }
+        })
 }

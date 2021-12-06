@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
 import { getSvcTypes, getSession, globalMsgFunc } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { saveHistoryFormAsync, removeSvcAsync, updateLastServed } from '../../System/js/Clients/History';
+import { saveHistoryFormAsync, removeSvcAsync } from '../../System/js/Clients/History';
 
 HistoryFormDialog.propTypes = {
     client: PropTypes.object.isRequired,                // current client
@@ -49,7 +49,6 @@ export default function HistoryFormDialog(props) {
                     const tempClient = Object.create(client)
                     const index = tempClient.svcHistory.findIndex((svc) => svc.serviceId === editRecord.serviceId)
                     tempClient.svcHistory[index] = savedSvc
-                    if (savedSvc.serviceButtons === 'primary') updateLastServed(client)
                     updateClient(tempClient)
                     const oldRecord = Object.assign({}, editRecord)
                     removeSvcAsync(oldRecord)
