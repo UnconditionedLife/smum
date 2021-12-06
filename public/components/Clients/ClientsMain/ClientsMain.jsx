@@ -8,6 +8,7 @@ import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '
 import moment from 'moment';
 import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime,
      utilEmptyPlaceholders, getSession, globalMsgFunc } from '../../System/js/Database';
+import { updateLastServed } from '../../System/js/Clients/History';
 // import { getSvcsRendered } from '../../System/js/Clients/Services'
 
 ClientsMain.propTypes = {
@@ -55,7 +56,7 @@ export default function ClientsMain(props) {
 
     useEffect(() => {
         if (searchTerm !== '') {
-            if (window.stateCheckPendingEdit()) return // used temporarily to keep global vars in sync
+            if (window.stateCheckPendingEdit()) return // NEED TO REPLACE THIS WITH NEW EDIT PENDING
             dbSearchClientsAsync(searchTerm).then(clients => { 
                 changeClientsFound(clients)
                 if (clients.length === 0) {
@@ -131,6 +132,7 @@ export default function ClientsMain(props) {
     function updateClient(newClient){
         // keepAppJsInSync(newClient)
         newClient = utilCalcAge(newClient)
+        newClient.lastServed = updateLastServed(newClient)
         setClient(newClient);
     }
 
