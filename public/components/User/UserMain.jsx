@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Box, Container, CardContent, CardHeader } from '@material-ui/core';
 import { Card } from '../System';
 import { UserForm, PasswordForm } from '../User';
-import { dbGetUserAsync, getSession } from '../System/js/Database';
+import { dbGetUserAsync, getUserName } from '../System/js/Database';
 
 export default function UserMain() {
     const [userObj, setUser] = useState(null);
 
     useEffect(() => {
-        dbGetUserAsync(getSession().user.userName).then( x => { setUser(x) });
+        dbGetUserAsync(getUserName()).then( x => { setUser(x) });
     }, []);
 
     return (

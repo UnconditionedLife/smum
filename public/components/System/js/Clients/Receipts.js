@@ -15,10 +15,11 @@ let logo;
 
 export function prnConnect(settings) {
     logo = prnGetLogo();
+    // const port = '8008';
+    const port = '8043'; // use TLS
 
-    console.log('Printer IP', settings.printerIP);
-    ePosDev.connect(settings.printerIP, '8008', prnCallback_connect);
-    // ePosDev.connect(settings.printerIP, '8043', prnCallback_connect); // use TLS
+    console.log('Printer IP', settings.printerIP, port);
+    ePosDev.connect(settings.printerIP, port, prnCallback_connect);
 }
 
 export function prnPrintFoodReceipt(client, isUSDA) {

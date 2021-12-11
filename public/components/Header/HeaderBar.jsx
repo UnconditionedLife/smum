@@ -13,7 +13,7 @@ import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
-import { cacheSessionVar, clearCache, initCache, showCache } from '../System/js/Database';
+import { cacheSessionVar, clearCache, initCache, showCache, getSession, getUserName, getUserRole, updateCachedSession } from '../System/js/Database';
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -105,17 +105,25 @@ HeaderBar.propTypes = {
 export default function HeaderBar(props) {
     const classes = useStyles();
     const [userMenuAnchor, setUserMenuAnchor] = useState(null);
-    const [cogUser, setCogUser] = useState(null);
+    const [cogUser, setCogUser] = useState(null);   // XXX delete after app.js is removed
     const [selectedSection, setSelectedSection] = useState(-1);
     const [searchTerm, setSearchTerm] = useState('');
 
     const checkSectionURL = props.checkSectionURL;
     const updateRoute = props.updateRoute;
-    const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']);
+    const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']); // XXX combine in single cookie
+   
+    function sessionFromCookies(cookies) {
+        if (cookies && cookies.user && cookies.auth && cookies.refresh) {
+            console.log('Creating session from cookies')
+            return {user:cookies.user, auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser};
+        }
+        else {
+            console.log('No cookies found')
+            return null;
+        }
+    }
 
-    let session = cookies.user && cookies.auth && cookies.refresh ? 
-          {user:cookies.user, auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser} : null;
-    
     function setSession(newSession) {
         if (newSession) {
             console.log("Init session")
@@ -124,7 +132,6 @@ export default function HeaderBar(props) {
             //window.utilInitAuth(newSession.auth);
             //window.utilInitSession(newSession.user, newSession.cogUser);
             // Update Local and Global Session vars
-            session = newSession
             cacheSessionVar(newSession);
             initCache();
             setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
@@ -144,17 +151,17 @@ export default function HeaderBar(props) {
     }
 
     function refreshUserSession() {
-        console.log("Refresh session: " + session)
-        if (session != null) {
+        console.log('Refreshing', getUserName(), getSession())
+        let session = getSession();
+        if (session) {
             let token = cogGetRefreshToken(session.refresh);
-            let tempUser = cogSetupUser(cookies.user.userName);
+            let tempUser = cogSetupUser(session.user.userName);
             tempUser.refreshSession(token, function (err, result) {
                 let uAuthorization = {};
                 uAuthorization.accessToken = result.getAccessToken().getJwtToken();
                 let uRefreshToken = result.refreshToken.token;
                 uAuthorization.idToken = result.idToken.jwtToken;
-                const newSession = { user: session.user, auth: uAuthorization, cogUser: tempUser, refresh: uRefreshToken };
-                setSession(newSession);
+                updateCachedSession({ uauth: uAuthorization, refresh: uRefreshToken });
             });
         }
     }
@@ -165,21 +172,19 @@ export default function HeaderBar(props) {
         if (newSection != selectedSection) {
             setSelectedSection(newSection)
         }
-        if (session != null) {           
-            let decodedTkn = jwt_decode(cookies.auth.accessToken)
-            let currTime = new Date()
-            let tempUser = cogSetupUser(cookies.user.userName)
-
-            tempUser.getSession(function (err, cogSession) { 
-                if (err || !cogSession.isValid() || decodedTkn.exp*1000 < currTime.getTime() ) { 
-                    console.log("Logging out")
-                    handleLogout(tempUser)
-                } else {
-                    session.cogUser = tempUser;
-                    setSession(session);             
-                }
-            });
-             
+        if (getSession() == null) {
+            // Page reload or direct URL access: Check for cookies from previous
+            // login.
+            let savedSession = sessionFromCookies(cookies);
+            if (savedSession) {
+                let newCogUser = cogSetupUser(cookies.user.userName);
+                newCogUser.getSession(function (err, cogSession) { 
+                    if (!err && cogSession.isValid()) { 
+                        savedSession.cogUser = newCogUser;
+                        setSession(savedSession); 
+                    }
+                });
+            }
         }
     }, []);
 
@@ -202,10 +207,13 @@ export default function HeaderBar(props) {
         setUserMenuAnchor(null);
     }
 
-    function handleLogout(user) {
+    function handleLogout() {
+        let myCogUser = cogSetupUser(getUserName());
+
+        console.log('Logout')
         handleSectionChange(0);
         handleSearchTermChange('');
-        user.signOut();
+        myCogUser.signOut();
         setSession(null);
     }
 
@@ -215,9 +223,8 @@ export default function HeaderBar(props) {
         }
     }
 
-    const isAdmin = session &&
-        (session.user.userRole == 'Admin' || session.user.userRole == 'TechAdmin');
-
+    const isAdmin = ['Admin', 'TechAdmin'].includes(getUserRole());
+    const userName = getUserName();
 
     const appbarControls = (
         <Fragment>
@@ -262,7 +269,7 @@ export default function HeaderBar(props) {
                         color="inherit"
                         variant={ (selectedSection === 3) ? 'outlined' : 'text' }  >
                             {/* flexShrink={1} */}
-                        <Hidden smDown>  {session ? session.user.userName : ''} </Hidden>
+                        <Hidden smDown>  { userName ? userName : ''} </Hidden>
                     </Button>
                 </Box>
         </Fragment >
@@ -276,7 +283,7 @@ export default function HeaderBar(props) {
             <MenuItem onClick={() => { closeUserMenu(); handleSectionChange(3); }}>
                 <Button startIcon={<AccountCircle />}>Profile</Button>
             </MenuItem>
-            <MenuItem onClick={() => { closeUserMenu(); handleLogout(cogUser); }} >
+            <MenuItem onClick={() => { closeUserMenu(); handleLogout(); }} >
                 <Button startIcon={<ExitToApp />}>Logout</Button>
             </MenuItem>
         </Menu>
@@ -284,30 +291,30 @@ export default function HeaderBar(props) {
 
     return (
         <ThemeProvider theme={theme}>
-            <Dialog open={ session == null }>
+            <Dialog open={ !(userName) }>
                 <LoginForm onLogin={ (x) => setSession(x) } />
             </Dialog>
             <Box flexGrow={1} >
                 <AppBar position="fixed">
                     <Toolbar>
-                    <Hidden xsDown> <Tooltip title={props.version}>
-                    <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
-                    <SmumLogo width='44px' height='44px'/> 
-                    </Box>
-                </Tooltip> </Hidden> 
+                        <Hidden xsDown> <Tooltip title={props.version}>
+                            <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
+                            <SmumLogo width='44px' height='44px'/> 
+                            </Box>
+                        </Tooltip> </Hidden> 
                         <Box mr={ 4 } mt={ 1 } className={ classes.appName } >
                             <Typography variant='h6' noWrap className={ classes.title } >
-                                    Santa Maria Urban Ministry
+                                Santa Maria Urban Ministry
                             </Typography>
                             <HeaderDateTime color='textPrimary' size='overline' />
                         </Box>
-                        {session ? appbarControls : null}
+                        {userName ? appbarControls : null}
                     </Toolbar>
                 </AppBar>
                 { renderMenu }
                 
                 <DbSwitch />
-                <SectionsContent searchTerm={ searchTerm } handleSearchTermChange={ handleSearchTermChange } session={ session } />
+                <SectionsContent searchTerm={ searchTerm } handleSearchTermChange={ handleSearchTermChange } />
             </Box>
         </ThemeProvider>
     )

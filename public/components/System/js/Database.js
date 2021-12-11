@@ -14,7 +14,7 @@ const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 //**** CACHED VARIABLES ****
 
 let dbUrl = '';
-let cachedSession = {}
+let cachedSession = null;
 let cachedSettings = null;
 let cachedSvcTypes = []
 const MAX_ID_DIGITS = 5
@@ -25,9 +25,9 @@ export let globalMsgFunc = null;
 
 export function showCache() {
     console.log('Cached session: ');
-    console.log(JSON.stringify(cachedSession));
+    console.log(cachedSession);
     console.log('Settings: ');
-    console.log(JSON.stringify(cachedSettings));
+    console.log(cachedSettings);
     console.log('DB URL: ' + dbUrl);
     console.log('Service Types: ');
     console.log(cachedSvcTypes);
@@ -44,7 +44,14 @@ export function setGlobalMsgFunc(callback) {
 //************************************************
 
 export function cacheSessionVar(newSession) {
+    console.log('New session:', newSession)
     cachedSession = newSession;
+    cachedSession.userName = newSession?.user?.userName; // XXX
+    cachedSession.userRole = newSession?.user?.userRole; // XXX
+}
+
+export function updateCachedSession(newSession) {
+    Object.assign(cachedSession, newSession);
 }
 
 export function initCache() {
@@ -61,13 +68,21 @@ export function initCache() {
 }
 
 export function clearCache() {
-    cachedSession = {};
+    cachedSession = null;
     cachedSettings = null;
     cachedSvcTypes = [];
 }
 
-export function getSession(){
-    return cachedSession
+export function getSession() {
+    return cachedSession;
+}
+
+export function getUserName() {
+    return cachedSession?.userName;
+}
+
+export function getUserRole() {
+    return cachedSession?.userRole;
 }
 
 //**************** APP SETTINGS ******************
