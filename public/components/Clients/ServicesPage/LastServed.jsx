@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { Typography } from '../../System'
@@ -13,6 +13,37 @@ export default function LastServed(props) {
     const client = props.client
     const [ lastVisit, setLastVisit ] = useState("FIRST SERVICE")
     const [ nextService, setNextService ] = useState("")
+    const [ svcHistory, setSvcHistory ] = useState({})
+    const [ svcInterval, setSvcInterval ] = useState({})
+
+    useEffect(() => {
+        if (JSON.stringify(client.svcHistory) !== svcHistory) {
+            setSvcHistory(JSON.stringify(client.svcHistory))
+            setSvcInterval(getFoodInterval())
+        }
+        if (client.lastServed[0] !== undefined) {
+            let lastServed = utilCalcLastServedDays(client)
+            if (lastServed.lowestDays != 10000) {
+                if (lastServed.lowestDays == 0) {
+                    handleSetLastVisit('LAST SERVED TODAY')
+                } else {
+                    let servedDate = moment().subtract(lastServed.lowestDays, "days");
+                    let displayLastServed = moment(servedDate).fromNow()
+                    handleSetLastVisit('LAST SERVED ' + displayLastServed.toUpperCase())
+                    // let svcInterval = getFoodInterval()
+                    if (lastServed.lowestDays < svcInterval.nonUSDA){
+                        let nextServiceDays = (svcInterval.nonUSDA - lastServed.lowestDays)
+                        if (nextServiceDays == 1) {
+                            handleSetNextService("Next service is tomorrow!")
+                        } else {
+                            let nextServiceDate = moment().add(nextServiceDays, "days")
+                            handleSetNextService("Next service " + moment(nextServiceDate).format("dddd, MMMM Do") + "!")
+                        }
+                    }
+                }
+            }
+        }
+    },[ JSON.stringify(client.svcHistory) ])
 
     function handleSetLastVisit(newValue){
         if (lastVisit !== newValue) setLastVisit(newValue)
@@ -22,31 +53,8 @@ export default function LastServed(props) {
         if (nextService !== newValue) setNextService(newValue)
     }
  
-    if (client.lastServed[0] !== undefined) {
-        let lastServed = utilCalcLastServedDays(client)
-        if (lastServed.lowestDays != 10000) {
-            if (lastServed.lowestDays == 0) {
-                handleSetLastVisit('LAST SERVED TODAY')
-            } else {
-                let servedDate = moment().subtract(lastServed.lowestDays, "days");
-                let displayLastServed = moment(servedDate).fromNow()
-                handleSetLastVisit('LAST SERVED ' + displayLastServed.toUpperCase())
-                let nonUSDAServiceInterval = getFoodInterval("NonUSDA")
-                if (lastServed.lowestDays < nonUSDAServiceInterval){
-                    let nextServiceDays = (nonUSDAServiceInterval - lastServed.lowestDays)
-                    if (nextServiceDays == 1) {
-                        handleSetNextService("Next service is tomorrow!")
-                    } else {
-                        let nextServiceDate = moment().add(nextServiceDays, "days")
-                        handleSetNextService("Next service " + moment(nextServiceDate).format("dddd, MMMM Do") + "!")
-                    }
-                }
-            }
-        }
-    }
-
     return (
-        <Box width='100%' display='flex' flexDirection='row'>
+        <Box width='100%' display='flex' flexDirection='row' key={ svcHistory }>
             <Box width='50%'>
                 <Typography variant='button' color='secondary' noWrap>{ lastVisit }</Typography>
             </Box>

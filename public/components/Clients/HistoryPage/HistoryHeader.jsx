@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import { utilSetLastServedFood } from '../../System/js/Clients/Services.js';
+import { getLastServedFood } from '../../System/js/Clients/Services.js';
 import moment from 'moment';
 
 HistoryHeader.propTypes = {
@@ -10,14 +10,20 @@ HistoryHeader.propTypes = {
 
 export default function HistoryHeader(props) {
     const client = props.client;
+    const [ lastServedFood, setlastServedFood ] = useState("")
 
     useEffect(() => {
         // Used to update a temp field in client to display last served food in header
-        utilSetLastServedFood(client)
+        const temp = getLastServedFood(client)
+        if (lastServedFood !== temp) {
+            if (temp !== "Never") {
+                setlastServedFood(moment(temp).format("MMM DD, YYYY - h:mm a"))
+            }
+        }
     }, [ JSON.stringify(client.svcHistory) ])
 
     return (
-        <TableContainer key={ client.lastServedFoodDateTime }> 
+        <TableContainer key={ lastServedFood }> 
             <Table >
             <TableHead>
                 <TableRow>
@@ -33,7 +39,7 @@ export default function HistoryHeader(props) {
                     <TableCell align="center">{ moment(client.createdDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
                     <TableCell align="center">{ moment(client.updatedDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
                     <TableCell align="center">{ moment(client.firstSeenDate).format("MMM DD, YYYY") }</TableCell>
-                    <TableCell align="center">{ moment(client.lastServedFoodDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
+                    <TableCell align="center">{ lastServedFood }</TableCell>
                     <TableCell align="center">{ moment(client.familyIdCheckedDate).format("MMM DD, YYYY") }</TableCell>
                 </TableRow>
             </TableBody>

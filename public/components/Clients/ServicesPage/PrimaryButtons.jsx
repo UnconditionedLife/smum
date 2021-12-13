@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles'
 import { Box, ButtonBase } from '@material-ui/core';
 import { Button, Typography } from '../../System';
-import { getButtonData, sortButtons } from '../../System/js/Clients/Services'
+import { getButtonData } from '../../System/js/Clients/Services'
+import ReplayIcon from '@material-ui/icons/Replay';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -172,8 +173,8 @@ export default function PrimaryButtons(props) {
                 { (svc.btnType === 'used') &&
                     <Box m={ .5 } p={ 0 } width='176px' height='176px' bgcolor='#FFF' display='flex' >
                             <Button m={ 0 } width='176px' height='176px' color='primary' style={{ borderRadius: '15px', border: '5px dashed #ddd' }}
-                                onClick={ () => handleUndoSvc( svc ) }>
-                                <strong> { "UNDO " + "\n" + svc.serviceName.toUpperCase() }</strong>
+                                onClick={ () => handleUndoSvc( svc ) } startIcon={<ReplayIcon />}>
+                                <strong> { svc.serviceName.toUpperCase() }</strong>
                             </Button>
                     </Box>
                 }

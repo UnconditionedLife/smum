@@ -17,18 +17,18 @@ export async function getServiceHistoryAsync(clientId){
 }
 
 export function updateLastServed(client){
-	// get the service history
-	const h = client.svcHistory.filter(item => item.serviceButtons == "Primary")
-	let topHist = []
+	const newClient = Object.assign({}, client)
+    // get the service history
+	const h = newClient.svcHistory.filter(item => item.serviceButtons == "Primary")
+	newClient.lastServed = []
 	h.forEach((hSvc) => {
-		if (topHist.findIndex(item => item.serviceTypeId == hSvc.serviceTypeId) < 0) {
-			let lsItem = {serviceTypeId: hSvc.serviceTypeId, serviceDateTime: hSvc.servicedDateTime, 
-                serviceCategory: hSvc.serviceCategory, isUSDA: hSvc.isUSDA}
-			topHist.push(lsItem)
+		if (newClient.lastServed.findIndex(item => item.serviceTypeId == hSvc.serviceTypeId) < 0) {
+			newClient.lastServed.push( { serviceTypeId: hSvc.serviceTypeId, serviceDateTime: hSvc.servicedDateTime, 
+                serviceCategory: hSvc.serviceCategory, isUSDA: hSvc.isUSDA } )
 		}
     })
 
-	dbSaveClientAsync(client)
+	dbSaveClientAsync(newClient)
         .then( () => {
             // globalMsgFunc('info', 'Last served updated')
         } )
@@ -36,7 +36,7 @@ export function updateLastServed(client){
             globalMsgFunc('error', 'FAILED to update client')
         } );
 
-    return topHist
+    return newClient.lastServed
 }
 
 export async function saveHistoryFormAsync(editRecord, formValues, client, userName){
@@ -72,9 +72,11 @@ export async function removeSvcAsync(client, svc){
                 const newHistory = client.svcHistory.filter(function( obj ) {
                     return obj.serviceId !== svc.serviceId;
                 });
-                if (svc.serviceButtons === 'Primary') updateLastServed(client)
                 const tempClient = Object.assign({}, client)
                 tempClient.svcHistory = newHistory
+                if (svc.serviceButtons === 'Primary') {
+                    tempClient.lastServed = updateLastServed(tempClient)
+                }
                 return tempClient
             } else {
                 return null

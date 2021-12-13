@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { getButtonData } from '../../System/js/Clients/Services'
 import { Button } from '../../System';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
+import ReplayIcon from '@material-ui/icons/Replay';
 
 SecondaryButtons.propTypes = {
     client: PropTypes.object.isRequired,
@@ -41,7 +42,7 @@ export default function SecondaryButtons(props) {
 
                         { (svc.btnType === 'used') &&
                             <Button key={ svc.serviceTypeId + "used" } m={ .25 } variant="outlined" 
-                                color="primary" size="large" minWidth="176px"
+                                color="primary" size="large" minWidth="176px" startIcon={<ReplayIcon />}
                                 onClick={ () => handleUndoSvc(svc) }>
                                     { svc.serviceName }
                             </Button>

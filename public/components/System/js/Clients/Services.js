@@ -5,7 +5,7 @@ import { isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from '../Clients/ClientUtils'
 import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
-    getSession, dbSaveLastServedAsync, globalMsgFunc, dbGetSvcsByIdAndYear } from '../Database';
+    getSession, dbSaveLastServedAsync, dbGetSvcsByIdAndYear } from '../Database';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt, prnFlush } from '../Clients/Receipts';
 import cuid from 'cuid';
@@ -34,7 +34,6 @@ export async function addServiceAsync( client, serviceTypeId ){
                             newClient.lastServed = newLastServed
                         })
                 }
-
                 if (serviceId === "") {
                     printSvcReceipt(client, svcTypes, svcType, serviceTypeId, serviceCategory)                    
                     newClient.svcHistory.unshift(svcRecord)
@@ -93,13 +92,18 @@ export function sortButtons(btns){
     }
 }
 
-export function getFoodInterval(isUSDA, svcTypesProp){
-    let svcTypes = svcTypesProp ? svcTypesProp : getSvcTypes()
-	for (var i = 0; i < svcTypes.length; i++) {
-		if ((svcTypes[i].serviceButtons == "Primary") && (svcTypes[i].serviceCategory == "Food_Pantry") && (svcTypes[i].isUSDA == isUSDA)){
-			return svcTypes[i].serviceInterval
-		}
-	}
+export function getFoodInterval(aSvcTypes){
+    const svcTypes = aSvcTypes ? aSvcTypes : getSvcTypes()
+    const usdaArray = [ 'NonUSDA', 'USDA', 'Emergency' ]
+    const foodInt = {}
+	svcTypes.forEach((type) => {
+        usdaArray.forEach((isUSDA) => {
+            if ((type.serviceButtons == "Primary") && (type.serviceCategory == "Food_Pantry") && (type.isUSDA == isUSDA)){
+                foodInt[isUSDA] = type.serviceInterval
+            }
+        })
+	})
+    return foodInt
 }
 
 export function getSvcsRendered(svcHistory){
@@ -136,21 +140,23 @@ export function utilCalcLastServedDays(client) {
 	return lastServed
 }
 
-export function utilSetLastServedFood(client){
+export function getLastServedFood(client){
 	// TODO too much duplicated code with utilCalcLastServedDays()
-	let lastServedFoodDateTime = "1900-01-01"
-	if (client.lastServed[0] === undefined) return lastServedFoodDateTime
-	let lastServedFood = client.lastServed.filter(function( obj ) {
-		return obj.serviceCategory == "Food_Pantry"
+	let lastServedFood = "1900-01-01"
+    if (client.svcHistory[0] === undefined) {
+        return "Never"
+    }
+	let lastServedFoodSvcs = client.svcHistory.filter(( svc ) => {
+		return svc.serviceCategory == "Food_Pantry"
 	})
-	for (var i = 0; i < lastServedFood.length; i++) {
-		if (lastServedFood[i].isUSDA != "Emergency") {
-			if (moment(lastServedFood[i].serviceDateTime).isAfter(lastServedFoodDateTime)){
-				lastServedFoodDateTime = lastServedFood[i].serviceDateTime
+	lastServedFoodSvcs.forEach((svc) => {
+		if (svc.isUSDA !== "Emergency") {
+			if (moment(svc.servicedDateTime).isAfter(lastServedFood)){
+				lastServedFood = svc.servicedDateTime
 			}
 		}
-	}
-	client.lastServedFoodDateTime = lastServedFoodDateTime
+	})
+	return lastServedFood
 }
 
 //******************************************************************
@@ -159,48 +165,47 @@ export function utilSetLastServedFood(client){
 
 function getLastServedDays(client) {
 	// get Last Served Date from client & calculate number of days
-    let lastServed = { daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000 }
+    let lsDays = { daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000 }
 	if(client === undefined) { return null; }
-	if (client.lastServed[0] == undefined) return lastServed;
+	if (client.lastServed[0] == undefined) return lsDays;
 	let lastServedFood = client.lastServed.filter(obj => obj.serviceCategory === "Food_Pantry")
 
-	for (var i = 0; i < lastServedFood.length; i++) {
-		if (lastServedFood[i].isUSDA != "Emergency") {
-			let lastServedDay = moment(lastServedFood[i].serviceDateTime).startOf('day')
-			if (lastServedFood[i].isUSDA == "USDA") {
-				lastServed.daysUSDA = moment().diff(lastServedDay, 'days')
+	lastServedFood.forEach((foodSvc) => {
+		if (foodSvc.isUSDA != "Emergency") {
+			let lastServedDay = moment(foodSvc.serviceDateTime).startOf('day')
+			if (foodSvc.isUSDA == "USDA") {
+				lsDays.daysUSDA = moment().diff(lastServedDay, 'days')
 			} else {
-				lastServed.daysNonUSDA = moment().diff(lastServedDay, 'days')
+				lsDays.daysNonUSDA = moment().diff(lastServedDay, 'days')
 			}
 		}
-	}
-	lastServed.lowestDays = lastServed.daysUSDA
-	if (lastServed.daysNonUSDA < lastServed.daysUSDA) lastServed.lowestDays = lastServed.daysNonUSDA
+	})
+	lsDays.lowestDays = lsDays.daysUSDA
+	if (lsDays.daysNonUSDA < lsDays.daysUSDA) lsDays.lowestDays = lsDays.daysNonUSDA
 	let lastServedBackToSchool = client.lastServed.filter(obj => obj.serviceCategory == "Back_To_School")
 	if (lastServedBackToSchool.length > 0) {
-		lastServed.backToSchool = moment(lastServedBackToSchool[0].serviceDateTime).startOf('day')
+		lsDays.backToSchool = moment(lastServedBackToSchool[0].serviceDateTime).startOf('day')
     }
-        
-	return lastServed
+	return lsDays
 }
 
 function getActiveSvcTypes(){
 	// build Active Service Types array of Service Types which cover today's date
     let activeSvcTypes = []
     const svcTypes = getSvcTypes()        
-    for (let i=0; i < svcTypes.length; i++){
-        if (svcTypes[i].isActive == "Active"){
+    svcTypes.forEach((svc) => {
+        if (svc.isActive == "Active"){
             // FROM
             let fromDateString = []
             fromDateString.push(moment().year())
-            fromDateString.push(Number(svcTypes[i].available.dateFromMonth))
-            fromDateString.push(Number(svcTypes[i].available.dateFromDay))
+            fromDateString.push(Number(svc.available.dateFromMonth))
+            fromDateString.push(Number(svc.available.dateFromDay))
             let fromDate = moment(fromDateString).startOf('day')
             // TO
             let toDateString = []
             toDateString.push(moment().year())
-            toDateString.push(Number(svcTypes[i].available.dateToMonth))
-            toDateString.push(Number(svcTypes[i].available.dateToDay))
+            toDateString.push(Number(svc.available.dateToMonth))
+            toDateString.push(Number(svc.available.dateToDay))
             let toDate = moment(toDateString).endOf('day')
             // Adjust year dependent on months of TO and FROM
             if (moment(fromDate).isAfter(toDate)) toDate = moment(toDate).add(1, 'y');
@@ -210,56 +215,56 @@ function getActiveSvcTypes(){
                 toDate = moment(toDate).subtract(1, 'y');
             }
             // IN date range = ACTIVE
-            if (moment().isBetween(fromDate, toDate, null, '[]')) activeSvcTypes.push(svcTypes[i])
+            if (moment().isBetween(fromDate, toDate, null, '[]')) activeSvcTypes.push(svc)
         }
-    }
+    })
     return activeSvcTypes
 }
 
 function getTargetServices(activeServiceTypes) {
 	let targets = [];
 	// build list of client target items for each Active Service Type
-	for (let i = 0; i < activeServiceTypes.length; i++) {
+	activeServiceTypes.forEach((aSvcType, i) => {
 		// make list of specific targets.... for each type.
 		targets[i] = {}
 		// target homeless
-		if (activeServiceTypes[i].target.homeless !== "Unselected") {
-            targets[i].homeless = activeServiceTypes[i].target.homeless
+		if (aSvcType.target.homeless !== "Unselected") {
+            targets[i].homeless = aSvcType.target.homeless
         }
 		// target families with children, singles, couples
-		if (activeServiceTypes[i].target.family == "Single Individual") {
+		if (aSvcType.target.family == "Single Individual") {
 			targets[i].family_totalSize = 1;
-		} else if (activeServiceTypes[i].target.family == "Couple") {
+		} else if (aSvcType.target.family == "Couple") {
 			targets[i].family_totalSize = 2;
 			targets[i].family_totalChildren = 0;
-		} else if (activeServiceTypes[i].target.family == "With Children") {
+		} else if (aSvcType.target.family == "With Children") {
 			targets[i].family_totalChildren = "0";
 		}
 		// target gender male/female
-		if (activeServiceTypes[i].target.gender !== "Unselected") targets[i].gender = activeServiceTypes[i].target.gender;
+		if (aSvcType.target.gender !== "Unselected") targets[i].gender = aSvcType.target.gender;
 		// target children
-		if (activeServiceTypes[i].target.child == "YES") {
+		if (aSvcType.target.child == "YES") {
 			targets[i].family_totalChildren = "Greater Than 0"
 			// target age
-			if (activeServiceTypes[i].target.childMaxAge > 0) {
-				targets[i].dependents_ageMin = activeServiceTypes[i].target.childMinAge
-				targets[i].dependents_ageMax = activeServiceTypes[i].target.childMaxAge
+			if (aSvcType.target.childMaxAge > 0) {
+				targets[i].dependents_ageMin = aSvcType.target.childMinAge
+				targets[i].dependents_ageMax = aSvcType.target.childMaxAge
 			}
 			//target grade
-			if (activeServiceTypes[i].target.childMinGrade !== "Unselected") {
-				targets[i].dependents_gradeMin = activeServiceTypes[i].target.childMinGrade;
+			if (aSvcType.target.childMinGrade !== "Unselected") {
+				targets[i].dependents_gradeMin = aSvcType.target.childMinGrade;
 			}
-			if (activeServiceTypes[i].target.childMaxGrade !== "Unselected") {
-				targets[i].dependents_gradeMax = activeServiceTypes[i].target.childMaxGrade;
+			if (aSvcType.target.childMaxGrade !== "Unselected") {
+				targets[i].dependents_gradeMax = aSvcType.target.childMaxGrade;
 			}
-		} else if (activeServiceTypes[i].target.child == "NO"){
+		} else if (aSvcType.target.child == "NO"){
 			targets[i].family_totalChildren = "0";
 		}
 		// target Voucher Service
-		if (activeServiceTypes[i].target.service !== "Unselected") {
-			targets[i].service = activeServiceTypes[i].target.service; //set target to Voucher service ID
+		if (aSvcType.target.service !== "Unselected") {
+			targets[i].service = aSvcType.target.service; //set target to Voucher service ID
 		}
-    }
+    })
 	return targets;
 }
 
@@ -268,14 +273,11 @@ function getActiveServicesButtons( props ) {
 	let	btnPrimary = [];
 	let btnSecondary = [];
     let validDependents = []
-      
+    const intervals = getFoodInterval(activeServiceTypes)
+
+    // check for not a valid service based on interval between services  
 	activeServiceTypes.forEach((svc, i) => {
 		let display = true;
-		// check for not a valid service based on interval between services
-        const intervals = {}
-        intervals.nonUSDA = getFoodInterval("NonUSDA", activeServiceTypes)
-        intervals.USDA = getFoodInterval("USDA", activeServiceTypes)
-        intervals.emergency = getFoodInterval("Emergency", activeServiceTypes)
 		if (!validateServiceInterval(
             { client: client, activeServiceType: svc, 
                 lastServed: lastServed, intervals: intervals })) return;
@@ -283,7 +285,7 @@ function getActiveServicesButtons( props ) {
 		for (let prop in targetServices[i]) {
 			if (prop=="family_totalChildren") {
 				// TODO move to grade and age target detection to helper function
-				if (targetServices[i]['dependents_gradeMin'] != "Unselected" && targetServices[i]['dependents_gradeMax']!="Unselected"){
+				if (targetServices[i]['dependents_gradeMin'] !== "Unselected" && targetServices[i]['dependents_gradeMax']!== "Unselected"){
 					validDependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetServices[i] })
 				}
 				//TODO change service types to store non age entries as -1
@@ -337,7 +339,7 @@ function getUsedServicesButtons( client, buttons, buttonData ) {
                     // if record is from today
                     if (histItem.serviceButtons == "Primary") {
                         let exists = false
-                        buttonData[buttons].forEach((btnSvc) => {
+                        buttonData.primary.forEach((btnSvc) => {
                             if (histItem.serviceTypeId === btnSvc.serviceTypeId) {
                                 exists = true
                             }
@@ -345,7 +347,7 @@ function getUsedServicesButtons( client, buttons, buttonData ) {
                         if (!exists) {
                             btn = Object.assign({}, histItem)
                             btn.btnType = "used"
-                            buttonData[buttons].push(btn)
+                            buttonData.primary.push(btn)
                         }
                     }
                 }
@@ -376,37 +378,42 @@ function getUsedServicesButtons( client, buttons, buttonData ) {
 
 function validateServiceInterval( props ){
     const { client, activeServiceType, lastServed, intervals } = props
-
 	if (activeServiceType.serviceButtons == "Primary") {
 		const serviceCategory = activeServiceType.serviceCategory
 		if (serviceCategory == "Food_Pantry") {
-            if ( intervals.USDA > intervals.nonUSDA ) {
+            if ( intervals.USDA > intervals.NonUSDA ) {
                 if (activeServiceType.isUSDA == "USDA") {
                     if (lastServed.daysUSDA >= intervals.USDA) return true
                     return false
                 }
-                if (activeServiceType.isUSDA == "NonUSDA") return false
+                if (activeServiceType.isUSDA === "NonUSDA") {
+                    if ((lastServed.daysNonUSDA >= intervals.NonUSDA) && (lastServed.daysUSDA < intervals.USDA)) return true
+                    return false
+                }
             } else {
-                if (activeServiceType.isUSDA == "USDA") {
+                if (activeServiceType.isUSDA === "USDA") {
                     if (lastServed.daysUSDA >= intervals.USDA) return true
                     return false
                 }
                 if (activeServiceType.isUSDA == "NonUSDA") {
-                    if (lastServed.lowestDays >= intervals.nonUSDA) return true
+                    if (lastServed.lowestDays >= intervals.NonUSDA) return true
                     return false
                 }
             }
 
             if (activeServiceType.isUSDA === "Emergency") {
                 if (lastServed.daysUSDA >= intervals.USDA) return false
-                if (lastServed.lowestDays >= intervals.nonUSDA) return false
-                if (lastServed.lowestDays >= intervals.emergency) return true
+                if (lastServed.lowestDays >= intervals.NonUSDA) return false
+                if (lastServed.lowestDays > intervals.Emergency) return true
 				return false
 			}
 		}
         // MAY NOT NEED TO CHECK CLOTHES INTERVAL OR CHECK LAST CLOTHES SERVICE ???
-		// if (serviceCategory == "Clothes_Closet") {
-		// 	if (lastServed.lowestDays < activeServiceType.serviceInterval) return false
+		// if (serviceCategory === "Clothes_Closet") {
+
+        //     console.log("LOWEST DAY CLOTHES", lastServed.lowestDays)
+
+		// 	if (lastServed.lowestDays === 0) return false
 		// }
 		// validate that a voucher was already registered for
 		if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
