@@ -48,11 +48,11 @@ export default function NotesDisplay(props) {
         const notes = client.notes
         const filteredNotes = notes.filter(note => note.noteId !== noteId)
         tempClient.notes = filteredNotes
-        updateClient(tempClient)
-        handleNoteCountChange(client.notes.length)
-        dbSaveClientAsync(client)
+        dbSaveClientAsync(tempClient)
             .then( () => {
-                props.showAlert('success', 'Note successfully removed.');
+                // props.showAlert('success', 'Note successfully removed.');
+                updateClient(tempClient)
+                handleNoteCountChange(client.notes.length)
             })
             .catch( message => {
                 props.showAlert('error', message);

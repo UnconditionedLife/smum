@@ -300,7 +300,6 @@ export async function dbSaveClientAsync(data) {
 	} else {
         dbSetModifiedTime(data, false);
 	}
-    
     return await dbPostDataAsync("/clients/", data)
 }
 

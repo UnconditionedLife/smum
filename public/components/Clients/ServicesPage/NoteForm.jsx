@@ -48,8 +48,8 @@ export default function NoteForm(props) {
     
     function handleNoteSave(){
         let important = "false"
-        let tempClient = client 
-        let tempNotes = client.notes
+        let tempClient = Object.assign({}, client) 
+        let tempNotes = tempClient.notes
         let newNote = {}
         if (noteImportant) important = "true"
         if (isEmpty(editNote)) {
@@ -60,7 +60,6 @@ export default function NoteForm(props) {
             newNote.noteByUserName = userName;
             newNote.noteId = noteId;
             newNote.noteText = noteText;
-
             tempNotes.unshift(newNote)
         } else {
             newNote.createdDateTime = editNote.createdDateTime;
@@ -69,17 +68,16 @@ export default function NoteForm(props) {
             newNote.noteByUserName = userName;
             newNote.noteId = editNote.noteId;
             newNote.noteText = noteText;
-
             const index = tempNotes.map(function(e) { return e.noteId; }).indexOf(newNote.noteId);
             tempNotes[index] = newNote
         }
         tempClient.notes = tempNotes
-        updateClient(tempClient)
-        handleNoteCountChange(tempClient.notes.length)
-        handleNoteCancel()
         dbSaveClientAsync(client)
             .then( () => {
-                props.showAlert('success', 'Note successfully added.');
+                // props.showAlert('success', 'Note successfully added.');
+                updateClient(tempClient)
+                handleNoteCountChange(tempClient.notes.length)
+                handleNoteCancel()
             })
             .catch( message => {
                 props.showAlert('error', message);
