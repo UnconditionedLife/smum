@@ -48,6 +48,7 @@ export function cacheSessionVar(newSession) {
     cachedSession = newSession;
     cachedSession.userName = newSession?.user?.userName; // XXX
     cachedSession.userRole = newSession?.user?.userRole; // XXX
+    cachedSession.editingState = false
 }
 
 export function updateCachedSession(newSession) {
@@ -83,6 +84,14 @@ export function getUserName() {
 
 export function getUserRole() {
     return cachedSession?.userRole;
+}
+
+export function getEditingState() {
+    return cachedSession?.editingState;
+}
+
+export function setEditingState(newState) {
+    cachedSession.editingState = newState
 }
 
 //**************** APP SETTINGS ******************

@@ -2,6 +2,7 @@ import React,  { Fragment, useState, useEffect  } from 'react';
 import PropTypes from 'prop-types';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Box, Badge, CardContent, Fade, Tooltip, Typography } from '@material-ui/core';
+import { setEditingState } from '../../System/js/Database.js';
 import NotesDisplay from './NotesDisplay.jsx';
 import NoteForm from './NoteForm.jsx';
 import AddIcon from '@material-ui/icons/Add';
@@ -35,6 +36,7 @@ export default function ServiceNotes(props) {
                 handleTextFieldChange('')
                 handleNoteImportantChange(false)
                 handleEditNoteChange({})
+                setEditingState(true)
             }
             setEditMode(newEditMode)
         }

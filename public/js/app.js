@@ -32,7 +32,7 @@
 // let clientData = null // current client search results
 // let servicesRendered = [] // tally of services as they are clicked
 // let client = {} // current client
-let editFlag = {}
+// let editFlag = {}
 // uiClearCurrentClient()
 // let currentUser = {}
 // let users = [] // all users
@@ -148,28 +148,28 @@ let editFlag = {}
 // ********************************************* STATE FUNCTIONS ********************************************
 // **********************************************************************************************************
 
-function stateCheckPendingEdit() {
-	let tab = ''
-	let section = ''
-	if (editFlag.client) {
-		section = 'Client'
-		tab = "tab3"
-	} else if (editFlag.dependents) {
-		section = 'Dependents'
-		tab = "tab4"
-	} else if (editFlag.notes) {
-		section = 'Note'
-		tab = "tab6"
-	}
-	if (section !== '') {
-		title = section + " Not Saved!"
-		message =  "Save or Cancel the " + section + " form first."
-		uiShowHideError("show", title, message, 'beep')
-		navGotoTab(tab)
-		return true
-	}
-	return false
-};
+// function stateCheckPendingEdit() {
+// 	let tab = ''
+// 	let section = ''
+// 	if (editFlag.client) {
+// 		section = 'Client'
+// 		tab = "tab3"
+// 	} else if (editFlag.dependents) {
+// 		section = 'Dependents'
+// 		tab = "tab4"
+// 	} else if (editFlag.notes) {
+// 		section = 'Note'
+// 		tab = "tab6"
+// 	}
+// 	if (section !== '') {
+// 		title = section + " Not Saved!"
+// 		message =  "Save or Cancel the " + section + " form first."
+// 		uiShowHideError("show", title, message, 'beep')
+// 		navGotoTab(tab)
+// 		return true
+// 	}
+// 	return false
+// };
 
 // **********************************************************************************************************
 // *********************************************** UI FUNCTIONS *********************************************

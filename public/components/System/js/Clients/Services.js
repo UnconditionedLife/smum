@@ -381,30 +381,41 @@ function validateServiceInterval( props ){
 	if (activeServiceType.serviceButtons == "Primary") {
 		const serviceCategory = activeServiceType.serviceCategory
 		if (serviceCategory == "Food_Pantry") {
-            if ( intervals.USDA > intervals.NonUSDA ) {
-                if (activeServiceType.isUSDA == "USDA") {
-                    if (lastServed.daysUSDA >= intervals.USDA) return true
-                    return false
+            
+            if (activeServiceType.isUSDA == "USDA") {
+                // Default to USDA if it qualifies
+                if (lastServed.daysUSDA >= intervals.USDA) {
+                    console.log("USDA")
+                    return true
                 }
-                if (activeServiceType.isUSDA === "NonUSDA") {
-                    if ((lastServed.daysNonUSDA >= intervals.NonUSDA) && (lastServed.daysUSDA < intervals.USDA)) return true
-                    return false
-                }
-            } else {
-                if (activeServiceType.isUSDA === "USDA") {
-                    if (lastServed.daysUSDA >= intervals.USDA) return true
-                    return false
-                }
-                if (activeServiceType.isUSDA == "NonUSDA") {
-                    if (lastServed.lowestDays >= intervals.NonUSDA) return true
-                    return false
-                }
+                return false
             }
 
+            if (activeServiceType.isUSDA === "NonUSDA") {
+                // NonUSDA only if USDA does not Qualify and NOT serviced today
+
+                // console.log("daysNonUSDA = ", lastServed.daysNonUSDA, ">=", intervals.NonUSDA)
+                // console.log("INTERVALS", intervals)
+
+                if ((lastServed.daysNonUSDA >= intervals.NonUSDA)
+                    && (lastServed.lowestDays >= intervals.NonUSDA) 
+                    && (lastServed.lowestDays < intervals.USDA) 
+                    && (lastServed.daysUSDA !== 0)) {
+                    console.log("NonUSDA")
+                    return true
+                }
+                return false
+            }
+            
             if (activeServiceType.isUSDA === "Emergency") {
+                // Emergency only if USA and NonUSDA do not Qualify
                 if (lastServed.daysUSDA >= intervals.USDA) return false
                 if (lastServed.lowestDays >= intervals.NonUSDA) return false
-                if (lastServed.lowestDays > intervals.Emergency) return true
+
+                // console.log("LOWEST = ", lastServed.lowestDays)
+                // console.log("INTERVAL = ", intervals.Emergency)
+
+                if (lastServed.lowestDays >= intervals.Emergency) return true
 				return false
 			}
 		}

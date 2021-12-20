@@ -4,6 +4,7 @@ import { Box, MenuItem, Typography } from '@material-ui/core';
 import { FormTextField, SaveCancel, FormSelect } from '../../System';
 import { useForm } from "react-hook-form";
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../../System/js/Forms.js';
+import { setEditingState  } from '../../System/js/Database';
 
 ClientInfoForm.propTypes = {
     client: PropTypes.object.isRequired,
@@ -19,6 +20,8 @@ export default function ClientInfoForm(props) {
         defaultValues: defValues,
     });
 
+    if (formState.isDirty) setEditingState(true)
+
     function doSave(values) {
         // Convert form values to canonical format
         values.state = values.state.toUpperCase();
@@ -30,6 +33,11 @@ export default function ClientInfoForm(props) {
         props.saveAndUpdateClient(data)
         reset(values);
         values.telephone = formatPhone(values.telephone);
+    }
+
+    function handleCancel() {
+        setEditingState(false)
+        reset()
     }
 
     const submitForm = handleSubmit(doSave);
@@ -108,7 +116,7 @@ export default function ClientInfoForm(props) {
                 </Box>
             </form>
 
-            <SaveCancel disabled={!formState.isDirty} onClick={(isSave) => { isSave ? submitForm() : reset() }} 
+            <SaveCancel disabled={!formState.isDirty} onClick={(isSave) => { isSave ? submitForm() : handleCancel() }} 
                 message={ props.saveMessage }/>
         </Fragment> 
     );

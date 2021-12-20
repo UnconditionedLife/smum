@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, InputAdornment, Typography } from '@material-ui/core';
 import { FormTextField, SaveCancel } from '../../System';
 import { useForm } from "react-hook-form";
+import { setEditingState } from '../../System/js/Database';
 
 FinancialInfoForm.propTypes = {
     client: PropTypes.object.isRequired,
@@ -18,11 +19,18 @@ export default function FinancialInfoForm(props) {
         defaultValues: defValues,
     });
 
+    if (formState.isDirty) setEditingState(true)
+
     function doSave(values) {
         let data = Object.assign({}, props.client);
         Object.assign(data, values);
         const saved = props.saveAndUpdateClient(data)
         reset(values);
+    }
+
+    function handleCancel() {
+        setEditingState(false)
+        reset()
     }
 
     const submitForm = handleSubmit(doSave);
@@ -47,7 +55,7 @@ export default function FinancialInfoForm(props) {
                 </Box>
             </form>
 
-            <SaveCancel disabled={!formState.isDirty} onClick={(isSave) => { isSave ? submitForm() : reset() }}
+            <SaveCancel disabled={!formState.isDirty} onClick={(isSave) => { isSave ? submitForm() : handleCancel() }}
                 message={ props.saveMessage } />
         </Fragment>
     );

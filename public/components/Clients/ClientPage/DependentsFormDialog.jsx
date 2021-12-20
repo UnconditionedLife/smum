@@ -3,27 +3,57 @@ import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
+import { setEditingState } from '../../System/js/Database';
 
 DependentsFormDialog.propTypes = {
-    session: PropTypes.object.isRequired,
     client: PropTypes.object.isRequired,                // current client
-    // editMode: PropTypes.string.isRequired,           // 'edit' = display form
-    // handleEditMode: PropTypes.func.isRequired,          // editMode handler
     saveMessage: PropTypes.object.isRequired,
     editRecord: PropTypes.object.isRequired,            // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
     saveAndUpdateClient: PropTypes.func.isRequired,     // saving and updateing client handler
-    // handleClientHistory: PropTypes.func.isRequired,  // handles updating history
 }
 
 export default function DependentsFormDialog(props) {
+    const selectedDependent = props.selectedDependent
+    const client = props.client
     const [ dialogOpen, setDialogOpen ] = useState(true);
+    const dependent = getDependent(selectedDependent)
+    const defValues = dependent;
+    const { handleSubmit, reset, control, errors, formState } = useForm({
+        mode: 'onBlur',
+        defaultValues: defValues,
+    });
 
+    if (formState.isDirty) setEditingState(true)
 
-    function handleDialog(state){
-        if (dialogOpen !== state) setDialogOpen(state)
+    function doSave(values) {
+        // Overwrite data structure with form values
+        const data = Object.assign({}, client);
+        data.dependents.forEach((dep, i) => {
+            if (dep.depId === selectedDependent) {
+                Object.assign(data.dependents[i], values);
+            }
+        })
+        props.saveAndUpdateClient(data)
+        setDialogOpen(false)
+        reset();
     }
 
+    function getDependent(depId) {
+        const depArr = client.dependents.filter((dep) => {
+            if (dep.depId === depId) return true
+            return false
+        })
+        return depArr[0]
+    }
+
+    function handleCancel(state) {
+        if (dialogOpen !== state) setDialogOpen(state)
+        setEditingState(false)
+        reset()
+    }
+
+    const submitForm = handleSubmit(doSave);
 
     return (
         <Dialog open={ dialogOpen } aria-labelledby="form-dialog-title"> 
@@ -89,7 +119,7 @@ export default function DependentsFormDialog(props) {
                     </form>
                     <SaveCancel key={ props.saveMessage.text }
                         saveDisabled={ !formState.isDirty } message={ props.saveMessage } 
-                        onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
+                        onClick={ (isSave) => { isSave ? submitForm() : handleCancel(false) } } />
                 </Box>
             </DialogContent>
         </Dialog>

@@ -4,7 +4,7 @@ import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
 import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
 import { Card, IconButton } from '../../System';
 import { NoteForm } from '../../Clients';
-import { dbSaveClientAsync, getSession } from '../../System/js/Database.js';
+import { dbSaveClientAsync, getSession, setEditingState } from '../../System/js/Database.js';
 import moment from 'moment';
 
 NotesDisplay.propTypes = {
@@ -64,6 +64,7 @@ export default function NotesDisplay(props) {
         const editNote = notes.filter(note => note.noteId === noteId)
         handleEditNoteChange(editNote[0])
         handleEditModeChange('edit')
+        setEditingState(true)
     }
 
     function display(type, noteId) {
@@ -71,6 +72,8 @@ export default function NotesDisplay(props) {
         if (editMode === 'edit' && editNote.noteId === noteId) return show
         return !show
     }
+
+    if (client.notes === undefined) return null
     
     return (
         <Fragment>

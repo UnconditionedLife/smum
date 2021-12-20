@@ -6,6 +6,7 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import theme from '../../Theme.jsx';
 import { DependentsFormDialog } from '../../Clients';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
+import { getEditingState, globalMsgFunc } from '../../System/js/Database';
 
 DependentsDisplay.propTypes = {
     client: PropTypes.object.isRequired,
@@ -34,13 +35,17 @@ export default function DependentsDisplay(props) {
     }
 
     function handleSelectedDependent(event, newDepId) {
-        setSelectedDependent(newDepId);
-        const record = dependents.filter(function( obj ) {
-            return obj.depId === newDepId
-        })[0]
-        // setEditMode('none')
-        setEditRecord(record)
-        setAnchorEl(anchorEl ? null : event.currentTarget);
+        if (getEditingState()) {
+            globalMsgFunc('error', "Save or Cancel before editing dependents!")
+        } else {
+            setSelectedDependent(newDepId);
+            const record = dependents.filter(function( obj ) {
+                return obj.depId === newDepId
+            })[0]
+            // setEditMode('none')
+            setEditRecord(record)
+            setAnchorEl(anchorEl ? null : event.currentTarget);
+        }
     }
 
     // function handleEditModeChange(newEditMode) {
@@ -94,7 +99,8 @@ export default function DependentsDisplay(props) {
                                 { row.depId === selectedDependent &&
                                     <DependentsFormDialog client = { props.client } 
                                         saveAndUpdateClient={ props.saveAndUpdateClient } saveMessage={ props.saveMessage }
-                                        editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
+                                        selectedDependent ={ selectedDependent } editRecord={ editRecord } 
+                                        handleEditRecord={ handleEditRecord } />
                                 }
                         </Fragment>
                     ))}

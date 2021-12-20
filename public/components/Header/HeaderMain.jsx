@@ -8,6 +8,7 @@ import { HeaderRouter } from "./";
 import theme from '../Theme.jsx'
 import { BrowserRouter as Router } from "react-router-dom";
 import { setGlobalMsgFunc } from "../System/js/Database";
+import { beepError } from '../System/js/GlobalUtils';
 
 function HeaderMain(){
     const [ open, setOpen ] = useState(false);
@@ -22,6 +23,7 @@ function HeaderMain(){
 
     function openGlobalMsg(severity, msg) {
         setGlobalMsg({ severity: severity, msg: msg })
+        if (severity === "error") beepError()
         setOpen(true);
     }
 

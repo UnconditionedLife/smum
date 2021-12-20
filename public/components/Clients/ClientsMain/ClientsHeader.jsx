@@ -4,6 +4,7 @@ import { AppBar, Box, Tab, Tabs, Tooltip, Snackbar } from '@material-ui/core';
 import { Add, Pageview, RoomService, House, History } from '@material-ui/icons';
 import { Fab } from '../../System';
 import { HeaderTitle } from '../../Clients';
+import { getEditingState, globalMsgFunc, setEditingState } from '../../System/js/Database';
 
 ClientsHeader.propTypes = {
     clientsFound: PropTypes.array.isRequired,
@@ -24,7 +25,11 @@ export default function ClientsHeader(props) {
     const updateURL = props.updateURL
 
     function handleNewClient() {
-       isNewClientChange(true)
+        if (getEditingState()) {
+            globalMsgFunc('error', "Save or Cancel before adding new client!")
+        } else {
+            isNewClientChange(true)
+        }
     }
 
     return (

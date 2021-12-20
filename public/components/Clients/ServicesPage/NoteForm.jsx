@@ -4,7 +4,7 @@ import { Box, Checkbox, FormControlLabel } from '@material-ui/core';
 import { NotificationImportant } from '@material-ui/icons';
 import { Button, TextField } from '../../System';
 import { isEmpty, utilNow } from '../../System/js/GlobalUtils.js';
-import { dbSaveClientAsync, getSession } from '../../System/js/Database.js';
+import { dbSaveClientAsync, getSession, setEditingState } from '../../System/js/Database.js';
 import cuid from 'cuid';
 
 NoteForm.propTypes = {
@@ -89,6 +89,7 @@ export default function NoteForm(props) {
             handleTextFieldChange('')
             handleNoteImportantChange(false)
             handleEditModeChange('none')
+            setEditingState(false)
         }
     }
 

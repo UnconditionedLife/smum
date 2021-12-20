@@ -4,7 +4,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Snackbar, Typograph
 import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay } from '../';
 import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } from '../../Clients';
-import { dbSaveClientAsync } from '../../System/js/Database';
+import { dbSaveClientAsync, setEditingState } from '../../System/js/Database';
 
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
@@ -26,6 +26,7 @@ export default function ClientPage(props) {
             .then( () => {
                 setSaveMessage({ result: 'success', time: data.updatedDateTime });
                 props.updateClient(data);
+                setEditingState(false)
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });
@@ -39,7 +40,7 @@ export default function ClientPage(props) {
                 <PrintClientInfo client={ props.client } />
             </Snackbar>
 
-            <Box mt={ 6 } width={ 1 }>
+            <Box mt={ 6 } width={ 1 } style={{ overflowY: 'scroll' }}>
                 <Accordion key="ClientInfo" defaultExpanded={ true } onChange={handleChange('panel1')}>
                     <AccordionSummary style={{justifyContent: "center"}} expandIcon={<ExpandMore />} id="panel1bh-header" >
                         <Typography  variant='button'>Client Info</Typography>

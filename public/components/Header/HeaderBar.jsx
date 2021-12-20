@@ -13,7 +13,7 @@ import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
-import { cacheSessionVar, clearCache, initCache, showCache, getSession, getUserName, getUserRole, updateCachedSession } from '../System/js/Database';
+import { cacheSessionVar, clearCache, initCache, showCache, getEditingState, getSession, getUserName, getUserRole, globalMsgFunc, updateCachedSession } from '../System/js/Database';
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -195,12 +195,20 @@ export default function HeaderBar(props) {
     }, ["hot"]);
 
     const handleSectionChange = (newValue) => {
-        setSelectedSection(newValue);
-        updateRoute(newValue);
+        if (getEditingState()) {
+            globalMsgFunc('error', "Save or Cancel before navigating away!")
+        } else {
+            setSelectedSection(newValue);
+            updateRoute(newValue);
+        }
     };
 
     const handleUserMenuOpen = (event) => {
-        setUserMenuAnchor(event.currentTarget);
+        if (getEditingState()) {
+            globalMsgFunc('error', "Save or Cancel before navigating away!")
+        } else {
+            setUserMenuAnchor(event.currentTarget);
+        }
     };
 
     function closeUserMenu() {
@@ -218,8 +226,12 @@ export default function HeaderBar(props) {
     }
 
     function handleSearchTermChange(newValue) {
-        if (searchTerm !== newValue) {
-            setSearchTerm(newValue);
+        if (getEditingState()) {
+            globalMsgFunc('error', "Save or Cancel before searching!")
+        } else {
+            if (searchTerm !== newValue) {
+                setSearchTerm(newValue);
+            }
         }
     }
 
@@ -241,7 +253,7 @@ export default function HeaderBar(props) {
                     onKeyPress={event => {
                         if (event.key == "Enter") {
                             if (selectedSection !== 0) handleSectionChange(0)
-                            setSearchTerm(event.target.value)
+                            handleSearchTermChange(event.target.value)
                         }
                     }}
                 />

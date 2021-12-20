@@ -202,6 +202,8 @@ export function utilRemoveDupClients(clients) {
 // Sound effects
 
 export function beepError() {
+
+    console.log("BEEP-ERROR")
     playSound("public/sounds/beep.wav");
 }
 
@@ -214,7 +216,7 @@ export function beepSuccess() {
 function playSound(soundFile) {
     if (SettingsSound()) {
 		let sound  = new Audio(soundFile);
-		sound.volume= 0.1;
+		sound.volume= 0.3;
 		sound.loop = false;
 		sound.play();
 	}
