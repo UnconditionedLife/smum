@@ -56,7 +56,7 @@ export default function ClientsMain(props) {
 
     useEffect(() => {
         if (searchTerm !== '') {
-            if (window.stateCheckPendingEdit()) return // NEED TO REPLACE THIS WITH NEW EDIT PENDING
+            // if (window.stateCheckPendingEdit()) return // NEED TO REPLACE THIS WITH NEW EDIT PENDING
             dbSearchClientsAsync(searchTerm).then(clients => { 
                 changeClientsFound(clients)
                 if (clients.length === 0) {
