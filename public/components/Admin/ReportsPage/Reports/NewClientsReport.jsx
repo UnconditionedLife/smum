@@ -106,7 +106,7 @@ export default function NewClientsReport(props) {
         <TableContainer align="center"> 
             <Table size="small" align="center">
                 <ReportsHeader reportType="MONTHLY REPORT" 
-                    reportCategory="FOOD PANTRY" 
+                    reportCategory="NEW CLIENT" 
                     columns={["Zipcode", "Total", "Homeless"]} />
                 <TableBody>
                     { counts.map((item) => (

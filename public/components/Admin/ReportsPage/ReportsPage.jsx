@@ -8,13 +8,13 @@ import moment from 'moment';
 import ReportDialog from './ReportDialog.jsx';
 import NewClientsReport from './Reports/NewClientsReport.jsx';
 import DailyDistributionReport from './Reports/DailyDistributionReport.jsx';
-
+import MonthlyDistributionReport from './Reports/MonthlyDistributionReport.jsx';
 
 export default function ReportsPage() {
     const [ dayType, handleDayType ] = useState("FOOD")
     const [ reportDay, handleReportDayChange ] = useState(moment().format('YYYYMMDD'))
     
-    const [ foodYearMonth, handleFoodYearMonthChange ] = useState(moment().subtract(1, 'month').format('YYYYMM'))
+    const [ foodYearMonth, handleFoodYearMonthChange ] = useState(moment().format('YYYYMM'))
     const [ foodType, handleFoodType ] = useState("FOOD")
     
     const [ yearType, handleYearType ] = useState("FOOD")
@@ -30,21 +30,36 @@ export default function ReportsPage() {
     const voucherSvcTypes = svcTypes.filter(s => (s.isActive == 'Active' && s.fulfillment.type == 'Voucher'))
 
     const runFoodReport = () => {
-        setReportHeading("New Clients " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
-        setReportOpen(true);
-        setReportBody(<NewClientsReport yearMonth={foodYearMonth} />);
-        const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
-        setReportActions(buttonCode);
+        if (foodType == "NEWCLIENT") {
+            setReportHeading("New Clients " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
+            setReportOpen(true);
+            setReportBody(<NewClientsReport yearMonth={foodYearMonth} />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+        if (dayType == "FOOD") {
+            setReportHeading("Distribution " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
+            setReportOpen(true);
+            console.log(foodYearMonth)
+            setReportBody(<MonthlyDistributionReport month={foodYearMonth} />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
     }
 
     const runDailyReport = () => {
-        setReportHeading("Distribution " + moment(reportDay).format('MMM, DD, YYYY') + " Report");
-        setReportOpen(true);
-        setReportBody(<DailyDistributionReport />);
-        const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
-        setReportActions(buttonCode);
+        if (dayType == "FOOD") {
+            setReportHeading("Distribution " + moment(reportDay).format('MMM, DD, YYYY') + " Report");
+            setReportOpen(true);
+            setReportBody(<DailyDistributionReport />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
     }
 
+    const handleFoodYearMonthChangeUpdated = (event) => {
+        handleFoodYearMonthChange(event._i)
+    }
 
     return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
@@ -71,10 +86,11 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
+                                <MenuItem value="NEWCLIENT">New Client</MenuItem>
                                 <MenuItem value="ALL">All Services</MenuItem>
                         </Select>
                         </FormControl>
-                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["year", "month"]} value={ foodYearMonth } onChange={ handleFoodYearMonthChange } />
+                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["year", "month"]} value={ foodYearMonth } onChange={ handleFoodYearMonthChangeUpdated } />
                         <Button onClick={runFoodReport} variant="contained" color="primary">Run</Button>
                     </Box>
 
