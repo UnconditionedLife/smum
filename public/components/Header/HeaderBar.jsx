@@ -102,10 +102,14 @@ HeaderBar.propTypes = {
     version: PropTypes.string.isRequired,
 }
 
+function tokenTimeRemaining(token) {
+    let decodedTkn = jwt_decode(token)
+    return decodedTkn.exp*1000 - new Date().getTime() - 30000;
+}
+
 export default function HeaderBar(props) {
     const classes = useStyles();
     const [userMenuAnchor, setUserMenuAnchor] = useState(null);
-    const [cogUser, setCogUser] = useState(null);   // XXX delete after app.js is removed
     const [selectedSection, setSelectedSection] = useState(-1);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -116,7 +120,7 @@ export default function HeaderBar(props) {
     function sessionFromCookies(cookies) {
         if (cookies && cookies.user && cookies.auth && cookies.refresh) {
             console.log('Creating session from cookies')
-            return {user:cookies.user, auth:cookies.auth, refresh:cookies.refresh, cogUser: cogUser};
+            return { user:cookies.user, auth:cookies.auth, refresh:cookies.refresh };
         }
         else {
             console.log('No cookies found')
@@ -124,28 +128,25 @@ export default function HeaderBar(props) {
         }
     }
 
-    function setSession(newSession) {
+    function setSession(newSession, reInit=false) {
         if (newSession) {
             console.log("Init session")
-            let decodedTkn = jwt_decode(newSession.auth.accessToken)
-            let currTime = new Date()
-            //window.utilInitAuth(newSession.auth);
-            //window.utilInitSession(newSession.user, newSession.cogUser);
+            let refreshTime = tokenTimeRemaining(newSession.auth.idToken);
+            console.log('Lifetime', refreshTime)
+
             // Update Local and Global Session vars
             cacheSessionVar(newSession);
-            initCache();
+            if (reInit)
+                initCache();
             setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
             setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
             setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' })
-            setCogUser(newSession.cogUser)
-            setTimeout(refreshUserSession, decodedTkn.exp*1000 - currTime.getTime() - 1000);
-            console.log("End")
+            // setTimeout(refreshUserSession, refreshTime);
+            console.log("End session init")
         } else {
             removeCookie("user", { path: '/' });
             removeCookie("auth", { path: '/' });
             removeCookie("refresh", { path: '/' });
-            // window.utilInitAuth(null);
-            setCogUser(null);
             clearCache();
         }
     }
@@ -154,14 +155,16 @@ export default function HeaderBar(props) {
         console.log('Refreshing', getUserName(), getSession())
         let session = getSession();
         if (session) {
+            console.log('Before refresh', tokenTimeRemaining(session.auth.idToken))
             let token = cogGetRefreshToken(session.refresh);
             let tempUser = cogSetupUser(session.user.userName);
             tempUser.refreshSession(token, function (err, result) {
-                let uAuthorization = {};
-                uAuthorization.accessToken = result.getAccessToken().getJwtToken();
-                let uRefreshToken = result.refreshToken.token;
-                uAuthorization.idToken = result.idToken.jwtToken;
-                updateCachedSession({ uauth: uAuthorization, refresh: uRefreshToken });
+                let auth = {};
+                auth.accessToken = result.getAccessToken().getJwtToken();
+                // let uRefreshToken = result.refreshToken.token;
+                auth.idToken = result.idToken.jwtToken;
+                session.auth = auth;
+                setSession(session, false);
             });
         }
     }
@@ -176,12 +179,11 @@ export default function HeaderBar(props) {
             // Page reload or direct URL access: Check for cookies from previous
             // login.
             let savedSession = sessionFromCookies(cookies);
-            if (savedSession) {
+            if (savedSession && tokenTimeRemaining(savedSession.auth.idToken) > 0) {
                 let newCogUser = cogSetupUser(cookies.user.userName);
                 newCogUser.getSession(function (err, cogSession) { 
                     if (!err && cogSession.isValid()) { 
-                        savedSession.cogUser = newCogUser;
-                        setSession(savedSession); 
+                        setSession(savedSession, true); 
                     }
                 });
             }
@@ -222,7 +224,7 @@ export default function HeaderBar(props) {
         handleSectionChange(0);
         handleSearchTermChange('');
         myCogUser.signOut();
-        setSession(null);
+        setSession(null, false);
     }
 
     function handleSearchTermChange(newValue) {
@@ -304,7 +306,7 @@ export default function HeaderBar(props) {
     return (
         <ThemeProvider theme={theme}>
             <Dialog open={ !(userName) }>
-                <LoginForm onLogin={ (x) => setSession(x) } />
+                <LoginForm onLogin={ (x) => setSession(x, true) } />
             </Dialog>
             <Box flexGrow={1} >
                 <AppBar position="fixed">
