@@ -196,22 +196,22 @@ export default function HeaderBar(props) {
         showCache();
     }, ["hot"]);
 
-    const handleSectionChange = (newValue) => {
+    function handleSectionChange(newValue) {
         if (getEditingState()) {
             globalMsgFunc('error', "Save or Cancel before navigating away!")
         } else {
             setSelectedSection(newValue);
             updateRoute(newValue);
         }
-    };
+    }
 
-    const handleUserMenuOpen = (event) => {
+    function handleUserMenuOpen(event) {
         if (getEditingState()) {
             globalMsgFunc('error', "Save or Cancel before navigating away!")
         } else {
             setUserMenuAnchor(event.currentTarget);
         }
-    };
+    }
 
     function closeUserMenu() {
         setUserMenuAnchor(null);

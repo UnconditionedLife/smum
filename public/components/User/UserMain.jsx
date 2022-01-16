@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Container, CardContent, CardHeader } from '@material-ui/core';
 import { Card } from '../System';
-import { UserForm, PasswordForm } from '../User';
+import { UserForm, PasswordForm } from '.';
 import { dbGetUserAsync, getUserName } from '../System/js/Database';
 
 export default function UserMain() {

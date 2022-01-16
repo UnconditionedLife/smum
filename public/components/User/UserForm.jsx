@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, MenuItem, Typography } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
-import { dbGetUserAsync, dbSaveUserAsync, dbSetModifiedTime } from '../System/js/Database';
+import { dbGetUserAsync, dbSaveUserAsync, dbSetModifiedTime, setEditingState } from '../System/js/Database';
 
 UserForm.propTypes = {
     user: PropTypes.object,     // null to create new user
@@ -37,6 +37,8 @@ export default function UserForm(props) {
         defaultValues: initValues, 
     });
 
+    if (formState.isDirty) setEditingState(true)
+
     function validUsername(name) {
         dbGetUserAsync(name)
         .then( () => {
@@ -59,6 +61,7 @@ export default function UserForm(props) {
         dbSaveUserAsync(userData)
             .then( () => {
                 setSaveMessage({ result: 'success', time: userData.updatedDateTime });
+                setEditingState(false)
                 reset(formValues);
             })
             .catch( message => {
@@ -70,8 +73,10 @@ export default function UserForm(props) {
 
     function doCancel() {
         reset();
+        setEditingState(false)
         if (props.onClose)
             props.onClose();
+        
     }
 
     return (

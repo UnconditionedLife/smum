@@ -4,7 +4,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Typography, Tooltip, Fab } from '@material-ui/core';
 import { ExpandMore, Add } from '@material-ui/icons';
 import { dbGetSvcTypesAsync, getSvcTypes } from '../../System/js/Database.js';
-import { ServiceTypeFormDialog } from '../../Admin';
+import { ServiceTypeFormDialog } from '..';
 
 ServiceTypeList.propTypes = {
     list: PropTypes.array.isRequired,

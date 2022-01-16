@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Snackbar } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
-import { ClientsHeader, ClientsContent } from '../../Clients';
+import { ClientsHeader, ClientsContent } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';

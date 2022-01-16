@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from 'prop-types';
 import { Route, Redirect } from "react-router-dom";
 import Container from '@material-ui/core/Container';
 import { ClientsRouter } from '../Clients';
@@ -7,19 +8,23 @@ import UserMain from '../User/UserMain.jsx';
 import PageToday from './PageToday.jsx';
 import { getSession } from '../System/js/Database';
 
+SectionsContent.propTypes = {
+    searchTerm: PropTypes.string.isRequired,
+    handleSearchTermChange: PropTypes.func.isRequired,
+}
+
 export default function SectionsContent(props) {
     if (getSession() == null) return null;
 
     return (
-        <Container>
+        <Container style={{ overflowY: 'scroll' }}>
             <Route exact path="/">
                 <Redirect to="/clients" />
             </Route>
-            {/* <SectionsHeader section = { props.section } /> */}
             <Route path="/clients">
                 <ClientsRouter
-                    searchTerm={props.searchTerm}
-                    handleSearchTermChange={props.handleSearchTermChange}
+                    searchTerm={ props.searchTerm }
+                    handleSearchTermChange={ props.handleSearchTermChange }
                 />
             </Route>
             <Route path="/admin">

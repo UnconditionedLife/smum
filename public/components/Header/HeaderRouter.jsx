@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, useLocation, Switch, Redirect, Route, Link, useHistory, matchPath, useRouteMatch, useParams } from "react-router-dom";
-import { HeaderBar } from "./";
+import { HeaderBar } from ".";
 
 export default function SearchNavBarContainer(props) {
     const route = useLocation();

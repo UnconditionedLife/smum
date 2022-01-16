@@ -4,7 +4,7 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import { Box, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import { CookiesProvider } from 'react-cookie';
-import { HeaderRouter } from "./";
+import { HeaderRouter } from ".";
 import theme from '../Theme.jsx'
 import { BrowserRouter as Router } from "react-router-dom";
 import { setGlobalMsgFunc } from "../System/js/Database";

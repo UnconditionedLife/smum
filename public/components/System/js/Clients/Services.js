@@ -3,11 +3,11 @@
 //******************************************************************
 import { isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
-import { utilGradeToNumber, utilCalcTargetServices } from '../Clients/ClientUtils'
+import { utilGradeToNumber, utilCalcTargetServices } from './ClientUtils'
 import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
     getSession, dbSaveLastServedAsync, dbGetSvcsByIdAndYear } from '../Database';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
-            prnPrintVoucherReceipt, prnFlush } from '../Clients/Receipts';
+            prnPrintVoucherReceipt, prnFlush } from './Receipts';
 import cuid from 'cuid';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
@@ -393,10 +393,6 @@ function validateServiceInterval( props ){
 
             if (activeServiceType.isUSDA === "NonUSDA") {
                 // NonUSDA only if USDA does not Qualify and NOT serviced today
-
-                // console.log("daysNonUSDA = ", lastServed.daysNonUSDA, ">=", intervals.NonUSDA)
-                // console.log("INTERVALS", intervals)
-
                 if ((lastServed.daysNonUSDA >= intervals.NonUSDA)
                     && (lastServed.lowestDays >= intervals.NonUSDA) 
                     && (lastServed.lowestDays < intervals.USDA) 
@@ -411,11 +407,7 @@ function validateServiceInterval( props ){
                 // Emergency only if USA and NonUSDA do not Qualify
                 if (lastServed.daysUSDA >= intervals.USDA) return false
                 if (lastServed.lowestDays >= intervals.NonUSDA) return false
-
-                // console.log("LOWEST = ", lastServed.lowestDays)
-                // console.log("INTERVAL = ", intervals.Emergency)
-
-                if (lastServed.lowestDays >= intervals.Emergency) return true
+                if ((lastServed.lowestDays >= intervals.Emergency) && (lastServed.lowestDays !== 0)) return true
 				return false
 			}
 		}

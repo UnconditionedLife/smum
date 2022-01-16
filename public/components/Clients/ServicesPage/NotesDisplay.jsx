@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
 import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
 import { Card, IconButton } from '../../System';
-import { NoteForm } from '../../Clients';
+import { NoteForm } from '..';
 import { dbSaveClientAsync, getSession, setEditingState } from '../../System/js/Database.js';
 import moment from 'moment';
 

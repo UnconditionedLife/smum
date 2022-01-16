@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { useForm } from "react-hook-form";
 import { Box, Button } from '@material-ui/core';
 import { FormTextField } from '../System';
+import { setEditingState } from '../System/js/Database';
 
 export default function PasswordForm() {
     const { reset, handleSubmit, control, formState, errors, setError } = useForm({
@@ -16,9 +17,12 @@ export default function PasswordForm() {
             setError('newPassword2', {type: 'manual', message: 'New passwords must match'});
         else {
             alert('Password changed to ' + data.newPassword1 + ' (not really!)');
+            setEditingState(false)
             reset();
         }
     }
+
+    if (formState.isDirty) setEditingState(true)
     
     return (
         <Fragment>

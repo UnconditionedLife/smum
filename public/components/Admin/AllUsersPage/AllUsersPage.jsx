@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Table, TableBody,
      TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@material-ui/core';
 import { Add, ExpandMore } from '@material-ui/icons';
-import { UserPage } from '../../Admin';
+import { UserPage } from '..';
 import { dbGetAllUsersAsync } from '../../System/js/Database.js';
 
 UserList.propTypes = {

@@ -3,7 +3,7 @@ import { AppBar, Box, Tab, Tabs } from '@material-ui/core';
 import { RoomService, AccountBox, AccountCircle, 
             Assessment, SettingsApplications, Input } from '@material-ui/icons';
 import { AllUsersPage, ImportPage, ReportsPage, 
-            ServiceTypePage, SettingsPage } from '../../Admin';
+            ServiceTypePage, SettingsPage } from '..';
 import { getSession } from '../../System/js/Database';
 import { isEmpty } from '../../System/js/GlobalUtils';
 

@@ -1,37 +1,51 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
-import { ClientsMain } from '../';
+import { ClientsMain } from '..';
+import { getEditingState, globalMsgFunc } from '../../System/js/Database';
+
+ClientsRouter.propTypes = {
+    handleSearchTermChange: PropTypes.func.isRequired,
+    searchTerm: PropTypes.string.isRequired,
+    // client: PropTypes.object.isRequired,
+    // updateClient: PropTypes.func.isRequired,
+    // showAlert: PropTypes.func.isRequired,
+}
 
 export default function ClientsRouter(props) {
     const handleSearchTermChange = props.handleSearchTermChange;
     const searchTerm = props.searchTerm;
-    const client = props.client;
+    // const client = props.client;
     const history = useHistory();
     const route = useLocation();
     const url = route.pathname;
     const [ selectedTab, setSelectedTab ] = useState(0);
 
     const updateURL = (clientId, newTab) => {
-        const currentClientId = clientId == null ? "" : encodeURIComponent(clientId);
-        let newURL = ""
-        switch (newTab) {
-            case 0:
-                newURL = "/clients/found/" + encodeURIComponent(searchTerm);
-                break;
-            case 1:
-                newURL = "/clients/services/" + currentClientId;
-                break;
-            case 2:
-                newURL = "/clients/client/" + currentClientId;
-                break;
-            case 3:
-                newURL = "/clients/history/" + currentClientId;
-                break;
+        if (getEditingState()) {
+            globalMsgFunc('error', "Save or Cancel before navigating away!")
+        } else {
+            const currentClientId = clientId == null ? "" : encodeURIComponent(clientId);
+            let newURL = ""
+            switch (newTab) {
+                case 0:
+                    newURL = "/clients/found/" + encodeURIComponent(searchTerm);
+                    break;
+                case 1:
+                    newURL = "/clients/services/" + currentClientId;
+                    break;
+                case 2:
+                    newURL = "/clients/client/" + currentClientId;
+                    break;
+                case 3:
+                    newURL = "/clients/history/" + currentClientId;
+                    break;
+            }
+            if (newURL != url) {
+                history.push(newURL)
+            }
+            handleTabChange(newTab)
         }
-        if (newURL != url) {
-            history.push(newURL)
-        }
-        handleTabChange(newTab)
     }
 
     const checkClientsURL = (client) => {
@@ -74,9 +88,9 @@ export default function ClientsRouter(props) {
     
     return (    
           <ClientsMain {...props}
-            checkClientsURL={checkClientsURL}
-            selectedTab={selectedTab}
-            url={url}
-            updateURL={updateURL} />
+            checkClientsURL={ checkClientsURL }
+            selectedTab={ selectedTab }
+            url={ url }
+            updateURL={ updateURL } />
     )
 }

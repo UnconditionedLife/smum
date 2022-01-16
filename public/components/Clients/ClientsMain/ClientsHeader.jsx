@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { AppBar, Box, Tab, Tabs, Tooltip, Snackbar } from '@material-ui/core';
 import { Add, Pageview, RoomService, House, History } from '@material-ui/icons';
 import { Fab } from '../../System';
-import { HeaderTitle } from '../../Clients';
+import { HeaderTitle } from '..';
 import { getEditingState, globalMsgFunc, setEditingState } from '../../System/js/Database';
 
 ClientsHeader.propTypes = {
@@ -48,7 +48,7 @@ export default function ClientsHeader(props) {
                 </Box>
                 <Tabs
                     value={selectedTab}
-                    onChange={(event, newValue) => {updateURL(client.clientId, newValue);}}
+                    onChange={(event, newValue) => { updateURL(client.clientId, newValue) }}
                     indicatorColor="secondary"
                     textColor="primary"
                     selectionFollowsFocus

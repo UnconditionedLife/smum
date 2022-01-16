@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Popper, Table, TableBody, TableCell, TableContainer, 
             TableHead, TableRow } from '@material-ui/core';
 import { Card } from '../../System';
-import { HistoryFormDialog, HistoryPopupMenu } from '../../Clients';
+import { HistoryFormDialog, HistoryPopupMenu } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils';
 import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc } from '../../System/js/Database';

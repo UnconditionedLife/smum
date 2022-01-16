@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Typography } from '@material-ui/core';
 import { Card } from '../../System';
 import { addServiceAsync } from '../../System/js/Clients/Services'
-import { LastServed, PrimaryButtons, SecondaryButtons, ServiceNotes } from '../';
+import { LastServed, PrimaryButtons, SecondaryButtons, ServiceNotes } from '..';
 import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc } from '../../System/js/Database';
 

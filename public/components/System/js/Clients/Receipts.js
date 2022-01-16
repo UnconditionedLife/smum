@@ -3,7 +3,7 @@
 //******************************************************************
 import moment from  'moment';
 import { utilSortDependentsByGrade, utilCalcGradeGrouping, utilSortDependentsByAge,
-    utilCalcAgeGrouping, utilPadTrimString } from '../Clients/ClientUtils'
+    utilCalcAgeGrouping, utilPadTrimString } from './ClientUtils'
 import { getSvcTypes, SettingsSchedule } from '../Database';
 import { dateFindOpen } from '../GlobalUtils'
 

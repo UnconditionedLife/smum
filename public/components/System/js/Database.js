@@ -195,7 +195,10 @@ export async function dbGetAllUsersAsync() {
 }
 
 export async function dbSaveUserAsync(data) { 
-    return await dbPostDataAsync('/users/', data);
+    return await dbPostDataAsync('/users/', data)
+        .then( data => {
+            setEditingState(false)
+        });
 }
 
 //******************** CLIENTS ********************
