@@ -35,3 +35,4 @@ node_modules
 package-lock.json
 public/components/main.bundle.js
 public/components/main.bundle.js.map
+build/
