@@ -1,21 +1,23 @@
-import React from 'react';
-// import { useEffect, useRef } from 'react';
-import { Button } from '../System';
-import { prnTest } from '../System/js/Clients/Receipts';
+import React, { useState, useEffect } from 'react';
+import moment from 'moment';
+import { CardContent, CardHeader } from '@material-ui/core';
+import { Card } from '../System';
+import DailyDistributionReport from '../Admin/ReportsPage/Reports/DailyDistributionReport.jsx';
 
 export default function PageToday() {
+    const [ reportDay, setReportDay ] = useState(moment().format('YYYYMMDD'))
+    const [ reportHeading, setReportHeading ] = useState('')
+    const [ reportBody, setReportBody ] = useState(null)
+
+    useEffect(() => {
+        setReportHeading("Today " + moment(reportDay).format('MMM, DD, YYYY') + " Report");
+        setReportBody(<DailyDistributionReport />);
+    }, [reportDay])
  
     return (
-        <div>
-            TODAY PAGE<br/>
-            <Button key="print1" m={ .5 } variant="outlined" color="primary" size="large" minWidth="168px" 
-            onClick={ () => prnTest('minimal') } >
-                    Minimal Printer Test
-            </Button>
-            <Button key="print2" m={ .5 } variant="outlined" color="primary" size="large" minWidth="168px" 
-            onClick={ () => prnTest('full') } >
-                    Full Printer Test
-            </Button>
-        </div>
+        <Card>
+            <CardHeader>{ reportHeading }</CardHeader>
+            <CardContent>{ reportBody }</CardContent>
+        </Card>
     );
 }   
