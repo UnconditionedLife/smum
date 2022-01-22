@@ -8,6 +8,7 @@ import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupCl
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
 import { prnConnect } from './Clients/Receipts';
+import jwt_decode from 'jwt-decode';
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 
@@ -51,8 +52,22 @@ export function cacheSessionVar(newSession) {
     cachedSession.editingState = false
 }
 
-export function updateCachedSession(newSession) {
-    Object.assign(cachedSession, newSession);
+export function sessionTimeRemaining() {
+    let decodedTkn = jwt_decode(cachedSession.auth.idToken);
+    return decodedTkn.exp*1000 - new Date().getTime();
+}
+
+export function navigationAllowed () {
+    let minutes = Math.round(sessionTimeRemaining() / 60000);
+    const warningMinutes = 24 * 60;
+
+    if (getEditingState()) {
+        globalMsgFunc('error', "Edit it progress. Save or Cancel before changing screens.");
+        return false;
+    }
+    if (minutes < warningMinutes)
+        globalMsgFunc('warning', 'Session will expire in ' + minutes + ' minutes. Log out and back in again.') 
+    return true;
 }
 
 export function initCache() {
@@ -195,10 +210,10 @@ export async function dbGetAllUsersAsync() {
 }
 
 export async function dbSaveUserAsync(data) { 
-    return await dbPostDataAsync('/users/', data)
-        .then( data => {
-            setEditingState(false)
-        });
+    return await dbPostDataAsync('/users/', data);
+        // .then( data => {
+        //     setEditingState(false)
+        // });
 }
 
 //******************** CLIENTS ********************

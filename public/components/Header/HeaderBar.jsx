@@ -13,7 +13,8 @@ import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
-import { cacheSessionVar, clearCache, initCache, showCache, getEditingState, getSession, getUserName, getUserRole, globalMsgFunc, updateCachedSession } from '../System/js/Database';
+import { cacheSessionVar, clearCache, initCache, showCache, getSession, 
+    getUserName, getUserRole, navigationAllowed } from '../System/js/Database';
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -197,18 +198,14 @@ export default function HeaderBar(props) {
     }, ["hot"]);
 
     function handleSectionChange(newValue) {
-        if (getEditingState()) {
-            globalMsgFunc('error', "Save or Cancel before navigating away!")
-        } else {
+        if (navigationAllowed()) {
             setSelectedSection(newValue);
             updateRoute(newValue);
         }
     }
 
     function handleUserMenuOpen(event) {
-        if (getEditingState()) {
-            globalMsgFunc('error', "Save or Cancel before navigating away!")
-        } else {
+        if (navigationAllowed()) {
             setUserMenuAnchor(event.currentTarget);
         }
     }
@@ -228,9 +225,7 @@ export default function HeaderBar(props) {
     }
 
     function handleSearchTermChange(newValue) {
-        if (getEditingState()) {
-            globalMsgFunc('error', "Save or Cancel before searching!")
-        } else {
+        if (navigationAllowed()) {
             if (searchTerm !== newValue) {
                 setSearchTerm(newValue);
             }

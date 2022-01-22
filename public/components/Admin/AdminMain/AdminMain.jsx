@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { AppBar, Box, Tab, Tabs } from '@material-ui/core';
-import { RoomService, AccountBox, AccountCircle, 
-            Assessment, SettingsApplications, Input } from '@material-ui/icons';
+import { RoomService, AccountBox, Assessment, SettingsApplications, Input } from '@material-ui/icons';
 import { AllUsersPage, ImportPage, ReportsPage, 
             ServiceTypePage, SettingsPage } from '..';
-import { getSession } from '../../System/js/Database';
+import { getSession, navigationAllowed } from '../../System/js/Database';
 import { isEmpty } from '../../System/js/GlobalUtils';
 
 AdminMain.propTypes = {
@@ -21,7 +20,8 @@ export default function AdminMain() {
     })
 
     const handleChange = (event, newValue) => {
-        setSelectedTab(newValue);
+        if (navigationAllowed())
+            setSelectedTab(newValue);
     };
 
     if (session === null) return null // do not render admin if session is not set
