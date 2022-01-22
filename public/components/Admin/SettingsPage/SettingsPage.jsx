@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import ChipInput from 'material-ui-chip-input';
 import { Box, Card, CardContent, CardHeader, Container, MenuItem, Typography } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime } from '../../System/js/Database';
+import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
 import { validBaseZipcode } from '../../System/js/Forms';
 import { beepError } from '../../System/js/GlobalUtils';
 import SettingsSched from './SettingsSched.jsx';
@@ -48,6 +48,9 @@ function SettingsForm(props) {
         defaultValues: initValues,
     });
 
+    if (formState.isDirty || fieldsDirty) 
+        setEditingState(true);
+
     function doSave(formValues) {
         let settingsData = { ... initValues };
 
@@ -66,6 +69,7 @@ function SettingsForm(props) {
                 reset(formValues);
                 setInitValues(settingsData);
                 setFieldsDirty(false);
+                setEditingState(false);
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });
@@ -79,6 +83,7 @@ function SettingsForm(props) {
         setServiceCat(initValues.serviceCat);
         setCalRules(calClone(initValues));
         setFieldsDirty(false);
+        setEditingState(false);
     }
 
     function addZipcode(zip) {
@@ -109,8 +114,6 @@ function SettingsForm(props) {
         setCalRules(rules);
         setFieldsDirty(true);
     }
-
-    console.log('Render Settings')
 
     return (
         <>

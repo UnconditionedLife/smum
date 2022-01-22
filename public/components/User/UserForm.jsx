@@ -37,7 +37,8 @@ export default function UserForm(props) {
         defaultValues: initValues, 
     });
 
-    if (formState.isDirty) setEditingState(true)
+    if (formState.isDirty) 
+        setEditingState(true);
 
     function validUsername(name) {
         dbGetUserAsync(name)

@@ -7,7 +7,7 @@ import theme from '../../Theme.jsx';
 // import { Fab } from '../../System';
 import { DependentsFormDialog } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
-import { getEditingState, globalMsgFunc } from '../../System/js/Database';
+import { navigationAllowed } from '../../System/js/Database';
 
 DependentsDisplay.propTypes = {
     client: PropTypes.object.isRequired,
@@ -36,9 +36,7 @@ export default function DependentsDisplay(props) {
     }
 
     function handleSelectedDependent(event, newDepId) {
-        if (getEditingState()) {
-            globalMsgFunc('error', "Save or Cancel before editing dependents!")
-        } else {
+        if (navigationAllowed()) {
             setSelectedDependent(newDepId);
             const record = dependents.filter(function( obj ) {
                 return obj.depId === newDepId

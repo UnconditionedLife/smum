@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
 import { ClientsMain } from '..';
-import { getEditingState, globalMsgFunc } from '../../System/js/Database';
+import { navigationAllowed } from '../../System/js/Database';
 
 ClientsRouter.propTypes = {
     handleSearchTermChange: PropTypes.func.isRequired,
@@ -22,9 +22,7 @@ export default function ClientsRouter(props) {
     const [ selectedTab, setSelectedTab ] = useState(0);
 
     const updateURL = (clientId, newTab) => {
-        if (getEditingState()) {
-            globalMsgFunc('error', "Save or Cancel before navigating away!")
-        } else {
+        if (navigationAllowed()) {
             const currentClientId = clientId == null ? "" : encodeURIComponent(clientId);
             let newURL = ""
             switch (newTab) {
