@@ -18,6 +18,7 @@ ClientsContent.propTypes = {
 }
 
 export default function ClientsContent(props) {
+    const { showFound, showServices, showClient,  } = props
     const match = useRouteMatch();
 
     const logoBox = (
@@ -30,35 +31,36 @@ export default function ClientsContent(props) {
         <Container maxWidth='lg' mt={0} pt={0}>
             <Switch>
                 <Route path={`${match.path}/found/:term`}>
-                    { props.showFound && 
+                    { showFound && 
                         <FoundPage
                             clientsFound={ props.clientsFound }
                             client={ props.client } changeClient={ props.changeClient }
                             updateURL={ props.updateURL } showAlert={ props.showAlert } />
                     }
-                    { !props.showFound && logoBox }
+                    { !showFound && logoBox }
                 </Route>              
                 <Route path={`${match.path}/services/:clientId`}>
-                    { props.showServices && 
+                    { showServices && 
                         <ServicesPage 
+                            clientsFound={ props.clientsFound }
                             client={ props.client } updateClient={ props.updateClient }
                             showAlert={ props.showAlert }/>
                     }
-                    { !props.showServices && logoBox }
+                    { !showServices && logoBox }
                 </Route>
                 <Route path={`${match.path}/client/:clientId`}>
-                    { props.showClient && 
+                    { showClient && 
                         <ClientPage client={props.client} updateClient={ props.updateClient }
                             showAlert={ props.showAlert } />
                     }
-                    { !props.showClient && logoBox }
+                    { !showClient && logoBox }
                 </Route>
                 <Route path={`${match.path}/history/:clientId`}>
-                    { props.showClient && 
+                    { showClient && 
                         <HistoryPage client={props.client} updateClient={ props.updateClient }
                             showAlert={ props.showAlert } />
                     }
-                    { !props.showClient && logoBox }
+                    { !showClient && logoBox }
                 </Route>
             </Switch>
         </Container>

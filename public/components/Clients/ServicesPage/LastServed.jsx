@@ -54,11 +54,11 @@ export default function LastServed(props) {
     }
  
     return (
-        <Box width='100%' display='flex' flexDirection='row' key={ svcHistory }>
-            <Box width='50%'>
+        <Box mt={ .75 } display='flex' flexDirection='column' key={ svcHistory }>
+            <Box display='flex' justifyContent='center'>
                 <Typography variant='button' color='secondary' noWrap>{ lastVisit }</Typography>
             </Box>
-            <Box width='50%' justifyContent="flex-end">
+            <Box display='flex' justifyContent='center'>
                 <Typography variant='button' color='secondary' noWrap>{ nextService }</Typography>
             </Box>
         </Box>

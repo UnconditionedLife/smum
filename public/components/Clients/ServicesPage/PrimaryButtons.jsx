@@ -5,83 +5,11 @@ import { Box, ButtonBase } from '@material-ui/core';
 import { Button, Typography } from '../../System';
 import { getButtonData } from '../../System/js/Clients/Services'
 import ReplayIcon from '@material-ui/icons/Replay';
+import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      minWidth: 300,
-      width: '100%',
-      borderRadius: '20px',
-    },
-    image: {
-      position: 'relative',
-      margin: 0,
-      width: 168,
-      height: 168,
-        [theme.breakpoints.down('xs')]: {
-        width: '168px !important', // Overrides inline-style
-        height: 168,
-      },
-      '&:hover, &$focusVisible': {
-        zIndex: 1,
-        '& $imageBackdrop': {
-          opacity: 0.15,
-        },
-        '& $imageMarked': {
-          opacity: 0,
-        },
-        '& $imageTitle': {
-          border: '4px solid currentColor',
-        },
-      },
-    },
-    focusVisible: {},
-    imageButton: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: theme.palette.common.white,
-      borderRadius: '16px',
-    },
-    imageSrc: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center 40%',
-    },
-    imageBackdrop: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      backgroundColor: theme.palette.common.black,
-      opacity: 0.4,
-      transition: theme.transitions.create('opacity'),
-    },
-    imageTitle: {
-      position: 'relative',
-      padding: `${theme.spacing(2)}px ${theme.spacing(2)}px ${theme.spacing(1) + 6}px`,
-    },
-    imageMarked: {
-      height: 3,
-      width: 18,
-      backgroundColor: theme.palette.common.red,
-      position: 'absolute',
-      bottom: -2,
-      left: 'calc(50% - 9px)',
-      transition: theme.transitions.create('opacity'),
-    },
-  }));
+// make buttons 168px/176px(used) square for wider than 400px screens
+// make buttons 120px/128px(used) square for narrower than 400px screens 
+
 
 PrimaryButtons.propTypes = {
     client: PropTypes.object.isRequired, 
@@ -94,8 +22,91 @@ export default function PrimaryButtons(props) {
     const client = props.client
     const handleAddSvc = props.handleAddSvc
     const handleUndoSvc = props.handleUndoSvc
-    const classes = useStyles();
+    
     const [ buttons, setButtons ] = useState([]);
+
+    let buttonSizes = [ 168, '168px !important', 176 ]
+    if (UseWindowSize().width < 468) buttonSizes = [ 120, '120px !important', 128 ]
+    
+    const useStyles = makeStyles((theme) => ({
+        root: {
+          display: 'flex',
+          flexWrap: 'wrap',
+          minWidth: 300,
+          width: '100%',
+          borderRadius: '20px',
+        },
+        image: {
+          position: 'relative',
+          margin: 0,
+          width: buttonSizes[0],
+          height: buttonSizes[0],
+            [theme.breakpoints.down('xs')]: {
+            width: buttonSizes[1], // Overrides inline-style
+            height: buttonSizes[0],
+          },
+          '&:hover, &$focusVisible': {
+            zIndex: 1,
+            '& $imageBackdrop': {
+              opacity: 0.15,
+            },
+            '& $imageMarked': {
+              opacity: 0,
+            },
+            '& $imageTitle': {
+              border: '4px solid currentColor',
+            },
+          },
+        },
+        focusVisible: {},
+        imageButton: {
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: theme.palette.common.white,
+          borderRadius: '16px',
+        },
+        imageSrc: {
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 40%',
+        },
+        imageBackdrop: {
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          backgroundColor: theme.palette.common.black,
+          opacity: 0.4,
+          transition: theme.transitions.create('opacity'),
+        },
+        imageTitle: {
+          position: 'relative',
+          padding: `${theme.spacing(2)}px ${theme.spacing(2)}px ${theme.spacing(1) + 6}px`,
+        },
+        imageMarked: {
+          height: 3,
+          width: 18,
+          backgroundColor: theme.palette.common.red,
+          position: 'absolute',
+          bottom: -2,
+          left: 'calc(50% - 9px)',
+          transition: theme.transitions.create('opacity'),
+        },
+    }));
+    
+    const classes = useStyles();
+    
 
     useEffect(() => {
         const buttonData = getButtonData({ client: client, buttons: 'primary' })
@@ -171,8 +182,8 @@ export default function PrimaryButtons(props) {
                 }
 
                 { (svc.btnType === 'used') &&
-                    <Box m={ .5 } p={ 0 } width='176px' height='176px' bgcolor='#FFF' display='flex' >
-                            <Button m={ 0 } width='176px' height='176px' color='primary' style={{ borderRadius: '15px', border: '5px dashed #ddd' }}
+                    <Box m={ .5 } p={ 0 } width={ buttonSizes[2] } height={ buttonSizes[2] } bgcolor='#FFF' display='flex' >
+                            <Button m={ 0 } width={ buttonSizes[2] } height={ buttonSizes[2] } color='primary' style={{ borderRadius: '15px', border: '5px dashed #ddd' }}
                                 onClick={ () => handleUndoSvc( svc ) } startIcon={<ReplayIcon />}>
                                 <strong> { svc.serviceName.toUpperCase() }</strong>
                             </Button>

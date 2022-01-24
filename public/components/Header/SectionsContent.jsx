@@ -17,7 +17,7 @@ export default function SectionsContent(props) {
     if (getSession() == null) return null;
 
     return (
-        <Container style={{ overflowY: 'scroll' }}>
+        <Container ml={ 0 } style={{ overflowY: 'scroll', paddingTop: 0 }}>
             <Route exact path="/">
                 <Redirect to="/clients" />
             </Route>

@@ -6,17 +6,20 @@ import { addServiceAsync } from '../../System/js/Clients/Services'
 import { LastServed, PrimaryButtons, SecondaryButtons, ServiceNotes } from '..';
 import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc } from '../../System/js/Database';
+import { HeaderTitle } from '..';
 
 ServicesPage.propTypes = {
-    client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
+    client: PropTypes.object.isRequired, 
+    updateClient: PropTypes.func.isRequired,
     svcsRendered: PropTypes.object,
     updateSvcsRendered: PropTypes.func,
+    clientsFound: PropTypes.array,
+    selectedTab: PropTypes.string,
     showAlert: PropTypes.func.isRequired,
 }
 
 export default function ServicesPage(props) {
-    const client = props.client
-    const updateClient = props.updateClient
+    const { client, updateClient, clientsFound, selectedTab } = props
     const [ svcHistory, setSvcHistory ] = useState(null)
 
     useEffect(() => {
@@ -52,12 +55,16 @@ export default function ServicesPage(props) {
     return (
         <Box key={ svcHistory } display="flex" justifyContent="space-around" flexWrap="wrap">
             <Box width='100%' maxWidth="800px" mt={ 5 } pt={ 0 }>
-                <Card width='100%' height='80px'>
+                <Box display='flex' justifyContent="space-between" flexWrap="wrap">
+                    <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
+                    <LastServed { ...props }/>
+                </Box>
+                {/* <Card width='100%' height='80px'>
                     <Box width='100%' display='flex' p={ 2.5 } justifyContent='center' alignItems='center' flexDirection='column'>
                         <Typography variant='h6' color='textPrimary' align='center' noWrap>AVAILABLE SERVICES</Typography>
-                        <LastServed { ...props }/>
+                            <LastServed { ...props }/>
                     </Box>
-                </Card>
+                </Card> */}
                 <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
                     <PrimaryButtons { ...props } handleAddSvc={ handleAddSvc } handleUndoSvc={ handleUndoSvc } />
                         {/* clickedButton={ clickedButton } */}

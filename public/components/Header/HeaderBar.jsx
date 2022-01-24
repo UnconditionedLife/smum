@@ -306,11 +306,13 @@ export default function HeaderBar(props) {
             <Box flexGrow={1} >
                 <AppBar position="fixed">
                     <Toolbar>
-                        <Hidden xsDown> <Tooltip title={props.version}>
-                            <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
-                            <SmumLogo width='44px' height='44px'/> 
-                            </Box>
-                        </Tooltip> </Hidden> 
+                        <Hidden xsDown> 
+                            <Tooltip title={props.version}>
+                                <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
+                                    <SmumLogo width='44px' height='44px'/> 
+                                </Box>
+                            </Tooltip>
+                        </Hidden> 
                         <Box mr={ 4 } mt={ 1 } className={ classes.appName } >
                             <Typography variant='h6' noWrap className={ classes.title } >
                                 Santa Maria Urban Ministry

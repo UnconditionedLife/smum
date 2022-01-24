@@ -5,6 +5,7 @@ import { AllUsersPage, ImportPage, ReportsPage,
             ServiceTypePage, SettingsPage } from '..';
 import { getSession, navigationAllowed } from '../../System/js/Database';
 import { isEmpty } from '../../System/js/GlobalUtils';
+import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 
 AdminMain.propTypes = {
 
@@ -24,30 +25,34 @@ export default function AdminMain() {
             setSelectedTab(newValue);
     };
 
+    let navLabels = [ 'Service Types', 'Reports', 'Users', 'Settings', 'Import' ]
+    if (UseWindowSize().width < 400) navLabels = [ '','','','' ]
+
     if (session === null) return null // do not render admin if session is not set
 
     return (
-        <Box width='100%' p={ 2 }>
-        <AppBar position="static" color="default">
-            <Tabs
-            value={selectedTab}
-            onChange={handleChange}
-            indicatorColor="secondary"
-            textColor="primary"
-            selectionFollowsFocus
-            >
-            <Tab icon={<RoomService/>} label="Service Types" />
-            <Tab icon={<Assessment/>} label="Reports" />
-            <Tab icon={<AccountBox/>} label="Users" />
-            <Tab icon={<SettingsApplications/>} label="Settings" />
-            <Tab icon={<Input/>} label="Import" />
-            </Tabs>
-        </AppBar>
-        {selectedTab === 0 && <ServiceTypePage />}
-        {selectedTab === 1 && <ReportsPage />}
-        {selectedTab === 2 && <AllUsersPage />}
-        {selectedTab === 3 && <SettingsPage />}
-        {selectedTab === 4 && <ImportPage />}
+        <Box width='100%' p={ 2 } style={{ justifyContent: 'center' }}>
+            <AppBar position="static" color="default">
+                <Tabs
+                value={selectedTab}
+                onChange={handleChange}
+                indicatorColor="secondary"
+                textColor="primary"
+                centered
+                selectionFollowsFocus
+                >
+                    <Tab icon={<RoomService/>} label={ navLabels[0] } />
+                    <Tab icon={<Assessment/>} label={ navLabels[1] } />
+                    <Tab icon={<AccountBox/>} label={ navLabels[2] } />
+                    <Tab icon={<SettingsApplications/>} label={ navLabels[3] } />
+                    <Tab icon={<Input/>} label={ navLabels[4] } />
+                </Tabs>
+            </AppBar>
+            {selectedTab === 0 && <ServiceTypePage />}
+            {selectedTab === 1 && <ReportsPage />}
+            {selectedTab === 2 && <AllUsersPage />}
+            {selectedTab === 3 && <SettingsPage />}
+            {selectedTab === 4 && <ImportPage />}
         </Box>
     );
 }

@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import { AppBar, Box, Tab, Tabs, Tooltip, Snackbar } from '@material-ui/core';
 import { Add, Pageview, RoomService, House, History } from '@material-ui/icons';
 import { Fab } from '../../System';
-import { HeaderTitle } from '..';
+// import { HeaderTitle } from '..';
 import { navigationAllowed } from '../../System/js/Database';
+import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 
 ClientsHeader.propTypes = {
     clientsFound: PropTypes.array.isRequired,
@@ -30,36 +31,39 @@ export default function ClientsHeader(props) {
         }
     }
 
+    let navLabels = [ 'Found', 'Services', 'Client', 'History' ]
+    if (UseWindowSize().width < 400) navLabels = [ '','','','' ]
+
     return (
         <Fragment>
-        <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
-            <Tooltip title= 'Add Client' placement="left-end">
-                <Fab  float='right' onClick={() => handleNewClient()} size='medium' color='primary' ><Add /></Fab> 
-            </Tooltip>
-        </Snackbar>
-        <Box width={ 1 } display="flex" flexWrap="wrap-reverse">
-            <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'72px',
-                justifyContent: 'space-between', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>
-                {/* <Box display='flex'> */}
-                <Box ml={ 3 } display='flex' >
-                        <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
-                </Box>
-                <Tabs
-                    value={selectedTab}
-                    onChange={(event, newValue) => { updateURL(client.clientId, newValue) }}
-                    indicatorColor="secondary"
-                    textColor="primary"
-                    selectionFollowsFocus
-                    centered
-                    style={{ justifyContent: 'space-between' }}
-                >
-                    <Tab icon={<Pageview />} disabled={ !props.showFound } label="Found" />
-                    <Tab icon={<RoomService />} disabled={ !props.showServices } label="Services" />
-                    <Tab icon={<House />} disabled={ !props.showClient } label="Client" />
-                    <Tab icon={<History />} disabled={ !props.showClient }  label="History" />
-                </Tabs>
-            </AppBar>
-        </Box>
+            <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
+                <Tooltip title= 'Add Client' placement="left-end">
+                    <Fab  float='right' onClick={() => handleNewClient()} size='medium' color='primary' ><Add /></Fab> 
+                </Tooltip>
+            </Snackbar>
+            <Box mt={ "-20px" } width={ 1 } display="flex" flexWrap="wrap-reverse">
+                <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
+                    justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>
+                    {/* <Box display='flex'> */}
+                    {/* <Box ml={ 3 } display='flex' >
+                            <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
+                    </Box> */}
+                    <Tabs
+                        value={selectedTab}
+                        onChange={(event, newValue) => { updateURL(client.clientId, newValue) }}
+                        indicatorColor="secondary"
+                        textColor="primary"
+                        selectionFollowsFocus
+                        centered
+                        style={{ justifyContent: 'space-between' }}
+                    >
+                        <Tab icon={<Pageview />} disabled={ !props.showFound } label={ navLabels[0] } />
+                        <Tab icon={<RoomService />} disabled={ !props.showServices } label={ navLabels[1] } />
+                        <Tab icon={<House />} disabled={ !props.showClient } label={ navLabels[2] } />
+                        <Tab icon={<History />} disabled={ !props.showClient } label={ navLabels[3] } />
+                    </Tabs>
+                </AppBar>
+            </Box>
         </Fragment>
     )
 }

@@ -36,7 +36,7 @@ function HeaderMain(){
     }
 
     return (
-        <Box style={{ width: '100%', maxHeight: '100vh', overflowY: 'none', marginTop: 70, }}>
+        <Box style={{ width: '100%', maxHeight: '100vh', overflowY: 'none', marginTop: 64, }}>
             <ThemeProvider theme={ theme }>
                 <Router>
                     <CookiesProvider>
