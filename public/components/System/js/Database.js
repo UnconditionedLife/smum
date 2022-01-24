@@ -226,8 +226,6 @@ export async function dbSearchClientsAsync(searchTerm) {
         clients => {
             if (clients == undefined || clients == null || clients.length == 0){
                 clients = []
-                window.servicesRendered = [] // used temporarily to keep global vars in sync
-                window.uiClearCurrentClient() // used temporarily to keep global vars in sync
             }
             return clients
         }
