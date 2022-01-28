@@ -104,7 +104,6 @@ export default function ReportsPage() {
                         <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                                 <MenuItem value="NEWCLIENT">New Client</MenuItem>
-                                <MenuItem value="ALL">All Services</MenuItem>
                         </Select>
                         </FormControl>
                         <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["year", "month"]} value={ foodYearMonth } onChange={ handleFoodYearMonthChangeUpdated } />
