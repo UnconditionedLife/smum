@@ -7,7 +7,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import rrulePlugin from '@fullcalendar/rrule';
 import interactionPlugin from "@fullcalendar/interaction";
 import { utilOrdinal } from '../../System/js/GlobalUtils';
-import { calAddSingleRule, calAddMonthlyRule, calAddWeeklyRule, calConvertWeekday, 
+import { calAddException, calAddSingleRule, calAddMonthlyRule, calAddWeeklyRule, calConvertWeekday, 
     calDeleteSingleRule, calDeleteWeeklyRule, calDeleteMonthlyRule, calToEvents, calFindRule } from '../../System/js/Calendar';
 
 SettingsSched.propTypes = {
@@ -74,7 +74,7 @@ export default function SettingsSched(props) {
                         </ListItem>
                     </List>}
                     {status == 'weekly' && <List>
-                        <ListItem>
+                        <ListItem onClick={ () => { calAddException(rule, date); finish(true); }} >
                             Open { fullDate } only
                         </ListItem>
                         <ListItem onClick={ () => { calDeleteWeeklyRule(rules, rule); finish(true); }} >
@@ -82,11 +82,11 @@ export default function SettingsSched(props) {
                         </ListItem>
                     </List>}
                     {status == 'monthly' && <List>
-                        <ListItem>
+                        <ListItem onClick={ () => { calAddException(rule, date); finish(true); }} >
                             Open { fullDate } only
                         </ListItem>
                         <ListItem onClick={ () => { calDeleteMonthlyRule(rules, rule); finish(true); }} >
-                            Remove weekly rule
+                            Remove monthly rule
                         </ListItem>
                     </List>}
                 </Dialog>

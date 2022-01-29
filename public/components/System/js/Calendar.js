@@ -1,4 +1,4 @@
-import { RRule } from 'rrule';
+import { RRule, RRuleSet } from 'rrule';
 
 // Return a copy of the calendar rules from the orig structure
 export function calClone(orig) {
@@ -18,21 +18,27 @@ export function calAddSingleRule(rules, date) {
 }
 
 export function calAddWeeklyRule(rules, weekday) {
-    rules.calWeekly.push(new RRule({
+    const rruleset = new RRuleSet();
+    
+    rruleset.rrule(new RRule({
         dtstart: new Date('2000-01-01'),
         freq: RRule.WEEKLY,
         interval: 1,
         byweekday: weekday,
     }));
+    rules.calWeekly.push(rruleset);
 }
 
 export function calAddMonthlyRule(rules, weekday, weekNum) {
-    rules.calMonthly.push(new RRule({
+    const rruleset = new RRuleSet();
+
+    rruleset.rrule(new RRule({
         dtstart: new Date('2000-01-01'),
         freq: RRule.MONTHLY,
         bysetpos: weekNum,
         byweekday: weekday,
     }));
+    rules.calMonthly.push(rruleset);
 }
 
 export function calDeleteSingleRule(rules, deleted) {
@@ -47,6 +53,9 @@ export function calDeleteMonthlyRule(rules, deleted) {
     rules.calMonthly = rules.calMonthly.filter(r => r != deleted);
 }
 
+export function calAddException(rule, date) {
+    rule.exdate(date);
+}
 export function calConvertLegacyEvents(settings) {
     let rules = {
         calDaily: [],
