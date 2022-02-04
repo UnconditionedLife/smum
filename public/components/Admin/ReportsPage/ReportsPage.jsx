@@ -9,6 +9,7 @@ import ReportDialog from './ReportDialog.jsx';
 import NewClientsReport from './Reports/NewClientsReport.jsx';
 import DailyDistributionReport from './Reports/DailyDistributionReport.jsx';
 import MonthlyDistributionReport from './Reports/MonthlyDistributionReport.jsx';
+import AnnualDistributionReport from './Reports/AnnualDistributionReport.jsx';
 
 export default function ReportsPage() {
     const [ dayType, handleDayType ] = useState("FOOD")
@@ -37,11 +38,22 @@ export default function ReportsPage() {
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
-        if (dayType == "FOOD") {
-            setReportHeading("Distribution " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
+        if (foodType == "FOOD") {
+            setReportHeading("Distribution " + moment(reportYear).format('MMM, YYYY') + " Report");
             setReportOpen(true);
             console.log(foodYearMonth)
             setReportBody(<MonthlyDistributionReport month={foodYearMonth} />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+    }
+
+    const runYearReport = () => {
+        if (yearType == "FOOD") {
+            setReportHeading("Distribution " + moment(reportYear).format('YYYY') + " Report");
+            setReportOpen(true);
+            console.log(reportYear)
+            setReportBody(<AnnualDistributionReport year={reportYear} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
@@ -58,7 +70,12 @@ export default function ReportsPage() {
     }
 
     const handleFoodYearMonthChangeUpdated = (event) => {
-        handleFoodYearMonthChange(event._i)
+        handleFoodYearMonthChange(moment(event._d).format("YYYYMM"))
+    }
+
+    const handleReportYearChangeUpdated = (event) => {
+        console.log(event)
+        handleReportYearChange(moment(event._d).format("YYYY"))
     }
 
     return (
@@ -87,7 +104,6 @@ export default function ReportsPage() {
                         <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                                 <MenuItem value="NEWCLIENT">New Client</MenuItem>
-                                <MenuItem value="ALL">All Services</MenuItem>
                         </Select>
                         </FormControl>
                         <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["year", "month"]} value={ foodYearMonth } onChange={ handleFoodYearMonthChangeUpdated } />
@@ -102,10 +118,10 @@ export default function ReportsPage() {
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                         </Select>
                         </FormControl>
-                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportYear } onChange={ handleReportYearChange } />
-                        <Button variant="contained" color="primary">Run</Button>
+                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportYear } onChange={ handleReportYearChangeUpdated } />
+                        <Button onClick={runYearReport} variant="contained" color="primary">Run</Button>
                     </Box>
-                    <Box mt={ 10 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Voucher Distribution Reports</Typography></Box>
+                    {/* <Box mt={ 10 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Voucher Distribution Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
@@ -134,7 +150,7 @@ export default function ReportsPage() {
                         <TextField width={ 240 } m={ 0 } size='small' label="Year" InputLabelProps={{ shrink: true }} type="number" />
                         </FormControl>
                         <Button variant="contained" color="primary">Run</Button>
-                    </Box>
+                    </Box> */}
                     <ReportDialog dialogOpen={ reportOpen } heading={ reportHeading } body={ reportBody } actions={ reportActions }  />
                 </Box>
             </CardContent>

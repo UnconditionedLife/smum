@@ -157,6 +157,7 @@ export default function DailyDistributionReport(props) {
                         {"name": "Homeless Served", "length": 2}, 
                         {"name":"NonClients Served", "length": 2}]}
                     columns={["ID", "Given", "Family", "Zip", "Households", "Individuals", "Adults", "Children", "Seniors", "Families", "Singles", "Families", "Singles"]} />
+            <TableBody>
             <TableRow><TableCell align="center" colSpan={13}><strong>USDA Services</strong></TableCell></TableRow>
             {RenderSvcList(servicesUSDA)}
             {RenderListTotals(totalsUSDA, "USDA Totals")}
@@ -165,6 +166,7 @@ export default function DailyDistributionReport(props) {
             {RenderListTotals(totalsNonUSDA, "Non USDA Totals")}
             <TableRow><TableCell align="center" colSpan={13}><strong>Day Total</strong></TableCell></TableRow>
             {RenderListTotals(totalsDay, "Day Grand Totals")}
+            </TableBody>
             </Table>
         </TableContainer>
         </Box>

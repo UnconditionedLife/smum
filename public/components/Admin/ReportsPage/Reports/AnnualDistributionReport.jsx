@@ -6,17 +6,17 @@ import moment from 'moment';
 import { dbGetDaysSvcsAsync } from '../../../System/js/Database';
 import { useTheme } from '@material-ui/core/styles';
 
-MonthlyDistributionReport.propTypes = {
-    month: PropTypes.string
+AnnualDistributionReport.propTypes = {
+    year: PropTypes.string
 }
 
-export default function MonthlyDistributionReport(props) {
+export default function AnnualDistributionReport(props) {
     const defaultTotals = {"households": 0, "individuals": 0,
     "children": 0, "adults": 0,
     "seniors": 0, "homelessHouseholds": 0, "homelessSingles": 0,
     "nonClientHouseholds": 0, "nonClientSingles": 0}
-    const [daysGrid, setDaysGrid] = useState([])
-    const [monthTotals, setMonthTotals] = useState(defaultTotals)
+    const [monthGrid, setMonthGrid] = useState([])
+    const [yearTotals, setYearTotals] = useState(defaultTotals)
     const [uniqueTotals, setUniqueTotals] = useState(defaultTotals)
 
     const theme = useTheme()
@@ -93,7 +93,6 @@ export default function MonthlyDistributionReport(props) {
 
         for (let dayIndex=0; dayIndex<gridList.length; dayIndex++) {
             let day = gridList[dayIndex]
-            console.log(day)
             day["usdaGrid"].forEach(item => {
                 if (!uniqueIds.includes(item.id)) {
                     uniqueIds.push(item.id);
@@ -111,25 +110,22 @@ export default function MonthlyDistributionReport(props) {
     }
 
     function RunReport() {
-        let numDays = moment(props.month, "YYYYMM").endOf("month").format("DD")
-        numDays = parseInt(numDays) + 1
-        let promises = []
+        let start = moment(props.year+"/01/01", "YYYY/MM/DD")
+        let end = moment(props.year+"/12/31", "YYYY/MM/DD")
 
-        for (let i = 1; i < numDays; i++) {
-            let servicedDay = String(i)
-            if (servicedDay.length < 2) servicedDay = "0"+servicedDay
-            servicedDay = props.month + servicedDay
-            promises.push(dbGetDaysSvcsAsync(moment(servicedDay).format('YYYYMMDD')))
+        let promises = []
+        let days = []
+        for (let m = moment(start); m.isBefore(end); m.add(1, 'days')) {
+            promises.push(dbGetDaysSvcsAsync(m.format('YYYYMMDD')))
+            days.push(m.format('YYYYMMDD'))
         }
 
         Promise.all(promises).then(data => {
-            let newDaysGrid = []
-            for (let i=0; i<data.length; i++) {
+            let monthGrid = {}
+            for (let i = 0; i < data.length; i++) {
+                console.log(days[i])
+                let servicedMonth = moment(days[i], "YYYYMMDD").format('MMMM')
                 let svcs = data[i]
-                let servicedDay = String(i+1)
-                if (servicedDay.length < 2) servicedDay = "0"+servicedDay
-                servicedDay = props.month + servicedDay
-                servicedDay = moment(servicedDay).format('MM/DD/YYYY')
                 const servicesFood = svcs
                     .filter(item => item.serviceValid == 'true')
                     .filter(item => item.serviceCategory == "Food_Pantry")
@@ -137,15 +133,38 @@ export default function MonthlyDistributionReport(props) {
                 const servicesUSDA = servicesFood.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
                 const servicesNonUSDA = servicesFood.filter(item => item.isUSDA == "NonUSDA")
                 const usdaGrid = ListToGrid(servicesUSDA)
-                const nonUsdaGrid = ListToGrid(servicesNonUSDA)
-                const usdaTotals = computeGridTotals(usdaGrid)
-                const nonUsdaTotals = computeGridTotals(nonUsdaGrid)
-                newDaysGrid.push({"day": servicedDay, "usdaGrid": usdaGrid, "nonUsdaGrid": nonUsdaGrid, "usdaTotals": usdaTotals, 
-                "nonUsdaTotals": nonUsdaTotals, "totals": computeGridTotals([usdaTotals, nonUsdaTotals])})
+                const nonUsdaGrid = ListToGrid(servicesNonUSDA)                
+                const newData = {"usdaGrid": usdaGrid, "nonUsdaGrid": nonUsdaGrid}
+                if (servicedMonth in monthGrid) {
+                    monthGrid[servicedMonth].push(newData)
+                }
+                else {
+                    monthGrid[servicedMonth] = [newData]
+                }
+
             }
-            setDaysGrid(newDaysGrid)
-            setMonthTotals(computeGridTotals(newDaysGrid.map(day => day["totals"])))
-            computeUniqueTotals(newDaysGrid)
+            console.log(monthGrid)
+            let months = []
+            for (const month in monthGrid) {
+                let usdaGridMonth = monthGrid[month].map(function (currentElement) {
+                    return currentElement["usdaGrid"];
+                  })
+                  .flat()
+
+                let nonUsdaGridMonth = monthGrid[month].map(function (currentElement) {
+                    return currentElement["nonUsdaGrid"];
+                  })
+                  .flat()
+
+                const usdaTotals = computeGridTotals(usdaGridMonth)
+                const nonUsdaTotals = computeGridTotals(nonUsdaGridMonth)
+                months.push({"month": month, "usdaGrid": usdaGridMonth, "nonUsdaGrid": nonUsdaGridMonth, "usdaTotals": usdaTotals, 
+                 "nonUsdaTotals": nonUsdaTotals, "totals": computeGridTotals([usdaTotals, nonUsdaTotals])})
+            }
+            console.log(months)
+            setMonthGrid(months)
+            setYearTotals(computeGridTotals(months.map(month => month["totals"])))
+            computeUniqueTotals(months)
         })
     }
 
@@ -167,13 +186,13 @@ export default function MonthlyDistributionReport(props) {
         )
     }
 
-    function RenderDay(totals) {
+    function RenderMonth(totals) {
         return (
             <React.Fragment>
-            <TableRow><TableCell align="center" colSpan={13}><strong>{totals["day"]}</strong></TableCell></TableRow>
+            <TableRow><TableCell align="center" colSpan={13}><strong>{totals["month"]}</strong></TableCell></TableRow>
             {RenderListTotals(totals["usdaTotals"], "USDA", false)}
             {RenderListTotals(totals["nonUsdaTotals"], "Non USDA", false)}
-            {RenderListTotals(totals["totals"], totals["day"], true)}
+            {RenderListTotals(totals["totals"], totals["month"], true)}
             </React.Fragment>
         )
     }
@@ -182,7 +201,7 @@ export default function MonthlyDistributionReport(props) {
         <Box m={ 1 } maxWidth="100%">
         <TableContainer align="center"> 
             <Table size="small" align="center">
-                <ReportsHeader reportType="MONTHLY REPORT" 
+                <ReportsHeader reportType="ANNUAL REPORT" 
                     reportCategory="FOOD PANTRY"
                     groupColumns={[{"name": "Type", "length": 1}, 
                         {"name": "Clients Services", "length": 5}, 
@@ -190,9 +209,9 @@ export default function MonthlyDistributionReport(props) {
                         {"name":"NonClients Services", "length": 2}]}
                     columns={["USDA/Non USDA", "Households", "Individuals", "Adults", "Children", "Seniors", "Families", "Singles", "Families", "Singles"]} />
             <TableBody>
-            {daysGrid.map(day => RenderDay(day))}
-            <TableRow><TableCell align="center" colSpan={13}><strong>Monthly Totals</strong></TableCell></TableRow>
-            {RenderListTotals(monthTotals, "Grand Totals", true)}
+            {monthGrid.map(month => RenderMonth(month))}
+            <TableRow><TableCell align="center" colSpan={13}><strong>Annual Totals</strong></TableCell></TableRow>
+            {RenderListTotals(yearTotals, "Grand Totals", true)}
             {RenderListTotals(uniqueTotals, "Unique Totals", true)}
             </TableBody>
             </Table>
