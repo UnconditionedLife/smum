@@ -110,6 +110,7 @@ export default function ServiceTypeFormDialog(props) {
                 setSaveMessage({ result: 'success', time: data.updatedDateTime });
                 props.handleEditRecord(data);
                 props.updateSvcTypes();
+                handleDialog(false)
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });
@@ -199,7 +200,7 @@ export default function ServiceTypeFormDialog(props) {
                         <MenuItem value="Secondary">Secondary</MenuItem>
                     </FormSelect>
 
-                    <FormTextField name="numberItems" fieldsize="xs" label="# of Items" error={ errors.numberItems } 
+                    <FormTextField name="numberItems" fieldsize="sm" label="# of Items" error={ errors.numberItems } 
                         control={ control } rules={ {required: 'Required'}} />
                     
                     <FormSelect fieldsize="sm" name="itemsPer" label="Items Per" control={ control } error={ errors.itemsPer }
@@ -232,7 +233,7 @@ export default function ServiceTypeFormDialog(props) {
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Target Recipient</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormSelect fieldsize="xs" name="target.homeless" label="Homeless" control={ control } error={ errors.target?.homeless }
+                    <FormSelect fieldsize="sm" name="target.homeless" label="Homeless" control={ control } error={ errors.target?.homeless }
                         rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
                         <MenuItem value="Unselected">Any</MenuItem>

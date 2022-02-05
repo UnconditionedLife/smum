@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Table, TableBody,
+import { Accordion, AccordionDetails, AccordionSummary, Box, Snackbar, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Typography, Tooltip, Fab } from '@material-ui/core';
 import { ExpandMore, Add } from '@material-ui/icons';
 import { dbGetSvcTypesAsync, getSvcTypes } from '../../System/js/Database.js';
@@ -44,7 +44,7 @@ function ServiceTypeList(props) {
         const record = props.list.filter(function( obj ) {
             return obj.serviceTypeId === newServiceId
         })[0]
-        console.log(record)
+        // console.log(record)
         // setEditMode('none')
         setEditRecord(record)
         setEditMode('edit')
@@ -74,7 +74,7 @@ function ServiceTypeList(props) {
                     ))}
                     { editMode === 'edit' &&
                         <ServiceTypeFormDialog editMode={ editMode } handleEditMode={ handleEditMode } updateSvcTypes={ props.updateSvcTypes }
-                          serviceTypes={ props.list } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
+                        serviceTypes={ props.list } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
                     }
                 </TableBody>
                 </Table>
@@ -99,15 +99,17 @@ export default function ServiceTypePage() {
         setEditRecord(null)
     }
 
-    console.log(svcTypes)
+    // console.log(svcTypes)
 
     return (
-        <Box mt={7}>
-            <Tooltip title= 'Add Service Type'>
-                <Fab onClick={()=>handleNewClick()} size="small" color='default' >
-                    <Add />
-                </Fab>
-            </Tooltip>
+        <Box mt={ 4 }>
+            <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true } >
+                <Tooltip title= 'Add Service Type'>
+                    <Fab onClick={()=>handleNewClick()} size="small" color='default' >
+                        <Add />
+                    </Fab>
+                </Tooltip>
+            </Snackbar>
             { isNew &&
                 <ServiceTypeFormDialog editMode={ "new" } handleEditMode={ ()=>{setIsNew(false)} } updateSvcTypes={ updateSvcTypes }
                     serviceTypes={ svcTypes } editRecord={ editRecord } handleEditRecord={ setEditRecord } />
