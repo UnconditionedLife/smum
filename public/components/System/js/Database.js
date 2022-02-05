@@ -59,7 +59,7 @@ export function sessionTimeRemaining() {
 
 export function navigationAllowed () {
     let minutes = Math.round(sessionTimeRemaining() / 60000);
-    const warningMinutes = 24 * 60;
+    const warningMinutes = 30;
 
     if (getEditingState()) {
         globalMsgFunc('error', "Edit it progress. Save or Cancel before changing screens.");
@@ -211,9 +211,6 @@ export async function dbGetAllUsersAsync() {
 
 export async function dbSaveUserAsync(data) { 
     return await dbPostDataAsync('/users/', data);
-        // .then( data => {
-        //     setEditingState(false)
-        // });
 }
 
 //******************** CLIENTS ********************
@@ -387,7 +384,6 @@ export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCatego
 	}
 	if (notPushed) newLastServed.push(newRecord)
 	newClient.lastServed = newLastServed
-// console.log("SAVING CLIENT LASTSERVED")
     return await dbSaveClientAsync(newClient).then(() => {
         return newLastServed
     })
