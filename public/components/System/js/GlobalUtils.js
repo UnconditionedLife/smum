@@ -2,7 +2,7 @@
 //****** GLOBAL UTILITIES JAVASCRIPT FUNCTIONS *****
 //**************************************************
 
-import moment from "moment";
+import moment from 'moment';
 import { SettingsSound } from './Database';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
@@ -86,70 +86,6 @@ export function utilOrdinal(n) {
     return n + (s[(v-20)%10] || s[v] || s[0]);
 }
 
-// Date/Schedule Functions
-
-export function dateFindOpen(at) {
-    const { targetDate, earliestDate, schedule } = at
-	let proposed = moment(targetDate);
-	// Start with target date and work backward to earliest
-	while (proposed >= earliestDate) {
-		if (dateIsClosed(schedule, proposed)) {
-			proposed.subtract(1, 'days');
-		} else {
-			return proposed;
-		}
-	}
-	// Select the first open date after target
-	proposed = moment(targetDate).add(1, 'days');
-	// eslint-disable-next-line no-constant-condition
-	while (true) {
-		if (dateIsClosed(schedule, proposed)) {
-			proposed.add(1, 'days');
-		} else {
-			return proposed;
-		}
-	}
-}
-
-export function dateParse(dateString) {
-	let momentDay = moment(dateString)
-	let dayOfWeek = momentDay.day();
-	let weekInMonth = momentDay.isoWeek() -
-		momentDay.subtract(momentDay.date()-1, 'days').isoWeek() + 1;
-	return {
-		"dayOfWeek": dayOfWeek,
-		"weekInMonth": weekInMonth,
-		"formatted": dateString
-	}
-}
-
-//**** JAVASCRIPT FUNCTIONS FOR USE WITH EXPORTABLE FUNCTIONS ****
-
-// TODO should switch to an implementation that follows RFC 5545
-function dateIsClosed(schedule, date) {
-	let dateObj = dateParse(date.format('YYYY-MM-DD'));
-	if (schedule.openDays.indexOf(dateObj.formatted) >= 0) {
-		return false;
-	}
-	for (let i = 0; i < schedule.closedEveryDays.length; i++) {
-		if (dateObj.dayOfWeek == schedule.closedEveryDays[i]) {
-			return true;
-		}
-	}
-	for (let i = 0; i < schedule.closedEveryDaysWeek.length; i++) {
-		if (dateObj.weekInMonth == schedule.closedEveryDaysWeek[i][0] &&
-			dateObj.dayOfWeek == schedule.closedEveryDaysWeek[i][1]) {
-			return true;
-		}
-	}
-	for (let i = 0; i < schedule.closedDays.length; i++) {
-		if (dateObj.formatted == schedule.closedDays[i]) {
-			return true;
-		}
-	}
-	return false;
-}
-
 export function utilCleanUpDate(a) {
 	a = a.replace("-", "/")
 	a = a.replace(".", "/")
@@ -202,7 +138,6 @@ export function utilRemoveDupClients(clients) {
 // Sound effects
 
 export function beepError() {
-
     console.log("BEEP-ERROR")
     playSound("public/sounds/beep.wav");
 }

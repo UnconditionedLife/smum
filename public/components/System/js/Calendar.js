@@ -1,4 +1,6 @@
 import { RRule, RRuleSet } from 'rrule';
+import moment from 'moment';
+import { SettingsSchedule } from './Database';
 
 // Return a copy of the calendar rules from the orig structure
 export function calClone(orig) {
@@ -75,6 +77,8 @@ export function calConvertLegacyEvents(settings) {
         calAddSingleRule(rules, date);
     }
 
+    // TODO Add exception dates
+
     return rules;
 }
 
@@ -106,3 +110,68 @@ export function calFindRule(ruleList, date) {
     return ruleList.find(rule => rule.between(date, date, true).length > 0);
 }
 
+export function calFindOpenDate(targetDate, earliestDate) {
+    return dateFindOpen(targetDate, earliestDate, SettingsSchedule());
+}
+// Date functions using previous calendar implementation
+
+export function dateFindOpen(targetDate, earliestDate, schedule) {
+	let proposed = moment(targetDate);
+	// Start with target date and work backward to earliest
+	while (proposed >= earliestDate) {
+		if (dateIsClosed(schedule, proposed)) {
+			proposed.subtract(1, 'days');
+		} else {
+			return proposed;
+		}
+	}
+	// Select the first open date after target
+	proposed = moment(targetDate).add(1, 'days');
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		if (dateIsClosed(schedule, proposed)) {
+			proposed.add(1, 'days');
+		} else {
+			return proposed;
+		}
+	}
+}
+
+export function dateParse(dateString) {
+	let momentDay = moment(dateString)
+	let dayOfWeek = momentDay.day();
+	let weekInMonth = momentDay.isoWeek() -
+		momentDay.subtract(momentDay.date()-1, 'days').isoWeek() + 1;
+	return {
+		"dayOfWeek": dayOfWeek,
+		"weekInMonth": weekInMonth,
+		"formatted": dateString
+	}
+}
+
+//**** JAVASCRIPT FUNCTIONS FOR USE WITH EXPORTABLE FUNCTIONS ****
+
+// TODO should switch to an implementation that follows RFC 5545
+function dateIsClosed(schedule, date) {
+	let dateObj = dateParse(date.format('YYYY-MM-DD'));
+	if (schedule.openDays.indexOf(dateObj.formatted) >= 0) {
+		return false;
+	}
+	for (let i = 0; i < schedule.closedEveryDays.length; i++) {
+		if (dateObj.dayOfWeek == schedule.closedEveryDays[i]) {
+			return true;
+		}
+	}
+	for (let i = 0; i < schedule.closedEveryDaysWeek.length; i++) {
+		if (dateObj.weekInMonth == schedule.closedEveryDaysWeek[i][0] &&
+			dateObj.dayOfWeek == schedule.closedEveryDaysWeek[i][1]) {
+			return true;
+		}
+	}
+	for (let i = 0; i < schedule.closedDays.length; i++) {
+		if (dateObj.formatted == schedule.closedDays[i]) {
+			return true;
+		}
+	}
+	return false;
+}

@@ -4,8 +4,7 @@
 import moment from  'moment';
 import { utilSortDependentsByGrade, utilCalcGradeGrouping, utilSortDependentsByAge,
     utilCalcAgeGrouping, utilPadTrimString } from './ClientUtils'
-import { getSvcTypes, SettingsSchedule } from '../Database';
-import { dateFindOpen } from '../GlobalUtils'
+import { getSvcTypes } from '../Database';
 
 let ePosDev = new window.epson.ePOSDevice();
 let printer = null;
@@ -97,11 +96,7 @@ export function prnPrintClothesReceipt(client, serviceType) {
 	prnEndReceipt();
 }
 
-export function prnPrintReminderReceipt(client) {
-	// Determine next visit date
-	let targetDate = moment().add(14, 'days');
-	let earliestDate = moment().add(7, 'days');
-	let nextVisit = dateFindOpen({ targetDate: targetDate, earliestDate: earliestDate, schedule: SettingsSchedule() });
+export function prnPrintReminderReceipt(client, nextVisit) {
 	prnStartReceipt();
 	prnServiceHeader(client, 'NEXT VISIT REMINDER');
 	prnFeed(1);

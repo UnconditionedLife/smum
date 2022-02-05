@@ -6,6 +6,7 @@ import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from './ClientUtils'
 import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
     getSession, dbSaveLastServedAsync, dbGetSvcsByIdAndYear } from '../Database';
+import { calFindOpenDate } from '../Calendar.js';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt, prnFlush } from './Receipts';
 import cuid from 'cuid';
@@ -640,7 +641,11 @@ function printSvcReceipt(client, svcTypes, svcType, serviceTypeId, serviceCatego
             })[0]
         prnPrintFoodReceipt(client, service.isUSDA )
         if (client.isActive === 'Client') {
-            prnPrintReminderReceipt( client )
+            // Determine next visit date
+            let targetDate = moment().add(14, 'days');
+            let earliestDate = moment().add(7, 'days');
+            let nextVisit = calFindOpenDate(targetDate, earliestDate);
+            prnPrintReminderReceipt(client, nextVisit);
         }
     } else if (serviceCategory == 'Clothes_Closet') {
         prnPrintClothesReceipt( client, svcType )
