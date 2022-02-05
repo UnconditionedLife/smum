@@ -102,7 +102,7 @@ export default function ServiceTypePage() {
     // console.log(svcTypes)
 
     return (
-        <Box mt={ 4 }>
+        <Box mt={ 2 }>
             <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true } >
                 <Tooltip title= 'Add Service Type'>
                     <Fab onClick={()=>handleNewClick()} size="small" color='default' >

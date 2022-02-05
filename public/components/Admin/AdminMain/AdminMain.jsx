@@ -26,13 +26,16 @@ export default function AdminMain() {
     };
 
     let navLabels = [ 'Service Types', 'Reports', 'Users', 'Settings', 'Import' ]
-    if (UseWindowSize().width < 400) navLabels = [ '','','','' ]
+    if (UseWindowSize().width < 450) navLabels = [ '','','','' ]
 
     if (session === null) return null // do not render admin if session is not set
 
     return (
-        <Box width='100%' p={ 2 } style={{ justifyContent: 'center' }}>
-            <AppBar position="static" color="default">
+        // <Box width='100%' p={ 2 } style={{ justifyContent: 'center' }}>
+        <Box  width={ 1 } display="flex" flexWrap="wrap">
+            {/* <AppBar position="static" color="default"> */}
+            <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
+                    justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>
                 <Tabs
                 value={selectedTab}
                 onChange={handleChange}
@@ -40,19 +43,20 @@ export default function AdminMain() {
                 textColor="primary"
                 centered
                 selectionFollowsFocus
+                style={{ justifyContent: 'space-between' }}
                 >
                     <Tab icon={<RoomService/>} label={ navLabels[0] } />
                     <Tab icon={<Assessment/>} label={ navLabels[1] } />
                     <Tab icon={<AccountBox/>} label={ navLabels[2] } />
                     <Tab icon={<SettingsApplications/>} label={ navLabels[3] } />
-                    <Tab icon={<Input/>} label={ navLabels[4] } />
+                    {/* <Tab icon={<Input/>} label={ navLabels[4] } /> */}
                 </Tabs>
             </AppBar>
             {selectedTab === 0 && <ServiceTypePage />}
             {selectedTab === 1 && <ReportsPage />}
             {selectedTab === 2 && <AllUsersPage />}
             {selectedTab === 3 && <SettingsPage />}
-            {selectedTab === 4 && <ImportPage />}
+            {/* {selectedTab === 4 && <ImportPage />} */}
         </Box>
     );
 }
