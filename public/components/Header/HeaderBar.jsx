@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import { AppBar, Box, Dialog, Toolbar, Tooltip, Typography, InputBase, MenuItem, Menu  } from '@material-ui/core';
-import { Search, AccountCircle, ExitToApp, Face, People, Today} from '@material-ui/icons';
+import { Search, AccountCircle, ExitToApp, Settings, Face, People, Today} from '@material-ui/icons';
 import { Button } from '../System';
 import { Hidden } from '@material-ui/core';
 import { LoginForm, SectionsContent }  from '.';
@@ -68,7 +68,7 @@ const useStyles = makeStyles((theme) => ({
         maxWidth: "15ch",
     },
     [theme.breakpoints.up('sm')]: {
-        paddingLeft: theme.spacing(2),
+        paddingLeft: theme.spacing(1),
     },
     [theme.breakpoints.up('md')]: {
         paddingLeft: theme.spacing(2),
@@ -256,31 +256,33 @@ export default function HeaderBar(props) {
                 />
             </Box>
             <Box className={classes.sectionDesktop} justifyContent="flex-end">
-            <Button  className={classes.buttonContainer} onClick={() => handleSectionChange(0)} minWidth="30px" startIcon={ <People className={classes.icon}/>  }
-                variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" >
+                <Button  className={classes.buttonContainer} onClick={() => handleSectionChange(0)} minWidth="30px" startIcon={ <People className={classes.icon}/>  }
+                    variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" >
                     {/* flexShrink={2} */}
-                <Hidden smDown> Clients </Hidden>
-                    </Button>
-                    <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Face className={classes.icon}/>}
+                    <Hidden smDown> Clients </Hidden>
+                </Button>
+                    
+                <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(2)} minWidth="30px" startIcon={<Today className={classes.icon}/>}
+                    variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" >
+                        {/* flexShrink={1} */}
+                    <Hidden smDown> Today </Hidden>
+                </Button>
+
+                <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Settings className={classes.icon}/>}
                     disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" >
                         {/* flexShrink={1} */}
                     <Hidden smDown> Admin </Hidden>
-                    </Button>
-                    <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(2)} minWidth="30px" startIcon={<Today className={classes.icon}/>}
-                        variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" >
-                            {/* flexShrink={1} */}
-                        <Hidden smDown> Today </Hidden>
+                </Button>
 
-                    </Button>
-                    <Button className={classes.buttonContainer} ml= '0' minWidth="30px" startIcon={<AccountCircle className={classes.icon}/>} style={{ textTransform: 'none' }}
-                        aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
-                        onClick={ handleUserMenuOpen }
-                        color="inherit"
-                        variant={ (selectedSection === 3) ? 'outlined' : 'text' }  >
-                            {/* flexShrink={1} */}
-                        <Hidden smDown>  { userName ? userName : ''} </Hidden>
-                    </Button>
-                </Box>
+                <Button className={classes.buttonContainer} ml= '0' minWidth="30px" startIcon={<AccountCircle className={classes.icon}/>} style={{ textTransform: 'none' }}
+                    aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
+                    onClick={ handleUserMenuOpen }
+                    color="inherit"
+                    variant={ (selectedSection === 3) ? 'outlined' : 'text' }  >
+                        {/* flexShrink={1} */}
+                    <Hidden smDown>  { userName ? userName : ''} </Hidden>
+                </Button>
+            </Box>
         </Fragment >
     );
 
