@@ -10,8 +10,8 @@ module.exports = merge(common, {
         }
     },
     output: {
-        path: path.resolve(__dirname, "public/components"),
-        publicPath: "/public/components",
+        path: path.resolve(__dirname, "/components"),
+        publicPath: "/components",
         filename: "main.bundle.js"
     },
 });
