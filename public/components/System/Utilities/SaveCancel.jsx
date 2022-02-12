@@ -59,7 +59,7 @@ export default function SaveCancel(props) {
     }
 
     const alertBox = (
-        <Box width='40%' height='38px' m={ 1 } alignContent="center" justifyContent="center">
+        <Box maxWidth='300px' height='38px' m={ 1 } alignContent="center" justifyContent="center">
             <Alert severity={ m.severity }> { m.text } </Alert>
         </Box>
     )
@@ -72,8 +72,10 @@ export default function SaveCancel(props) {
                 <Button variant="outlined" color="secondary"
                     disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ props.cancelLabel }</Button>
             </Box>
-            { (m.tooltip && m.text) && <Tooltip title={ m.tooltip } placement="right">{ alertBox }</Tooltip> }
-            { (!m.tooltip && m.text) && alertBox }
+            <Box width={ 1 } display="flex" justifyContent="center">
+                { (m.tooltip && m.text) && <Tooltip title={ m.tooltip } placement="right">{ alertBox }</Tooltip> }
+                { (!m.tooltip && m.text) && alertBox }
+            </Box>
         </Box>
     )
 }
