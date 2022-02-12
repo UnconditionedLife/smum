@@ -14,7 +14,7 @@ import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
 import { cacheSessionVar, clearCache, initCache, showCache, getSession, 
-    getUserName, getUserRole, navigationAllowed } from '../System/js/Database';
+    getUserName, getUserRole, navigationAllowed, dbSetUrl } from '../System/js/Database';
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -172,6 +172,9 @@ export default function HeaderBar(props) {
 
     useEffect(() => {
         console.log("App Start")
+
+        dbSetUrl("dev")
+
         const newSection = checkSectionURL();
         if (newSection != selectedSection) {
             setSelectedSection(newSection)
@@ -326,7 +329,7 @@ export default function HeaderBar(props) {
                 </AppBar>
                 { renderMenu }
                 
-                <DbSwitch />
+                {/* <DbSwitch /> */}
                 <SectionsContent searchTerm={ searchTerm } handleSearchTermChange={ handleSearchTermChange } />
             </Box>
         </ThemeProvider>
