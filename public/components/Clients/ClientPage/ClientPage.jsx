@@ -1,11 +1,10 @@
 import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 // import { Alert } from '@material-ui/lab';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Snackbar, Tooltip, Typography } from '@material-ui/core';
-import { Add, ExpandMore } from '@material-ui/icons';
-// import theme from '../../Theme.jsx';
-import { Fab } from '../../System';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Snackbar, Typography } from '@material-ui/core';
+import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay } from '..';
+import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } from '..';
 import { dbSaveClientAsync, setEditingState } from '../../System/js/Database';
 
@@ -16,9 +15,9 @@ ClientPage.propTypes = {
 }
 
 export default function ClientPage(props) {
+    const { client, updateClient } = props
     const [ expanded, setExpanded ] = useState(false);
-    const [ saveMessage, setSaveMessage ] = useState({ result: 'success', time: props.client.updatedDateTime });
-    // const handleNewDependent = props.handleNewDependent
+    const [ saveMessage, setSaveMessage ] = useState({ result: 'success', time: client.updatedDateTime });
   
     const handleChange = (panel) => (event, isExpanded) => {
       setExpanded(isExpanded ? panel : false);
@@ -29,29 +28,21 @@ export default function ClientPage(props) {
         dbSaveClientAsync(data)
             .then( () => {
                 setSaveMessage({ result: 'success', time: data.updatedDateTime });
-                props.updateClient(data);
+                data = utilCalcAge(data)
+                data.dependents = calcDependentsAges(data)
+                data.family = calcFamilyCounts(data)
+                updateClient(data);
                 setEditingState(false)
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });
             });
-
-    }
-
-    function handleNewDependent() {
-        // Need to hide show "FAB" button depending on edit state
-        // Will need to create an empty dep and ID for that dep
-        // may mean we need to move dep state to this file.
-        // need to move fab into body of accordian
-        // needs to show empty header if no deps are available.
-
-        console.log("NEW DEP")
     }
 
     return (
         <Fragment>
             <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true } style={{ marginBottom: "60px" }}>
-                <PrintClientInfo client={ props.client } />
+                <PrintClientInfo client={ client } />
             </Snackbar>
 
             <Box mt={ 6 } width={ 1 } style={{ overflowY: 'scroll' }}>
@@ -61,7 +52,7 @@ export default function ClientPage(props) {
                     </AccordionSummary>
                     <AccordionDetails style={{justifyContent: "center"}}> 
                         <Box ml={ 3 } mr={ 3 }>
-                            <ClientInfoForm client={ props.client } saveAndUpdateClient={ saveAndUpdateClient } 
+                            <ClientInfoForm client={ client } saveAndUpdateClient={ saveAndUpdateClient } 
                                 saveMessage={ saveMessage } />
                         </Box>
                     </AccordionDetails>
@@ -74,16 +65,18 @@ export default function ClientPage(props) {
                             <Box style={{ justifyContent: "flex-start" }}>
                                 <Typography variant='button' ><b>Dependents</b></Typography>
                             </Box>
-                            <Box style={{ justifyContent: "flex-end" }}>
-                                <Tooltip title= 'Add Dependent' placement="left-end">
-                                    <Fab  float='right' onClick={() => handleNewDependent()} size='small' color='primary' ><Add /></Fab> 
-                                </Tooltip>
-                            </Box>
                         </Box>
                     </AccordionSummary>
                     <AccordionDetails  style={{ justifyContent: "center" }} >
-                        <DependentsDisplay client= { props.client } saveAndUpdateClient={ saveAndUpdateClient } 
-                            saveMessage={ saveMessage }/>
+                        <Box display="flex" flexDirection="column" alignItems="flex-end">
+                            {/* <Box mb={ 2 }>
+                                <Tooltip title= 'Add Dependent' placement="left-end">
+                                    <Fab  float='right' onClick={() => handleNewDependent()} size='small' color='primary' ><Add /></Fab> 
+                                </Tooltip>
+                            </Box> */}
+                            <DependentsDisplay client= { client } saveAndUpdateClient={ saveAndUpdateClient } 
+                                saveMessage={ saveMessage }/>
+                        </Box>
                     </AccordionDetails>
                 </Accordion>
 
@@ -92,7 +85,7 @@ export default function ClientPage(props) {
                         <Typography variant='button' ><b>Family Totals</b></Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                        <FamilyTotalsForm client={props.client}/>
+                        <FamilyTotalsForm client={ client }/>
                     </AccordionDetails>
                 </Accordion>
 
@@ -100,10 +93,8 @@ export default function ClientPage(props) {
                     <AccordionSummary expandIcon={ <ExpandMore /> } id="panel4bh-header">
                         <Typography variant='button' ><b>Financial Information</b></Typography>
                     </AccordionSummary>
-                        {/* This will show the financial info that currently only displays on edit */}
-                        {/*  <SelectTestForm client={ client }/>*/}
                         <Box ml={ 3 } mr={ 3 } mb={ 2 }>
-                            <FinancialInfoForm client = { props.client } saveAndUpdateClient={ saveAndUpdateClient } 
+                            <FinancialInfoForm client = { client } saveAndUpdateClient={ saveAndUpdateClient } 
                             saveMessage={ saveMessage }/>
                         </Box>
                 </Accordion>

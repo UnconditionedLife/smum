@@ -28,7 +28,7 @@ export default function ClientsContent(props) {
     )
 
     return (
-        <Container maxWidth='lg' mt={0} pt={0}>
+        <Box maxWidth='lg' mt={0} pt={0}>
             <Switch>
                 <Route path={`${match.path}/found/:term`}>
                     { showFound && 
@@ -63,6 +63,6 @@ export default function ClientsContent(props) {
                     { !showClient && logoBox }
                 </Route>
             </Switch>
-        </Container>
+        </Box>
     );
 }

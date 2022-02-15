@@ -1,32 +1,26 @@
-:root{
-	--blue: #00747E;
-	--green: #4A8F43;
-	--light-green: #C4E6C4;
-	--grey-green: #F2F3F0;
-	--brown: #570D10;
-	--red: #BE0D10;
+/* REQUIRED TO KEEP MATERIAL UI MODALS FROM BREAKING SCROLL */
+html {
+    overflow-y: scroll !important;
+    overflow-x: hidden;
 }
 
+body, #app {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
 
-
-ul {
+/* ul {
   list-style-type: none;
-}
+} */
 
-html, body {
-  width: 100%;
-  max-width: 100;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-}
-
-body {
+/* body {
 	font: 14px/1 'Open Sans', sans-serif;
 	overflow-x: hidden;
 	color: #555;
 	background: #ffffff;
-}
+} */
 
 header{
   grid-column: 1 / 3;

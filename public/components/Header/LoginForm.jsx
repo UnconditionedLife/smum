@@ -262,7 +262,7 @@ export default function LoginForm(props) {
     }
 
     return (
-        <Box m={ 2 } width="300px" display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
+        <Box m={ 2 } width="280px" display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
             <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
                 <SmumLogo mb={ 1 } width='50px' height='50px'/>
                 <Typography variant="h6" align="center">

@@ -139,11 +139,11 @@ export function utilRemoveDupClients(clients) {
 
 export function beepError() {
     console.log("BEEP-ERROR")
-    playSound("public/sounds/beep.wav");
+    playSound("/sounds/beep.wav");
 }
 
 export function beepSuccess() {
-	playSound("public/sounds/bloop.wav")
+	playSound("/sounds/bloop.wav")
 }
 
 //**** JAVASCRIPT FUNCTIONS FOR USE WITH EXPORTABLE FUNCTIONS ****
@@ -151,7 +151,7 @@ export function beepSuccess() {
 function playSound(soundFile) {
     if (SettingsSound()) {
 		let sound  = new Audio(soundFile);
-		sound.volume= 0.3;
+		sound.volume= 0.4;
 		sound.loop = false;
 		sound.play();
 	}

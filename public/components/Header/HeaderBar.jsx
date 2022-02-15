@@ -1,13 +1,13 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
+import { alpha, makeStyles, ThemeProvider } from '@material-ui/core/styles';
 import { AppBar, Box, Dialog, Toolbar, Tooltip, Typography, InputBase, MenuItem, Menu  } from '@material-ui/core';
-import { Search, AccountCircle, ExitToApp, Settings, Face, People, Today} from '@material-ui/icons';
+import { Search, AccountCircle, ExitToApp, Settings, People, Today} from '@material-ui/icons';
 import { Button } from '../System';
 import { Hidden } from '@material-ui/core';
 import { LoginForm, SectionsContent }  from '.';
 import theme from '../Theme.jsx';
-import DbSwitch from './DbSwitch.jsx';
+// import DbSwitch from './DbSwitch.jsx';
 import { useCookies } from 'react-cookie';
 import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
@@ -41,9 +41,9 @@ const useStyles = makeStyles((theme) => ({
 //   },
   search: {
     borderRadius: theme.shape.borderRadius,
-    backgroundColor: fade(theme.palette.common.white, 0.15),
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
     '&:hover': {
-      backgroundColor: fade(theme.palette.common.white, 0.25),
+      backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
     [theme.breakpoints.down('sm')]: {
       marginLeft: theme.spacing(3),

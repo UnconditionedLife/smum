@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, TableRow, TableCell, Typography, TableHead } from "@material-ui/core";
 import moment from 'moment';
-import logo from '../../../images/receipt-logo.png';
+import logo from '/public/images/receipt-logo.png';
 import PropTypes from 'prop-types';
 
 ReportsHeader.propTypes = {
@@ -31,7 +31,7 @@ export default function ReportsHeader(props) {
                             {reportCategory}
                         </Box>
                         <Box>
-                            <Box align="center"><img width='50%' src={logo} /></Box>
+                            <Box align="center"><img width='50%' src={ logo } /></Box>
                             <Typography style={{ fontWeight: 'bold' }} align='center'>{ moment().format("MMMM DD, YYYY | HH:MM a") }</Typography>
                         </Box>
                         <Box style={{fontSize: '2rem', 

@@ -9,7 +9,6 @@ import moment from 'moment';
 import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime,
      utilEmptyPlaceholders, getSession, globalMsgFunc } from '../../System/js/Database';
 import { updateLastServed } from '../../System/js/Clients/History';
-// import { getSvcsRendered } from '../../System/js/Clients/Services'
 
 ClientsMain.propTypes = {
     searchTerm: PropTypes.string.isRequired,
@@ -20,24 +19,17 @@ ClientsMain.propTypes = {
     url: PropTypes.string,
 }
 
-// console.log("CLIENTS MAIN")
-
 export default function ClientsMain(props) {
-    const searchTerm = props.searchTerm
-    const selectedTab = props.selectedTab
-    const checkClientsURL = props.checkClientsURL
-    const updateURL = props.updateURL
-    const url = props.url
+    const { searchTerm, selectedTab, checkClientsURL, updateURL, url }  = props
     const [ clientsFound, setClientsFound ] = useState([]);
     const [ client, setClient ] = useState({});
     const [ showFound, setShowFound ] = useState(false);
     const [ showServices, setShowService ] = useState(false);
     const [ showClient, setShowClient ] = useState(false);
-
     const [ openAlert, setOpenAlert ] = useState(false)
     const [ alertSeverity, setAlertSeverity ] = useState("")
     const [ alertMsg, setAlertMsg ] = useState("")
-    const [ session, setSession ] = useState(getSession())
+    const [ session ] = useState(getSession())
 
     useEffect(() => {
         if (session != null && !isEmpty(session)){
@@ -56,7 +48,6 @@ export default function ClientsMain(props) {
 
     useEffect(() => {
         if (searchTerm !== '') {
-            // if (window.stateCheckPendingEdit()) return // NEED TO REPLACE THIS WITH NEW EDIT PENDING
             dbSearchClientsAsync(searchTerm).then(clients => { 
                 changeClientsFound(clients)
                 if (clients.length === 0) {
@@ -85,6 +76,19 @@ export default function ClientsMain(props) {
             }
         }
     }, [client.lastServed])
+
+    // NOTIFY user if there are children over age of 17
+    useEffect(() => {
+        const deps = client?.dependents ? client.dependents : []
+        deps.forEach((dep) => {        
+            if (dep.age > 17 && dep.isActive === "Active") {
+                if (dep.relationship === "Child" || dep.relationship === "Other") {
+                    const msg = dep.givenName + " " + dep.familyName + " is over 17 years of age and still active."
+                    globalMsgFunc('error', msg)
+                }
+            }
+        })
+    }, [client])
 
     function changeClientsFound(newValue, shouldUpdateURL) {
         if (clientsFound !== newValue) {
@@ -115,14 +119,12 @@ export default function ClientsMain(props) {
                 dbGetClientActiveServiceHistoryAsync(newClient.clientId).then( history => { 
                     newClient.svcHistory = history
                     // newClient.svcsRendered = getSvcsRendered(newClient.svcHistory)
-                    // keepAppJsInSync(newClient)
                     setClient(newClient)
                     updateURL(newClient.clientId, clientsTab)
                 })
                 
             } else {
                 dbSetModifiedTime(newClient, true);
-                // keepAppJsInSync(newClient)
                 setClient(newClient)
                 updateURL(newClient.clientId, clientsTab)
             }
@@ -130,19 +132,10 @@ export default function ClientsMain(props) {
     }
 
     function updateClient(newClient){
-        // keepAppJsInSync(newClient)
         newClient = utilCalcAge(newClient)
         newClient.lastServed = updateLastServed(newClient)
         setClient(newClient);
     }
-
-    // TODO - TO BE REMOVED
-    // function keepAppJsInSync(newClient){
-        // window.client = newClient // used temporarily to keep global vars in sync
-        // window.servicesRendered = [] // used temporarily to keep global vars in sync
-        // window.uiResetNotesTab() // used temporarily to keep global vars in sync
-        // window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
-    // }
 
     const emptyClient = {
         clientId: "0",
@@ -185,12 +178,8 @@ export default function ClientsMain(props) {
     }
 
     function isNewClientChange(){
-
-console.log("IN NEW CLIENT")
-
         changeClientsFound([])        
         changeClient(emptyClient, 2) // second argument is tab to set URL to
-        // 
     }
 
     function showAlert(severity, msg){
@@ -216,7 +205,6 @@ console.log("IN NEW CLIENT")
 
     return (
         <Box key={ client.updatedDateTime } width="100%" p={2} >
-            
             <Snackbar open={ openAlert } autoHideDuration={ 15000 } onClose={ handleAlertClose }>
                 <Alert onClose={ handleAlertClose } severity={ alertSeverity }>{ alertMsg }</Alert>
             </Snackbar>

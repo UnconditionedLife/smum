@@ -4,18 +4,23 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { setEditingState } from '../../System/js/Database';
+import cuid from 'cuid';
+import moment from 'moment';
 
 DependentsFormDialog.propTypes = {
     client: PropTypes.object.isRequired,                // current client
     saveMessage: PropTypes.object.isRequired,
-    editRecord: PropTypes.object.isRequired,            // history record being edited
+    editRecord: PropTypes.object,                       // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
     saveAndUpdateClient: PropTypes.func.isRequired,     // saving and updateing client handler
+    selectedDependent: PropTypes.string,
+    setAnchorEl: PropTypes.func.isRequired,
+    setSelectedDependent: PropTypes.func.isRequired
 }
 
 export default function DependentsFormDialog(props) {
-    const selectedDependent = props.selectedDependent
-    const client = props.client
+    const { client, selectedDependent, saveAndUpdateClient, saveMessage, 
+        handleEditRecord, setAnchorEl, setSelectedDependent  } = props
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const dependent = getDependent(selectedDependent)
     const defValues = dependent;
@@ -24,36 +29,62 @@ export default function DependentsFormDialog(props) {
         defaultValues: defValues,
     });
 
-    if (formState.isDirty) setEditingState(true)
+    if (dialogOpen) setEditingState(true)
 
     function doSave(values) {
-        // Overwrite data structure with form values
         const data = Object.assign({}, client);
-        data.dependents.forEach((dep, i) => {
-            if (dep.depId === selectedDependent) {
-                Object.assign(data.dependents[i], values);
+        if (selectedDependent === "new") {
+            // insert new dependent data
+            const now = moment().format('YYYY-MM-DDTHH:mm');
+            const newDep = {
+                depId: cuid(),
+                createdDateTime: now, 
+                updatedDateTime: now,
+                age: ""
             }
-        })
-        props.saveAndUpdateClient(data)
-        setDialogOpen(false)
-        reset();
+            Object.assign(newDep, values);
+            data.dependents.push(newDep)
+        } else {
+            // Overwrite data structure with form values
+            data.dependents.forEach((dep, i) => {
+                if (dep.depId === selectedDependent) {
+                    Object.assign(data.dependents[i], values);
+                }
+            })
+        }
+        saveAndUpdateClient(data)
+        handleCancel()
     }
+
+    console.log(client.dependents)
 
     function getDependent(depId) {
-        const depArr = client.dependents.filter((dep) => {
-            if (dep.depId === depId) return true
-            return false
-        })
-        return depArr[0]
+        if (depId === "new") {
+            
+            return {
+                age: "", dob: "", familyName: "", gender: "", givenName: "",
+                grade: "", gradeDateTime: "", isActive: "Active", relationship: ""
+            }
+        } else {
+            const depArr = client.dependents.filter((dep) => {
+                if (dep.depId === depId) return true
+                return false
+            })
+            return depArr[0]
+        }
     }
 
-    function handleCancel(state) {
-        if (dialogOpen !== state) setDialogOpen(state)
+    function handleCancel() {
         setEditingState(false)
+        // if (dialogOpen !== false) setDialogOpen(false)
+        setDialogOpen(false)
+        handleEditRecord(null)
+        setAnchorEl(null)
+        setSelectedDependent(null)
         reset()
     }
 
-    const submitForm = handleSubmit(doSave);
+    const submitForm = handleSubmit(doSave); 
 
     return (
         <Dialog open={ dialogOpen } aria-labelledby="form-dialog-title"> 
@@ -67,7 +98,7 @@ export default function DependentsFormDialog(props) {
                     <FormTextField name="familyName" label="Family Name" fieldsize="md" control = {control}
                         error={ errors.familyName } rules={ {required: 'Required'}}/>
 
-                    <FormSelect name="relationship" label= "Relationship" fieldsize="sm" control ={control}
+                    <FormSelect name="relationship" label= "Relationship" fieldsize="md" control ={control}
                         error={ errors.relationship } rules={ {required: 'Required'}}>
                             <MenuItem value="">&nbsp;</MenuItem>
                             <MenuItem value="Spouse">Spouse</MenuItem>
@@ -86,12 +117,12 @@ export default function DependentsFormDialog(props) {
                             <MenuItem value="Female">Female</MenuItem>
                     </FormSelect>
 
-                    <FormTextField name="dob" type="date" label="DOB" fieldsize="md" control={control}
-                        error={ errors.dob } rules={ {required: 'Required'}}/>
+                    <FormTextField name="dob" type="date" label="Date of Birth" fieldsize="md" control={control}
+                        InputLabelProps={{ shrink: true }} error={ errors.dob } rules={ {required: 'Required'}} />
 
                     <FormTextField name="age" label="Age" fieldsize="xs" control={ control } disabled={ true } />
 
-                    <FormSelect name="grade" label="Grade" fieldsize="xs" control={control}
+                    <FormSelect name="grade" label="Grade" fieldsize="sm" control={control}
                         error={ errors.grade } rules={ {required: 'Required'}}>
                             <MenuItem value="None">None</MenuItem>
                             <MenuItem value="Pre-K">Pre-K</MenuItem>
@@ -117,9 +148,9 @@ export default function DependentsFormDialog(props) {
                     </FormSelect>   
 
                     </form>
-                    <SaveCancel key={ props.saveMessage.text }
-                        saveDisabled={ !formState.isDirty } message={ props.saveMessage } 
-                        onClick={ (isSave) => { isSave ? submitForm() : handleCancel(false) } } />
+                    <SaveCancel key={ saveMessage.text }
+                        saveDisabled={ !formState.isDirty } message={ saveMessage } 
+                        onClick={ (isSave) => { isSave ? submitForm() : handleCancel() } } />
                 </Box>
             </DialogContent>
         </Dialog>
