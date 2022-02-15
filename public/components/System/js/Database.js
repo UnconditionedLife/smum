@@ -62,7 +62,7 @@ export function navigationAllowed () {
     const warningMinutes = 30;
 
     if (getEditingState()) {
-        globalMsgFunc('error', "Edit it progress. Save or Cancel before changing screens.");
+        globalMsgFunc('error', "Edit in progress. Save or Cancel before changing screens.");
         return false;
     }
     if (minutes < warningMinutes)

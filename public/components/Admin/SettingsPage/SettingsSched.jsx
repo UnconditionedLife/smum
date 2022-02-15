@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Popper, Dialog, DialogTitle, List, ListItem } from '@material-ui/core';
+import { Box, Popper, Dialog, DialogTitle } from '@material-ui/core';
 import moment from 'moment-timezone';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -9,6 +9,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { utilOrdinal } from '../../System/js/GlobalUtils';
 import { calAddException, calAddSingleRule, calAddMonthlyRule, calAddWeeklyRule, calConvertWeekday, 
     calDeleteSingleRule, calDeleteWeeklyRule, calDeleteMonthlyRule, calToEvents, calFindRule } from '../../System/js/Calendar';
+import { Button } from '../../System';
 
 SettingsSched.propTypes = {
     rules: PropTypes.object.isRequired,
@@ -68,27 +69,27 @@ export default function SettingsSched(props) {
                 // <Dialog open={ Boolean(props.date) } onClose={ () => finish()) }>
                 <Dialog open={ true } onClose={ () => finish(false) }>
                     <DialogTitle>{ fullDate }: { title }</DialogTitle>
-                    {status == 'single' && <List>
-                        <ListItem onClick={ () => { calDeleteSingleRule(rules, rule); finish(true); }} >
+                    {status == 'single' && <Box display="flex" flexDirection="column">
+                        <Button color="primary" onClick={ () => { calDeleteSingleRule(rules, rule); finish(true); }} >
                             Open { fullDate }
-                        </ListItem>
-                    </List>}
-                    {status == 'weekly' && <List>
-                        <ListItem onClick={ () => { calAddException(rule, date); finish(true); }} >
+                        </Button>
+                    </Box>}
+                    {status == 'weekly' && <Box display="flex" flexDirection="column">
+                        <Button color="primary" onClick={ () => { calAddException(rule, date); finish(true); }} >
                             Open { fullDate } only
-                        </ListItem>
-                        <ListItem onClick={ () => { calDeleteWeeklyRule(rules, rule); finish(true); }} >
+                        </Button>
+                        <Button color="primary" onClick={ () => { calDeleteWeeklyRule(rules, rule); finish(true); }} >
                             Remove weekly rule
-                        </ListItem>
-                    </List>}
-                    {status == 'monthly' && <List>
-                        <ListItem onClick={ () => { calAddException(rule, date); finish(true); }} >
+                        </Button>
+                    </Box>}
+                    {status == 'monthly' && <Box display="flex" flexDirection="column">
+                        <Button color="primary" onClick={ () => { calAddException(rule, date); finish(true); }} >
                             Open { fullDate } only
-                        </ListItem>
-                        <ListItem onClick={ () => { calDeleteMonthlyRule(rules, rule); finish(true); }} >
+                        </Button>
+                        <Button color="primary" onClick={ () => { calDeleteMonthlyRule(rules, rule); finish(true); }} >
                             Remove monthly rule
-                        </ListItem>
-                    </List>}
+                        </Button>
+                    </Box>}
                 </Dialog>
             );
         }
@@ -116,17 +117,17 @@ export default function SettingsSched(props) {
             return (
                 <Dialog open={ true } onClose={ () => finish(false) }>
                     <DialogTitle>{ fullDate }: Add Closure Event</DialogTitle>
-                    <List>
-                        <ListItem onClick={ () => { calAddSingleRule(rules, props.date); finish(true); }} >
+                    <Box display="flex" flexDirection="column">
+                        <Button color="primary" onClick={ () => { calAddSingleRule(rules, props.date); finish(true); }} >
                             Close { fullDate } only
-                        </ListItem>
-                        <ListItem onClick={ () => { calAddWeeklyRule(rules, weekday); finish(true); }} >
+                        </Button>
+                        <Button color="primary" onClick={ () => { calAddWeeklyRule(rules, weekday); finish(true); }} >
                             Close every { weekdayName }
-                        </ListItem>
-                        <ListItem onClick={ () => { calAddMonthlyRule(rules, weekday, weekNum); finish(true); }} >
+                        </Button>
+                        <Button color="primary" onClick={ () => { calAddMonthlyRule(rules, weekday, weekNum); finish(true); }} >
                             Close { weekOrdinal } { weekdayName } of each month
-                        </ListItem>
-                    </List>
+                        </Button>
+                    </Box>
                 </Dialog>
             );
         }

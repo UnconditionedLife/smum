@@ -1,14 +1,16 @@
 import { RRule, RRuleSet } from 'rrule';
 import moment from 'moment';
+import _ from 'lodash';
 import { SettingsSchedule } from './Database';
 
 // Return a copy of the calendar rules from the orig structure
 export function calClone(orig) {
-    return {
+    const subset = {
         calDaily: [... orig.calDaily],
         calWeekly: [... orig.calWeekly],
         calMonthly: [... orig.calMonthly],
     };
+    return _.cloneDeep(subset);
 }
 
 export function calAddSingleRule(rules, date) {
