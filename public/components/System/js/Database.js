@@ -18,6 +18,7 @@ let dbUrl = '';
 let cachedSession = null;
 let cachedSettings = null;
 let cachedSvcTypes = []
+let cachedAppVersion = "";
 const MAX_ID_DIGITS = 5
 
 export let globalMsgFunc = null;
@@ -32,6 +33,8 @@ export function showCache() {
     console.log('DB URL: ' + dbUrl);
     console.log('Service Types: ');
     console.log(cachedSvcTypes);
+    console.log('AppVer:', cachedAppVersion);
+
 }
 
 //**************** GLOBAL MESSAGE *****************
@@ -87,6 +90,7 @@ export function clearCache() {
     cachedSession = null;
     cachedSettings = null;
     cachedSvcTypes = [];
+    cachedAppVersion = "";
 }
 
 export function getSession() {
@@ -107,6 +111,14 @@ export function getEditingState() {
 
 export function setEditingState(newState) {
     cachedSession.editingState = newState
+}
+
+export function setAppVersion(newVersion) {
+    cachedAppVersion = newVersion.toString()
+}
+
+export function getAppVersion() {
+    return cachedAppVersion
 }
 
 //**************** APP SETTINGS ******************

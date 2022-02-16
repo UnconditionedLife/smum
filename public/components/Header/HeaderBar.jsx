@@ -13,7 +13,7 @@ import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
-import { cacheSessionVar, clearCache, initCache, showCache, getSession, 
+import { cacheSessionVar, clearCache, initCache, showCache, getSession, getAppVersion,
     getUserName, getUserRole, navigationAllowed, dbSetUrl } from '../System/js/Database';
 
 const useStyles = makeStyles((theme) => ({
@@ -99,8 +99,7 @@ const useStyles = makeStyles((theme) => ({
 
 HeaderBar.propTypes = {
     checkSectionURL: PropTypes.func.isRequired,
-    updateRoute: PropTypes.func.isRequired,
-    version: PropTypes.string.isRequired,
+    updateRoute: PropTypes.func.isRequired
 }
 
 function tokenTimeRemaining(token) {
@@ -117,6 +116,8 @@ export default function HeaderBar(props) {
     const checkSectionURL = props.checkSectionURL;
     const updateRoute = props.updateRoute;
     const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']); // XXX combine in single cookie
+    const [ appVersion ] = useState(getAppVersion())
+
    
     function sessionFromCookies(cookies) {
         if (cookies && cookies.user && cookies.auth && cookies.refresh) {
@@ -238,6 +239,10 @@ export default function HeaderBar(props) {
     const isAdmin = ['Admin', 'TechAdmin'].includes(getUserRole());
     const userName = getUserName();
 
+
+    console.log(appVersion)
+
+
     const appbarControls = (
         <Fragment>
             <Box display='flex' className={classes.search} mr={2} ml={2.5} flexGrow={1.5} justifyContent="flex-start">
@@ -312,7 +317,7 @@ export default function HeaderBar(props) {
                 <AppBar position="fixed">
                     <Toolbar>
                         <Hidden xsDown> 
-                            <Tooltip title={props.version}>
+                            <Tooltip title={ appVersion }>
                                 <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
                                     <SmumLogo width='44px' height='44px'/> 
                                 </Box>

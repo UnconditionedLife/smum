@@ -47,6 +47,6 @@ export default function SearchNavBarContainer(props) {
     }
 
     return (
-        <HeaderBar updateRoute={ updateRoute } checkSectionURL={ checkSectionURL } version="Version 1.0" />
+        <HeaderBar updateRoute={ updateRoute } checkSectionURL={ checkSectionURL } />
     );
 }
