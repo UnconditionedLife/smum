@@ -239,10 +239,6 @@ export default function HeaderBar(props) {
     const isAdmin = ['Admin', 'TechAdmin'].includes(getUserRole());
     const userName = getUserName();
 
-
-    console.log(appVersion)
-
-
     const appbarControls = (
         <Fragment>
             <Box display='flex' className={classes.search} mr={2} ml={2.5} flexGrow={1.5} justifyContent="flex-start">
