@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
+import moment from 'moment'
 
 FoundPage.propTypes = {
     clientsFound: PropTypes.array.isRequired,
@@ -48,7 +49,7 @@ export default function FoundPage(props) {
                             <TableCell component="th" scope="row">{row.clientId}</TableCell>
                             <TableCell align="center">{row.givenName}</TableCell>
                             <TableCell align="center">{row.familyName}</TableCell>
-                            <TableCell align="center">{row.dob}</TableCell>
+                            <TableCell align="center">{moment(row.dob).format("MMM DD, YYYY")}</TableCell>
                             <TableCell align="center">{row.street}</TableCell>
                         </TableRow>
                         ))}
