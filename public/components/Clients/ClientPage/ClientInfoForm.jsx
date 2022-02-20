@@ -87,7 +87,7 @@ export default function ClientInfoForm(props) {
                 <Box mt={ 2 } ><Typography>Address</Typography></Box>
         
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormSelect name="homeless" label="Homeless" fieldsize="xs" control={ control } error={ errors.homeless } rules={ {required: 'Required'}} >
+                    <FormSelect name="homeless" label="Homeless" fieldsize="sm" control={ control } error={ errors.homeless } rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
                         <MenuItem value="YES">Yes&nbsp;</MenuItem>
                         <MenuItem value="NO">No&nbsp;&nbsp;&nbsp;</MenuItem>
