@@ -311,12 +311,13 @@ export async function dbGetNewClientIDAsync(){
 }
 
 export async function dbGetClientActiveServiceHistoryAsync(clientId){
-    return await dbGetDataAsync("/clients/services/" + clientId).then(data => {
-        const svcs = data.services
-        const activeSvcs = svcs.filter(item => item.serviceValid == "true")
-            .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime))) 
-        return activeSvcs
-    })
+    return await dbGetDataAsync("/clients/services/" + clientId)
+        .then(data => {
+            const svcs = data.services
+            const activeSvcs = svcs.filter(item => item.serviceValid == "true")
+                .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime))) 
+            return activeSvcs
+        })
 }
 
 export async function dbSaveClientAsync(data) {
@@ -378,28 +379,28 @@ export async function dbGetServiceAsync(serviceId){
 	return await dbGetDataAsync("/clients/services/byid/" + serviceId).then( data => { return data.services})
 }
 
-export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCategory, itemsServed, isUSDA){
-	const serviceDateTime = moment().format('YYYY-MM-DDTHH:mm')
-    const newClient = Object.assign({}, client)
-	const newRecord = { serviceTypeId, serviceDateTime, serviceCategory, itemsServed, isUSDA }
-	const newLastServed = []
-	let notPushed = true
-	if (newClient.lastServed) {
-		newClient.lastServed.forEach((svcRecord) => {
-            if (serviceTypeId == svcRecord.serviceTypeId) {
-				notPushed = false
-				newLastServed.push(newRecord)
-			} else {
-				newLastServed.push(svcRecord)
-			}
-        })
-	}
-	if (notPushed) newLastServed.push(newRecord)
-	newClient.lastServed = newLastServed
-    return await dbSaveClientAsync(newClient).then(() => {
-        return newLastServed
-    })
-}
+// export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCategory, itemsServed, isUSDA){
+// 	const serviceDateTime = moment().format('YYYY-MM-DDTHH:mm')
+//     const newClient = Object.assign({}, client)
+// 	const newRecord = { serviceTypeId, serviceDateTime, serviceCategory, itemsServed, isUSDA }
+// 	const newLastServed = []
+// 	let notPushed = true
+// 	if (newClient.lastServed) {
+// 		newClient.lastServed.forEach((svcRecord) => {
+//             if (serviceTypeId == svcRecord.serviceTypeId) {
+// 				notPushed = false
+// 				newLastServed.push(newRecord)
+// 			} else {
+// 				newLastServed.push(svcRecord)
+// 			}
+//         })
+// 	}
+// 	if (notPushed) newLastServed.push(newRecord)
+// 	newClient.lastServed = newLastServed
+//     return await dbSaveClientAsync(newClient).then(() => {
+//         return newLastServed
+//     })
+// }
 
 //******************* REPORTS *********************
 //*************************************************

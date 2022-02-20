@@ -8,7 +8,6 @@ import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '
 import moment from 'moment';
 import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime,
      utilEmptyPlaceholders, getSession, globalMsgFunc } from '../../System/js/Database';
-import { updateLastServed } from '../../System/js/Clients/History';
 
 ClientsMain.propTypes = {
     searchTerm: PropTypes.string.isRequired,
@@ -57,26 +56,6 @@ export default function ClientsMain(props) {
         }
     }, [searchTerm]);
 
-    useEffect(() => {
-        if (!isEmpty(client)) {
-            const lastServed = client.lastServed
-            if (lastServed.length > 0) {
-                lastServed.sort((a, b) => moment.utc(b.serviceDateTime).diff(moment.utc(a.serviceDateTime)))
-                // NOT SURE IF ANY OF THIS IS NEEDED
-                // if last service is same day as today - build the svcsRendered state (??? Store svcType & svcId & maybe svcName ????)
-//                 if (moment(lastServed[0].serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')) {
-//                     // 
-//                     const svcHistoryToday = client.svcHistory.filter( obj => moment(obj.serviceDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD'))
-                    
-// console.log("SVC HIST TODAY:", svcHistoryToday)
-
-                    // get history and build services rendered array from records that have today's date
-
-                // }
-            }
-        }
-    }, [client.lastServed])
-
     // NOTIFY user if there are children over age of 17
     useEffect(() => {
         const deps = client?.dependents ? client.dependents : []
@@ -90,11 +69,9 @@ export default function ClientsMain(props) {
         })
     }, [client])
 
-    function changeClientsFound(newValue, shouldUpdateURL) {
+    function changeClientsFound(newValue) {
         if (clientsFound !== newValue) {
             setClientsFound(newValue);
-            // window.clientData = newValue // used temporarily to keep global vars in sync
-            // window.utilUpdateClientGlobals() // used temporarily to keep global vars in sync
             if (newValue.length === 1) {
                 changeClient(newValue[0], 1)
             } else {
@@ -116,13 +93,12 @@ export default function ClientsMain(props) {
                 newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
                 // add service handling objects
-                dbGetClientActiveServiceHistoryAsync(newClient.clientId).then( history => { 
-                    newClient.svcHistory = history
-                    // newClient.svcsRendered = getSvcsRendered(newClient.svcHistory)
-                    setClient(newClient)
-                    updateURL(newClient.clientId, clientsTab)
-                })
-                
+                dbGetClientActiveServiceHistoryAsync(newClient.clientId)
+                    .then( history => { 
+                        newClient.svcHistory = history
+                        setClient(newClient)
+                        updateURL(newClient.clientId, clientsTab)
+                    })
             } else {
                 dbSetModifiedTime(newClient, true);
                 setClient(newClient)
@@ -133,7 +109,6 @@ export default function ClientsMain(props) {
 
     function updateClient(newClient){
         newClient = utilCalcAge(newClient)
-        newClient.lastServed = updateLastServed(newClient)
         setClient(newClient);
     }
 

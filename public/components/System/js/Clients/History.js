@@ -19,22 +19,26 @@ export async function getServiceHistoryAsync(clientId){
 export function updateLastServed(client){
 	const newClient = Object.assign({}, client)
     // get the service history
-	const h = newClient.svcHistory.filter(item => item.serviceButtons == "Primary")
-	newClient.lastServed = []
-	h.forEach((hSvc) => {
-		if (newClient.lastServed.findIndex(item => item.serviceTypeId == hSvc.serviceTypeId) < 0) {
-			newClient.lastServed.push( { serviceTypeId: hSvc.serviceTypeId, serviceDateTime: hSvc.servicedDateTime, 
-                serviceCategory: hSvc.serviceCategory, isUSDA: hSvc.isUSDA } )
-		}
-    })
+    if (newClient?.svcHistory === undefined) {
+        getServiceHistoryAsync( client.clientId )
+            .then( svcHistory => { 
+                newClient.svcHistory = svcHistory
+console.log("GOT SVC HIST")
+            return buildAndSaveLastServed(newClient)
 
-	dbSaveClientAsync(newClient)
-        .then( () => {
-            // globalMsgFunc('info', 'Last served updated')
-        } )
-        .catch( () => {
-            globalMsgFunc('error', 'FAILED to update client')
-        } );
+                 
+        })
+    } else {
+        return buildAndSaveLastServed(newClient)
+    }
+	// const h = newClient.svcHistory.filter(item => item.serviceButtons == "Primary")
+	// newClient.lastServed = []
+	// h.forEach((hSvc) => {
+	// 	if (newClient.lastServed.findIndex(item => item.serviceTypeId == hSvc.serviceTypeId) < 0) {
+	// 		newClient.lastServed.push( { serviceTypeId: hSvc.serviceTypeId, serviceDateTime: hSvc.servicedDateTime, 
+    //             serviceCategory: hSvc.serviceCategory, isUSDA: hSvc.isUSDA } )
+	// 	}
+    // })
 
     return newClient.lastServed
 }
@@ -75,11 +79,30 @@ export async function removeSvcAsync(client, svc){
                 const tempClient = Object.assign({}, client)
                 tempClient.svcHistory = newHistory
                 if (svc.serviceButtons === 'Primary') {
-                    tempClient.lastServed = updateLastServed(tempClient)
+                    // tempClient.lastServed = updateLastServed(tempClient)
                 }
                 return tempClient
             } else {
                 return null
             }
         })
+}
+
+function buildAndSaveLastServed(newClient) {
+	const h = newClient.svcHistory.filter(item => item.serviceButtons == "Primary")
+	newClient.lastServed = []
+	h.forEach((hSvc) => {
+		if (newClient.lastServed.findIndex(item => item.serviceTypeId == hSvc.serviceTypeId) < 0) {
+			newClient.lastServed.push( { serviceTypeId: hSvc.serviceTypeId, serviceDateTime: hSvc.servicedDateTime, 
+                serviceCategory: hSvc.serviceCategory, isUSDA: hSvc.isUSDA } )
+		}
+    })
+
+    dbSaveClientAsync(newClient)
+    .then( () => {
+        // globalMsgFunc('info', 'Last served updated')
+    } )
+    .catch( () => {
+        globalMsgFunc('error', 'FAILED to update client')
+    } );
 }
