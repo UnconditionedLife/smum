@@ -175,6 +175,7 @@ export default function HeaderBar(props) {
         console.log("App Start")
 
         dbSetUrl("dev")
+        // dbSetUrl("prod")
 
         const newSection = checkSectionURL();
         if (newSection != selectedSection) {

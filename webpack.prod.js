@@ -5,8 +5,8 @@ var path = require("path");
 module.exports = merge(common, {
     mode: 'production',
     output: {
-        path: path.resolve(__dirname, "build"),
-        publicPath: "/build",
+        path: path.resolve(__dirname, "build/"),
+        publicPath: "/build/",
         filename: "main.bundle.js"
     },
 });

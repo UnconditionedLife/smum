@@ -53,7 +53,7 @@ export default function HeaderTitle(props) {
             }
             {/* { headerState === 'new-client' && { "NEW CLIENT" } } //TODO WIRE TO NEW CLIENT PAGE */}
             { titleType === 'client' && 
-                <Box mt={ .75 } display='flex' flexDirection='row' height='36px' justifyContent='center' alignContent='center' flexWrap="wrap">
+                <Box mt={ .75 } display='flex' flexDirection='row' height='44px' justifyContent='center' alignContent='center' flexWrap="wrap">
                     <Chip icon={ <House /> } label={ client.clientId } color="primary"
                         style={{ width:'108px', fontSize:'x-large', justifyContent:'left', marginRight: '12px' }} /> 
                     <Box mt={ 0 }>

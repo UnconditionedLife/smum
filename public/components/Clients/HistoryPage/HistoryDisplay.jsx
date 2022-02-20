@@ -14,9 +14,8 @@ HistoryDisplay.propTypes = {
 }
 
 export default function HistoryDisplay(props) {
-    const client = props.client
-    const updateClient = props.updateClient
-    const svcHistory = props.client.svcHistory
+    const { client, updateClient } = props
+    const svcHistory = client.svcHistory
     
     const [ selectedService, setSelectedService ] = useState(null);
     const [ editMode, setEditMode ] = useState('none');

@@ -54,26 +54,20 @@ export default function ServicesPage(props) {
 
     return (
         <Box key={ svcHistory } display="flex" justifyContent="space-around" flexWrap="wrap">
-            <Box width='100%' maxWidth="800px" mt={ 5 } pt={ 0 }>
-                <Box display='flex' justifyContent="space-between" flexWrap="wrap">
+            <Box width='100%' maxWidth="800px" mt={ 4 } pt={ 0 }>
+                <Box p={ 1 } pl={ 2 } pr={ 2 } display='flex' justifyContent="space-between" flexWrap="wrap" 
+                    style={{ borderRadius: "6px", backgroundColor:"#F3F3F3" }}>
                     <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
                     <LastServed { ...props }/>
                 </Box>
-                {/* <Card width='100%' height='80px'>
-                    <Box width='100%' display='flex' p={ 2.5 } justifyContent='center' alignItems='center' flexDirection='column'>
-                        <Typography variant='h6' color='textPrimary' align='center' noWrap>AVAILABLE SERVICES</Typography>
-                            <LastServed { ...props }/>
-                    </Box>
-                </Card> */}
                 <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
                     <PrimaryButtons { ...props } handleAddSvc={ handleAddSvc } handleUndoSvc={ handleUndoSvc } />
-                        {/* clickedButton={ clickedButton } */}
                 </Box>
                 <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
                     <SecondaryButtons { ...props } handleAddSvc={ handleAddSvc } handleUndoSvc={ handleUndoSvc } />
                 </Box>
             </Box>
-            <Box maxWidth="500px" mt={ 5 } justifyContent="center">
+            <Box maxWidth="500px" mt={ 3 } justifyContent="center">
                 <ServiceNotes { ...props } />
             </Box>
         </Box>

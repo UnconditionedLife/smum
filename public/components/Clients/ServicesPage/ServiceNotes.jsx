@@ -56,7 +56,7 @@ export default function ServiceNotes(props) {
 
     return (
         <Fragment>
-            <Card height='80px'>
+            <Card height='72px'>
                 <Box display='flex' minWidth='300px' maxWidth='100%' p={ 2 } justifyContent='space-between' alignItems='center'>
                     <Badge badgeContent={ noteCount } color="secondary">
                         <Typography variant='h6' noWrap>
