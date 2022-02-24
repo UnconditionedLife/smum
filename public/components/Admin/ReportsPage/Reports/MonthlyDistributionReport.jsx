@@ -170,7 +170,7 @@ export default function MonthlyDistributionReport(props) {
     function RenderDay(totals) {
         return (
             <React.Fragment>
-            <TableRow><TableCell align="center" colSpan={13}><strong>{totals["day"]}</strong></TableCell></TableRow>
+            <TableRow><TableCell align="center" colSpan={13}><Box width="100%" justifyItems="center"><strong>{totals["day"]}</strong></Box></TableCell></TableRow>
             {RenderListTotals(totals["usdaTotals"], "USDA", false)}
             {RenderListTotals(totals["nonUsdaTotals"], "Non USDA", false)}
             {RenderListTotals(totals["totals"], totals["day"], true)}
