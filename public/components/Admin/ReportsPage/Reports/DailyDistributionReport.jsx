@@ -1,4 +1,4 @@
-import { Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Typography, TableFooter, AccordionSummary } from "@material-ui/core";
+import { Box, Table, TableContainer, TableRow, TableCell, TableBody } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
@@ -147,9 +147,9 @@ export default function DailyDistributionReport(props) {
     }
 
     return (
-        <Box m={ 1 } maxWidth="100%">
+        <Box m={ 1 }>
         <TableContainer align="center"> 
-            <Table size="small" align="center">
+            <Table padding="checkbox" size="small" align="center">
                 <ReportsHeader reportType="DAILY REPORT" 
                     reportCategory="FOOD PANTRY"
                     groupColumns={[{"name": "Client", "length": 4}, 
