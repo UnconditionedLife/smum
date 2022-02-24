@@ -178,6 +178,9 @@ export function SettingsSchedule() {
         closedEveryDays: cachedSettings.closedEveryDays,
         closedEveryDaysWeek: cachedSettings.closedEveryDaysWeek,
         openDays: cachedSettings.openDays,
+        calDaily: cachedSettings.calDaily,
+        calWeekly: cachedSettings.calWeekly,
+        calMonthly: cachedSettings.calMonthly,
     };
 }
 

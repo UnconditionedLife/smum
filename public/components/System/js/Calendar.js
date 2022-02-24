@@ -2,6 +2,7 @@ import { RRule, RRuleSet } from 'rrule';
 import moment from 'moment';
 import _ from 'lodash';
 import { SettingsSchedule } from './Database';
+import theme from '../../Theme.jsx';
 
 // Return a copy of the calendar rules from the orig structure
 export function calClone(orig) {
@@ -60,6 +61,7 @@ export function calDeleteMonthlyRule(rules, deleted) {
 export function calAddException(rule, date) {
     rule.exdate(date);
 }
+
 export function calConvertLegacyEvents(settings) {
     let rules = {
         calDaily: [],
@@ -79,7 +81,9 @@ export function calConvertLegacyEvents(settings) {
         calAddSingleRule(rules, date);
     }
 
-    // TODO Add exception dates
+    // Do not bother converting single-day open exceptions from
+    // settings.openDays. This feature was only used to work around
+    // a bug in the legacy code.
 
     return rules;
 }
@@ -95,14 +99,15 @@ export function calConvertWeekday(index) {
 }
 
 export function calToEvents(rules) {
+    const eventColor = theme.palette.secondary.light;
     const monthly = rules.calMonthly.map(r => {
-        return {type: 'monthly', title: 'Closed (monthly)', allDay: true, rrule: r.toString()}
+        return {type: 'monthly', title: 'Closed (monthly)', backgroundColor: eventColor, allDay: true, rrule: r.toString()}
     });
     const weekly = rules.calWeekly.map(r => {
-        return {type: 'weekly', title: 'Closed (weekly)', allDay: true, rrule: r.toString()}
+        return {type: 'weekly', title: 'Closed (weekly)', backgroundColor: eventColor, allDay: true, rrule: r.toString()}
     });
     const daily = rules.calDaily.map(r => {
-        return {type: 'single', title: 'Closed', backgroundColor: 'red', allDay: true, rrule: r.toString()}
+        return {type: 'single', title: 'Closed', backgroundColor: eventColor, allDay: true, rrule: r.toString()}
     });
     return monthly.concat(weekly).concat(daily);
 }
@@ -113,15 +118,12 @@ export function calFindRule(ruleList, date) {
 }
 
 export function calFindOpenDate(targetDate, earliestDate) {
-    return dateFindOpen(targetDate, earliestDate, SettingsSchedule());
-}
-// Date functions using previous calendar implementation
+    const schedule = SettingsSchedule();
+    let proposed = moment(targetDate);
 
-export function dateFindOpen(targetDate, earliestDate, schedule) {
-	let proposed = moment(targetDate);
 	// Start with target date and work backward to earliest
 	while (proposed >= earliestDate) {
-		if (dateIsClosed(schedule, proposed)) {
+		if (calIsClosed(schedule, proposed)) {
 			proposed.subtract(1, 'days');
 		} else {
 			return proposed;
@@ -131,7 +133,7 @@ export function dateFindOpen(targetDate, earliestDate, schedule) {
 	proposed = moment(targetDate).add(1, 'days');
 	// eslint-disable-next-line no-constant-condition
 	while (true) {
-		if (dateIsClosed(schedule, proposed)) {
+		if (calIsClosed(schedule, proposed)) {
 			proposed.add(1, 'days');
 		} else {
 			return proposed;
@@ -139,7 +141,22 @@ export function dateFindOpen(targetDate, earliestDate, schedule) {
 	}
 }
 
-export function dateParse(dateString) {
+export function calIsClosed(schedule, date) {
+    const dateUTC = coerceDateToUTC(date);
+    const res = Boolean(calFindRule(schedule.calMonthly, dateUTC) || calFindRule(schedule.calWeekly, dateUTC) ||
+        calFindRule(schedule.calDaily, dateUTC));
+    return res;
+}
+
+// Convert a local Date object to UTC without adjusting for timezone offset. The returned object
+// has time set to midnight and UTC date set to the local date of the input object.
+function coerceDateToUTC(date) {
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+}
+
+// XXX Date functions using previous calendar implementation
+
+function dateParse(dateString) {
 	let momentDay = moment(dateString)
 	let dayOfWeek = momentDay.day();
 	let weekInMonth = momentDay.isoWeek() -

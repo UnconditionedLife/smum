@@ -8,7 +8,8 @@ import rrulePlugin from '@fullcalendar/rrule';
 import interactionPlugin from "@fullcalendar/interaction";
 import { utilOrdinal } from '../../System/js/GlobalUtils';
 import { calAddException, calAddSingleRule, calAddMonthlyRule, calAddWeeklyRule, calConvertWeekday, 
-    calDeleteSingleRule, calDeleteWeeklyRule, calDeleteMonthlyRule, calToEvents, calFindRule } from '../../System/js/Calendar';
+    calDeleteSingleRule, calDeleteWeeklyRule, calDeleteMonthlyRule, calToEvents, calFindRule, calIsClosed } 
+    from '../../System/js/Calendar';
 import { Button } from '../../System';
 
 SettingsSched.propTypes = {
@@ -23,6 +24,7 @@ export default function SettingsSched(props) {
     const [editEvent, setEditEvent] = React.useState(null);
     const rules = props.rules;
     const onUpdate = props.onUpdate;
+    const calendarRef = React.createRef();
 
     EventEdit.propTypes = {
         event: PropTypes.object
@@ -62,7 +64,7 @@ export default function SettingsSched(props) {
             }
             if (!rule) {
                 alert('Rule not found!');
-                return;
+                return null;
             }
 
             return (
@@ -160,6 +162,23 @@ export default function SettingsSched(props) {
         setEditEvent(e.event);
     }
 
+    // XXX remove after debugging
+    function showClosedDates() {
+        // Determine month shown by current calendar view
+        const calendarApi = calendarRef.current.getApi();
+        const today = calendarApi.getDate();
+        const year = today.getUTCFullYear();
+        const month = today.getUTCMonth();
+        
+        // Show closed dates for current month
+        console.log('Closed dates:');
+        for (let i = 1; i <= 31; i++) {
+            let d = new Date(year, month, i);
+            if (calIsClosed(rules, d))
+                console.log('Closed', d);
+        }
+    }
+
     return (
         <>
             {/* <Popper open={true} anchorEl={foo}>
@@ -168,16 +187,18 @@ export default function SettingsSched(props) {
                 </Card>
             </Popper> */}
             <FullCalendar
+                ref={ calendarRef }
                 plugins={[ dayGridPlugin, rrulePlugin, interactionPlugin ]}
                 initialView="dayGridMonth"
                 dayMaxEvents={true}
                 weekends={true}
                 fixedWeekCount={false}
-                timeZone="UTC"
+                timeZone="US/Pacific"
                 events={ calToEvents(rules) }
                 dateClick={ doEdit }
                 eventClick={ onEventClick }
             />
+            <Button onClick={ showClosedDates }>Show Closed Dates</Button>
             <DateEdit date={ editDate } />
             <EventEdit event={ editEvent } />
         </>
