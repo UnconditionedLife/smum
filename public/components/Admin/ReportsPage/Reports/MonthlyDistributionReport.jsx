@@ -24,7 +24,6 @@ export default function MonthlyDistributionReport(props) {
     useEffect(()=>{
         RunReport()
     },[])
-
     function ListToGrid(svcList) {
         let grid = []
         svcList.forEach(elem => {
