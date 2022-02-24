@@ -142,7 +142,7 @@ export function calFindOpenDate(targetDate, earliestDate) {
 }
 
 export function calIsClosed(schedule, date) {
-    const dateUTC = coerceDateToUTC(date);
+    const dateUTC = coerceDateToUTC(date.toDate());
     const res = Boolean(calFindRule(schedule.calMonthly, dateUTC) || calFindRule(schedule.calWeekly, dateUTC) ||
         calFindRule(schedule.calDaily, dateUTC));
     return res;
