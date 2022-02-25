@@ -104,7 +104,15 @@ export default function NewClientsReport(props) {
     return (
         <Box m={ 1 } maxWidth="100%">
         <TableContainer align="center"> 
-            <Table size="small" align="center">
+        <Table className='fontFamily' size="small" align="center">
+                <style>
+                    {`@media print { 
+                        .fontFamily {
+                            font-family: Arial, Helvetica, sans-serif;
+                            }
+                        }`
+                    }
+                </style>
                 <ReportsHeader reportType="MONTHLY REPORT" 
                     reportCategory="NEW CLIENT" 
                     columns={["Zipcode", "Total", "Homeless"]} />

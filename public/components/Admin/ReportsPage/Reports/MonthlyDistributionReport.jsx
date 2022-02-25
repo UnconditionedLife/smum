@@ -151,7 +151,26 @@ export default function MonthlyDistributionReport(props) {
     function RenderListTotals(totals, title, isTotals) {
         const newTitle = isTotals ? <strong>{title}</strong> : title
         return (
-            <TableRow style={isTotals ? {backgroundColor: theme.palette.primary.light} : null} key={title}>
+            <TableRow className={ isTotals ? 'greenBackground' : 'centerText' } 
+                style={isTotals ? { backgroundColor: theme.palette.primary.light } : null} key={title}>
+                <style>
+                    {`@media print { 
+                        .greenBackground { 
+                            background-color: rgb(104, 179, 107);
+                            text-align: center;
+                            -webkit-print-color-adjust: exact;
+                            break-before: avoid-page;
+                            break-after: avoid-page;
+                            }
+                        },
+                        .centerText {
+                            text-align: center;
+                            break-before: avoid-page;
+                            break-after: avoid-page;
+                            }
+                        }`
+                    }
+                </style>
                 <TableCell align="center">{newTitle}</TableCell>
                 <TableCell align="center">{totals.households}</TableCell>
                 <TableCell align="center">{totals.individuals}</TableCell>
@@ -169,10 +188,23 @@ export default function MonthlyDistributionReport(props) {
     function RenderDay(totals) {
         return (
             <React.Fragment>
-            <TableRow><TableCell align="center" colSpan={13}><Box width="100%" justifyItems="center"><strong>{totals["day"]}</strong></Box></TableCell></TableRow>
-            {RenderListTotals(totals["usdaTotals"], "USDA", false)}
-            {RenderListTotals(totals["nonUsdaTotals"], "Non USDA", false)}
-            {RenderListTotals(totals["totals"], totals["day"], true)}
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <style>
+                            {`@media print { 
+                                .centerText { 
+                                    text-align: center;
+                                    font-size: 14px;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <strong>{ totals["day"] }</strong>
+                    </TableCell>
+                </TableRow>
+                {RenderListTotals(totals["usdaTotals"], "USDA", false)}
+                {RenderListTotals(totals["nonUsdaTotals"], "Non USDA", false)}
+                {RenderListTotals(totals["totals"], totals["day"], true)}
             </React.Fragment>
         )
     }
@@ -180,7 +212,15 @@ export default function MonthlyDistributionReport(props) {
     return (
         <Box m={ 1 } maxWidth="100%">
         <TableContainer align="center"> 
-            <Table size="small" align="center">
+            <Table className='fontFamily' size="small" align="center">
+                <style>
+                    {`@media print { 
+                        .fontFamily {
+                            font-family: Arial, Helvetica, sans-serif;
+                            }
+                        }`
+                    }
+                </style>
                 <ReportsHeader reportType="MONTHLY REPORT" 
                     reportCategory="FOOD PANTRY"
                     groupColumns={[{"name": "Type", "length": 1}, 
@@ -190,7 +230,20 @@ export default function MonthlyDistributionReport(props) {
                     columns={["USDA/Non USDA", "Households", "Individuals", "Adults", "Children", "Seniors", "Families", "Singles", "Families", "Singles"]} />
             <TableBody>
             {daysGrid.map(day => RenderDay(day))}
-            <TableRow><TableCell align="center" colSpan={13}><strong>Monthly Totals</strong></TableCell></TableRow>
+            <TableRow>
+                <TableCell className='centerText' align="center" colSpan={13}>
+                    <style>
+                        {`@media print { 
+                            .centerText { 
+                                text-align: center;
+                                font-size: 14px;
+                                }
+                            }`
+                        }
+                    </style>
+                    <strong>Monthly Totals</strong>
+                </TableCell>
+            </TableRow>
             {RenderListTotals(monthTotals, "Grand Totals", true)}
             {RenderListTotals(uniqueTotals, "Unique Totals", true)}
             </TableBody>

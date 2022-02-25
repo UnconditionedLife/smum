@@ -6,7 +6,12 @@ const defaultTheme = createTheme();
 const theme = createTheme({
     palette: {
         primary: { main: green[600] },
-        secondary: { main: deepOrange[900] },
+        // '#7ab856' when the color gets this light the text switches to dark
+        // green[600]
+        
+        secondary: { main: '#4f1512' },
+        // deepOrange[900]
+        // '#4f1512'
     },
     props: {
         MuiCard: {

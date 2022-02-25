@@ -31,7 +31,7 @@ export default function ReportsHeader(props) {
                             {reportCategory}
                         </Box>
                         <Box>
-                            <Box align="center"><img width='50%' src={ logo } /></Box>
+                            <Box align="center"><img width='70%' src={ logo } /></Box>
                             <Typography style={{ fontWeight: 'bold' }} align='center'>{ moment().format("MMMM DD, YYYY | HH:MM a") }</Typography>
                         </Box>
                         <Box style={{fontSize: '2rem', 
@@ -47,12 +47,38 @@ export default function ReportsHeader(props) {
             </TableRow>
             {groupColumns ? (<TableRow>
                 {groupColumns.map((item, ind) =>
-                    <TableCell key={item.name+ind} colSpan={item.length} align="center">{item.name}</TableCell>
+                    <TableCell key={item.name+ind} className='greenBackgroundBorder' colSpan={item.length} align="center">
+                        <style>
+                            {`@media print { 
+                                .greenBackgroundBorder { 
+                                    padding: 6px 2px 6px 2px;
+                                    background-color: rgb(104, 179, 107); 
+                                    border: 1px solid #000;
+                                    font-size: 14px;
+                                    -webkit-print-color-adjust: exact; 
+                                    }
+                                }`
+                            }
+                        </style>
+                        {item.name}
+                    </TableCell>
                 )}
             </TableRow>) : null}
             <TableRow>
                 {columns.map((item, ind) =>
-                    <TableCell style={groupColumns ? {background:"white"} : null} key={item+ind} align="center">{item}</TableCell>
+                    <TableCell className='oulined' style={groupColumns ? {background:"white"} : null} key={item+ind} align="center">
+                        <style>
+                            {`@media print { 
+                                .oulined { 
+                                    padding: 6px 2px 6px 2px;
+                                    border: .5px solid #000;
+                                    font-size: 14px;
+                                    }
+                                }`
+                            }
+                        </style>
+                        {item}
+                    </TableCell>
                 )}
             </TableRow>
         </TableHead>

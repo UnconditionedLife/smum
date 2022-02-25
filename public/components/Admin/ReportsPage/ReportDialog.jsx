@@ -16,7 +16,7 @@ ReportDialog.propTypes = {
 export default function ReportDialog(props) {
     const ref = useRef()
     const getPageMargins = () => {
-        return `@page { margin: '50px' '30px'!important; }`;
+        return `@page { margin: 20px 20px 40px 20px; }`;
       };
     return (
         <Dialog fullWidth={true} maxWidth={'xl'} open={ props.dialogOpen } aria-labelledby="form-dialog-title"> 
@@ -30,7 +30,7 @@ export default function ReportDialog(props) {
                 trigger={() => <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
                 content={() => ref.current}
                 copyStyles={ false }
-                pageStyle={getPageMargins()}
+                pageStyle={ getPageMargins() }
             />
             </DialogActions>
         </Dialog>

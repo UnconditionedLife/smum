@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
 import moment from 'moment';
 import { dbGetDaysSvcsAsync } from '../../../System/js/Database';
+import { useTheme } from '@material-ui/core/styles';
 
 DailyDistributionReport.propTypes = {
     day: PropTypes.string
@@ -19,6 +20,9 @@ export default function DailyDistributionReport(props) {
     const [totalsUSDA, setTotalsUSDA] = useState(defaultTotals)
     const [totalsNonUSDA, setTotalsNonUSDA] = useState(defaultTotals)
     const [totalsDay, setTotalsDay] = useState(defaultTotals)
+
+    const theme = useTheme()
+    const greenBackground = { backgroundColor: theme.palette.primary.light }
 
     useEffect(()=>{
         RunReport()
@@ -110,7 +114,16 @@ export default function DailyDistributionReport(props) {
 
     function RenderSvcList(svcList) {
         const jsxCode = svcList.map(svc => 
-            <TableRow key={svc.serviceId}>
+            <TableRow className='centerText' key={svc.serviceId}>
+                <style>
+                    {`@media print { 
+                        .centerText { 
+                            text-align: center;
+                            font-size: 14px;
+                            }
+                        }`
+                    }
+                </style>
             <TableCell align="center">{svc.id}</TableCell>
             <TableCell align="center">{svc.given}</TableCell>
             <TableCell align="center">{svc.family}</TableCell>
@@ -131,25 +144,45 @@ export default function DailyDistributionReport(props) {
 
     function RenderListTotals(totals, title) {
         return (
-            <TableRow key={title}>
-                <TableCell align="center" colSpan={4}>{title}</TableCell>
-                <TableCell align="center">{totals.households}</TableCell>
-                <TableCell align="center">{totals.individuals}</TableCell>
-                <TableCell align="center">{totals.adults}</TableCell>
-                <TableCell align="center">{totals.children}</TableCell>
-                <TableCell align="center">{totals.seniors}</TableCell>
-                <TableCell align="center">{totals.homelessHouseholds}</TableCell>
-                <TableCell align="center">{totals.homelessSingles}</TableCell>
-                <TableCell align="center">{totals.nonClientHouseholds}</TableCell>
-                <TableCell align="center">{totals.nonClientSingles}</TableCell>
+            <TableRow className='greenBackground' key={title}>
+                <style>
+                    {`@media print { 
+                        .greenBackground { 
+                            background-color: rgb(104, 179, 107);
+                            text-align: center;
+                            -webkit-print-color-adjust: exact;
+                            break-before: avoid-page;
+                            break-after: avoid-page;
+                            }
+                        }`
+                    }
+                </style>
+                <TableCell style={ greenBackground } align="center" colSpan={4}><strong>{title}</strong></TableCell>
+                <TableCell style={ greenBackground } align="center"><strong>{totals.households}</strong></TableCell>
+                <TableCell style={ greenBackground } align="center"><strong>{totals.individuals}</strong></TableCell>
+                <TableCell style={ greenBackground } align="center"><strong>{totals.adults}</strong></TableCell>
+                <TableCell style={ greenBackground } align="center"><strong>{totals.children}</strong></TableCell>
+                <TableCell style={ greenBackground } align="center"><strong>{totals.seniors}</strong></TableCell>
+                <TableCell style={ greenBackground } align="center"><strong>{totals.homelessHouseholds}</strong></TableCell>
+                <TableCell style={ greenBackground } align="center"><strong>{totals.homelessSingles}</strong></TableCell>
+                <TableCell style={ greenBackground } align="center"><strong>{totals.nonClientHouseholds}</strong></TableCell>
+                <TableCell style={ greenBackground } align="center"><strong>{totals.nonClientSingles}</strong></TableCell>
             </TableRow>
         )
     }
 
     return (
         <Box m={ 1 }>
-        <TableContainer align="center"> 
-            <Table padding="checkbox" size="small" align="center">
+        <TableContainer align="center">
+            <Table className='fontFamily' padding="checkbox" size="small" align="center">
+                <style>
+                    {`@media print { 
+                        .fontFamily {
+                            font-family: Arial, Helvetica, sans-serif;
+                            }
+                        }`
+                    }
+                </style>
                 <ReportsHeader reportType="DAILY REPORT" 
                     reportCategory="FOOD PANTRY"
                     groupColumns={[{"name": "Client", "length": 4}, 
@@ -158,13 +191,52 @@ export default function DailyDistributionReport(props) {
                         {"name":"NonClients Served", "length": 2}]}
                     columns={["ID", "Given", "Family", "Zip", "Households", "Individuals", "Adults", "Children", "Seniors", "Families", "Singles", "Families", "Singles"]} />
             <TableBody>
-            <TableRow><TableCell align="center" colSpan={13}><strong>USDA Services</strong></TableCell></TableRow>
+            <TableRow>
+                <TableCell className='centerText' align="center" colSpan={13}>
+                    <style>
+                        {`@media print { 
+                            .centerText { 
+                                text-align: center;
+                                font-size: 14px;
+                                }
+                            }`
+                        }
+                    </style>
+                    <strong>USDA Services</strong>
+                </TableCell>
+            </TableRow>
             {RenderSvcList(servicesUSDA)}
             {RenderListTotals(totalsUSDA, "USDA Totals")}
-            <TableRow><TableCell align="center" colSpan={13}><strong>Non USDA Services</strong></TableCell></TableRow>
+            <TableRow>
+                <TableCell className='centerText' align="center" colSpan={13}>
+                    <style>
+                        {`@media print { 
+                            .centerText { 
+                                text-align: center;
+                                font-size: 14px;
+                                }
+                            }`
+                        }
+                    </style>
+                    <strong>Non USDA Services</strong>
+                </TableCell>
+            </TableRow>
             {RenderSvcList(servicesNonUSDA)}
             {RenderListTotals(totalsNonUSDA, "Non USDA Totals")}
-            <TableRow><TableCell align="center" colSpan={13}><strong>Day Total</strong></TableCell></TableRow>
+            <TableRow>
+                <TableCell className='centerText' align="center" colSpan={13}>
+                    <style>
+                        {`@media print { 
+                            .centerText { 
+                                text-align: center;
+                                font-size: 14px;
+                                }
+                            }`
+                        }
+                    </style>
+                    <strong>Day Total</strong>
+                </TableCell>
+            </TableRow>
             {RenderListTotals(totalsDay, "Day Grand Totals")}
             </TableBody>
             </Table>
