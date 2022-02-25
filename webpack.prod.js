@@ -7,6 +7,10 @@ module.exports = merge(common, {
     output: {
         path: path.resolve(__dirname, "build/"),
         publicPath: "/build/",
-        filename: "main.bundle.js"
+        filename: "main.bundle.[contenthash].js",
+        clean: true,
     },
+    entry: {
+        main: "/public/components/Main.js"
+    }
 });
