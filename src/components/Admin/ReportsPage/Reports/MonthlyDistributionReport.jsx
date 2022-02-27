@@ -6,23 +6,21 @@ import moment from 'moment';
 import { dbGetDaysSvcsAsync } from '../../../System/js/Database';
 import { useTheme } from '@material-ui/core/styles';
 
-DailyDistributionReport.propTypes = {
-    day: PropTypes.string
+MonthlyDistributionReport.propTypes = {
+    month: PropTypes.string
 }
 
-export default function DailyDistributionReport(props) {
+export default function MonthlyDistributionReport(props) {
     const defaultTotals = {"households": 0, "individuals": 0,
     "children": 0, "adults": 0,
     "seniors": 0, "homelessHouseholds": 0, "homelessSingles": 0,
     "nonClientHouseholds": 0, "nonClientSingles": 0}
-    const [servicesUSDA, setServicesUSDA] = useState([])
-    const [servicesNonUSDA, setServicesNonUSDA] = useState([])
-    const [totalsUSDA, setTotalsUSDA] = useState(defaultTotals)
-    const [totalsNonUSDA, setTotalsNonUSDA] = useState(defaultTotals)
-    const [totalsDay, setTotalsDay] = useState(defaultTotals)
+    const [daysGrid, setDaysGrid] = useState([])
+    const [monthTotals, setMonthTotals] = useState(defaultTotals)
+    const [uniqueTotals, setUniqueTotals] = useState(defaultTotals)
 
     const theme = useTheme()
-    const greenBackground = { backgroundColor: theme.palette.primary.light }
+    const reportMonth = moment(props.month, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
 
     useEffect(()=>{
         RunReport()
@@ -90,9 +88,49 @@ export default function DailyDistributionReport(props) {
         })
     }
 
+    function computeUniqueTotals(gridList) {
+        const uniqueIds = []
+        const uniqueSvcs = []
+
+        for (let dayIndex=0; dayIndex<gridList.length; dayIndex++) {
+            let day = gridList[dayIndex]
+            console.log(day)
+            day["usdaGrid"].forEach(item => {
+                if (!uniqueIds.includes(item.id)) {
+                    uniqueIds.push(item.id);
+                    uniqueSvcs.push(item);
+                }
+            });
+            day["nonUsdaGrid"].forEach(item => {
+                if (!uniqueIds.includes(item.id)) {
+                    uniqueIds.push(item.id);
+                    uniqueSvcs.push(item);
+                }
+            });
+        }
+        setUniqueTotals(computeGridTotals(uniqueSvcs))
+    }
+
     function RunReport() {
-        dbGetDaysSvcsAsync(moment(props.day).format('YYYYMMDD'))
-            .then(svcs => {
+        let numDays = moment(props.month, "YYYYMM").endOf("month").format("DD")
+        numDays = parseInt(numDays) + 1
+        let promises = []
+
+        for (let i = 1; i < numDays; i++) {
+            let servicedDay = String(i)
+            if (servicedDay.length < 2) servicedDay = "0"+servicedDay
+            servicedDay = props.month + servicedDay
+            promises.push(dbGetDaysSvcsAsync(moment(servicedDay).format('YYYYMMDD')))
+        }
+
+        Promise.all(promises).then(data => {
+            let newDaysGrid = []
+            for (let i=0; i<data.length; i++) {
+                let svcs = data[i]
+                let servicedDay = String(i+1)
+                if (servicedDay.length < 2) servicedDay = "0"+servicedDay
+                servicedDay = props.month + servicedDay
+                servicedDay = moment(servicedDay).format('MM/DD/YYYY')
                 const servicesFood = svcs
                     .filter(item => item.serviceValid == 'true')
                     .filter(item => item.serviceCategory == "Food_Pantry")
@@ -103,48 +141,20 @@ export default function DailyDistributionReport(props) {
                 const nonUsdaGrid = ListToGrid(servicesNonUSDA)
                 const usdaTotals = computeGridTotals(usdaGrid)
                 const nonUsdaTotals = computeGridTotals(nonUsdaGrid)
-                const dayTotals = computeGridTotals([usdaTotals, nonUsdaTotals])
-                setServicesUSDA(usdaGrid)
-                setServicesNonUSDA(nonUsdaGrid)
-                setTotalsUSDA(usdaTotals)
-                setTotalsNonUSDA(nonUsdaTotals)
-                setTotalsDay(dayTotals)
-            })
+                newDaysGrid.push({"day": servicedDay, "usdaGrid": usdaGrid, "nonUsdaGrid": nonUsdaGrid, "usdaTotals": usdaTotals, 
+                "nonUsdaTotals": nonUsdaTotals, "totals": computeGridTotals([usdaTotals, nonUsdaTotals])})
+            }
+            setDaysGrid(newDaysGrid)
+            setMonthTotals(computeGridTotals(newDaysGrid.map(day => day["totals"])))
+            computeUniqueTotals(newDaysGrid)
+        })
     }
 
-    function RenderSvcList(svcList) {
-        const jsxCode = svcList.map(svc => 
-            <TableRow className='centerText' key={svc.serviceId}>
-                <style>
-                    {`@media print { 
-                        .centerText { 
-                            text-align: center;
-                            font-size: 14px;
-                            }
-                        }`
-                    }
-                </style>
-            <TableCell align="center">{svc.id}</TableCell>
-            <TableCell align="center">{svc.given}</TableCell>
-            <TableCell align="center">{svc.family}</TableCell>
-            <TableCell align="center">{svc.zipcode}</TableCell>
-            <TableCell align="center">{svc.households}</TableCell>
-            <TableCell align="center">{svc.individuals}</TableCell>
-            <TableCell align="center">{svc.adults}</TableCell>
-            <TableCell align="center">{svc.children}</TableCell>
-            <TableCell align="center">{svc.seniors}</TableCell>
-            <TableCell align="center">{svc.homelessHouseholds}</TableCell>
-            <TableCell align="center">{svc.homelessSingles}</TableCell>
-            <TableCell align="center">{svc.nonClientHouseholds}</TableCell>
-            <TableCell align="center">{svc.nonClientSingles}</TableCell>
-            </TableRow>
-        )
-        return jsxCode
-    }
-
-    function RenderListTotals(totals, title) {
+    function RenderListTotals(totals, title, isTotals) {
+        const newTitle = isTotals ? <strong>{title}</strong> : title
         return (
-            <TableRow className='greenBackground' key={title}>
+            <TableRow className={ isTotals ? 'greenBackground' : 'centerText' } 
+                style={isTotals ? { backgroundColor: theme.palette.primary.light } : null} key={title}>
                 <style>
                     {`@media print { 
                         .greenBackground { 
@@ -154,27 +164,57 @@ export default function DailyDistributionReport(props) {
                             break-before: avoid-page;
                             break-after: avoid-page;
                             }
+                        },
+                        .centerText {
+                            text-align: center;
+                            break-before: avoid-page;
+                            break-after: avoid-page;
+                            }
                         }`
                     }
                 </style>
-                <TableCell style={ greenBackground } align="center" colSpan={4}><strong>{title}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.households}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.individuals}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.adults}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.children}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.seniors}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.homelessHouseholds}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.homelessSingles}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.nonClientHouseholds}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.nonClientSingles}</strong></TableCell>
+                <TableCell align="center">{newTitle}</TableCell>
+                <TableCell align="center">{totals.households}</TableCell>
+                <TableCell align="center">{totals.individuals}</TableCell>
+                <TableCell align="center">{totals.adults}</TableCell>
+                <TableCell align="center">{totals.children}</TableCell>
+                <TableCell align="center">{totals.seniors}</TableCell>
+                <TableCell align="center">{totals.homelessHouseholds}</TableCell>
+                <TableCell align="center">{totals.homelessSingles}</TableCell>
+                <TableCell align="center">{totals.nonClientHouseholds}</TableCell>
+                <TableCell align="center">{totals.nonClientSingles}</TableCell>
             </TableRow>
         )
     }
 
+    function RenderDay(totals) {
+        return (
+            <React.Fragment>
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <style>
+                            {`@media print { 
+                                .centerText { 
+                                    text-align: center;
+                                    font-size: 14px;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <strong>{ totals["day"] }</strong>
+                    </TableCell>
+                </TableRow>
+                {RenderListTotals(totals["usdaTotals"], "USDA", false)}
+                {RenderListTotals(totals["nonUsdaTotals"], "Non USDA", false)}
+                {RenderListTotals(totals["totals"], totals["day"], true)}
+            </React.Fragment>
+        )
+    }
+
     return (
-        <Box m={ 1 }>
-        <TableContainer align="center">
-            <Table className='fontFamily' padding="checkbox" size="small" align="center">
+        <Box m={ 1 } maxWidth="100%">
+        <TableContainer align="center"> 
+            <Table className='fontFamily' size="small" align="center">
                 <style>
                     {`@media print { 
                         .fontFamily {
@@ -183,14 +223,16 @@ export default function DailyDistributionReport(props) {
                         }`
                     }
                 </style>
-                <ReportsHeader reportType="DAILY REPORT" 
+                <ReportsHeader reportDate={ reportMonth }
+                    reportType="MONTHLY REPORT"
                     reportCategory="FOOD PANTRY"
-                    groupColumns={[{"name": "Client", "length": 4}, 
-                        {"name": "Clients Served", "length": 5}, 
-                        {"name": "Homeless Served", "length": 2}, 
-                        {"name":"NonClients Served", "length": 2}]}
-                    columns={["ID", "Given", "Family", "Zip", "Households", "Individuals", "Adults", "Children", "Seniors", "Families", "Singles", "Families", "Singles"]} />
+                    groupColumns={[{"name": "Type", "length": 1}, 
+                        {"name": "Clients Services", "length": 5}, 
+                        {"name": "Homeless Services", "length": 2}, 
+                        {"name":"NonClients Services", "length": 2}]}
+                    columns={["USDA/Non USDA", "Households", "Indiv.", "Adults", "Children", "Seniors", "Families", "Indiv.", "Families", "Indiv."]} />
             <TableBody>
+            {daysGrid.map(day => RenderDay(day))}
             <TableRow>
                 <TableCell className='centerText' align="center" colSpan={13}>
                     <style>
@@ -202,42 +244,11 @@ export default function DailyDistributionReport(props) {
                             }`
                         }
                     </style>
-                    <strong>USDA Services</strong>
+                    <strong>Monthly Totals</strong>
                 </TableCell>
             </TableRow>
-            {RenderSvcList(servicesUSDA)}
-            {RenderListTotals(totalsUSDA, "USDA Totals")}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
-                    <style>
-                        {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
-                                }
-                            }`
-                        }
-                    </style>
-                    <strong>Non USDA Services</strong>
-                </TableCell>
-            </TableRow>
-            {RenderSvcList(servicesNonUSDA)}
-            {RenderListTotals(totalsNonUSDA, "Non USDA Totals")}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
-                    <style>
-                        {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
-                                }
-                            }`
-                        }
-                    </style>
-                    <strong>Day Total</strong>
-                </TableCell>
-            </TableRow>
-            {RenderListTotals(totalsDay, "Day Grand Totals")}
+            {RenderListTotals(monthTotals, "Grand Totals", true)}
+            {RenderListTotals(uniqueTotals, "Unique Totals", true)}
             </TableBody>
             </Table>
         </TableContainer>

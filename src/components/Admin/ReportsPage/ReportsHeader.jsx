@@ -1,10 +1,11 @@
-import React from "react";
+import React  from "react";
 import { Box, TableRow, TableCell, Typography, TableHead } from "@material-ui/core";
 import moment from 'moment';
 import logo from '/public/images/receipt-logo.png';
 import PropTypes from 'prop-types';
 
 ReportsHeader.propTypes = {
+    reportDate: PropTypes.string.isRequired,
     reportType: PropTypes.string.isRequired,
     reportCategory: PropTypes.string.isRequired,
     groupColumns: PropTypes.array,
@@ -12,34 +13,37 @@ ReportsHeader.propTypes = {
 }
 
 export default function ReportsHeader(props) {
-    const reportType = props.reportType
-    const reportCategory = props.reportCategory
-    const columns = props.columns
-    const groupColumns = props.groupColumns
+    const { reportDate, reportType, reportCategory, columns, groupColumns } = props
+
+
+    console.log("DATE", reportDate )
+
 
     return (
-        <TableHead>
+        <TableHead >
             <TableRow>
-                <TableCell colSpan={columns.length} style={{ alignContent: "center" }}>
+                <TableCell colSpan={columns.length} style={{ backgroundColor: 'white', alignContent: "center" }}>
                     <Box style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                        <Box style={{fontSize: '2rem', 
+                        <Box style={{fontSize: '1.55rem', 
                             display: 'flex',
                             justifyContent: 'center',
-                            color: 'var(--grey-green)',
                             alignItems: 'center',
                             fontWeight: 'bold'}}>
-                            {reportCategory}
+                            { reportCategory }
                         </Box>
                         <Box>
                             <Box align="center"><img width='70%' src={ logo } /></Box>
-                            <Typography style={{ fontWeight: 'bold' }} align='center'>{ moment().format("MMMM DD, YYYY | HH:MM a") }</Typography>
+                            <Typography style={{ fontSize: '13px', fontWeight: 'bold' }} align='center'>Generated:&nbsp;{ moment().format("MMM. DD, YYYY | h:mm a") }</Typography>
                         </Box>
-                        <Box style={{fontSize: '2rem', 
+                        <Box style={{fontSize: '1.55rem', 
+                            lineHeight: '1.58rem',
                             display: 'flex',
-                            color: 'var(--grey-green)',
                             justifyContent: 'center',
                             alignItems: 'center',
+                            textAlign: 'center',
                             fontWeight: 'bold'}}>
+                            { reportDate }
+                            <br />
                             {reportType}
                         </Box>
                     </Box>
@@ -54,7 +58,7 @@ export default function ReportsHeader(props) {
                                     padding: 6px 2px 6px 2px;
                                     background-color: rgb(104, 179, 107); 
                                     border: 1px solid #000;
-                                    font-size: 14px;
+                                    font-size: 13px;
                                     -webkit-print-color-adjust: exact; 
                                     }
                                 }`
@@ -72,7 +76,7 @@ export default function ReportsHeader(props) {
                                 .oulined { 
                                     padding: 6px 2px 6px 2px;
                                     border: .5px solid #000;
-                                    font-size: 14px;
+                                    font-size: 13px;
                                     }
                                 }`
                             }

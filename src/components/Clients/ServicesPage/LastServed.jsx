@@ -23,16 +23,23 @@ export default function LastServed(props) {
         }
 
         // GET LAST FOOD SERVICE DATE
-        const lastSvcDate = getLastServedFood(client)
+        const lastSvcDateTime = getLastServedFood(client)
+        const lastSvcDate = moment(lastSvcDateTime).endOf('day'); // removes time of day so calculation is from end of service day
 
         if (lastSvcDate !== null) {
             updateLastVisit(moment(lastSvcDate).fromNow().toUpperCase())
-            const targetDate = moment(lastSvcDate).add(14, 'days');
-            const earliestDate = moment(lastSvcDate).add(7, 'days');
+            const targetDate = moment(lastSvcDate).add(14, 'days').endOf('day'); // removes time of day so calculation is from end of service day
+            const earliestDate = moment(lastSvcDate).add(7, 'days').endOf('day'); // removes time of day so calculation is from end of service day
             const nextSvcDate = calFindOpenDate(targetDate, earliestDate);
             const daysFromNow = moment().diff(nextSvcDate, 'days')
             const isAfter = moment().isAfter(nextSvcDate, 'day')
+
+console.log("NEXT SVC", nextSvcDate)            
+console.log("ISAFTER", isAfter)
+console.log("DAYS FROM", daysFromNow)
+
             if ( isAfter ) {
+                if (daysFromNow === 0) updateNextService("TODAY")
                 if (daysFromNow === 1) updateNextService(daysFromNow + " DAY OVERDUE")
                 if (daysFromNow > 1) updateNextService(daysFromNow + " DAYS OVERDUE")
             } else {

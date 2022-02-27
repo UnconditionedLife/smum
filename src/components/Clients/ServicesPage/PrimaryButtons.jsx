@@ -6,12 +6,12 @@ import { Button, Typography } from '../../System';
 import { getButtonData } from '../../System/js/Clients/Services'
 import ReplayIcon from '@material-ui/icons/Replay';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
-import Food_Pantry from "../../../images/Food_Pantry.jpg";
-import Clothes_Closet from "../../../images/Clothes_Closet.jpg";
-import Administration from "../../../images/Administration.jpg";
-import Back_To_School from "../../../images/Back_To_School.jpg";
-import Christmas from "../../../images/Christmas.jpg";
-import Thanksgiving from "../../../images/Thanksgiving.jpg";
+import Food_Pantry from "../../../../public/images/Food_Pantry.jpg";
+import Clothes_Closet from "../../../../public/images/Clothes_Closet.jpg";
+import Administration from "../../../../public/images/Administration.jpg";
+import Back_To_School from "../../../../public/images/Back_To_School.jpg";
+import Christmas from "../../../../public/images/Christmas.jpg";
+import Thanksgiving from "../../../../public/images/Thanksgiving.jpg";
 
 // make buttons 168px/176px(used) square for wider than 400px screens
 // make buttons 120px/128px(used) square for narrower than 400px screens 

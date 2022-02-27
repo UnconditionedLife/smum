@@ -63,10 +63,14 @@ export default function ReportsPage() {
         if (dayType == "FOOD") {
             setReportHeading("Distribution " + moment(reportDay).format('MMM, DD, YYYY') + " Report");
             setReportOpen(true);
-            setReportBody(<DailyDistributionReport />);
+            setReportBody(<DailyDistributionReport day={ reportDay } />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
+    }
+
+    const handleReportDayChangeUpdated = (event) => {
+        handleReportDayChange(moment(event._d).format('YYYYMMDD'))
     }
 
     const handleFoodYearMonthChangeUpdated = (event) => {
@@ -93,7 +97,7 @@ export default function ReportsPage() {
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                         </Select>
                         </FormControl>
-                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" InputLabelProps={{ shrink: true }} value={ reportDay } onChange={ handleReportDayChange } />
+                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" InputLabelProps={{ shrink: true }} value={ reportDay } onChange={ handleReportDayChangeUpdated } />
                         <Button onClick={runDailyReport} variant="contained" color="primary">Run</Button>
                     </Box>
 

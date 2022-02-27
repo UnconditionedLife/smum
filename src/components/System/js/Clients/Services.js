@@ -394,8 +394,8 @@ function validateServiceInterval( props ){
     const { client, activeServiceType, lastServed, intervals } = props
 
     const lastSvcDate = moment().subtract(lastServed.lowestDays, 'days')
-    const targetDate = moment(lastSvcDate).add(14, 'days');
-    const earliestDate = moment(lastSvcDate).add(7, 'days');
+    const targetDate = moment(lastSvcDate).add(14, 'days').endOf('day'); // removes time of day so calculation is from end of service day
+    const earliestDate = moment(lastSvcDate).add(7, 'days').endOf('day'); // removes time of day so calculation is from end of service day
     const nextSvcDate = calFindOpenDate(targetDate, earliestDate);
     const isSameOrAfter = moment().isSameOrAfter(nextSvcDate, 'day')
     

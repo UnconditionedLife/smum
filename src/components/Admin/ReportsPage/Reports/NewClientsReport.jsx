@@ -1,4 +1,4 @@
-import { Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Typography, TableFooter } from "@material-ui/core";
+import { Box, Table, TableContainer, TableRow, TableCell, TableBody, Typography, TableFooter } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { dbGetSingleClientAsync, dbGetSvcsInMonthAsync, SettingsZipcodes } from '../../../System/js/Database';
@@ -16,8 +16,6 @@ export default function NewClientsReport(props) {
     const [ totalNewHomeless, setTotalNewHomeless ] = useState(0)
 
     let numNewClients = []
-
-
     const USDAServiceTypeId = "cj86davnj00013k7zi3715rf4"
 
 
