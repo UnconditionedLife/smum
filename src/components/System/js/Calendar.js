@@ -6,6 +6,8 @@ import theme from '../../Theme.jsx';
 
 // Return a copy of the calendar rules from the orig structure
 export function calClone(orig) {
+    if (orig == null)
+        return null;
     const subset = {
         calDaily: [... orig.calDaily],
         calWeekly: [... orig.calWeekly],

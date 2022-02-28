@@ -7,8 +7,6 @@ import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
 import { validBaseZipcode } from '../../System/js/Forms';
 import { beepError } from '../../System/js/GlobalUtils';
-import SettingsSched from './SettingsSched.jsx';
-import { calClone } from '../../System/js/Calendar';
 
 export default function SettingsPage() {
     const [ settings, setSettings ] = useState(null);
@@ -40,7 +38,6 @@ function SettingsForm(props) {
     const [initValues, setInitValues] = useState(props.settings);
     const [serviceZip, setServiceZip] = useState(initValues.serviceZip);
     const [serviceCat, setServiceCat] = useState(initValues.serviceCat);
-    const [calRules, setCalRules] = useState(calClone(initValues));
     const [saveMessage, setSaveMessage] = useState({result: 'success', time: initValues.updatedDateTime});
     const [fieldsDirty, setFieldsDirty] = useState(false);
     const { handleSubmit, reset, control, errors, formState } = useForm({
@@ -58,7 +55,6 @@ function SettingsForm(props) {
         Object.assign(settingsData, formValues);
         settingsData.serviceZip = serviceZip;
         settingsData.serviceCat = serviceCat;
-        Object.assign(settingsData, calClone(calRules));
 
         // Save user data and reset initial state to new values
         dbSetModifiedTime(settingsData, false);
@@ -81,7 +77,6 @@ function SettingsForm(props) {
         reset();
         setServiceZip(initValues.serviceZip);
         setServiceCat(initValues.serviceCat);
-        setCalRules(calClone(initValues));
         setFieldsDirty(false);
         setEditingState(false);
     }
@@ -110,11 +105,6 @@ function SettingsForm(props) {
         setFieldsDirty(true);
     }
 
-    function updateCalRules(rules) {
-        setCalRules(rules);
-        setFieldsDirty(true);
-    }
-
     return (
         <>
             <form>
@@ -140,9 +130,6 @@ function SettingsForm(props) {
                     <FormTextField name="seniorAge" label="Senior Age" error={ errors.seniorAge } 
                             control={ control } rules={ {required: 'Required'}} />
                 </Box>
-
-                <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Schedule</Typography></Box>
-                <SettingsSched rules={ calRules } onUpdate={ updateCalRules } />
             </form>
             <SaveCancel disabled={ !(formState.isDirty || fieldsDirty) } message={ saveMessage }
                 onClick={ (isSave) => { isSave ? submitForm() : doCancel() } } />

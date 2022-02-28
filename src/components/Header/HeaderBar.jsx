@@ -14,7 +14,7 @@ import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
 import { cacheSessionVar, clearCache, initCache, showCache, getSession, getAppVersion,
-    getUserName, getUserRole, navigationAllowed, dbSetUrl } from '../System/js/Database';
+    getUserName, getUserRole, navigationAllowed, setEditingState, dbSetUrl } from '../System/js/Database';
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -210,9 +210,7 @@ export default function HeaderBar(props) {
     }
 
     function handleUserMenuOpen(event) {
-        if (navigationAllowed()) {
-            setUserMenuAnchor(event.currentTarget);
-        }
+        setUserMenuAnchor(event.currentTarget);
     }
 
     function closeUserMenu() {
@@ -223,6 +221,7 @@ export default function HeaderBar(props) {
         let myCogUser = cogSetupUser(getUserName());
 
         console.log('Logout')
+        setEditingState(false);
         handleSectionChange(0);
         handleSearchTermChange('');
         myCogUser.signOut();

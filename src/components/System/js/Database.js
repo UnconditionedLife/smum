@@ -60,7 +60,7 @@ export function sessionTimeRemaining() {
     return decodedTkn.exp*1000 - new Date().getTime();
 }
 
-export function navigationAllowed () {
+export function navigationAllowed() {
     let minutes = Math.round(sessionTimeRemaining() / 60000);
     const warningMinutes = 30;
 
@@ -68,7 +68,11 @@ export function navigationAllowed () {
         globalMsgFunc('error', "Edit in progress. Save or Cancel before changing screens.");
         return false;
     }
-    if (minutes < warningMinutes)
+    else if (minutes < 0) {
+        globalMsgFunc('warning', 'Session is expired. Log out and back in again.');
+        return false;
+    }
+    else if (minutes < warningMinutes)
         globalMsgFunc('warning', 'Session will expire in ' + minutes + ' minutes. Log out and back in again.') 
     return true;
 }

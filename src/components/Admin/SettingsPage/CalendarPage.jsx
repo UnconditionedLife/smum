@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Popper, Dialog, DialogTitle } from '@material-ui/core';
+import { Box, Card, CardContent, CardHeader, Container, Popper, Dialog, DialogTitle } from '@material-ui/core';
+import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
 import moment from 'moment-timezone';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -10,21 +11,82 @@ import { utilOrdinal } from '../../System/js/GlobalUtils';
 import { calAddException, calAddSingleRule, calAddMonthlyRule, calAddWeeklyRule, calConvertWeekday, 
     calDeleteSingleRule, calDeleteWeeklyRule, calDeleteMonthlyRule, calToEvents, calFindRule, calIsClosed } 
     from '../../System/js/Calendar';
-import { Button } from '../../System';
+import { Button, SaveCancel } from '../../System';
+import { calClone } from '../../System/js/Calendar';
 
-SettingsSched.propTypes = {
-    rules: PropTypes.object.isRequired,
-    onUpdate: PropTypes.func.isRequired,
+export default function CalendarPage() {
+    const [settings, setSettings] = useState(null);
+
+    useEffect(() => { 
+        dbGetSettingsAsync().then( stgs => { setSettings(stgs); });
+    }, []);
+
+    if (settings)
+        return (
+            <Container maxWidth='md'>
+                <Card>
+                    <CardHeader title="Calendar" />
+                    <CardContent>
+                        <SettingsSched settings={ settings } />
+                    </CardContent>
+                </Card>
+            </Container>
+        );
+    else
+        return null;
 }
 
-export default function SettingsSched(props) {
+SettingsSched.propTypes = {
+    settings: PropTypes.object.isRequired,
+}
+
+function SettingsSched(props) {
     // const [hover, setHover] = React.useState({el: null, event: null});
     // const [foo, setAnchor] = React.useState(null);
     const [editDate, setEditDate] = React.useState(null);
     const [editEvent, setEditEvent] = React.useState(null);
-    const rules = props.rules;
-    const onUpdate = props.onUpdate;
+    const [initValues, setInitValues] = useState(props.settings);
+    const [calRules, setCalRules] = useState(calClone(initValues));
+    const [saveMessage, setSaveMessage] = useState({result: 'success', time: initValues.updatedDateTime});
+    const [fieldsDirty, setFieldsDirty] = useState(false);
+
+    const rules = calRules;
     const calendarRef = React.createRef();
+
+    if (fieldsDirty) 
+        setEditingState(true);
+
+    function updateCalRules(rules) {
+        setCalRules(rules);
+        setFieldsDirty(true);
+    }
+
+    function doSave() {
+        let settingsData = { ... initValues };
+
+        // Load values from calendar
+        Object.assign(settingsData, calClone(calRules));
+
+        // Save user data and reset initial state to new values
+        dbSetModifiedTime(settingsData, false);
+        setSaveMessage({ result: 'working' });
+        dbSaveSettingsAsync(settingsData)
+            .then( () => {
+                setSaveMessage({ result: 'success', time: settingsData.updatedDateTime });
+                setInitValues(settingsData);
+                setFieldsDirty(false);
+                setEditingState(false);
+            })
+            .catch( message => {
+                setSaveMessage({ result: 'error', text: message });
+            });
+    }
+
+    function doCancel() {
+        setCalRules(calClone(initValues));
+        setFieldsDirty(false);
+        setEditingState(false);
+    }
 
     EventEdit.propTypes = {
         event: PropTypes.object
@@ -35,7 +97,7 @@ export default function SettingsSched(props) {
     
         function finish(modified=false) {
             if (modified)
-                onUpdate(rules);
+                updateCalRules(rules);
             setEditEvent(null);
         }
     
@@ -104,7 +166,7 @@ export default function SettingsSched(props) {
     
         function finish(modified=false) {
             if (modified)
-                onUpdate(rules);
+                updateCalRules(rules);
             setEditDate(null);
         }
     
@@ -174,7 +236,7 @@ export default function SettingsSched(props) {
         console.log('Closed dates:');
         for (let i = 1; i <= 31; i++) {
             let d = new Date(year, month, i);
-            if (calIsClosed(rules, d))
+            if (calIsClosed(calRules, moment(d)))
                 console.log('Closed', d);
         }
     }
@@ -201,6 +263,8 @@ export default function SettingsSched(props) {
             <Button onClick={ showClosedDates }>Show Closed Dates</Button>
             <DateEdit date={ editDate } />
             <EventEdit event={ editEvent } />
+            <SaveCancel disabled={ !(fieldsDirty) } message={ saveMessage }
+                onClick={ (isSave) => { isSave ? doSave() : doCancel() } } />
         </>
     );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppBar, Box, Tab, Tabs } from '@material-ui/core';
-import { RoomService, AccountBox, Assessment, SettingsApplications, Input } from '@material-ui/icons';
-import { AllUsersPage, ImportPage, ReportsPage, 
+import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications } from '@material-ui/icons';
+import { AllUsersPage, CalendarPage, ReportsPage, 
             ServiceTypePage, SettingsPage } from '..';
 import { getSession, navigationAllowed } from '../../System/js/Database';
 import { isEmpty } from '../../System/js/GlobalUtils';
@@ -25,7 +25,7 @@ export default function AdminMain() {
             setSelectedTab(newValue);
     };
 
-    let navLabels = [ 'Service Types', 'Reports', 'Users', 'Settings', 'Import' ]
+    let navLabels = [ 'Reports', 'Calendar', 'Service Types', 'Users', 'Settings' ]
     if (UseWindowSize().width < 450) navLabels = [ '','','','' ]
 
     if (session === null) return null // do not render admin if session is not set
@@ -43,16 +43,18 @@ export default function AdminMain() {
                 selectionFollowsFocus
                 style={{ justifyContent: 'space-between' }}
                 >
-                    <Tab icon={<RoomService/>} label={ navLabels[0] } />
-                    <Tab icon={<Assessment/>} label={ navLabels[1] } />
-                    <Tab icon={<AccountBox/>} label={ navLabels[2] } />
-                    <Tab icon={<SettingsApplications/>} label={ navLabels[3] } />
+                    <Tab icon={<Assessment/>} label={ navLabels[0] } />
+                    <Tab icon={<DateRange/>} label={ navLabels[1] } />
+                    <Tab icon={<RoomService/>} label={ navLabels[2] } />
+                    <Tab icon={<AccountBox/>} label={ navLabels[3] } />
+                    <Tab icon={<SettingsApplications/>} label={ navLabels[4] } />
                 </Tabs>
             </AppBar>
-            {selectedTab === 0 && <ServiceTypePage />}
-            {selectedTab === 1 && <ReportsPage />}
-            {selectedTab === 2 && <AllUsersPage />}
-            {selectedTab === 3 && <SettingsPage />}
+            {selectedTab === 0 && <ReportsPage />}
+            {selectedTab === 1 && <CalendarPage />}
+            {selectedTab === 2 && <ServiceTypePage />}
+            {selectedTab === 3 && <AllUsersPage />}
+            {selectedTab === 4 && <SettingsPage />}
         </Box>
     );
 }
