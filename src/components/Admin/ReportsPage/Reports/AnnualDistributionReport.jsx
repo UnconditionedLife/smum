@@ -16,11 +16,13 @@ export default function AnnualDistributionReport(props) {
     "seniors": 0, "homelessHouseholds": 0, "homelessSingles": 0,
     "nonClientHouseholds": 0, "nonClientSingles": 0}
     const [monthGrid, setMonthGrid] = useState([])
+    const [usdaTotals, setUsdaTotals] = useState(defaultTotals)
+    const [nonUsdaTotals, setNonUsdaTotals] = useState(defaultTotals)
     const [yearTotals, setYearTotals] = useState(defaultTotals)
     const [uniqueTotals, setUniqueTotals] = useState(defaultTotals)
 
     const theme = useTheme()
-    const reportYear = "YYYY"
+    const reportYear = props.year
 
     useEffect(()=>{
         RunReport()

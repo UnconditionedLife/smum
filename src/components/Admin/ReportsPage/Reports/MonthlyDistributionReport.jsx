@@ -17,6 +17,8 @@ export default function MonthlyDistributionReport(props) {
     "nonClientHouseholds": 0, "nonClientSingles": 0}
     const [daysGrid, setDaysGrid] = useState([])
     const [monthTotals, setMonthTotals] = useState(defaultTotals)
+    const [usdaTotals, setUsdaTotals] = useState(defaultTotals)
+    const [nonUsdaTotals, setNonUsdaTotals] = useState(defaultTotals)
     const [uniqueTotals, setUniqueTotals] = useState(defaultTotals)
 
     const theme = useTheme()
@@ -145,6 +147,8 @@ export default function MonthlyDistributionReport(props) {
                 "nonUsdaTotals": nonUsdaTotals, "totals": computeGridTotals([usdaTotals, nonUsdaTotals])})
             }
             setDaysGrid(newDaysGrid)
+            setUsdaTotals(computeGridTotals(newDaysGrid.map(day => day["usdaTotals"])))
+            setNonUsdaTotals(computeGridTotals(newDaysGrid.map(day => day["nonUsdaTotals"])))
             setMonthTotals(computeGridTotals(newDaysGrid.map(day => day["totals"])))
             computeUniqueTotals(newDaysGrid)
         })
@@ -247,6 +251,8 @@ export default function MonthlyDistributionReport(props) {
                     <strong>Monthly Totals</strong>
                 </TableCell>
             </TableRow>
+            {RenderListTotals(usdaTotals, "USDA Totals", true)}
+            {RenderListTotals(nonUsdaTotals, "Non USDA Totals", true)}
             {RenderListTotals(monthTotals, "Grand Totals", true)}
             {RenderListTotals(uniqueTotals, "Unique Totals", true)}
             </TableBody>

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment';
-import { CardContent, CardHeader } from '@material-ui/core';
+import { Box, CardContent, CardHeader, Fab, Tooltip } from '@material-ui/core';
 import { Card } from '../System';
 import DailyDistributionReport from '../Admin/ReportsPage/Reports/DailyDistributionReport.jsx';
+import ReactToPrint from 'react-to-print';
+import { Print } from '@material-ui/icons';
 
 export default function PageToday() {
     const [ reportDay, setReportDay ] = useState(moment().format('YYYYMMDD'))
@@ -11,13 +13,28 @@ export default function PageToday() {
 
     useEffect(() => {
         setReportHeading("Today " + moment(reportDay).format('MMM, DD, YYYY') + " Report");
-        setReportBody(<DailyDistributionReport />);
+        setReportBody(<DailyDistributionReport/>);
     }, [reportDay])
- 
+    const ref = useRef()
+    const getPageMargins = () => {
+        return `@page { margin: 20px 20px 40px 20px; }`;
+      };
+
     return (
+        <React.Fragment>
         <Card>
             <CardHeader>{ reportHeading }</CardHeader>
-            <CardContent>{ reportBody }</CardContent>
+            <CardContent>
+                <Box ref={ref}>{ reportBody }</Box>
+                <ReactToPrint
+                    trigger={() => <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
+                    content={() => ref.current}
+                    copyStyles={ false }
+                    pageStyle={ getPageMargins() }
+                />
+            </CardContent>
         </Card>
+  
+        </React.Fragment>
     );
 }   
