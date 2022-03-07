@@ -1,3 +1,9 @@
+const PACKAGE = require('./package.json');
+const webpack = require('webpack');
+const version = PACKAGE.name + ' - ' + PACKAGE.version;
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+
 module.exports = {
     entry: "./src/components/Main.js",
     module: {
@@ -34,5 +40,12 @@ module.exports = {
         port: 3002,
         historyApiFallback: true
     },
-    devtool: "source-map"
+    devtool: "source-map",
+    plugins: [
+        new HtmlWebpackPlugin({
+            hash: true,
+            template: './src/index.html',
+        }),
+        new webpack.BannerPlugin(version),
+    ],
 };

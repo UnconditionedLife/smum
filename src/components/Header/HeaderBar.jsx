@@ -173,9 +173,13 @@ export default function HeaderBar(props) {
 
     useEffect(() => {
         console.log("App Start")
+        console.log("ENV.DB:", process.env.dbSetUrl) // environment variable coming from webpack configuration
+        console.log("AFTER Start")
 
-        dbSetUrl("dev")
-        // dbSetUrl("prod")
+        dbSetUrl(process.env.dbSetUrl)
+        
+        // dbSetUrl("prod") // TEMPORARILY used for text prod db in Development
+        // dbSetUrl("prod") // TEMPORARILY used for text prod db in Development
 
         const newSection = checkSectionURL();
         if (newSection != selectedSection) {
