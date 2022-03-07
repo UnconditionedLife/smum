@@ -6,11 +6,11 @@ module.exports = merge(common, {
     mode: 'production',
     output: {
         path: path.resolve(__dirname, "build/"),
-        publicPath: "/build/",
+        publicPath: "/public/",
         filename: "main.bundle.[contenthash].js",
         clean: true,
     },
     entry: {
-        main: "/public/components/Main.js"
+        main: "/src/components/Main.js"
     }
 });
