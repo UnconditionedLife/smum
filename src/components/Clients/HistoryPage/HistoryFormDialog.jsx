@@ -51,7 +51,7 @@ export default function HistoryFormDialog(props) {
                     tempClient.svcHistory[index] = savedSvc
                     updateClient(tempClient)
                     const oldRecord = Object.assign({}, editRecord)
-                    removeSvcAsync(oldRecord)
+                    removeSvcAsync(client, oldRecord)
                         .then( oldSvc => {
                             if (oldSvc !== null) { 
                                 globalMsgFunc('success', 'Saved changes and archived old history record!')

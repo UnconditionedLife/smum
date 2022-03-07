@@ -7,7 +7,7 @@ import ReactToPrint from 'react-to-print';
 import { Print } from '@material-ui/icons';
 
 export default function PageToday() {
-    const [ reportDay, setReportDay ] = useState(moment().format('YYYYMMDD'))
+    const [ reportDay ] = useState(moment().format('YYYYMMDD'))
     const [ reportHeading, setReportHeading ] = useState('')
     const [ reportBody, setReportBody ] = useState(null)
 
@@ -26,12 +26,14 @@ export default function PageToday() {
             <CardHeader>{ reportHeading }</CardHeader>
             <CardContent>
                 <Box ref={ref}>{ reportBody }</Box>
-                <ReactToPrint
-                    trigger={() => <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
-                    content={() => ref.current}
-                    copyStyles={ false }
-                    pageStyle={ getPageMargins() }
-                />
+                <Box display='flex' justifyContent="right">
+                    <ReactToPrint
+                        trigger={() => <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
+                        content={() => ref.current}
+                        copyStyles={ false }
+                        pageStyle={ getPageMargins() }
+                    />
+                </Box>
             </CardContent>
         </Card>
   

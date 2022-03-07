@@ -23,7 +23,7 @@ export function updateLastServed(client){
         getServiceHistoryAsync( client.clientId )
             .then( svcHistory => { 
                 newClient.svcHistory = svcHistory
-console.log("GOT SVC HIST")
+// console.log("GOT SVC HIST")
             return buildAndSaveLastServed(newClient)
 
                  
@@ -58,8 +58,6 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
 
     return await dbSaveServiceRecordAsync(modRecord)
         .then((savedSvc) => {
-            console.log("SAVED SERVICE:", savedSvc )
-
             if (Object.keys(savedSvc).length === 0) {
                 return modRecord
             } else {

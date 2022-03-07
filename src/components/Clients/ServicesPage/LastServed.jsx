@@ -15,7 +15,6 @@ export default function LastServed(props) {
     const [ lastVisit, setLastVisit ] = useState("FIRST SERVICE")
     const [ nextService, setNextService ] = useState("")
     const [ svcHistory, setSvcHistory ] = useState({})
-    // const [ svcInterval, setSvcInterval ] = useState({})
 
     useEffect(() => {
         if (JSON.stringify(client.svcHistory) !== svcHistory) {
@@ -27,17 +26,12 @@ export default function LastServed(props) {
         const lastSvcDate = moment(lastSvcDateTime).endOf('day'); // removes time of day so calculation is from end of service day
 
         if (lastSvcDate !== null) {
-            updateLastVisit(moment(lastSvcDate).fromNow().toUpperCase())
-            const targetDate = moment(lastSvcDate).add(14, 'days').endOf('day'); // removes time of day so calculation is from end of service day
-            const earliestDate = moment(lastSvcDate).add(7, 'days').endOf('day'); // removes time of day so calculation is from end of service day
+            updateLastVisit(moment(lastSvcDateTime).fromNow().toUpperCase()) // used date/time to display FROM NOW
+            const targetDate = moment(lastSvcDate).add(14, 'days')
+            const earliestDate = moment(lastSvcDate).add(7, 'days')
             const nextSvcDate = calFindOpenDate(targetDate, earliestDate);
             const daysFromNow = moment().diff(nextSvcDate, 'days')
             const isAfter = moment().isAfter(nextSvcDate, 'day')
-
-console.log("NEXT SVC", nextSvcDate)            
-console.log("ISAFTER", isAfter)
-console.log("DAYS FROM", daysFromNow)
-
             if ( isAfter ) {
                 if (daysFromNow === 0) updateNextService("TODAY")
                 if (daysFromNow === 1) updateNextService(daysFromNow + " DAY OVERDUE")
