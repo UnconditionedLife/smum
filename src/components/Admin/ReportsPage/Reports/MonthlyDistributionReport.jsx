@@ -157,36 +157,36 @@ export default function MonthlyDistributionReport(props) {
     function RenderListTotals(totals, title, isTotals) {
         const newTitle = isTotals ? <strong>{title}</strong> : title
         return (
-            <TableRow className={ isTotals ? 'greenBackground' : 'centerText' } 
+            <TableRow className={ isTotals ? 'greenBackground' : 'rightText' } 
                 style={isTotals ? { backgroundColor: theme.palette.primary.light } : null} key={title}>
                 <style>
-                    {`@media print { 
-                        .greenBackground { 
-                            background-color: rgb(104, 179, 107);
-                            text-align: center;
-                            -webkit-print-color-adjust: exact;
-                            break-before: avoid-page;
-                            break-after: avoid-page;
-                            }
-                        },
-                        .centerText {
-                            text-align: center;
-                            break-before: avoid-page;
-                            break-after: avoid-page;
-                            }
+                    { `@media print { 
+                            .greenBackground { 
+                                text-align: right;
+                                background-color: rgb(104, 179, 107);
+                                -webkit-print-color-adjust: exact;
+                                font-size: 14px;
+                            },
+                            .rightText { text-align: right; font-size: 14px; }
                         }`
                     }
                 </style>
-                <TableCell align="center">{newTitle}</TableCell>
-                <TableCell align="center">{totals.households}</TableCell>
-                <TableCell align="center">{totals.individuals}</TableCell>
-                <TableCell align="center">{totals.adults}</TableCell>
-                <TableCell align="center">{totals.children}</TableCell>
-                <TableCell align="center">{totals.seniors}</TableCell>
-                <TableCell align="center">{totals.homelessHouseholds}</TableCell>
-                <TableCell align="center">{totals.homelessSingles}</TableCell>
-                <TableCell align="center">{totals.nonClientHouseholds}</TableCell>
-                <TableCell align="center">{totals.nonClientSingles}</TableCell>
+                <TableCell className='leftText' align="left">
+                    <style> { `@media print { .leftText { text-align: left; font-size: 14px; } }` } </style>
+                    {newTitle}
+                </TableCell>
+                <TableCell className='rightText' align="right">
+                    <style> { `@media print { .rightText { text-align: right; font-size: 14px; } }` } </style>
+                    {totals.households}
+                </TableCell>
+                <TableCell align="right">{totals.individuals}</TableCell>
+                <TableCell align="right">{totals.adults}</TableCell>
+                <TableCell align="right">{totals.children}</TableCell>
+                <TableCell align="right">{totals.seniors}</TableCell>
+                <TableCell align="right">{totals.homelessHouseholds}</TableCell>
+                <TableCell align="right">{totals.homelessSingles}</TableCell>
+                <TableCell align="right">{totals.nonClientHouseholds}</TableCell>
+                <TableCell align="right">{totals.nonClientSingles}</TableCell>
             </TableRow>
         )
     }
@@ -196,15 +196,7 @@ export default function MonthlyDistributionReport(props) {
             <React.Fragment>
                 <TableRow>
                     <TableCell className='centerText' align="center" colSpan={13}>
-                        <style>
-                            {`@media print { 
-                                .centerText { 
-                                    text-align: center;
-                                    font-size: 14px;
-                                    }
-                                }`
-                            }
-                        </style>
+                        <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
                         <strong>{ totals["day"] }</strong>
                     </TableCell>
                 </TableRow>
@@ -231,23 +223,15 @@ export default function MonthlyDistributionReport(props) {
                     reportType="MONTHLY REPORT"
                     reportCategory="FOOD PANTRY"
                     groupColumns={[{"name": "Type", "length": 1}, 
-                        {"name": "Clients Services", "length": 5}, 
-                        {"name": "Homeless Services", "length": 2}, 
-                        {"name":"NonClients Services", "length": 2}]}
-                    columns={["USDA/Non USDA", "Households", "Indiv.", "Adults", "Children", "Seniors", "Families", "Indiv.", "Families", "Indiv."]} />
+                        {"name": "Clients Serviced", "length": 5}, 
+                        {"name": "Homeless", "length": 2}, 
+                        {"name":"NonClients", "length": 2}]}
+                    columns={["USDA/Non USDA", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Hholds", "Indiv", "Hholds", "Indiv"]} />
             <TableBody>
             {daysGrid.map(day => RenderDay(day))}
             <TableRow>
                 <TableCell className='centerText' align="center" colSpan={13}>
-                    <style>
-                        {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
-                                }
-                            }`
-                        }
-                    </style>
+                    <style> { `@media print { .centerText { text-align: center; font-size: 14px; } }` } </style>
                     <strong>Monthly Totals</strong>
                 </TableCell>
             </TableRow>
