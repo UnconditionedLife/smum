@@ -7,7 +7,7 @@ import { Button } from '../System';
 import { Hidden } from '@material-ui/core';
 import { LoginForm, SectionsContent }  from '.';
 import theme from '../Theme.jsx';
-// import DbSwitch from './DbSwitch.jsx';
+import DbSwitch from './DbSwitch.jsx';
 import { useCookies } from 'react-cookie';
 import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
@@ -172,14 +172,8 @@ export default function HeaderBar(props) {
     }
 
     useEffect(() => {
-        console.log("App Start")
-        console.log("ENV.DB:", process.env.dbSetUrl) // environment variable coming from webpack configuration
-        console.log("AFTER Start")
-
-        dbSetUrl(process.env.dbSetUrl)
-        
-        // dbSetUrl("prod") // TEMPORARILY used for text prod db in Development
-        // dbSetUrl("prod") // TEMPORARILY used for text prod db in Development
+        console.log("App Start:" )
+        dbSetUrl(process.env.dbSetUrl) // environment variable coming from webpack configuration
 
         const newSection = checkSectionURL();
         if (newSection != selectedSection) {
@@ -333,8 +327,8 @@ export default function HeaderBar(props) {
                     </Toolbar>
                 </AppBar>
                 { renderMenu }
-                
-                {/* <DbSwitch /> */}
+                {/* environment variable coming from webpack configuration */}
+                { (process.env.dbSetUrl === "dev") && <DbSwitch /> } 
                 <SectionsContent searchTerm={ searchTerm } handleSearchTermChange={ handleSearchTermChange } />
             </Box>
         </ThemeProvider>
