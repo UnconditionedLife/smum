@@ -236,7 +236,14 @@ export default function MonthlyDistributionReport(props) {
                         {"name":"NonClients Services", "length": 2}]}
                     columns={["USDA/Non USDA", "Households", "Indiv.", "Adults", "Children", "Seniors", "Families", "Indiv.", "Families", "Indiv."]} />
             <TableBody>
-            {daysGrid.map(day => RenderDay(day))}
+            {daysGrid.map(day => {
+                console.log(day)
+                console.log(day["totals"]["households"])
+                if (day["totals"]["households"] > 0) { 
+                    console.log("Rendering ",day)
+                    return RenderDay(day)
+                }
+            })}
             <TableRow>
                 <TableCell className='centerText' align="center" colSpan={13}>
                     <style>

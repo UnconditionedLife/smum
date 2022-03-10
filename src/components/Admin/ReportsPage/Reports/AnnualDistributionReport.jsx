@@ -115,6 +115,10 @@ export default function AnnualDistributionReport(props) {
     function RunReport() {
         let start = moment(props.year+"/01/01", "YYYY/MM/DD")
         let end = moment(props.year+"/12/31", "YYYY/MM/DD")
+        
+        if (moment().isBefore(end)) {
+            end = moment().endOf("day")
+        }
 
         let promises = []
         let days = []
