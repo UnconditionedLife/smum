@@ -16,8 +16,8 @@ export default function AnnualDistributionReport(props) {
     "seniors": 0, "homelessHouseholds": 0, "homelessSingles": 0,
     "nonClientHouseholds": 0, "nonClientSingles": 0}
     const [monthGrid, setMonthGrid] = useState([])
-    // const [usdaTotals, setUsdaTotals] = useState(defaultTotals)
-    // const [nonUsdaTotals, setNonUsdaTotals] = useState(defaultTotals)
+    const [usdaTotals, setUsdaTotals] = useState(defaultTotals)
+    const [nonUsdaTotals, setNonUsdaTotals] = useState(defaultTotals)
     const [yearTotals, setYearTotals] = useState(defaultTotals)
     const [uniqueTotals, setUniqueTotals] = useState(defaultTotals)
 
@@ -171,6 +171,8 @@ export default function AnnualDistributionReport(props) {
             console.log(months)
             setMonthGrid(months)
             setYearTotals(computeGridTotals(months.map(month => month["totals"])))
+            setUsdaTotals(computeGridTotals(months.map(month => month["usdaTotals"])))
+            setNonUsdaTotals(computeGridTotals(months.map(month => month["nonUsdaTotals"])))
             computeUniqueTotals(months)
         })
     }
@@ -275,6 +277,8 @@ export default function AnnualDistributionReport(props) {
                     <strong>Annual Totals</strong>
                 </TableCell>
             </TableRow>
+            {RenderListTotals(usdaTotals, "USDA Totals", true)}
+            {RenderListTotals(nonUsdaTotals, "Non USDA Totals", true)}
             {RenderListTotals(yearTotals, "Grand Totals", true)}
             {RenderListTotals(uniqueTotals, "Unique Totals", true)}
             </TableBody>
