@@ -171,33 +171,22 @@ function getLastServedDays(client) {
 
     // get Last Served Date from client & calculate number of days
     let lsDays = { daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000 }
-    if (client?.svcHistory.length === 0) {
+	let lastServedFoodSvcs = []
+	if (client?.svcHistory.length === 0) {
         return lsDays
     } else {
-        let lastServedFoodSvcs = client.svcHistory.filter(( svc ) => {
+        lastServedFoodSvcs = client.svcHistory.filter(( svc ) => {
             return svc.serviceCategory == "Food_Pantry"
         })
-        lastServedFoodSvcs.forEach((svc) => {
-            if (svc.isUSDA !== "Emergency") {
-                if (moment(svc.servicedDateTime).isAfter(lastServedFood)){
-                    lastServedFood = svc.servicedDateTime
-                }
-            }
-        })
-        if (lastServedFood === "1900-01-01") return null
     }
-	
-	
-	// if (client.lastServed[0] == undefined) return lsDays;
-	let lastServedFood = client.lastServed.filter(obj => obj.serviceCategory === "Food_Pantry")
-
-	lastServedFood.forEach((foodSvc) => {
+		
+	lastServedFoodSvcs.forEach((foodSvc) => {
 		if (foodSvc.isUSDA != "Emergency") {
-			let lastServedDay = moment(foodSvc.serviceDateTime).startOf('day')
+			let lastServedDay = moment(foodSvc.servicedDateTime).startOf('day')
 			if (foodSvc.isUSDA == "USDA") {
-				lsDays.daysUSDA = moment().diff(lastServedDay, 'days')
+				lsDays.daysUSDA = Math.min(lsDays.daysUSDA, moment().diff(lastServedDay, 'days'))
 			} else {
-				lsDays.daysNonUSDA = moment().diff(lastServedDay, 'days')
+				lsDays.daysNonUSDA = Math.min(lsDays.daysNonUSDA, moment().diff(lastServedDay, 'days'))
 			}
 		}
 	})
@@ -406,6 +395,10 @@ function validateServiceInterval( props ){
             if ( isSameOrAfter ) {
                 if (activeServiceType.isUSDA == "USDA") {
                     // Default to USDA if it qualifies
+					console.log(lastServed)
+					console.log(lastSvcDate)
+					console.log(lastServed.daysUSDA)
+					console.log(intervals.USDA)
                     if (lastServed.daysUSDA >= intervals.USDA) return true
                     return false
                 }
