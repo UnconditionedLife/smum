@@ -39,7 +39,7 @@ export default function HistoryDisplay(props) {
 
     function handleEditMode(newEditMode) {
 
-        console.log("EDIT MODE", newEditMode )
+        // console.log("EDIT MODE", newEditMode )
 
         switch(newEditMode) {
             case 'cancel':

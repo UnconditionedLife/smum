@@ -1,15 +1,15 @@
 {
-  "name": "smum",
-  "version": "2.0.6",
+  "name": "Santa Maria Urban Ministry",
+  "version": "2.0.10",
   "description": "Client Recordkeeping System",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "webpack-dev-server  --config webpack.dev.js --hot",
     "startdev": "webpack-dev-server  --config webpack.dev.js --hot",
     "test": "\"echo\\\"No tests\\\" && exit 0\"",
-    "build": "webpack --config webpack.dev.js --watch",
-    "builddev": "webpack --config webpack.dev.js --watch",
-    "buildprod": "webpack --config webpack.prod.js --watch"
+    "buildpatch": "npm version patch --force && webpack --config webpack.prod.js --watch",
+    "buildminor": "npm version minor --force && webpack --config webpack.prod.js --watch",
+    "buildmajor": "npm version major --force && webpack --config webpack.prod.js --watch"
   },
   "repository": {
     "type": "git",
@@ -56,7 +56,6 @@
     "react-hook-form": "^6.8.1",
     "react-hot-loader": "^4.12.21",
     "react-jwt": "^1.0.8",
-    "react-moment": "^0.9.7",
     "react-router-dom": "^5.2.0",
     "react-swipeable-views": "^0.13.9",
     "react-to-print": "^2.11.0",
@@ -72,6 +71,7 @@
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.12.17",
     "eslint": "^7.9.0",
-    "eslint-plugin-react": "^7.20.6"
+    "eslint-plugin-react": "^7.20.6",
+    "html-webpack-plugin": "^5.5.0"
   }
 }

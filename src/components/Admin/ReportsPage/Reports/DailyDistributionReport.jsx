@@ -119,29 +119,46 @@ export default function DailyDistributionReport(props) {
 
     function RenderSvcList(svcList) {
         const jsxCode = svcList.map(svc => 
-            <TableRow className='centerText' key={svc.serviceId}>
+            <TableRow className='rightText' key={svc.serviceId}>
                 <style>
-                    {`@media print { 
-                        .centerText { 
-                            text-align: center;
-                            font-size: 14px;
+                    {   `@media print { 
+                            .rightText { 
+                                text-align: right;
+                                font-size: 14px;
+                            },
+                            .leftText { 
+                                text-align: left;
+                                font-size: 14px;
+                            },
+                            .centerText { 
+                                text-align: center;
+                                font-size: 14px;
                             }
                         }`
                     }
                 </style>
-            <TableCell align="center">{svc.id}</TableCell>
-            <TableCell align="center">{svc.given}</TableCell>
-            <TableCell align="center">{svc.family}</TableCell>
-            <TableCell align="center">{svc.zipcode}</TableCell>
-            <TableCell align="center">{svc.households}</TableCell>
-            <TableCell align="center">{svc.individuals}</TableCell>
-            <TableCell align="center">{svc.adults}</TableCell>
-            <TableCell align="center">{svc.children}</TableCell>
-            <TableCell align="center">{svc.seniors}</TableCell>
-            <TableCell align="center">{svc.homelessHouseholds}</TableCell>
-            <TableCell align="center">{svc.homelessSingles}</TableCell>
-            <TableCell align="center">{svc.nonClientHouseholds}</TableCell>
-            <TableCell align="center">{svc.nonClientSingles}</TableCell>
+            <TableCell className='centerText' align="center">
+                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }` } </style>
+                {svc.id}
+            </TableCell>
+            <TableCell className='leftText' align="left">
+                <style> { `@media print { .leftText { text-align: left; font-size: 14px; } }` } </style>
+                {svc.given}
+            </TableCell>
+            <TableCell className='leftText' align="left">
+                <style> { `@media print { .leftText { text-align: left; font-size: 14px; } }` } </style>
+                {svc.family}
+            </TableCell>
+            <TableCell align="right">{svc.zipcode}</TableCell>
+            <TableCell align="right">{svc.households}</TableCell>
+            <TableCell align="right">{svc.individuals}</TableCell>
+            <TableCell align="right">{svc.adults}</TableCell>
+            <TableCell align="right">{svc.children}</TableCell>
+            <TableCell align="right">{svc.seniors}</TableCell>
+            <TableCell align="right">{svc.homelessHouseholds}</TableCell>
+            <TableCell align="right">{svc.homelessSingles}</TableCell>
+            <TableCell align="right">{svc.nonClientHouseholds}</TableCell>
+            <TableCell align="right">{svc.nonClientSingles}</TableCell>
             </TableRow>
         )
         return jsxCode
@@ -154,7 +171,7 @@ export default function DailyDistributionReport(props) {
                     {`@media print { 
                         .greenBackground { 
                             background-color: rgb(104, 179, 107);
-                            text-align: center;
+                            text-align: right;
                             -webkit-print-color-adjust: exact;
                             break-before: avoid-page;
                             break-after: avoid-page;
@@ -162,16 +179,16 @@ export default function DailyDistributionReport(props) {
                         }`
                     }
                 </style>
-                <TableCell style={ greenBackground } align="center" colSpan={4}><strong>{title}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.households}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.individuals}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.adults}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.children}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.seniors}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.homelessHouseholds}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.homelessSingles}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.nonClientHouseholds}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.nonClientSingles}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right" colSpan={4}><strong>{title}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right"><strong>{totals.households}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right"><strong>{totals.individuals}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right"><strong>{totals.adults}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right"><strong>{totals.children}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right"><strong>{totals.seniors}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right"><strong>{totals.homelessHouseholds}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right"><strong>{totals.homelessSingles}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right"><strong>{totals.nonClientHouseholds}</strong></TableCell>
+                <TableCell style={ greenBackground } align="right"><strong>{totals.nonClientSingles}</strong></TableCell>
             </TableRow>
         )
     }
@@ -193,21 +210,13 @@ export default function DailyDistributionReport(props) {
                     reportCategory="FOOD PANTRY"
                     groupColumns={[{"name": "Client", "length": 4}, 
                         {"name": "Clients Served", "length": 5}, 
-                        {"name": "Homeless Served", "length": 2}, 
-                        {"name":"NonClients Served", "length": 2}]}
-                    columns={["ID", "Given", "Family", "Zip", "Households", "Indiv.", "Adults", "Children", "Seniors", "Families", "Indiv.", "Families", "Indiv."]} />
+                        {"name": "Homeless", "length": 2}, 
+                        {"name":"NonClients", "length": 2}]}
+                    columns={["ID", "Given", "Family", "Zip", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Hholds", "Indiv", "Hholds", "Indiv"]} />
             <TableBody>
             <TableRow>
                 <TableCell className='centerText' align="center" colSpan={13}>
-                    <style>
-                        {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
-                                }
-                            }`
-                        }
-                    </style>
+                    <style>{ `@media print { .centerText { text-align: center; font-size: 14px; }}` }</style>
                     <strong>USDA Services</strong>
                 </TableCell>
             </TableRow>
@@ -215,15 +224,7 @@ export default function DailyDistributionReport(props) {
             {RenderListTotals(totalsUSDA, "USDA Totals")}
             <TableRow>
                 <TableCell className='centerText' align="center" colSpan={13}>
-                    <style>
-                        {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
-                                }
-                            }`
-                        }
-                    </style>
+                    <style>{ `@media print { .centerText { text-align: center; font-size: 14px; }}` }</style>
                     <strong>Non USDA Services</strong>
                 </TableCell>
             </TableRow>
