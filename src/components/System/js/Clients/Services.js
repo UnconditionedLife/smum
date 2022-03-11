@@ -336,31 +336,29 @@ function getActiveServicesButtons( props ) {
 
 function getUsedServicesButtons( client, buttons, buttonData ) {
     const svcHist = client.svcHistory
-    const servedCount = svcHist ? svcHist.length : false
-
+    const servedCount = svcHist.length
     let btn = null
 
-    if (buttons == "primary") {
-        if (servedCount) {
+    if (servedCount > 0) {
+        if (buttons == "primary") {
             svcHist.forEach((histItem) => {
-                if (moment(histItem.servicedDateTime).isSame(new Date(), "day")) {
-                    // if record is from today
-                    if (histItem.serviceButtons == "Primary") {
-                        let index = null
-                        buttonData.primary.forEach((btnSvc, i) => {
-                            if (histItem.serviceTypeId === btnSvc.serviceTypeId) index = i
-                        })
-                        if (index) {
-                            btn = Object.assign({}, histItem)
-                            btn.btnType = "used"
-                            buttonData.primary[index] = btn
-                        }
+                // if record is from today
+                if ((moment(histItem.servicedDateTime).isSame(moment(), "day")) && (histItem.serviceButtons == "Primary")) {
+                    let index = null
+                    buttonData.primary.forEach((btnSvc, i) => {
+                        if (histItem.serviceTypeId === btnSvc.serviceTypeId) index = i
+                    })
+                    btn = Object.assign({}, histItem)
+                    btn.btnType = "used"
+                    if (index !== null) {
+                        buttonData.primary[index] = btn
+                    } else {
+                        buttonData.primary.push(btn)
                     }
                 }
             })
-        }
-    } else {
-        if (servedCount) {
+        } else {
+            // Secondary buttons
             svcHist.forEach((histItem) => {
                 if (moment(histItem.servicedDateTime).isSame(new Date(), "day")) {
                     if (histItem.serviceButtons == "Secondary") {
@@ -395,10 +393,6 @@ function validateServiceInterval( props ){
             if ( isSameOrAfter ) {
                 if (activeServiceType.isUSDA == "USDA") {
                     // Default to USDA if it qualifies
-					console.log(lastServed)
-					console.log(lastSvcDate)
-					console.log(lastServed.daysUSDA)
-					console.log(intervals.USDA)
                     if (lastServed.daysUSDA >= intervals.USDA) return true
                     return false
                 }
@@ -408,12 +402,14 @@ function validateServiceInterval( props ){
                     if (lastServed.daysUSDA < intervals.USDA) return true
                     return false
                 }
-        
+                // No Emergency Button
                 if (activeServiceType.isUSDA === "Emergency") return false
         
             } else {
-
-                if (activeServiceType.isUSDA === "Emergency") return true
+                // Emergency only if not day of service
+                if (activeServiceType.isUSDA === "Emergency") {
+                    if (!lastSvcDate.isSame(moment(), 'day')) return true
+                }
                 return false
             }
 		}

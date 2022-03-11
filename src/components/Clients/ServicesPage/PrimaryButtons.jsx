@@ -137,7 +137,7 @@ export default function PrimaryButtons(props) {
     return (
         <Fragment key={ buttons } >
         { buttons.map((svc) => (
-            <Fragment key={ svc.serviceTypeId }>
+            <Fragment key={ svc.serviceTypeId + "-" + svc.btnType }>
                 { (svc.btnType === 'normal') &&
                     <Box style={ buttonStyleNormal }>
                         <ButtonBase
