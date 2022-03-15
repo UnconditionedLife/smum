@@ -151,7 +151,7 @@ export function beepSuccess() {
 function playSound(soundFile) {
     if (SettingsSound()) {
 		let sound  = new Audio(soundFile);
-		sound.volume= 0.4;
+		sound.volume= 0.3;
 		sound.loop = false;
 		sound.play();
 	}

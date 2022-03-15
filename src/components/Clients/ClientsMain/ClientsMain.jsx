@@ -8,6 +8,7 @@ import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '
 import moment from 'moment';
 import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime,
      utilEmptyPlaceholders, getSession, globalMsgFunc } from '../../System/js/Database';
+import { getLastServedDays } from '../../System/js/Clients/Services'
 
 ClientsMain.propTypes = {
     searchTerm: PropTypes.string.isRequired,
@@ -29,6 +30,8 @@ export default function ClientsMain(props) {
     const [ alertSeverity, setAlertSeverity ] = useState("")
     const [ alertMsg, setAlertMsg ] = useState("")
     const [ session ] = useState(getSession())
+    const [ lastServedDays, setLastServedDays ] = useState(null)
+    const [ lastServedFoodDate, setLastServedFoodDate ] = useState(null)
 
     useEffect(() => {
         if (session != null && !isEmpty(session)){
@@ -55,6 +58,14 @@ export default function ClientsMain(props) {
              })
         }
     }, [searchTerm]);
+
+    useEffect(() => {
+        if (!isEmpty(client)) {
+            const tempLastServedDays = getLastServedDays(client)
+            if (lastServedDays !== tempLastServedDays) setLastServedDays(tempLastServedDays)
+            if (lastServedFoodDate !== tempLastServedDays.lastServedFoodDate) setLastServedFoodDate(tempLastServedDays.lastServedFoodDate)
+        }
+    },[ client ])
 
     // NOTIFY user if there are children over age of 17
     useEffect(() => {
@@ -175,7 +186,8 @@ export default function ClientsMain(props) {
         selectedTab, updateURL,
         showFound: showFound,
         showServices: showServices,
-        showClient: showClient
+        showClient: showClient,
+        lastServedDays, lastServedFoodDate
     }
 
     return (

@@ -10,16 +10,21 @@ SecondaryButtons.propTypes = {
     updateClient: PropTypes.func.isRequired,
     handleAddSvc: PropTypes.func.isRequired,
     handleUndoSvc: PropTypes.func.isRequired,
+    lastServedDays: PropTypes.object,
+    activeServiceTypes: PropTypes.array,
+    targetServices: PropTypes.array,
 }
 
 export default function SecondaryButtons(props) {
-    const client = props.client
-    const handleAddSvc = props.handleAddSvc
-    const handleUndoSvc = props.handleUndoSvc
+    const { client, activeServiceTypes, targetServices, 
+            lastServedDays, handleAddSvc, handleUndoSvc } = props
     const [ buttons, setButtons ] = useState([])
 
+    // wait for lastServedDay
+    if (lastServedDays === null) return null
+
     useEffect(() => {
-        const buttonData = getButtonData({ client: client, buttons: "secondary" })
+        const buttonData = getButtonData({ client, buttons: "secondary", lastServedDays, activeServiceTypes, targetServices })
         if (isEmpty(buttonData.secondary)) return null
         // do deep comparison before setting state
         if (JSON.stringify(buttons) !== JSON.stringify(buttonData)) {

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { FoundPage, ServicesPage, ClientPage, HistoryPage } from '..';
 import { useRouteMatch, Route, Switch } from "react-router-dom";
-import { Container } from '../../System';
 import SmumLogo from "../../Assets/SmumLogo";
 
 ClientsContent.propTypes = {
@@ -15,10 +14,12 @@ ClientsContent.propTypes = {
     showServices: PropTypes.bool.isRequired,
     showClient: PropTypes.bool.isRequired,
     showAlert: PropTypes.func.isRequired,
+    lastServedDays: PropTypes.object,
+    lastServedFoodDate: PropTypes.object,
 }
 
 export default function ClientsContent(props) {
-    const { showFound, showServices, showClient,  } = props
+    const { showFound, showServices, showClient, lastServedDays, lastServedFoodDate  } = props
     const match = useRouteMatch();
 
     const logoBox = (
@@ -44,7 +45,8 @@ export default function ClientsContent(props) {
                         <ServicesPage 
                             clientsFound={ props.clientsFound }
                             client={ props.client } updateClient={ props.updateClient }
-                            showAlert={ props.showAlert }/>
+                            showAlert={ props.showAlert } lastServedFoodDate={ lastServedFoodDate }
+                            lastServedDays={ lastServedDays }/>
                     }
                     { !showServices && logoBox }
                 </Route>
@@ -58,7 +60,7 @@ export default function ClientsContent(props) {
                 <Route path={`${match.path}/history/:clientId`}>
                     { showClient && 
                         <HistoryPage client={props.client} updateClient={ props.updateClient }
-                            showAlert={ props.showAlert } />
+                            showAlert={ props.showAlert } lastServedFoodDate={ lastServedFoodDate } />
                     }
                     { !showClient && logoBox }
                 </Route>

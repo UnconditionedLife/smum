@@ -22,13 +22,16 @@ PrimaryButtons.propTypes = {
     updateClient: PropTypes.func.isRequired,
     handleAddSvc: PropTypes.func.isRequired,
     handleUndoSvc: PropTypes.func.isRequired,
+    lastServedFoodDate: PropTypes.object,
+    lastServedDays: PropTypes.object,
+    activeServiceTypes: PropTypes.array,
+    targetServices: PropTypes.array,
 }
 
 export default function PrimaryButtons(props) {
-    const client = props.client
-    const handleAddSvc = props.handleAddSvc
-    const handleUndoSvc = props.handleUndoSvc
-    
+    const { client, lastServedFoodDate, activeServiceTypes, targetServices, lastServedDays, handleAddSvc, handleUndoSvc } = props
+    // const handleAddSvc = props.handleAddSvc
+    // const handleUndoSvc = props.handleUndoSvc
     const [ buttons, setButtons ] = useState([]);
 
     let buttonSizes = [ 168, '168px !important', 176 ]
@@ -112,10 +115,14 @@ export default function PrimaryButtons(props) {
     }));
     
     const classes = useStyles();
-    
+
+    // wait for lastServedDay
+    if (lastServedDays === null ) return null
 
     useEffect(() => {
-        const buttonData = getButtonData({ client: client, buttons: 'primary' })
+        const buttonData = getButtonData({ client, buttons: 'primary', lastServedFoodDate, 
+            lastServedDays, activeServiceTypes, targetServices })
+
         // do deep comparison before setting state
         if (JSON.stringify(buttons) !== JSON.stringify(buttonData)) setButtons(buttonData)
     },[ JSON.stringify(client.svcHistory) ])

@@ -1,29 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import { getLastServedFood } from '../../System/js/Clients/Services.js';
 import moment from 'moment';
 
 HistoryHeader.propTypes = {
     client: PropTypes.object.isRequired, // current client record
+    lastServedFoodDate: PropTypes.object,
 }
 
 export default function HistoryHeader(props) {
-    const client = props.client;
-    const [ lastServedFood, setlastServedFood ] = useState("")
+    const { client, lastServedFoodDate } = props;
 
-    useEffect(() => {
-        // Used to update a temp field in client to display last served food in header
-        const temp = getLastServedFood(client)
-        if (lastServedFood !== temp) {
-            if (temp !== "Never") {
-                setlastServedFood(moment(temp).format("MMM DD, YYYY - h:mm a"))
-            }
-        }
-    }, [ JSON.stringify(client.svcHistory) ])
-
+    let lsFoodDate = "** Never **"
+    if (lastServedFoodDate !== null) {
+        lsFoodDate = moment(lastServedFoodDate).format("MMM DD, YYYY - h:mm a")
+    } 
+    
     return (
-        <TableContainer key={ lastServedFood }> 
+        <TableContainer key={ lastServedFoodDate }> 
             <Table >
             <TableHead>
                 <TableRow>
@@ -39,7 +33,7 @@ export default function HistoryHeader(props) {
                     <TableCell align="center">{ moment(client.createdDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
                     <TableCell align="center">{ moment(client.updatedDateTime).format("MMM DD, YYYY - h:mm a") }</TableCell>
                     <TableCell align="center">{ moment(client.firstSeenDate).format("MMM DD, YYYY") }</TableCell>
-                    <TableCell align="center">{ lastServedFood }</TableCell>
+                    <TableCell align="center">{ lsFoodDate }</TableCell>
                     <TableCell align="center">{ moment(client.familyIdCheckedDate).format("MMM DD, YYYY") }</TableCell>
                 </TableRow>
             </TableBody>

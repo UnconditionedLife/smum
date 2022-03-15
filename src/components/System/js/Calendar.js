@@ -26,9 +26,8 @@ export function calAddSingleRule(rules, date) {
 
 export function calAddWeeklyRule(rules, weekday) {
     const rruleset = new RRuleSet();
-    
     rruleset.rrule(new RRule({
-        dtstart: new Date('2000-01-01'),
+        dtstart: new Date('1990-01-01'),
         freq: RRule.WEEKLY,
         interval: 1,
         byweekday: weekday,
@@ -40,7 +39,7 @@ export function calAddMonthlyRule(rules, weekday, weekNum) {
     const rruleset = new RRuleSet();
 
     rruleset.rrule(new RRule({
-        dtstart: new Date('2000-01-01'),
+        dtstart: new Date('1990-01-01'),
         freq: RRule.MONTHLY,
         bysetpos: weekNum,
         byweekday: weekday,

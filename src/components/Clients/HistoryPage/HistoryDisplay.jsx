@@ -14,7 +14,7 @@ HistoryDisplay.propTypes = {
 }
 
 export default function HistoryDisplay(props) {
-    const { client, updateClient } = props
+    const { client, updateClient, lastServedFoodDate } = props
     const svcHistory = client.svcHistory
     
     const [ selectedService, setSelectedService ] = useState(null);
