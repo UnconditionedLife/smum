@@ -51,16 +51,15 @@ export function getButtonData( props ) {
     const { client, buttons, lastServedDays, activeServiceTypes, targetServices } = props
     const buttonData = { lastServedDays, activeServiceTypes }
     buttonData[buttons] = getActiveServicesButtons({ client, buttons, activeServiceTypes, targetServices, lastServedDays });
-    if (buttonData[buttons].length > 0 ) {
-        // list of buttns that have been used today
-        buttonData[buttons] = getUsedServicesButtons(client, buttons, buttonData)
-        // sort the button in category and alpha order
-        buttonData[buttons] = sortButtons(buttonData[buttons])
-    }
+    // list of buttns that have been used today
+    buttonData[buttons] = getUsedServicesButtons(client, buttons, buttonData)
+    // sort the button in category and alpha order
+    buttonData[buttons] = sortButtons(buttonData[buttons])
     return buttonData[buttons]
 }
 
 export function sortButtons(btns){
+    if (btns.length < 1) return btns
     const cats = { food: [], clothes: [], admin: [], misc: [] }  
     if (btns[0].serviceButtons === "Primary") {
         btns.forEach(svc => {
@@ -341,9 +340,14 @@ function getActiveServicesButtons( props ) {
 }
 
 function getUsedServicesButtons( client, buttons, buttonData ) {
+
+
     const svcHist = client.svcHistory
     const servedCount = svcHist.length
     let btn = null
+
+console.log("SVC HIST:", svcHist)
+
 
     if (servedCount > 0) {
         if (buttons == "primary") {
