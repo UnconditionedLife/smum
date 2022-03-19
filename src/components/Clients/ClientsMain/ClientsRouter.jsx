@@ -54,7 +54,7 @@ export default function ClientsRouter(props) {
                 setSelectedTab(0);
             }
             if (term != searchTerm) {
-                handleSearchTermChange(term);
+                handleSearchTermChange(decodeURIComponent(term));
             }
 
         }

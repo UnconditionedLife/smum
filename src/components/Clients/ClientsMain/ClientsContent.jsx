@@ -53,7 +53,7 @@ export default function ClientsContent(props) {
                 <Route path={`${match.path}/client/:clientId`}>
                     { showClient && 
                         <ClientPage client={props.client} updateClient={ props.updateClient }
-                            showAlert={ props.showAlert } />
+                        updateURL={ props.updateURL } showAlert={ props.showAlert } />
                     }
                     { !showClient && logoBox }
                 </Route>

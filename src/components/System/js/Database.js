@@ -9,6 +9,7 @@ import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupCl
 // import { searchClients } from './Clients/Clients';
 import { prnConnect } from './Clients/Receipts';
 import jwt_decode from 'jwt-decode';
+import { ControlPointSharp } from '@material-ui/icons';
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 
@@ -281,7 +282,7 @@ export async function dbGetSingleClientAsync(clientId) {
     return await dbGetDataAsync("/clients/" + clientId)
         .then( data => {
             let result = data.clients
-            if (result.length == 1)
+            if (result.length === 1)
                 return result[0];
             else
                 return null;
@@ -289,32 +290,28 @@ export async function dbGetSingleClientAsync(clientId) {
 }
 
 export async function dbGetNewClientIDAsync(){
-    return await dbGetDataAsync("/clients/lastid")
-        .then( async data => {
+    let emptyId = 0
+    let newId = await dbGetDataAsync("/clients/lastid")
+        .then( async data => { return parseInt(data.lastId) + 1 })
 
-            console.log(data)
-
-            let newId = data.lastId
-            let notEmpty = true
-            while (notEmpty) {
-                return await dbGetDataAsync("/clients/exists/" + newId)
-                    .then( data => {
-                        if (data.count == 0) {
-                            notEmpty = false
-                        } else {
-                            newId++
-                        }
-                        let request = {}
-                        request['lastId'] = newId.toString()
-                        dbPostDataAsync("/clients/lastid", JSON.stringify(request))
-                            .then()
-                            .catch( msg => {
-                                console.log("Last client ID not Saved - ", msg);
-                            });
-                        return newId
-                    })
-            }
-        })
+    while(emptyId === 0) {
+        emptyId = await dbGetDataAsync("/clients/exists/" + newId)
+            .then( data => {
+                if (data.count == 0) {
+                    emptyId = newId
+                } else {
+                    newId++
+                }
+                return emptyId
+            })
+    }
+    const request = { lastId: newId.toString() }
+    dbPostDataAsync("/clients/lastid", request)
+        .catch( msg => {
+            globalMsgFunc('error', 'New Client ID save failed')
+            console.log('New Client ID save failed', msg);
+        });
+    return emptyId
 }
 
 export async function dbGetClientActiveServiceHistoryAsync(clientId){
@@ -327,22 +324,24 @@ export async function dbGetClientActiveServiceHistoryAsync(clientId){
         })
 }
 
-export async function dbSaveClientAsync(data) {
+export async function dbSaveClientAsync(data, getNewClient) {
 	if (data.clientId === "0") {
         dbSetModifiedTime(data, true);
-        dbGetNewClientIDAsync()
+        return await dbGetNewClientIDAsync()
             .then( newClientId => {
-                if (data.clientId === 'failed') { 
-                    console.log('Unable to get new client ID')
-                    return
+                if ( newClientId ) {
+                    data.clientId = newClientId
+                    getNewClient(newClientId)
+                    return dbPostDataAsync("/clients/", data)
+                } else {
+                    globalMsgFunc('error', 'New Client ID Failure') 
                 }
-                data.clientId = newClientId
             }
         )
 	} else {
         dbSetModifiedTime(data, false);
+        return await dbPostDataAsync("/clients/", data)
 	}
-    return await dbPostDataAsync("/clients/", data)
 }
 
 export async function dbSaveServiceRecordAsync(svc) {

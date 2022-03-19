@@ -229,6 +229,9 @@ export default function HeaderBar(props) {
     function handleSearchTermChange(newValue) {
         if (navigationAllowed()) {
             if (searchTerm !== newValue) {
+
+console.log("SEARCH TERM:", newValue)
+
                 setSearchTerm(newValue);
             }
         }

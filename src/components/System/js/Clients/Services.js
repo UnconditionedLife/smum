@@ -340,14 +340,9 @@ function getActiveServicesButtons( props ) {
 }
 
 function getUsedServicesButtons( client, buttons, buttonData ) {
-
-
     const svcHist = client.svcHistory
     const servedCount = svcHist.length
     let btn = null
-
-console.log("SVC HIST:", svcHist)
-
 
     if (servedCount > 0) {
         if (buttons == "primary") {

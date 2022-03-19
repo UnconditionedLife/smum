@@ -52,6 +52,9 @@ export default function ClientsMain(props) {
         if (searchTerm !== '') {
             dbSearchClientsAsync(searchTerm).then(clients => { 
                 changeClientsFound(clients)
+
+                console.log("CLIENTS", clients)
+
                 if (clients.length === 0) {
                     globalMsgFunc('error', "No clients found matching: '"+ searchTerm + "'")
                 }
@@ -61,6 +64,8 @@ export default function ClientsMain(props) {
 
     useEffect(() => {
         if (!isEmpty(client)) {
+            // add client history of none exists
+            if (!("svcHistory" in client)) client.svcHistory = []
             const tempLastServedDays = getLastServedDays(client)
             if (lastServedDays !== tempLastServedDays) setLastServedDays(tempLastServedDays)
             if (lastServedFoodDate !== tempLastServedDays.lastServedFoodDate) setLastServedFoodDate(tempLastServedDays.lastServedFoodDate)
@@ -108,6 +113,10 @@ export default function ClientsMain(props) {
                     .then( history => { 
                         newClient.svcHistory = history
                         setClient(newClient)
+
+                        console.log("CLIENT", newClient)
+
+
                         updateURL(newClient.clientId, clientsTab)
                     })
             } else {
