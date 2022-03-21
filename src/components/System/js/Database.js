@@ -237,9 +237,12 @@ export async function dbSaveUserAsync(data) {
 //*************************************************
 
 export async function dbSearchClientsAsync(searchTerm) {
-    const regex = /[/.]/g
-    const slashCount = (searchTerm.match(regex) || []).length    
-    return await dbGetClientsAsync(searchTerm, slashCount).then(
+    const dateRegex = /^\d+[./-]\d+[./-]\d+/g
+    const isDate = dateRegex.test(searchTerm) //checks to see if search term is a date
+    // const regex = /[/.]/g was used to do dash count
+    // const slashCount = (searchTerm.match(regex) || []).length
+
+    return await dbGetClientsAsync(searchTerm, isDate).then(
         clients => {
             if (clients == undefined || clients == null || clients.length == 0){
                 clients = []
@@ -249,11 +252,11 @@ export async function dbSearchClientsAsync(searchTerm) {
     )
 }
 
-async function dbGetClientsAsync(searchTerm, slashCount){
+async function dbGetClientsAsync(searchTerm, isDate){
 	let clientData = []
-	if (slashCount == 2){
+	if (isDate){
 		searchTerm = utilCleanUpDate(searchTerm)
-		searchTerm = moment(searchTerm, 'MM/DD/YYYY').format('YYYY-MM-DD')
+		// searchTerm = moment(searchTerm, 'MM-DD-YYYY').format('YYYY-MM-DD') // moved to utilCleanUpDate
 		return await dbGetDataAsync("/clients/dob/" + searchTerm).then(data => { return data.clients })
 	} else if (!isNaN(searchTerm) && searchTerm.length < MAX_ID_DIGITS){
 		return await dbGetDataAsync("/clients/" + searchTerm).then(data => { return data.clients })

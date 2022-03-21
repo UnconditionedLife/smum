@@ -13,9 +13,7 @@ ClientsRouter.propTypes = {
 }
 
 export default function ClientsRouter(props) {
-    const handleSearchTermChange = props.handleSearchTermChange;
-    const searchTerm = props.searchTerm;
-    // const client = props.client;
+    const { searchTerm, handleSearchTermChange } = props;
     const history = useHistory();
     const route = useLocation();
     const url = route.pathname;
@@ -25,9 +23,11 @@ export default function ClientsRouter(props) {
         if (navigationAllowed()) {
             const currentClientId = clientId == null ? "" : encodeURIComponent(clientId);
             let newURL = ""
+            const urlSearchTerm = searchTerm.replaceAll(/[/.]/g, "-") // replace all "/" and "." with "-"
+
             switch (newTab) {
                 case 0:
-                    newURL = "/clients/found/" + encodeURIComponent(searchTerm);
+                    newURL = "/clients/found/" + encodeURIComponent(urlSearchTerm);
                     break;
                 case 1:
                     newURL = "/clients/services/" + currentClientId;

@@ -55,6 +55,7 @@ export default function ClientsMain(props) {
 
                 console.log("CLIENTS", clients)
 
+
                 if (clients.length === 0) {
                     globalMsgFunc('error', "No clients found matching: '"+ searchTerm + "'")
                 }
@@ -116,7 +117,7 @@ export default function ClientsMain(props) {
 
                         console.log("CLIENT", newClient)
 
-
+console.log("GOTO:", clientsTab)
                         updateURL(newClient.clientId, clientsTab)
                     })
             } else {
@@ -124,6 +125,8 @@ export default function ClientsMain(props) {
                 setClient(newClient)
                 updateURL(newClient.clientId, clientsTab)
             }
+        } else {
+            updateURL("", clientsTab)
         }
     }
 

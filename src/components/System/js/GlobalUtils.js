@@ -86,32 +86,26 @@ export function utilOrdinal(n) {
     return n + (s[(v-20)%10] || s[v] || s[0]);
 }
 
-export function utilCleanUpDate(a) {
-	a = a.replace("-", "/")
-	a = a.replace(".", "/")
-	let dateArr = []
-	let temp = a
-	// let year = ""
-	for (var i = 0; i < 2; i++) {
-		let slash = temp.indexOf("/")
-		dateArr[i] = temp.slice(0, slash)
-		if (dateArr[i].length == 1) dateArr[i] = "0" + dateArr[i]
-		temp =  temp.slice(slash + 1)
-	}
-	const yearLength = temp.length
+export function utilCleanUpDate(d) {
+	d = d.replaceAll("-", "/")
+	d = d.replaceAll(".", "/")
+    const dateArr = d.split("/")
+    const year = dateArr[2]
+	const yearLength = year.length
 	if (yearLength == 1) {
-		dateArr[2] = "200" + temp
+		dateArr[2] = "200" + year
 	} else if (yearLength == 2) {
-		if (temp <= moment().format("YY")) {
-			dateArr[2] = "20" + temp
+		if (year <= moment().format("YY")) {
+			dateArr[2] = "20" + year
 		} else {
-			dateArr[2] = "19" + temp
+			dateArr[2] = "19" + year
 		}
 	} else {
-		dateArr[2] = temp
+		dateArr[2] = year
 	}
-	const date = dateArr[0] +"/"+ dateArr[1] +"/"+ dateArr[2]
-	return date
+    if (dateArr[0].length == 1) dateArr[0] = "0" + dateArr[0]
+    if (dateArr[1].length == 1) dateArr[1] = "0" + dateArr[1]
+	return dateArr[2] +"-"+ dateArr[0] +"-"+ dateArr[1]
 }
 
 export function utilChangeWordCase(str) {
