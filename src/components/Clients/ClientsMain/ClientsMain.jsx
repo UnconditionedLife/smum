@@ -41,8 +41,10 @@ export default function ClientsMain(props) {
 
     useEffect(() => {
         const foundEval = !isEmpty(clientsFound)
-        const clientEval = (!isEmpty(client) || client?.clientId === "0")
-        const servicesEval = (!isEmpty(client) || client?.clientId !== "0")
+        let clientEval = !isEmpty(client)
+        if (!clientEval) clientEval = client?.clientId === "0"
+        let servicesEval = !isEmpty(client)
+        if (servicesEval) servicesEval = client?.clientId !== "0"
         if (showFound !== foundEval) setShowFound(foundEval)
         if (showServices !== servicesEval) setShowService(servicesEval)
         if (showClient !== clientEval) setShowClient(clientEval)

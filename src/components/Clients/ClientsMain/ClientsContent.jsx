@@ -64,6 +64,9 @@ export default function ClientsContent(props) {
                     }
                     { !showClient && logoBox }
                 </Route>
+                
+                { !showClient && !showServices && !showFound && logoBox }
+                
             </Switch>
         </Box>
     );
