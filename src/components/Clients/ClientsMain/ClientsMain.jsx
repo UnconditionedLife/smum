@@ -52,10 +52,6 @@ export default function ClientsMain(props) {
         if (searchTerm !== '') {
             dbSearchClientsAsync(searchTerm).then(clients => { 
                 changeClientsFound(clients)
-
-                console.log("CLIENTS", clients)
-
-
                 if (clients.length === 0) {
                     globalMsgFunc('error', "No clients found matching: '"+ searchTerm + "'")
                 }
@@ -114,10 +110,6 @@ export default function ClientsMain(props) {
                     .then( history => { 
                         newClient.svcHistory = history
                         setClient(newClient)
-
-                        console.log("CLIENT", newClient)
-
-console.log("GOTO:", clientsTab)
                         updateURL(newClient.clientId, clientsTab)
                     })
             } else {

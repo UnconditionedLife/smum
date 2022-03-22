@@ -4,7 +4,7 @@
 
 import moment from 'moment';
 import { calConvertLegacyEvents } from './Calendar';
-import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray } from './GlobalUtils';
+import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
 import { prnConnect } from './Clients/Receipts';
@@ -327,15 +327,21 @@ export async function dbGetClientActiveServiceHistoryAsync(clientId){
         })
 }
 
-export async function dbSaveClientAsync(data, getNewClient) {
+export async function dbSaveClientAsync(data) {
 	if (data.clientId === "0") {
         dbSetModifiedTime(data, true);
         return await dbGetNewClientIDAsync()
-            .then( newClientId => {
+            .then( async newClientId  => {
                 if ( newClientId ) {
                     data.clientId = newClientId
-                    getNewClient(newClientId)
-                    return dbPostDataAsync("/clients/", data)
+                    // getNewClient(newClientId)
+                    const result = await dbPostDataAsync("/clients/", data)
+                    if (isEmpty(result)) {
+                        result.clientId = newClientId
+                        return result
+                    } else {
+                        return result
+                    }
                 } else {
                     globalMsgFunc('error', 'New Client ID Failure') 
                 }
@@ -365,11 +371,7 @@ export async function dbGetSvcsByIdAndYear(serviceTypeId, year) {
 }
 
 // formerly utilGetServicesInMonth in app.js
-export async function dbGetSvcsInMonthAsync(monthYear){
-
-    console.log("Month Year")
-    console.log(monthYear)
-    
+export async function dbGetSvcsInMonthAsync(monthYear){    
     const currentMonth = moment().format("YYYYMM")
     let daysInMonth = moment(monthYear, "YYYYMM").daysInMonth()
     if (monthYear == currentMonth) daysInMonth = moment().format("D")

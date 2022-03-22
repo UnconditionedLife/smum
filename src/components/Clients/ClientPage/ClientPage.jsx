@@ -6,7 +6,7 @@ import { ExpandMore } from '@material-ui/icons';
 import { DependentsDisplay } from '..';
 import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } from '..';
-import { dbSaveClientAsync, setEditingState, getEditingState } from '../../System/js/Database';
+import { dbSaveClientAsync, setEditingState } from '../../System/js/Database';
 
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
@@ -17,7 +17,6 @@ ClientPage.propTypes = {
 
 export default function ClientPage(props) {
     const { client, updateClient, updateURL } = props
-    const [ newClientId, setNewClientId ] = useState(0);
     const [ expanded, setExpanded ] = useState(false);
     const [ saveMessage, setSaveMessage ] = useState({ result: 'success', time: client.updatedDateTime });
   
@@ -27,31 +26,20 @@ export default function ClientPage(props) {
 
     function saveAndUpdateClient(data){
         setSaveMessage({ result: 'working' });
-        dbSaveClientAsync(data, getNewClient)
-            .then( () => {
+        dbSaveClientAsync(data)
+            .then( (result) => {
                 setEditingState(false)
+                data.clientId = result.clientId
                 setSaveMessage({ result: 'success', time: data.updatedDateTime });
                 data = utilCalcAge(data)
                 data.dependents = calcDependentsAges(data)
                 data.family = calcFamilyCounts(data)
-                if (newClientId !== 0) data.clientId = newClientId
                 updateClient(data);
-                if (!getEditingState) updateURL(newClientId, 2) // not working due to race condition
+                updateURL(data.clientId, 1)
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });
             });
-    }
-
-    function getNewClient(newId){
-        setEditingState(false)
-        setNewClientId(newId)
-        if (client.clientId == 0) {
-            const newClient = Object.assign({}, client)
-            newClient.clientId = newId
-            updateClient(newClient);
-            if (!getEditingState) updateURL(newId, 2) // not working due to race condition
-        }
     }
 
     const clientLable = (client.clientId == 0) ? "New Client" : "Client #" + client.clientId
