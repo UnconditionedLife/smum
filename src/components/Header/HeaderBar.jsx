@@ -316,7 +316,7 @@ console.log("SEARCH TERM:", newValue)
                         <Hidden xsDown> 
                             <Tooltip title={ appVersion }>
                                 <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
-                                    <SmumLogo width='44px' height='44px'/> 
+                                    <SmumLogo width='44px' height='44px' display="solid" /> 
                                 </Box>
                             </Tooltip>
                         </Hidden> 

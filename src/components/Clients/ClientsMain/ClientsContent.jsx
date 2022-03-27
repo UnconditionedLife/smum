@@ -24,7 +24,7 @@ export default function ClientsContent(props) {
 
     const logoBox = (
         <Box display="flex" width="100%" height="100%" justifyContent="center" p='30%' pt='4%'>
-            <SmumLogo width='90%' />
+            <SmumLogo width='90%' display="watermark" />
         </Box>
     )
 
