@@ -3,13 +3,12 @@
 //************************************************
 
 import moment from 'moment';
-import { calConvertLegacyEvents } from './Calendar';
 import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
+import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
 import { prnConnect } from './Clients/Receipts';
 import jwt_decode from 'jwt-decode';
-import { ControlPointSharp } from '@material-ui/icons';
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 
@@ -132,12 +131,12 @@ export function getAppVersion() {
 export async function dbGetSettingsAsync() {
     return await dbGetDataAsync("/settings")
         .then( settings => {
-            const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+            const fields = ["serviceZip", "serviceCat", "calClosed",
+                "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"];
             fields.forEach(x => {
                 settings[x] = utilStringToArray(settings[x]);
             });
-            if (!(settings.calDaily || settings.calWeekly || settings.calMonthly))
-                Object.assign(settings, calConvertLegacyEvents(settings));
+            Object.assign(settings, calDecodeRules(settings));
 
             cachedSettings = settings;
             return settings;
@@ -146,7 +145,9 @@ export async function dbGetSettingsAsync() {
 
 export async function dbSaveSettingsAsync(settings) {
     let data = { ... settings };
-    const fields = ["serviceZip", "serviceCat", "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"]
+    data.calClosed = calEncodeRules(data.calClosed);
+    const fields = ["serviceZip", "serviceCat", "calClosed", 
+        "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"];
     fields.forEach(x => {
         data[x] = utilArrayToObject(data[x]);
     });
@@ -179,13 +180,7 @@ export function SettingsZipcodes() {
 
 export function SettingsSchedule() {
     return {
-        closedDays: cachedSettings.closedDays,
-        closedEveryDays: cachedSettings.closedEveryDays,
-        closedEveryDaysWeek: cachedSettings.closedEveryDaysWeek,
-        openDays: cachedSettings.openDays,
-        calDaily: cachedSettings.calDaily,
-        calWeekly: cachedSettings.calWeekly,
-        calMonthly: cachedSettings.calMonthly,
+        calClosed: cachedSettings.calClosed,
     };
 }
 

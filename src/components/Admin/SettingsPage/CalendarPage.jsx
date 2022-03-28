@@ -8,8 +8,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import rrulePlugin from '@fullcalendar/rrule';
 import interactionPlugin from "@fullcalendar/interaction";
 import { utilOrdinal } from '../../System/js/GlobalUtils';
-import { calAddException, calAddSingleRule, calAddMonthlyRule, calAddWeeklyRule, calConvertWeekday, 
-    calDeleteSingleRule, calDeleteWeeklyRule, calDeleteMonthlyRule, calToEvents, calFindRule, calIsClosed } 
+import { calAddSingleRule, calAddMonthlyRule, calAddWeeklyRule, calConvertWeekday, 
+    calDeleteRule, calToEvents, calFindRule, calIsClosed, DAILY, WEEKLY, MONTHLY } 
     from '../../System/js/Calendar';
 import { Button, SaveCancel } from '../../System';
 import { calClone } from '../../System/js/Calendar';
@@ -67,7 +67,7 @@ function SettingsSched(props) {
         // Load values from calendar
         Object.assign(settingsData, calClone(calRules));
 
-        // Save user data and reset initial state to new values
+        // Save data and reset initial state to new values
         dbSetModifiedTime(settingsData, false);
         setSaveMessage({ result: 'working' });
         dbSaveSettingsAsync(settingsData)
@@ -103,7 +103,7 @@ function SettingsSched(props) {
     
         if (open) {
             const date = new Date(props.event.start);
-            let status = props.event.extendedProps.type;
+            let freq = props.event.extendedProps.type;
             let title;
             const m = moment(date).tz('UTC');
             const fullDate = m.format('MMMM Do');
@@ -111,21 +111,20 @@ function SettingsSched(props) {
             const weekNum = Math.floor((m.date()+6)/7);
             const weekOrdinal = utilOrdinal(weekNum);
 
-            let rule = null;
-            if (status == 'monthly') {
+            switch (freq) {
+            case MONTHLY:
                 title = `Closed ${weekOrdinal} ${weekdayName} Each Month`;
-                rule = calFindRule(rules.calMonthly, date);
-            }
-            else if (status == 'weekly') {
+                break;
+            case WEEKLY:
                 title = `Closed Every ${weekdayName}`;
-                rule = calFindRule(rules.calWeekly, date);
-            }
-            else {
+                break;
+            case DAILY:
                 title = 'Closed Single Day';
-                rule = calFindRule(rules.calDaily, date);
+                break;
             }
+            const rule = calFindRule(rules, date, freq);
             if (!rule) {
-                alert('Rule not found!');
+                alert('Rule not found!', date);
                 return null;
             }
 
@@ -133,24 +132,24 @@ function SettingsSched(props) {
                 // <Dialog open={ Boolean(props.date) } onClose={ () => finish()) }>
                 <Dialog open={ true } onClose={ () => finish(false) }>
                     <DialogTitle>{ fullDate }: { title }</DialogTitle>
-                    {status == 'single' && <Box display="flex" flexDirection="column">
-                        <Button color="primary" onClick={ () => { calDeleteSingleRule(rules, rule); finish(true); }} >
-                            Open { fullDate }
+                    {freq == DAILY && <Box display="flex" flexDirection="column">
+                        <Button color="primary" onClick={ () => { calDeleteRule(rules, rule); finish(true); }} >
+                            Remove daily rule
                         </Button>
                     </Box>}
-                    {status == 'weekly' && <Box display="flex" flexDirection="column">
-                        <Button color="primary" onClick={ () => { calAddException(rule, date); finish(true); }} >
+                    {freq == WEEKLY && <Box display="flex" flexDirection="column">
+                        {/* <Button color="primary" onClick={ () => { calAddException(rule, date); finish(true); }} >
                             Open { fullDate } only
-                        </Button>
-                        <Button color="primary" onClick={ () => { calDeleteWeeklyRule(rules, rule); finish(true); }} >
+                        </Button> */}
+                        <Button color="primary" onClick={ () => { calDeleteRule(rules, rule); finish(true); }} >
                             Remove weekly rule
                         </Button>
                     </Box>}
-                    {status == 'monthly' && <Box display="flex" flexDirection="column">
-                        <Button color="primary" onClick={ () => { calAddException(rule, date); finish(true); }} >
+                    {freq == MONTHLY && <Box display="flex" flexDirection="column">
+                        {/* <Button color="primary" onClick={ () => { calAddException(rule, date); finish(true); }} >
                             Open { fullDate } only
-                        </Button>
-                        <Button color="primary" onClick={ () => { calDeleteMonthlyRule(rules, rule); finish(true); }} >
+                        </Button> */}
+                        <Button color="primary" onClick={ () => { calDeleteRule(rules, rule); finish(true); }} >
                             Remove monthly rule
                         </Button>
                     </Box>}
