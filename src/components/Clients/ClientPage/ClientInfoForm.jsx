@@ -1,10 +1,12 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { Box, MenuItem, Typography } from '@material-ui/core';
 import { FormTextField, SaveCancel, FormSelect } from '../../System';
 import { useForm } from "react-hook-form";
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../../System/js/Forms.js';
 import { setEditingState  } from '../../System/js/Database';
+
 
 ClientInfoForm.propTypes = {
     client: PropTypes.object.isRequired,
@@ -12,13 +14,25 @@ ClientInfoForm.propTypes = {
     saveAndUpdateClient: PropTypes.func.isRequired,
 }
 
-export default function ClientInfoForm(props) {   
-    let defValues = { ...props.client };
+export default function ClientInfoForm(props) {
+    const { client } = props
+    let defValues = { ...client };
     defValues.zipcode = packZipcode(defValues.zipcode, defValues.zipSuffix);
-    const { handleSubmit, reset, control, errors, formState } = useForm({
+    const { handleSubmit, reset, control, errors, setValue, getValues, formState } = useForm({
         mode: 'onBlur',
         defaultValues: defValues,
     });
+    const [dob, setDob] = useState(defValues.dob)
+
+    // this hack is required because onchange is not working 
+    // with the version of react-hook-form we are using
+    useEffect(() => {
+        const newDob = getValues().dob
+        if (dob !== newDob) {
+            setDob(newDob)
+            setValue("age", moment().diff(newDob, "years"))
+        }
+    }, [getValues().dob, dob])
 
     if (formState.isDirty) setEditingState(true)
 
@@ -61,7 +75,8 @@ export default function ClientInfoForm(props) {
 
                     <FormTextField name="familyName" label="Family Name" fieldsize="md" control={ control } error={ errors.familyName } rules={ {required: 'Required'}} />
 
-                    <FormTextField name="dob" label="Date of Birth" InputLabelProps={{ shrink: true }} control={ control } error={ errors.dob } type="date" rules={ {required: 'Required'}} />
+                    <FormTextField name="dob" label="Date of Birth" InputLabelProps={{ shrink: true }} control={ control } 
+                        error={ errors.dob } type="date" rules={ {required: 'Required'}}/>
                 
                     <FormSelect name="gender" label="Gender" fieldsize="sm" control={ control } error={ errors.gender } rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>

@@ -135,6 +135,7 @@ export default function ClientsMain(props) {
         familyName: "",
         gender: "",
         dob: "",
+        age: 0,
         createdDateTime: "",
         updatedDateTime: "",
         firstSeenDate: moment().format('YYYY-MM-DD'),
