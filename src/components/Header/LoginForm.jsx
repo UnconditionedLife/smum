@@ -264,7 +264,7 @@ export default function LoginForm(props) {
     return (
         <Box m={ 2 } width="280px" display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
             <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
-                <SmumLogo mb={ 1 } width='50px' height='50px'/>
+                <SmumLogo mb={ 1 } width='50px' height='50px' display="solid"/>
                 <Typography variant="h6" align="center">
                     Login to <br/> Santa Maria Urban Ministry
                 </Typography>
