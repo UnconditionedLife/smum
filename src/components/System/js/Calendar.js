@@ -145,12 +145,12 @@ export function calFindRule(schedule, date, freq) {
 }
 
 // Find the open date nearest to targetDate
-export function calFindOpenDate(targetDate, earliestDate) {
+export function calFindOpenDate(targetDate, maxDaysBefore) {
     const schedule = SettingsSchedule();
     let proposed = moment(targetDate);
 
 	// Start with target date and work backward to earliest
-	while (proposed >= earliestDate) {
+	for (let i = 0; i < maxDaysBefore; i++) {
 		if (calIsClosed(schedule, proposed)) {
 			proposed.subtract(1, 'days');
 		} else {

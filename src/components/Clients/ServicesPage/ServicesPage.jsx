@@ -51,8 +51,7 @@ export default function ServicesPage(props) {
             // if (lastServedFoodDate !== lastSvcDate) setLastServedFoodDate(lastSvcDate)
             updateLastServedText(moment(lastServedFoodDate).fromNow().toUpperCase()) // used date/time to display FROM NOW
             const targetDate = moment(lastSvcDate).add(14, 'days')
-            const earliestDate = moment(lastSvcDate).add(7, 'days')
-            const nextSvcDate = calFindOpenDate(targetDate, earliestDate);
+            const nextSvcDate = calFindOpenDate(targetDate, 7);
             const daysFromNow = moment().diff(nextSvcDate, 'days')
             const isAfter = moment().isAfter(nextSvcDate, 'day')
             if ( isAfter ) {

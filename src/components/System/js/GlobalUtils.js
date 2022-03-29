@@ -18,7 +18,10 @@ export function utilNow() {
 }
 
 export function utilStringToArray(str){
-	let arr = []
+	let arr = [];
+    
+    if (!str)
+        return null;
 	if (str !== "{}" && str !== "*EMPTY*") {
 		str = str.replace(/=/g, '":"').replace(/\{/g, '{"').replace(/\}/g, '"}').replace(/, /g, '", "')
 		// split the string if there are nested faux objects

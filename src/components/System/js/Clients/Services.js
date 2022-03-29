@@ -386,8 +386,7 @@ function validateServiceInterval( props ){
     const { client, activeServiceType, lastServedDays, intervals } = props
     const lastSvcDate = moment().subtract(lastServedDays.lowestDays, 'days')
     const targetDate = moment(lastSvcDate).add(14, 'days').endOf('day'); // removes time of day so calculation is from end of service day
-    const earliestDate = moment(lastSvcDate).add(7, 'days').endOf('day'); // removes time of day so calculation is from end of service day
-    const nextSvcDate = calFindOpenDate(targetDate, earliestDate);
+    const nextSvcDate = calFindOpenDate(targetDate, 7);
     const isSameOrAfter = moment().isSameOrAfter(nextSvcDate, 'day')
     
 	if (activeServiceType.serviceButtons == "Primary") {
@@ -648,8 +647,7 @@ function printSvcReceipt(client, svcTypes, svcType, serviceTypeId, serviceCatego
         if (client.isActive === 'Client') {
             // Determine next visit date
             let targetDate = moment().add(14, 'days');
-            let earliestDate = moment().add(7, 'days');
-            let nextVisit = calFindOpenDate(targetDate, earliestDate);
+            let nextVisit = calFindOpenDate(targetDate, 7);
             prnPrintReminderReceipt(client, nextVisit);
         }
     } else if (serviceCategory == 'Clothes_Closet') {
