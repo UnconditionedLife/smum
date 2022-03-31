@@ -1,4 +1,4 @@
-import { Box, Table, TableContainer, TableRow, TableCell, TableBody } from "@material-ui/core";
+import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularProgress } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
@@ -20,6 +20,7 @@ export default function MonthlyDistributionReport(props) {
     const [usdaTotals, setUsdaTotals] = useState(defaultTotals)
     const [nonUsdaTotals, setNonUsdaTotals] = useState(defaultTotals)
     const [uniqueTotals, setUniqueTotals] = useState(defaultTotals)
+    const [loading, setLoading] = useState(true)
 
     const theme = useTheme()
     const reportMonth = moment(props.month, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
@@ -151,6 +152,7 @@ export default function MonthlyDistributionReport(props) {
             setNonUsdaTotals(computeGridTotals(newDaysGrid.map(day => day["nonUsdaTotals"])))
             setMonthTotals(computeGridTotals(newDaysGrid.map(day => day["totals"])))
             computeUniqueTotals(newDaysGrid)
+            setLoading(false)
         })
     }
 
@@ -228,6 +230,12 @@ export default function MonthlyDistributionReport(props) {
                         {"name":"NonClients", "length": 2}]}
                     columns={["USDA/Non USDA", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Hholds", "Indiv", "Hholds", "Indiv"]} />
             <TableBody>
+            {loading ? (
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <CircularProgress color="secondary" />
+                    </TableCell>
+                </TableRow>) : null}
             {daysGrid.map(day => {
                 console.log(day)
                 console.log(day["totals"]["households"])

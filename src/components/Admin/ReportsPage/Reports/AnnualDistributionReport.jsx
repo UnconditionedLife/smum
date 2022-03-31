@@ -1,4 +1,4 @@
-import { Box, Table, TableContainer, TableRow, TableCell, TableBody } from "@material-ui/core";
+import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularProgress } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
@@ -16,6 +16,8 @@ export default function AnnualDistributionReport(props) {
     "seniors": 0, "homelessHouseholds": 0, "homelessSingles": 0,
     "nonClientHouseholds": 0, "nonClientSingles": 0}
     const [monthGrid, setMonthGrid] = useState([])
+    const [loading, setLoading] = useState(true)
+
     const [usdaTotals, setUsdaTotals] = useState(defaultTotals)
     const [nonUsdaTotals, setNonUsdaTotals] = useState(defaultTotals)
     const [yearTotals, setYearTotals] = useState(defaultTotals)
@@ -174,6 +176,7 @@ export default function AnnualDistributionReport(props) {
             setUsdaTotals(computeGridTotals(months.map(month => month["usdaTotals"])))
             setNonUsdaTotals(computeGridTotals(months.map(month => month["nonUsdaTotals"])))
             computeUniqueTotals(months)
+            setLoading(false)
         })
     }
 
@@ -262,6 +265,12 @@ export default function AnnualDistributionReport(props) {
                         {"name":"NonClients Services", "length": 2}]}
                     columns={["USDA/Non USDA", "Households", "Indiv.", "Adults", "Children", "Seniors", "Families", "Indiv.", "Families", "Indiv."]} />
             <TableBody>
+            {loading ? (
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <CircularProgress color="secondary" />
+                    </TableCell>
+                </TableRow>) : null}
             {monthGrid.map(month => RenderMonth(month))}
             <TableRow>
                 <TableCell className='centerText' align="center" colSpan={13}>

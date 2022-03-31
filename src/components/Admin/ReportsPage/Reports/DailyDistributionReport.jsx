@@ -1,4 +1,4 @@
-import { Box, Table, TableContainer, TableRow, TableCell, TableBody } from "@material-ui/core";
+import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularProgress } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
@@ -20,6 +20,7 @@ export default function DailyDistributionReport(props) {
     const [totalsUSDA, setTotalsUSDA] = useState(defaultTotals)
     const [totalsNonUSDA, setTotalsNonUSDA] = useState(defaultTotals)
     const [totalsDay, setTotalsDay] = useState(defaultTotals)
+    const [loading, setLoading] = useState(true)
 
     const theme = useTheme()
     const greenBackground = { backgroundColor: theme.palette.primary.light }
@@ -114,6 +115,7 @@ export default function DailyDistributionReport(props) {
                 setTotalsUSDA(usdaTotals)
                 setTotalsNonUSDA(nonUsdaTotals)
                 setTotalsDay(dayTotals)
+                setLoading(false)
             })
     }
 
@@ -214,6 +216,12 @@ export default function DailyDistributionReport(props) {
                         {"name":"NonClients", "length": 2}]}
                     columns={["ID", "Given", "Family", "Zip", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Hholds", "Indiv", "Hholds", "Indiv"]} />
             <TableBody>
+            {loading ? (
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <CircularProgress color="secondary" />
+                    </TableCell>
+                </TableRow>) : null}
             <TableRow>
                 <TableCell className='centerText' align="center" colSpan={13}>
                     <style>{ `@media print { .centerText { text-align: center; font-size: 14px; }}` }</style>

@@ -1,4 +1,4 @@
-import { Box, Table, TableContainer, TableRow, TableCell, TableBody, Typography, TableFooter } from "@material-ui/core";
+import { Box, Table, TableContainer, TableRow, TableCell, TableBody, Typography, TableFooter, CircularProgress } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { dbGetSingleClientAsync, dbGetSvcsInMonthAsync, SettingsZipcodes } from '../../../System/js/Database';
@@ -14,6 +14,7 @@ export default function NewClientsReport(props) {
     const [ clientIds, setClientIds ] = useState([])
     const [ totalNewClients, setTotalNewClients ] = useState(0)
     const [ totalNewHomeless, setTotalNewHomeless ] = useState(0)
+    const [loading, setLoading] = useState(true)
 
     let numNewClients = []
     const USDAServiceTypeId = "cj86davnj00013k7zi3715rf4"
@@ -71,6 +72,7 @@ export default function NewClientsReport(props) {
                         homeless += zipRecord.homeless
                         setTotalNewClients(total)
                         setTotalNewHomeless(homeless)
+                        setLoading(false)
                     })
                 })
             })
@@ -115,6 +117,11 @@ export default function NewClientsReport(props) {
                     reportCategory="NEW CLIENT" 
                     columns={["Zipcode", "Total", "Homeless"]} />
                 <TableBody>
+                    {loading ? (<TableRow>
+                        <TableCell className='centerText' align="center" colSpan={13}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
                     { counts.map((item) => (
                         <TableRow key={ item.area } >
                             <TableCell align="center">{ item.area }</TableCell>
