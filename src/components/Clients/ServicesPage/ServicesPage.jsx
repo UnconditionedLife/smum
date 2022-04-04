@@ -20,10 +20,11 @@ ServicesPage.propTypes = {
     showAlert: PropTypes.func.isRequired,
     lastServedDays: PropTypes.object,
     lastServedFoodDate: PropTypes.object,
+    clientInactive: PropTypes.bool.isRequired,
 }
 
 export default function ServicesPage(props) {
-    const { client, updateClient, clientsFound, selectedTab, lastServedDays, lastServedFoodDate } = props
+    const { client, updateClient, clientsFound, selectedTab, lastServedDays, lastServedFoodDate, clientInactive } = props
     // const [ svcHistory, setSvcHistory ] = useState(null)
     // const [ lastServedDays, setLastServedDays ] = useState(null)
     // const [ lastServedFoodDate, setLastServedFoodDate ] = useState(null)
@@ -111,6 +112,14 @@ export default function ServicesPage(props) {
 
     // prevent rendering before activeServiceTypes are loaded
     if (activeServiceTypes === null) return null
+
+    if (clientInactive) return (
+        <Box key={ svcHistory } display="flex" justifyContent="space-around" flexWrap="wrap">
+            <Typography variant='h3' color='secondary' style={{ lineHeight:"300px" }} noWrap>
+                CLIENT IS INACTIVE
+            </Typography>
+        </Box>
+    )
 
     return (
         <Box key={ svcHistory } display="flex" justifyContent="space-around" flexWrap="wrap">

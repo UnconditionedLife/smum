@@ -15,7 +15,7 @@ ClientInfoForm.propTypes = {
 }
 
 export default function ClientInfoForm(props) {
-    const { client } = props
+    const { client, saveAndUpdateClient, saveMessage } = props
     let defValues = { ...client };
     defValues.zipcode = packZipcode(defValues.zipcode, defValues.zipSuffix);
     const { handleSubmit, reset, control, errors, setValue, getValues, formState } = useForm({
@@ -41,10 +41,10 @@ export default function ClientInfoForm(props) {
         values.state = values.state.toUpperCase();
         values.telephone = formatPhone(values.telephone);
         // Overwrite data structure with form values
-        let data = Object.assign({}, props.client);
+        let data = Object.assign({}, client);
         Object.assign(data, values);
         Object.assign(data, unpackZipcode(values.zipcode));
-        props.saveAndUpdateClient(data)
+        saveAndUpdateClient(data)
         reset(values);
         values.telephone = formatPhone(values.telephone);
     }
@@ -132,7 +132,7 @@ export default function ClientInfoForm(props) {
             </form>
 
             <SaveCancel disabled={!formState.isDirty} onClick={(isSave) => { isSave ? submitForm() : handleCancel() }} 
-                message={ props.saveMessage }/>
+                message={ saveMessage }/>
         </Fragment> 
     );
 }

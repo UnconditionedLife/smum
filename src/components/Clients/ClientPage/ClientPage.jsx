@@ -29,7 +29,7 @@ export default function ClientPage(props) {
         dbSaveClientAsync(data)
             .then( (result) => {
                 setEditingState(false)
-                data.clientId = result.clientId
+                if (result.clientId) data.clientId = result.clientId
                 setSaveMessage({ result: 'success', time: data.updatedDateTime });
                 data = utilCalcAge(data)
                 data.dependents = calcDependentsAges(data)
