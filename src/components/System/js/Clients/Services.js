@@ -473,7 +473,7 @@ function validateServiceInterval( props ){
 	} else {
 		// secondary buttons
         // Greater than 0 lowest day is used to provide same day buffer for secondary buttons
-        if ( isSameOrAfter === false ) {
+        if ( (isSameOrAfter === false) && (moment().diff(lastSvcDate) > 1)) {
             // if (lastServed.lowestDays < activeServiceType.serviceInterval) 
             return false
         }
