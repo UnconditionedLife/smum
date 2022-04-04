@@ -16,10 +16,11 @@ ClientsContent.propTypes = {
     showAlert: PropTypes.func.isRequired,
     lastServedDays: PropTypes.object,
     lastServedFoodDate: PropTypes.object,
+    clientInactive: PropTypes.bool.isRequired,
 }
 
 export default function ClientsContent(props) {
-    const { showFound, showServices, showClient, lastServedDays, lastServedFoodDate  } = props
+    const { showFound, showServices, showClient, lastServedDays, lastServedFoodDate, clientInactive  } = props
     const match = useRouteMatch();
 
     const logoBox = (
@@ -46,7 +47,7 @@ export default function ClientsContent(props) {
                             clientsFound={ props.clientsFound }
                             client={ props.client } updateClient={ props.updateClient }
                             showAlert={ props.showAlert } lastServedFoodDate={ lastServedFoodDate }
-                            lastServedDays={ lastServedDays }/>
+                            lastServedDays={ lastServedDays } clientInactive={ clientInactive }/>
                     }
                     { !showServices && logoBox }
                 </Route>

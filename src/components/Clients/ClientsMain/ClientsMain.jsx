@@ -32,6 +32,7 @@ export default function ClientsMain(props) {
     const [ session ] = useState(getSession())
     const [ lastServedDays, setLastServedDays ] = useState(null)
     const [ lastServedFoodDate, setLastServedFoodDate ] = useState(null)
+    const [ clientInactive, setClientInactive ]  = useState(null)
 
     useEffect(() => {
         if (session != null && !isEmpty(session)){
@@ -68,8 +69,13 @@ export default function ClientsMain(props) {
             const tempLastServedDays = getLastServedDays(client)
             if (lastServedDays !== tempLastServedDays) setLastServedDays(tempLastServedDays)
             if (lastServedFoodDate !== tempLastServedDays.lastServedFoodDate) setLastServedFoodDate(tempLastServedDays.lastServedFoodDate)
+            if (client.isActive === "Inactive") {
+                setClientInactive(true)
+            } else {
+                setClientInactive(false)
+            }
         }
-    },[ client ])
+    },[ client, client.isActive ])
 
     // NOTIFY user if there are children over age of 17
     useEffect(() => {
@@ -194,7 +200,8 @@ export default function ClientsMain(props) {
         showFound: showFound,
         showServices: showServices,
         showClient: showClient,
-        lastServedDays, lastServedFoodDate
+        lastServedDays, lastServedFoodDate,
+        clientInactive
     }
 
     return (
