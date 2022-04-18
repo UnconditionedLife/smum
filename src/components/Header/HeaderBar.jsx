@@ -14,7 +14,7 @@ import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
 import { cacheSessionVar, clearCache, initCache, showCache, getSession, getAppVersion,
-    getUserName, getUserRole, navigationAllowed, setEditingState, dbSetUrl } from '../System/js/Database';
+    getUserName, isAdmin, navigationAllowed, setEditingState, dbSetUrl  } from '../System/js/Database';
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -229,15 +229,11 @@ export default function HeaderBar(props) {
     function handleSearchTermChange(newValue) {
         if (navigationAllowed()) {
             if (searchTerm !== newValue) {
-
-console.log("SEARCH TERM:", newValue)
-
                 setSearchTerm(newValue);
             }
         }
     }
 
-    const isAdmin = ['Admin', 'TechAdmin'].includes(getUserRole());
     const userName = getUserName();
 
     const appbarControls = (
@@ -274,7 +270,7 @@ console.log("SEARCH TERM:", newValue)
                 </Button>
 
                 <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Settings className={classes.icon}/>}
-                    disabled={!isAdmin} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" >
+                    disabled={!isAdmin()} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" >
                         {/* flexShrink={1} */}
                     <Hidden smDown> Admin </Hidden>
                 </Button>

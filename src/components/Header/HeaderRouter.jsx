@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, useLocation, Switch, Redirect, Route, Link, useHistory, matchPath, useRouteMatch, useParams } from "react-router-dom";
 import { HeaderBar } from ".";
+import { isAdmin } from '../System/js/Database';
 
 export default function SearchNavBarContainer(props) {
     const route = useLocation();
@@ -35,7 +36,7 @@ export default function SearchNavBarContainer(props) {
             }
             break;
           case 1:
-            history.push("/admin");
+            if (isAdmin) history.push("/admin");
             break;
           case 2:
             history.push("/today");

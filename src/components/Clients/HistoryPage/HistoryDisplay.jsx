@@ -6,7 +6,7 @@ import { Card } from '../../System';
 import { HistoryFormDialog, HistoryPopupMenu } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils';
 import { removeSvcAsync } from '../../System/js/Clients/History';
-import { globalMsgFunc } from '../../System/js/Database';
+import { globalMsgFunc, isAdmin } from '../../System/js/Database';
 import moment from 'moment';
 
 HistoryDisplay.propTypes = {
@@ -118,7 +118,7 @@ export default function HistoryDisplay(props) {
                         <Fragment key={svc.serviceId} >
                             <TableRow 
                                 key={svc.serviceId}
-                                onClick= { (event) => handleSelectedService(event, svc)}
+                                onClick= { (event) => { if (isAdmin()) handleSelectedService(event, svc)} }
                                 selected= { svc.serviceId == selectedService } >
                                 <TableCell align="center">
                                         { moment(svc.servicedDateTime).format("MMM DD, YYYY - h:mm a") }
