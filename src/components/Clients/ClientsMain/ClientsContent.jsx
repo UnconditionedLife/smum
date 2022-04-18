@@ -16,7 +16,7 @@ ClientsContent.propTypes = {
     showAlert: PropTypes.func.isRequired,
     lastServedDays: PropTypes.object,
     lastServedFoodDate: PropTypes.object,
-    clientInactive: PropTypes.bool.isRequired,
+    clientInactive: PropTypes.bool,
 }
 
 export default function ClientsContent(props) {
