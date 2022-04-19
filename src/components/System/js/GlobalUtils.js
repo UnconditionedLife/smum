@@ -120,6 +120,13 @@ export function utilChangeWordCase(str) {
 	return str;
 }
 
+// Remove the prefix giving the broad error type before a specific error message.
+// For example, "NotAuthorizedException: Incorrect username or password" becomes
+// "Incorrect username or password".
+export function removeErrorPrefix(str) {
+    return str.replace(/^.*: /, '');
+}
+
 export function utilRemoveDupClients(clients) {
 	let ids=[], temp=[], undupClients = []
 	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)

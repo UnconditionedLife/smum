@@ -2,8 +2,6 @@
 //***** DATABASE SECTION JAVASCRIPT FUNCTIONS *****
 //************************************************
 
-import { AppSyncClient, AssociateApiCommand } from "@aws-sdk/client-appsync";
-
 import moment from 'moment';
 import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
 import { calDecodeRules, calEncodeRules } from './Calendar';
@@ -117,6 +115,10 @@ export function isAdmin() {
 
 export function isTechAdmin() {
     return cachedSession?.userRole === 'TechAdmin';
+}
+
+export function getCognitoHandle() {
+    return cachedSession?.cogUser;
 }
 
 export function getEditingState() {

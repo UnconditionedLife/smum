@@ -1,33 +1,48 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { useForm } from "react-hook-form";
-import { Box, Button } from '@material-ui/core';
-import { FormTextField } from '../System';
-import { setEditingState } from '../System/js/Database';
+import { Box } from '@material-ui/core';
+import { FormTextField, SaveCancel } from '../System';
+import { getCognitoHandle, getUserName, setEditingState } from '../System/js/Database';
+import { cogChangePassword } from '../System/js/Cognito';
 
 export default function PasswordForm() {
     const { reset, handleSubmit, control, formState, errors, setError } = useForm({
         mode: 'OnBlur',
-        defaultValues: {oldPassword: '', newPassword1: '', newPassword2: ''},
+        defaultValues: {userName: getUserName(), oldPassword: '', newPassword1: '', newPassword2: ''},
     });
+    const [ saveMessage, setSaveMessage ] = useState({});
 
     function onSubmit(data) {
-        // TODO: validate current password
-    
         if (data.newPassword1 != data.newPassword2)
             setError('newPassword2', {type: 'manual', message: 'New passwords must match'});
         else {
-            alert('Password changed to ' + data.newPassword1 + ' (not really!)');
-            setEditingState(false)
-            reset();
+            cogChangePassword(getCognitoHandle(), data.oldPassword, data.newPassword1)
+                .then( () => {
+                    setSaveMessage({ result: 'success', text: 'Password updated' });
+                    setEditingState(false);
+                    reset();
+                })
+                .catch( (message) => {
+                    setSaveMessage({ result: 'error', text: message });
+                });
         }
     }
+    const doSubmit = handleSubmit(onSubmit);
 
-    if (formState.isDirty) setEditingState(true)
+    function doCancel() {
+        reset();
+        setEditingState(false);
+    }
+
+    if (formState.isDirty) setEditingState(true);
     
     return (
         <Fragment>
             <form>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
+                    <FormTextField name="userName" label="Username" disabled={ true } error={ errors.userName } 
+                        autoComplete="username" hidden={ true }
+                        control={ control } />
                     <FormTextField name="oldPassword" label="Current Password" error= {errors.oldPassword} 
                         type="password" autoComplete="current-password"
                         control={ control } rules={ {required: 'Current password is required'} }/>
@@ -41,10 +56,8 @@ export default function PasswordForm() {
                         control={ control } rules={ {required: 'New password is required'} }/>
                 </Box>
             </form>
-            <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
-                <Button variant="contained" color="primary" onClick={ handleSubmit(onSubmit) }
-                    disabled={ !formState.isDirty } >Change</Button>
-            </Box>
+            <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? doSubmit() : doCancel() } } 
+                message={ saveMessage } />
         </Fragment>
     )
 }

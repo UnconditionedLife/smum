@@ -2,14 +2,13 @@
 //***** AWS COGNITO JAVASCRIPT FUNCTIONS *****
 //********************************************
 
+import { removeErrorPrefix } from './GlobalUtils';
+
 let poolData = {
 		UserPoolId : 'us-west-2_AufYE4o3x', // Your user pool id here
 		ClientId : '7j3jhm5a3pkc67m52bf7tv10au' // Your client id here
 };
 let userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
-
-// Cached Variables
-let cachedSession = null
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -38,5 +37,15 @@ export function cogSetupAuthDetails(username, password) {
   return new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authData);
 }
 
+export async function cogChangePassword(cogUser, oldPassword, newPassword) {
+    return new Promise((resolve, reject) => {
+        cogUser.changePassword(oldPassword, newPassword, (err, data) => {
+        if (err) 
+            return reject(removeErrorPrefix(String(err)));
+        else 
+            resolve();
+        });
+    });
+}
 
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
