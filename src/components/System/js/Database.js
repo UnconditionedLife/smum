@@ -44,11 +44,11 @@ export function setGlobalMsgFunc(callback) {
 //************************************************
 
 export function cacheSessionVar(newSession) {
-    console.log('New session:', newSession)
     cachedSession = newSession;
-    cachedSession.userName = newSession?.user?.userName; // XXX
-    cachedSession.userRole = newSession?.user?.userRole; // XXX
-    cachedSession.editingState = false
+    if (newSession.user)
+        cachedSession.user = { userName: newSession.user.userName, userRole: newSession.user.userRole }
+    cachedSession.editingState = false;
+    console.log('New session:', cachedSession)
 }
 
 export function sessionTimeRemaining() {
@@ -98,19 +98,15 @@ export function getSession() {
 }
 
 export function getUserName() {
-    return cachedSession?.userName;
+    return cachedSession?.user?.userName;
 }
 
-// export function getUserRole() {
-//     return cachedSession?.userRole;
-// }
-
 export function isAdmin() {
-    return ['Admin', 'TechAdmin'].includes(cachedSession?.userRole);
+    return ['Admin', 'TechAdmin'].includes(cachedSession?.user?.userRole);
 }
 
 export function isTechAdmin() {
-    return cachedSession?.userRole === 'TechAdmin';
+    return cachedSession?.user?.userRole === 'TechAdmin';
 }
 
 export function getCognitoHandle() {
