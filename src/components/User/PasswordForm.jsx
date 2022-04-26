@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Box } from '@material-ui/core';
 import { FormTextField, SaveCancel } from '../System';
 import { getCognitoHandle, getUserName, setEditingState } from '../System/js/Database';
-import { cogChangePassword } from '../System/js/Cognito';
+import { cogChangePasswordAsync } from '../System/js/Cognito';
 
 export default function PasswordForm() {
     const { reset, handleSubmit, control, formState, errors, setError } = useForm({
@@ -16,7 +16,7 @@ export default function PasswordForm() {
         if (data.newPassword1 != data.newPassword2)
             setError('newPassword2', {type: 'manual', message: 'New passwords must match'});
         else {
-            cogChangePassword(getCognitoHandle(), data.oldPassword, data.newPassword1)
+            cogChangePasswordAsync(getCognitoHandle(), data.oldPassword, data.newPassword1)
                 .then( () => {
                     setSaveMessage({ result: 'success', text: 'Password updated' });
                     setEditingState(false);

@@ -13,7 +13,7 @@ import moment from 'moment';
 //      saveDisabled - Disable affirmative button (default false)
 //      cancelDisabled - Disable negative button (default false)
 //      disabled - Disable both buttons (default false)
-//      message - Object with (text, severity, tooltip)
+//      message - Object
 //          result: 'error', 'working', or 'success'
 //          time: last update time (if result == 'success')
 //          text: additional message string (optional)

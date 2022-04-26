@@ -25,7 +25,7 @@ export function cogGetRefreshToken(token) {
 }
 
 export function cogSetupSession(auth) {
-  let cogAuth = {"IdToken": auth.idToken, "AccessToken":auth.accessToken}
+  let cogAuth = {"IdToken": auth.idToken, "AccessToken": auth.accessToken}
   return new AWSCognito.CognitoIdentityServiceProvider.CognitoUserSession(cogAuth);
 }
 
@@ -37,7 +37,7 @@ export function cogSetupAuthDetails(username, password) {
   return new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authData);
 }
 
-export async function cogChangePassword(cogUser, oldPassword, newPassword) {
+export async function cogChangePasswordAsync(cogUser, oldPassword, newPassword) {
     return new Promise((resolve, reject) => {
         cogUser.changePassword(oldPassword, newPassword, (err, data) => {
         if (err) 
