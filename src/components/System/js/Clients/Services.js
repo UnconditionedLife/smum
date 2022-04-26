@@ -1,11 +1,10 @@
 //******************************************************************
 //****** CLIENTS ServiceInstance SECTION JAVASCRIPT FUNCTIONS ******
 //******************************************************************
-import { isEmpty } from '../GlobalUtils.js';
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from './ClientUtils'
 import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
-    getSession, dbGetSvcsByIdAndYear } from '../Database';
+    getUserName, dbGetSvcsByIdAndYear } from '../Database';
 import { calFindOpenDate } from '../Calendar.js';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt, prnFlush } from './Receipts';
@@ -29,12 +28,6 @@ export async function addServiceAsync( client, serviceTypeId ){
 	return await dbSaveServiceRecordAsync(svcRecord)
         .then((savedSvc) => {
             if (Object.keys(savedSvc).length === 0) {
-                // if (svcType.serviceButtons === "Primary"){
-                //     dbSaveLastServedAsync(client, serviceTypeId, svcType.serviceCategory, servedCounts.itemsServed, svcType.isUSDA)
-                //         .then((newLastServed) => {
-                //             newClient.lastServed = newLastServed
-                //         })
-                // }
                 if (serviceId === "") {
                     printSvcReceipt(client, svcTypes, svcType, serviceTypeId, serviceCategory)                    
                     newClient.svcHistory.unshift(svcRecord)
@@ -588,7 +581,7 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 	// define fulfillment vars for non-vouchers
 	let pending = false
     let fulfillmentDateTime = moment().format('YYYY-MM-DDTHH:mm')
-	let byUserName = getSession().user.userName
+	let byUserName = getUserName()
 	let itemCount = servedCounts.itemsServed
 	if (serviceType.fulfillment.type == "Voucher") {
 		pending = true
@@ -606,7 +599,7 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 		clientGivenName: client.givenName,
 		clientFamilyName: client.familyName,
 		clientZipcode: client.zipcode,
-		servicedByUserName: getSession().user.userName,
+		servicedByUserName: getUserName(),
 		serviceTypeId: serviceType.serviceTypeId,
 		serviceName: serviceType.serviceName,
 		serviceCategory: serviceType.serviceCategory,
@@ -627,13 +620,7 @@ function utilBuildServiceRecord(serviceType, serviceId, servedCounts, serviceVal
 			itemCount: itemCount
 		}
 	}
-	// store for use during session
-	// if (serviceValid) {
-	// 	servicesRendered.push(serviceRecord)
-	// } else {
-	// 	const temp = servicesRendered.filter(item => item.serviceId !== serviceId)
-	// 	servicesRendered = temp
-	// }
+
 	return serviceRecord
 }
 

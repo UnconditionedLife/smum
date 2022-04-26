@@ -7,7 +7,7 @@ import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';
 import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime,
-     utilEmptyPlaceholders, getSession, globalMsgFunc } from '../../System/js/Database';
+     utilEmptyPlaceholders, getUserName, globalMsgFunc } from '../../System/js/Database';
 import { getLastServedDays } from '../../System/js/Clients/Services'
 
 ClientsMain.propTypes = {
@@ -15,12 +15,12 @@ ClientsMain.propTypes = {
     handleSearchTermChange: PropTypes.func.isRequired,
     selectedTab: PropTypes.number.isRequired,
     checkClientsURL: PropTypes.func,
-    updateURL: PropTypes.func,
+    updateClientsURL: PropTypes.func,
     url: PropTypes.string,
 }
 
 export default function ClientsMain(props) {
-    const { searchTerm, selectedTab, checkClientsURL, updateURL, url }  = props
+    const { searchTerm, selectedTab, checkClientsURL, updateClientsURL, url }  = props
     const [ clientsFound, setClientsFound ] = useState([]);
     const [ client, setClient ] = useState({});
     const [ showFound, setShowFound ] = useState(false);
@@ -29,16 +29,15 @@ export default function ClientsMain(props) {
     const [ openAlert, setOpenAlert ] = useState(false)
     const [ alertSeverity, setAlertSeverity ] = useState("")
     const [ alertMsg, setAlertMsg ] = useState("")
-    const [ session ] = useState(getSession())
     const [ lastServedDays, setLastServedDays ] = useState(null)
     const [ lastServedFoodDate, setLastServedFoodDate ] = useState(null)
     const [ clientInactive, setClientInactive ]  = useState(null)
 
     useEffect(() => {
-        if (session != null && !isEmpty(session)){
+        if (getUserName()){
              checkClientsURL(client); 
             } 
-    }, [session, url])
+    }, [ getUserName, url ])
 
     useEffect(() => {
         const foundEval = !isEmpty(clientsFound)
@@ -118,15 +117,15 @@ export default function ClientsMain(props) {
                     .then( history => { 
                         newClient.svcHistory = history
                         setClient(newClient)
-                        updateURL(newClient.clientId, clientsTab)
+                        updateClientsURL(newClient.clientId, clientsTab)
                     })
             } else {
                 dbSetModifiedTime(newClient, true);
                 setClient(newClient)
-                updateURL(newClient.clientId, clientsTab)
+                updateClientsURL(newClient.clientId, clientsTab)
             }
         } else {
-            updateURL("", clientsTab)
+            updateClientsURL("", clientsTab)
         }
     }
 
@@ -196,13 +195,16 @@ export default function ClientsMain(props) {
         changeClient: changeClient,
         updateClient: updateClient, 
         isNewClientChange: isNewClientChange,
-        selectedTab, updateURL,
+        selectedTab, updateClientsURL,
         showFound: showFound,
         showServices: showServices,
         showClient: showClient,
         lastServedDays, lastServedFoodDate,
         clientInactive
     }
+
+    // do not render admin if session/userName is not set
+    // if (getUserName() === null) return null 
 
     return (
         <Box key={ client.updatedDateTime } width="100%" p={2} >

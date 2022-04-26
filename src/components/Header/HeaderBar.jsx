@@ -113,8 +113,8 @@ export default function HeaderBar(props) {
     const [selectedSection, setSelectedSection] = useState(-1);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const checkSectionURL = props.checkSectionURL;
-    const updateRoute = props.updateRoute;
+    const { checkSectionURL , updateRoute } = props;
+
     const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']); // XXX combine in single cookie
     const [ appVersion ] = useState(getAppVersion())
 
@@ -138,12 +138,12 @@ export default function HeaderBar(props) {
 
             // Update Local and Global Session vars
             cacheSessionVar(newSession);
-            if (reInit)
-                initCache();
+            
             setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
             setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
             setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' })
             // setTimeout(refreshUserSession, refreshTime);
+            if (reInit) initCache();
             console.log("End session init")
         } else {
             removeCookie("user", { path: '/' });
@@ -153,41 +153,43 @@ export default function HeaderBar(props) {
         }
     }
 
-    function refreshUserSession() {
-        console.log('Refreshing', getUserName(), getSession())
-        let session = getSession();
-        if (session) {
-            console.log('Before refresh', tokenTimeRemaining(session.auth.idToken))
-            let token = cogGetRefreshToken(session.refresh);
-            let tempUser = cogSetupUser(session.user.userName);
-            tempUser.refreshSession(token, function (err, result) {
-                let auth = {};
-                auth.accessToken = result.getAccessToken().getJwtToken();
-                // let uRefreshToken = result.refreshToken.token;
-                auth.idToken = result.idToken.jwtToken;
-                session.auth = auth;
-                setSession(session, false);
-            });
+    // *** FUNCTION BELOW IS NO LONGER BEING CALLED *** JOSE
+    // function refreshUserSession() {
+    //     console.log('Refreshing', getUserName(), getSession())
+    //     let session = getSession();
+    //     if (session) {
+    //         console.log('Before refresh', tokenTimeRemaining(session.auth.idToken))
+    //         let token = cogGetRefreshToken(session.refresh);
+    //         let tempUser = cogSetupUser(getUserName());
+    //         tempUser.refreshSession(token, function (err, result) {
+    //             let auth = {};
+    //             auth.accessToken = result.getAccessToken().getJwtToken();
+    //             // let uRefreshToken = result.refreshToken.token;
+    //             auth.idToken = result.idToken.jwtToken;
+    //             session.auth = auth;
+    //             setSession(session, false);
+    //         });
+    //     }
+    // }
+    useEffect(() => {
+        const newSection = checkSectionURL();
+        if (newSection !== selectedSection) {
+            setSelectedSection(newSection)
         }
-    }
+    });
+
 
     useEffect(() => {
         console.log("App Start:" )
         dbSetUrl(process.env.dbSetUrl) // environment variable coming from webpack configuration
-
-        const newSection = checkSectionURL();
-        if (newSection != selectedSection) {
-            setSelectedSection(newSection)
-        }
-        if (getSession() == null) {
-            // Page reload or direct URL access: Check for cookies from previous
-            // login.
+        if (!getSession()) {
+            // Page reload or direct URL access: Check for cookies from previous login.
             let savedSession = sessionFromCookies(cookies);
             if (savedSession && tokenTimeRemaining(savedSession.auth.idToken) > 0) {
                 let newCogUser = cogSetupUser(cookies.user.userName);
                 newCogUser.getSession(function (err, cogSession) { 
                     if (!err && cogSession.isValid()) { 
-                        setSession(savedSession, true); 
+                        setSession(savedSession, true);
                     }
                 });
             }

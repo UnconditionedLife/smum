@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
-import { getSvcTypes, getSession, globalMsgFunc } from '../../System/js/Database';
+import { getSvcTypes, globalMsgFunc, getUserName } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { saveHistoryFormAsync, removeSvcAsync } from '../../System/js/Clients/History';
 
@@ -13,7 +13,6 @@ HistoryFormDialog.propTypes = {
     editRecord: PropTypes.object.isRequired,            // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
     updateClient: PropTypes.func.isRequired,
-    // handleClientHistory: PropTypes.func.isRequired,     // handles updating history
 }
 
 export default function HistoryFormDialog(props) {
@@ -21,9 +20,7 @@ export default function HistoryFormDialog(props) {
     const updateClient = props.updateClient
     const client = props.client
     const [ dialogOpen, setDialogOpen ] = useState(true);
-    // const [ message, setMessage ] = useState(null)
-    const userName = getSession().user.userName
-
+    
     const serviceNames = getSvcTypes()
         .filter(obj => obj.serviceButtons == "Primary")
         .map(obj => obj.serviceName)
@@ -42,7 +39,7 @@ export default function HistoryFormDialog(props) {
     })
 
     function doSave(formValues) {
-        saveHistoryFormAsync(editRecord, formValues, props.client, userName)
+        saveHistoryFormAsync(editRecord, formValues, props.client, getUserName())
             .then( savedSvc => {
                 if (savedSvc !== null) { 
                     // update client history to reflect edits

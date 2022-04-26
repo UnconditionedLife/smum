@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, useLocation, Switch, Redirect, Route, Link, useHistory, matchPath, useRouteMatch, useParams } from "react-router-dom";
+import React from 'react';
+import { BrowserRouter as Router, useLocation, useHistory, matchPath } from "react-router-dom";
 import { HeaderBar } from ".";
 import { isAdmin } from '../System/js/Database';
 
-export default function SearchNavBarContainer(props) {
+export default function SearchNavBarContainer() {
     const route = useLocation();
     const history = useHistory();
     const checkSectionURL = () => {
         const url = route.pathname;
-        console.log(url)
 
-        if (matchPath(url, { path: "/", exact: false, strict: false })) {
+        if (matchPath(url, { path: "/", exact: true, strict: false })) {
             return 0;
         }
-        else if (matchPath(url, { path: "/clients", exact: false, strict: false })) {
+        else if (matchPath(url, { path: "/clients", exact: true, strict: false }) || matchPath(url, { path: "/clients/*", exact: true, strict: false })) {
             return 0;
         }
-        else if (matchPath(url, { path: "/admin", exact: false, strict: false })) {
+        else if (matchPath(url, { path: "/admin", exact: true, strict: false }) || matchPath(url, { path: "/admin/*", exact: true, strict: false })) {
             return 1;
         }
-        else if (matchPath(url, { path: "/today", exact: false, strict: false })) {
+        else if (matchPath(url, { path: "/today", exact: true, strict: false })) {
             return 2;
         }
-        else {
+        else if (matchPath(url, { path: "/user", exact: true, strict: false })) {
             return 3;
         }
     }

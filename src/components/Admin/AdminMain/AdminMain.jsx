@@ -1,42 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { AppBar, Box, Tab, Tabs } from '@material-ui/core';
 import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications } from '@material-ui/icons';
 import { AllUsersPage, CalendarPage, ReportsPage, 
             ServiceTypePage, SettingsPage } from '..';
-import { getSession, navigationAllowed } from '../../System/js/Database';
-import { isEmpty } from '../../System/js/GlobalUtils';
+import { getUserName } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 
 AdminMain.propTypes = {
-
+    selectedTab: PropTypes.number.isRequired,
+    checkAdminURL: PropTypes.func,
+    updateAdminURL: PropTypes.func,
+    url: PropTypes.string,
 }
 
-export default function AdminMain() {
-    const [ selectedTab, setSelectedTab ] = useState(0);
-    const [ session, setSession ] = useState(null)
+export default function AdminMain(props) {
+    const { selectedTab, checkAdminURL, updateAdminURL, url } = props;
 
     useEffect(() => {
-        const sessionVar = isEmpty(getSession()) ? null : getSession()
-        setSession(sessionVar)
-    })
-
-    const handleChange = (event, newValue) => {
-        if (navigationAllowed())
-            setSelectedTab(newValue);
-    };
+        if (getUserName()) checkAdminURL()
+    }, [ getUserName, url ])
 
     let navLabels = [ 'Reports', 'Calendar', 'Service Types', 'Users', 'Settings' ]
     if (UseWindowSize().width < 450) navLabels = [ '','','','' ]
-
-    if (session === null) return null // do not render admin if session is not set
 
     return (
         <Box  width={ 1 } display="flex" flexWrap="wrap" style={{ justifyContent: 'center' }}>
             <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
                     justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>
                 <Tabs
-                value={selectedTab}
-                onChange={handleChange}
+                value={ selectedTab }
+                // onChange={ handleTabChange }
+                onChange={(event, newValue) => { updateAdminURL(newValue) }}
                 indicatorColor="secondary"
                 textColor="primary"
                 centered

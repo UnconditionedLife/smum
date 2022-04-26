@@ -4,7 +4,7 @@ import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
 import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
 import { Card, IconButton } from '../../System';
 import { NoteForm } from '..';
-import { dbSaveClientAsync, getSession, setEditingState } from '../../System/js/Database.js';
+import { dbSaveClientAsync, getUserName, setEditingState } from '../../System/js/Database.js';
 import moment from 'moment';
 
 NotesDisplay.propTypes = {
@@ -34,14 +34,6 @@ export default function NotesDisplay(props) {
     const handleTextFieldChange = props.handleTextFieldChange;
     const noteImportant = props.noteImportant
     const handleNoteImportantChange = props.handleNoteImportantChange
-    const userName = getSession().user.userName
-
-    function callback(response, msg){
-        console.log("IN CALLBACK")
-        console.log(response, msg)
-        if (response === 'success') msg = "Note successfully removed."
-        props.showAlert(response, msg);
-    }
 
     function handleDeleteNote(noteId) {
         let tempClient = client
@@ -50,7 +42,6 @@ export default function NotesDisplay(props) {
         tempClient.notes = filteredNotes
         dbSaveClientAsync(tempClient)
             .then( () => {
-                // props.showAlert('success', 'Note successfully removed.');
                 updateClient(tempClient)
                 handleNoteCountChange(client.notes.length)
             })
@@ -102,7 +93,7 @@ export default function NotesDisplay(props) {
                                     <IconButton size="small" m={ 0 } onClick={ () => handleDeleteNote(row.noteId) }>
                                         <Delete />
                                     </IconButton>
-                                    { editMode !== 'add' && userName === row.noteByUserName && 
+                                    { editMode !== 'add' && getUserName() === row.noteByUserName && 
                                         <IconButton size="small"  m={ 0 } onClick={ () => handleEditNote(row.noteId) }>
                                             <Edit />
                                         </IconButton>

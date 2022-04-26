@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Snackbar, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Typography, Tooltip, Fab } from '@material-ui/core';
@@ -88,6 +88,10 @@ export default function ServiceTypePage() {
     const [ isNew, setIsNew ] = useState(false)
     const [ editRecord, setEditRecord ] = useState(null);
 
+    useEffect(() => {
+        if (svcTypes.length === 0) updateSvcTypes()
+    })
+
     function updateSvcTypes() {
         dbGetSvcTypesAsync().then(
             data => setSvcTypes(data)
@@ -98,8 +102,6 @@ export default function ServiceTypePage() {
         setIsNew(true)
         setEditRecord(null)
     }
-
-    // console.log(svcTypes)
 
     return (
         <Box mt={ 2 }>

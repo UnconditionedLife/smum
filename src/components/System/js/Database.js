@@ -26,15 +26,11 @@ export let globalMsgFunc = null;
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
 export function showCache() {
-    console.log('Cached session: ');
-    console.log(cachedSession);
-    console.log('Settings: ');
-    console.log(cachedSettings);
-    console.log('DB URL: ' + dbUrl);
-    console.log('Service Types: ');
-    console.log(cachedSvcTypes);
+    console.log('Cached session:', cachedSession);
+    console.log('Settings:', cachedSettings);
+    console.log('DB URL:',  dbUrl);
+    console.log('Service Types:', cachedSvcTypes);
     console.log('AppVer:', cachedAppVersion);
-
 }
 
 //**************** GLOBAL MESSAGE *****************
@@ -210,7 +206,7 @@ export async function dbGetSvcTypesAsync(){
 }
 
 export function getSvcTypes(){
-    return cachedSvcTypes
+    return cachedSvcTypes    
 }
 
 export async function dbSaveSvcTypeAsync(data) {

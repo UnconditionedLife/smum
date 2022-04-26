@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { Route, Redirect } from "react-router-dom";
 import Container from '@material-ui/core/Container';
 import { ClientsRouter } from '../Clients';
-import { AdminMain } from '../Admin';
+import { AdminRouter } from '../Admin';
 import UserMain from '../User/UserMain.jsx';
 import PageToday from './PageToday.jsx';
-import { getSession } from '../System/js/Database';
+import { getUserName } from '../System/js/Database';
 
 SectionsContent.propTypes = {
     searchTerm: PropTypes.string.isRequired,
@@ -14,7 +14,8 @@ SectionsContent.propTypes = {
 }
 
 export default function SectionsContent(props) {
-    if (getSession() == null) return null;
+    // do not render admin content if userName is not set
+    if ( !getUserName() ) return null;
 
     return (
         <Container ml={ 0 } style={{ overflowY: 'scroll', paddingTop: 0 }}>
@@ -28,7 +29,7 @@ export default function SectionsContent(props) {
                 />
             </Route>
             <Route path="/admin">
-                <AdminMain />
+                <AdminRouter />
             </Route>
             <Route path="/user">
                 <UserMain />

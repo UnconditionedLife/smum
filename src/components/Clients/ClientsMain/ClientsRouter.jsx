@@ -7,7 +7,7 @@ import { navigationAllowed } from '../../System/js/Database';
 ClientsRouter.propTypes = {
     handleSearchTermChange: PropTypes.func.isRequired,
     searchTerm: PropTypes.string.isRequired,
-    // client: PropTypes.object.isRequired,
+    client: PropTypes.object,
     // updateClient: PropTypes.func.isRequired,
     // showAlert: PropTypes.func.isRequired,
 }
@@ -19,7 +19,7 @@ export default function ClientsRouter(props) {
     const url = route.pathname;
     const [ selectedTab, setSelectedTab ] = useState(0);
 
-    const updateURL = (clientId, newTab) => {
+    const updateClientsURL = (clientId, newTab) => {
         if (navigationAllowed()) {
             const currentClientId = clientId == null ? "" : encodeURIComponent(clientId);
             let newURL = ""
@@ -89,6 +89,6 @@ export default function ClientsRouter(props) {
             checkClientsURL={ checkClientsURL }
             selectedTab={ selectedTab }
             url={ url }
-            updateURL={ updateURL } />
+            updateClientsURL={ updateClientsURL } />
     )
 }

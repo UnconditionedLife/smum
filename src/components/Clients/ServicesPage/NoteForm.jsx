@@ -4,7 +4,7 @@ import { Box, Checkbox, FormControlLabel } from '@material-ui/core';
 import { NotificationImportant } from '@material-ui/icons';
 import { Button, TextField } from '../../System';
 import { isEmpty, utilNow } from '../../System/js/GlobalUtils.js';
-import { dbSaveClientAsync, getSession, setEditingState } from '../../System/js/Database.js';
+import { dbSaveClientAsync, getUserName, setEditingState } from '../../System/js/Database.js';
 import cuid from 'cuid';
 
 NoteForm.propTypes = {
@@ -34,7 +34,6 @@ export default function NoteForm(props) {
     const [ stopEffect, setStopEffect ] = useState(false)
     
     const textLabel = isEmpty(editNote) ? "Add Note" : "Edit Note";
-    const userName = getSession().user.userName;
 
     useEffect(() => {
         if (!isEmpty(editNote) && !stopEffect) {
@@ -57,7 +56,7 @@ export default function NoteForm(props) {
             newNote.createdDateTime = utilNow() // moment().format(dateTime);
             newNote.updatedDateTime = utilNow() // moment().format(dateTime);
             newNote.isImportant = important;
-            newNote.noteByUserName = userName;
+            newNote.noteByUserName = getUserName();
             newNote.noteId = noteId;
             newNote.noteText = noteText;
             tempNotes.unshift(newNote)
@@ -65,7 +64,7 @@ export default function NoteForm(props) {
             newNote.createdDateTime = editNote.createdDateTime;
             newNote.updatedDateTime = utilNow()
             newNote.isImportant = important;
-            newNote.noteByUserName = userName;
+            newNote.noteByUserName = getUserName();
             newNote.noteId = editNote.noteId;
             newNote.noteText = noteText;
             const index = tempNotes.map(function(e) { return e.noteId; }).indexOf(newNote.noteId);

@@ -11,7 +11,7 @@ ClientsHeader.propTypes = {
     clientsFound: PropTypes.array.isRequired,
     client: PropTypes.object.isRequired, 
     isNewClientChange: PropTypes.func.isRequired,
-    updateURL: PropTypes.func.isRequired,
+    updateClientsURL: PropTypes.func.isRequired,
     selectedTab: PropTypes.number.isRequired,
     showFound: PropTypes.bool.isRequired,
     showServices: PropTypes.bool.isRequired,
@@ -19,11 +19,8 @@ ClientsHeader.propTypes = {
 }
 
 export default function ClientsHeader(props) {
-    const client = props.client
-    const clientsFound = props.clientsFound
-    const isNewClientChange = props.isNewClientChange
-    const selectedTab = props.selectedTab
-    const updateURL = props.updateURL
+    const { client, clientsFound, isNewClientChange, selectedTab, 
+        updateClientsURL, showFound, showServices, showClient } = props
 
     function handleNewClient() {
         if (navigationAllowed()) {
@@ -51,18 +48,18 @@ export default function ClientsHeader(props) {
                             <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
                     </Box> */}
                     <Tabs
-                        value={selectedTab}
-                        onChange={(event, newValue) => { updateURL(client.clientId, newValue) }}
+                        value={ selectedTab }
+                        onChange={(event, newValue) => { updateClientsURL(client.clientId, newValue) }}
                         indicatorColor="secondary"
                         textColor="primary"
                         selectionFollowsFocus
                         centered
                         style={{ justifyContent: 'space-between' }}
                     >
-                        <Tab icon={<Pageview />} disabled={ !props.showFound } label={ navLabels[0] } />
-                        <Tab icon={<RoomService />} disabled={ !props.showServices } label={ navLabels[1] } />
-                        <Tab icon={<House />} disabled={ !props.showClient } label={ navLabels[2] } />
-                        <Tab icon={<History />} disabled={ !props.showClient } label={ navLabels[3] } />
+                        <Tab icon={<Pageview />} disabled={ !showFound } label={ navLabels[0] } />
+                        <Tab icon={<RoomService />} disabled={ !showServices } label={ navLabels[1] } />
+                        <Tab icon={<House />} disabled={ !showClient } label={ navLabels[2] } />
+                        <Tab icon={<History />} disabled={ !showClient } label={ navLabels[3] } />
                     </Tabs>
                 </AppBar>
             </Box>
