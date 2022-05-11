@@ -12,11 +12,11 @@ ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
     updateClient: PropTypes.func.isRequired,
     showAlert: PropTypes.func.isRequired,
-    updateURL: PropTypes.func.isRequired,
+    updateClientsURL: PropTypes.func.isRequired,
 }
 
 export default function ClientPage(props) {
-    const { client, updateClient, updateURL } = props
+    const { client, updateClient, updateClientsURL } = props
     const [ expanded, setExpanded ] = useState(false);
     const [ saveMessage, setSaveMessage ] = useState({ result: 'success', time: client.updatedDateTime });
   
@@ -35,7 +35,7 @@ export default function ClientPage(props) {
                 data.dependents = calcDependentsAges(data)
                 data.family = calcFamilyCounts(data)
                 updateClient(data);
-                updateURL(data.clientId, 1)
+                updateClientsURL(data.clientId, 1)
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });

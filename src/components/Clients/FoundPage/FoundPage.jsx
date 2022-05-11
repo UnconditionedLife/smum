@@ -7,22 +7,18 @@ import moment from 'moment'
 FoundPage.propTypes = {
     clientsFound: PropTypes.array.isRequired,
     client: PropTypes.object.isRequired, changeClient: PropTypes.func.isRequired,
-    updateURL: PropTypes.func.isRequired
+    updateClientsURL: PropTypes.func.isRequired
 }
 
 export default function FoundPage(props) {
-    const clientsFound = props.clientsFound
-    const client = props.client
-    const updateURL = props.updateURL
-    const changeClient = props.changeClient
-
+    const { clientsFound, client, updateClientsURL, changeClient } = props
     let clientId = isEmpty(client) ? null : client.clientId
 
     function handleSelectedClient(event, newClientId) {
         if (clientId !== newClientId) {
             const newClient = clientsFound.filter(obj => obj.clientId == newClientId)
             changeClient(newClient[0])
-            updateURL(newClient[0].clientId, 1);
+            updateClientsURL(newClient[0].clientId, 1);
         }
     }
   

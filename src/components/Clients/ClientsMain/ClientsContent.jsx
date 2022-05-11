@@ -7,9 +7,10 @@ import SmumLogo from "../../Assets/SmumLogo";
 
 ClientsContent.propTypes = {
     clientsFound: PropTypes.array.isRequired,
-    client: PropTypes.object.isRequired, changeClient: PropTypes.func.isRequired,
+    client: PropTypes.object.isRequired, 
+    changeClient: PropTypes.func.isRequired,
     updateClient: PropTypes.func.isRequired,
-    updateURL: PropTypes.func.isRequired,
+    updateClientsURL: PropTypes.func.isRequired,
     showFound: PropTypes.bool.isRequired,
     showServices: PropTypes.bool.isRequired,
     showClient: PropTypes.bool.isRequired,
@@ -20,7 +21,8 @@ ClientsContent.propTypes = {
 }
 
 export default function ClientsContent(props) {
-    const { showFound, showServices, showClient, lastServedDays, lastServedFoodDate, clientInactive  } = props
+    const { clientsFound, client, showFound, showServices, showClient, lastServedDays, 
+        lastServedFoodDate, clientInactive, changeClient, updateClient, updateClientsURL, showAlert } = props
     const match = useRouteMatch();
 
     const logoBox = (
@@ -35,40 +37,39 @@ export default function ClientsContent(props) {
                 <Route path={`${match.path}/found/:term`}>
                     { showFound && 
                         <FoundPage
-                            clientsFound={ props.clientsFound }
-                            client={ props.client } changeClient={ props.changeClient }
-                            updateURL={ props.updateURL } showAlert={ props.showAlert } />
+                            clientsFound={ clientsFound }
+                            client={ client } changeClient={ changeClient }
+                            updateClientsURL={ updateClientsURL } showAlert={ showAlert } />
                     }
                     { !showFound && logoBox }
                 </Route>              
                 <Route path={`${match.path}/services/:clientId`}>
                     { showServices && 
                         <ServicesPage 
-                            clientsFound={ props.clientsFound }
-                            client={ props.client } updateClient={ props.updateClient }
-                            showAlert={ props.showAlert } lastServedFoodDate={ lastServedFoodDate }
+                            clientsFound={ clientsFound }
+                            client={ client } updateClient={ updateClient }
+                            showAlert={ showAlert } lastServedFoodDate={ lastServedFoodDate }
                             lastServedDays={ lastServedDays } clientInactive={ clientInactive }/>
                     }
                     { !showServices && logoBox }
                 </Route>
                 <Route path={`${match.path}/client/:clientId`}>
                     { showClient && 
-                        <ClientPage client={props.client} updateClient={ props.updateClient }
-                        updateURL={ props.updateURL } showAlert={ props.showAlert } />
+                        <ClientPage client={client} updateClient={ updateClient }
+                        updateClientsURL={ updateClientsURL } showAlert={ showAlert } />
                     }
                     { !showClient && logoBox }
                 </Route>
                 <Route path={`${match.path}/history/:clientId`}>
                     { showClient && 
-                        <HistoryPage client={props.client} updateClient={ props.updateClient }
-                            showAlert={ props.showAlert } lastServedFoodDate={ lastServedFoodDate } />
+                        <HistoryPage client={client} updateClient={ updateClient }
+                            showAlert={ showAlert } lastServedFoodDate={ lastServedFoodDate } />
                     }
                     { !showClient && logoBox }
                 </Route>
-                
-                { !showClient && !showServices && !showFound && logoBox }
-                
             </Switch>
+
+            { !showClient && !showServices && !showFound && logoBox }
         </Box>
     );
 }
