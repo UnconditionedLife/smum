@@ -56,8 +56,6 @@ export default function DependentsFormDialog(props) {
         handleCancel()
     }
 
-    console.log(client.dependents)
-
     function getDependent(depId) {
         if (depId === "new") {
             
