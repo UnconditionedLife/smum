@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
-import ReactToPrint from 'react-to-print';
+import { useReactToPrint } from 'react-to-print';
+import { navigationAllowed } from '../../System/js/Database';
 import { Box, Tooltip } from '@material-ui/core';
 import { Print } from '@material-ui/icons';
 import { Fab, Typography } from '../../System';
@@ -134,16 +135,22 @@ PrintClientInfo.propTypes = {
 }
 function PrintClientInfo(props) {
     const ref = useRef();
+    const printComponent = useReactToPrint({
+        content: () => ref.current,
+    })
+
+    const handlePrint = () => {
+        if (navigationAllowed()) { 
+            printComponent()
+        }
+    }
+
     return (
         <>
-            <ReactToPrint
-                trigger={() => <Tooltip title='Print Client Form' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
-                content={() => ref.current}
-                copyStyles={ false }
-            />
             <div style={{ display: 'none' }}>
                 <ClientInfoSheet client={ props.client } ref={ ref } />
             </div>
+            <Tooltip title='Print Client Form' placement="left-start" ><Fab onClick={handlePrint} size="small" align='right'><Print /></Fab></Tooltip>
         </>
     );
 

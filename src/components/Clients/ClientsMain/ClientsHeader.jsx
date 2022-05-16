@@ -36,7 +36,7 @@ export default function ClientsHeader(props) {
             
             <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
                 <Tooltip title= 'Add Client' placement="left-end">
-                    <Fab  float='right' onClick={() => handleNewClient()} size='medium' color='primary' ><Add /></Fab> 
+                    <Fab  float='right' onClick={() => handleNewClient()} size='small' color='default' ><Add /></Fab> 
                 </Tooltip>
             </Snackbar>
 
