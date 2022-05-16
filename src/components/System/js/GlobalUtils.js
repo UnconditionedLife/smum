@@ -124,7 +124,7 @@ export function utilChangeWordCase(str) {
 // For example, "NotAuthorizedException: Incorrect username or password" becomes
 // "Incorrect username or password".
 export function removeErrorPrefix(str) {
-    return str.replace(/^.*: /, '');
+    return String(str).replace(/^.*: /, '');
 }
 
 export function utilRemoveDupClients(clients) {

@@ -9,6 +9,7 @@ import Alert from '@material-ui/lab/Alert';
 import { Button, TextField, useInput } from '../System';
 import SmumLogo from "../Assets/SmumLogo";
 import { cacheSessionVar, dbGetUserAsync } from '../System/js/Database';
+import { removeErrorPrefix } from '../System/js/GlobalUtils';
 
 
 LoginForm.propTypes = {
@@ -23,12 +24,73 @@ export default function LoginForm(props) {
     let usernameInput = useInput("");
     let passwordInput = useInput("");
     let validationCodeInput = useInput("");
-    let newPasswordInput = useInput("");
+    let newPassword1Input = useInput("");
+    let newPassword2Input = useInput("");
+
+
+    let [userAttrs, setUserAttrs] = useState({});
+    let [cogUser, setCogUser] = useState(null);
+
+    function doSubmit() {
+        switch (appState) {
+            case 'login':
+                doLogin(usernameInput.value, passwordInput.value);
+                break;
+            case 'initPassword':
+                // Must delete read-only attributes email_verified and phone_number_verified
+                // from user attributes (second argument). Instead, we just pass an
+                // empty attributes object.
+                // XXX ensure that password entries match
+                cogUser.completeNewPasswordChallenge(newPassword1Input.value, {}, {
+                    onSuccess: () => {
+                        setMessage("New Password set! Please Login.");
+                        setAppState("login");
+                        passwordInput.reset();
+                        newPassword1Input.reset();
+                        newPassword2Input.reset();
+                    },
+                    onFailure: err => {
+                        setMessage(removeErrorPrefix(err));
+                    }
+                });
+                break;
+            case 'code':
+                // let cogUser = cogSetupUser(usernameInput.value);
+                cogUser.confirmRegistration(validationCodeInput.value, true,
+                    err => {
+                        if (err)
+                            setMessage(err.toString());
+                        else {
+                            setMessage("You're confirmed! Please Login.");
+                            setAppState("login");
+                        }
+                    });
+                break;
+            case 'newPassword':
+                // let cogUser = cogSetupUser(usernameInput.value);
+                cogUser.confirmPassword(validationCodeInput.value, newPassword1Input.value, {
+                    onSuccess: () => {
+                        setMessage("New Password set! Please Login.");
+                        setAppState("login");
+                        // usernameInput.reset();
+                        // passwordInput.reset();
+                        validationCodeInput.reset();
+                        newPassword1Input.reset();
+                        newPassword2Input.reset();
+                    },
+                    onFailure: err => {
+                        setMessage(removeErrorPrefix(err));
+                    }
+                });
+                break;
+        }
+    }
 
     function doLogin(username, password) {
-        let cogUser = cogSetupUser(username);
+        let localCogUser = cogSetupUser(username);
+        setCogUser(localCogUser);
         let authDetails = cogSetupAuthDetails(username, password);
-        cogUser.authenticateUser(authDetails, {
+        localCogUser.authenticateUser(authDetails, {
             onSuccess: (result) => {
                 const authorization = {
                     accessToken: result.getAccessToken().getJwtToken(),
@@ -46,56 +108,67 @@ export default function LoginForm(props) {
                     .then (user => {
                         // logout if user is set to Inactive
                         if (user == null || user.isActive == "Inactive") {
-                            cogUser.signOut();
+                            localCogUser.signOut();
                             setMessage("Sorry, your account is INACTIVE.");
                         } else {
                             // sets session in HeaderBar component
-                            props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
+                            props.onLogin({ user: user, auth: authorization, cogUser: localCogUser, refresh: refreshToken });
                             usernameInput.reset();
                             passwordInput.reset();
-                            validationCodeInput.reset();
-                            newPasswordInput.reset();
+                            // validationCodeInput.reset();
+                            // newPasswordInput.reset();
                         }
                     });
             },
             onFailure: (err) => {
-                let message = undefined
-                let appState = undefined
+                // let message = undefined
+                // let appState = undefined
 
-                if (err == 'Error: Incorrect username or password.') {
-                    message = "Incorrect username or password"
-                } else if (err == 'UserNotFoundException: User does not exist.') {
-                    message = "Username does not exist."
-                } else if (err == 'NotAuthorizedException: Incorrect username or password.') {
-                    message = "Incorrect username or password."
-                } else if (err == 'UserNotConfirmedException: User is not confirmed.') {
-                    appState = "code"
-                    message = "Validation Code is required."
-                    // TODO change login flow to deal with confirmation
-                    // cogUserConfirm() //userName, verificationCode
-                } else if (err == 'NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED.') {
-                    appState = "login"
-                    message = "No longer UNCONFIRMED"
-                } else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
-                    message = "New Password is required."
-                } else if (err == 'InvalidParameterException: Missing required parameter USERNAME') {
-                    message = "Username is required."
-                }
-                setMessage(message);
-                if (appState)
-                    setAppState(appState);
-                }
-            })
+                setMessage(removeErrorPrefix(err));
+                if (err.code == 'UserNotConfirmedException')
+                    setAppState('code');
+
+                // if (err == 'Error: Incorrect username or password.') {
+                //     message = "Incorrect username or password"
+                // } else if (err == 'UserNotFoundException: User does not exist.') {
+                //     message = "Username does not exist."
+                // } else if (err == 'NotAuthorizedException: Incorrect username or password.') {
+                //     message = "Incorrect username or password."
+                // } else if (err == 'UserNotConfirmedException: User is not confirmed.') {
+                //     appState = "code"
+                //     message = "Validation Code is required."
+                //     // TODO change login flow to deal with confirmation
+                //     // cogUserConfirm() //userName, verificationCode
+                // } else if (err == 'NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED.') {
+                //     appState = "login"
+                //     message = "No longer UNCONFIRMED"
+                // } else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
+                //     message = "New Password is required."
+                // } else if (err == 'InvalidParameterException: Missing required parameter USERNAME') {
+                //     message = "Username is required."
+                // }
+                // setMessage(message);
+                // if (appState)
+                //     setAppState(appState);
+            },
+            newPasswordRequired: (attrs, reqAttrs) => {
+                console.log('New password needed. Attrs', attrs)
+                console.log('Required', reqAttrs)
+                setUserAttrs(attrs);
+                setAppState("initPassword")
+            }
+        });
         }
 
 
     function displaySubmitButtons() {
         return (
             <Fragment>
-                {appState == "code" ? (
+                {appState == "code" || appState == "newPassword" ? (
                     <Button className="textLink" variant="contained" color="primary" style={{ textTransform: "none" }}
                         onClick={() => {
-                            let cogUser = cogSetupUser(usernameInput.value);
+                            // let cogUser = cogSetupUser(usernameInput.value);
+                            console.log('User is', usernameInput.value)
                             cogUser.resendConfirmationCode(err => {
                                 if (err)
                                     setMessage(err.toString());
@@ -109,10 +182,7 @@ export default function LoginForm(props) {
 
                 {appState == "login" ? (
                     <Box m={ 2 } display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
-                        <Button variant="contained" color="primary" style={{ textTransform: "none" }}
-                            onClick={() => {
-                                doLogin(usernameInput.value, passwordInput.value);
-                            }} >
+                        <Button variant="contained" color="primary" style={{ textTransform: "none" }} onClick={ doSubmit } >
                             Login
                         </Button>
                         <Box mt={1}></Box>
@@ -120,47 +190,27 @@ export default function LoginForm(props) {
                 ) : null}
 
                 {appState == "code" ? (
-                    <span  >
-                        <Button className="textLink" onClick={() => {
-                        let cogUser = cogSetupUser(usernameInput.value);
-                        cogUser.confirmRegistration(validationCodeInput.value, true,
-                            err => {
-                                if (err)
-                                    setMessage(err.toString());
-                                else {
-                                    setMessage("You're confirmed! Please Login.");
-                                    setAppState("login");
-                                }
-                            })
-                        }} variant="outlined" color="primary" style={{ textTransform: "none" }}>VALIDATE</Button>
+                    <span>
+                        <Button className="textLink" variant="outlined" color="primary" 
+                            style={{ textTransform: "none" }} onClick={ doSubmit } >
+                            VALIDATE
+                        </Button>
                     </span>
                 ) : null}
 
                 {appState == "newPassword" ? (
                     <span>
                         <Button className="textLink" variant="outlined" color="primary" 
-                            style={{ textTransform: "none" }}
-                            onClick={() => {
-                                setPasswordDisplay(false);
-                                let cogUser = cogSetupUser(usernameInput.value);
-                                cogUser.confirmPassword(validationCodeInput.value, newPasswordInput.value, {
-                                    onSuccess: () => {
-                                    setMessage("New Password set! Please Login.");
-                                    setAppState("login");
-                                    usernameInput.reset();
-                                    passwordInput.reset();
-                                    validationCodeInput.reset();
-                                    newPasswordInput.reset();
-                                },
-                                onFailure: err => {
-                                    if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.") {
-                                        setMessage("Too many requests. Try again later!");
-                                    } else {
-                                        setMessage(err.toString());
-                                    }
-                                }
-                            });
-                        }}>
+                            style={{ textTransform: "none" }} onClick={ doSubmit }>
+                            SET PASSWORD
+                        </Button>
+                    </span>
+                ) : null}
+
+                {appState == "initPassword" ? (
+                    <span>
+                        <Button className="textLink" variant="outlined" color="primary" 
+                            style={{ textTransform: "none" }} onClick={ doSubmit }>
                             SET PASSWORD
                         </Button>
                     </span>
@@ -187,7 +237,6 @@ export default function LoginForm(props) {
                                         <IconButton
                                             aria-label="toggle password visibility"
                                             onClick={() => setPasswordDisplay(!passwordDisplay)}
-                                            onMouseDown={() => setPasswordDisplay(!passwordDisplay)}
                                             edge="end">
                                                 {passwordDisplay ? <Visibility /> : <VisibilityOff />}
                                         </IconButton>
@@ -195,7 +244,8 @@ export default function LoginForm(props) {
                                 )
                             }}
                             onKeyDown={event => {
-                                if (event.key == "Enter") doLogin(usernameInput.value, passwordInput.value);
+                                if (event.key == "Enter") 
+                                    doSubmit();
                             }}
                         />
                         <Box ml={1}>
@@ -205,7 +255,8 @@ export default function LoginForm(props) {
                                     if (usernameInput.value == "") {
                                         setMessage("Username is required.");
                                     }
-                                    let cogUser = cogSetupUser(usernameInput.value);
+                                    // let cogUser = cogSetupUser(usernameInput.value);
+                                    setCogUser(cogSetupUser(usernameInput.value));
                                     cogUser.forgotPassword({
                                         onSuccess: function (result) {
                                         setMessage("Validation Code sent to: " + result.CodeDeliveryDetails.Destination);
@@ -231,18 +282,17 @@ export default function LoginForm(props) {
                         />
                     </Fragment>
                 ) : null }
-                {appState == "newPassword" ? (
+                {appState == "newPassword" || appState == "initPassword" ? (
                     <Fragment>
                         <TextField ml='0' variant="outlined" margin="normal" required fullWidth
-                            name="newPassword" label="New Password" id="newPassword" autoComplete="newPassword"
-                            type={passwordDisplay ? "text" : "password"} {...newPasswordInput.bind}
+                            name="newPassword1" label="New Password" id="newPassword1" autoComplete="newPassword"
+                            type={passwordDisplay ? "text" : "password"} {...newPassword1Input.bind}
                             InputProps={{
                                 endAdornment: (
                                 <InputAdornment position="end">
                                     <IconButton
                                         aria-label="toggle password visibility"
                                         onClick={() => setPasswordDisplay(!passwordDisplay)}
-                                        onMouseDown={() => setPasswordDisplay(!passwordDisplay)}
                                         edge="end"
                                     >
                                     {passwordDisplay ? <Visibility /> : <VisibilityOff />}
@@ -252,7 +302,28 @@ export default function LoginForm(props) {
                             }}
                             onKeyDown={event => {
                                 if (event.key == "Enter")
-                                doLogin(usernameInput.value, passwordInput.value);
+                                    doSubmit();
+                            }}
+                        />
+                        <TextField ml='0' variant="outlined" margin="normal" required fullWidth
+                            name="newPassword2" label="Confirm Password" id="newPassword2" autoComplete="newPassword"
+                            type={passwordDisplay ? "text" : "password"} {...newPassword2Input.bind}
+                            InputProps={{
+                                endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="toggle password visibility"
+                                        onClick={() => setPasswordDisplay(!passwordDisplay)}
+                                        edge="end"
+                                    >
+                                    {passwordDisplay ? <Visibility /> : <VisibilityOff />}
+                                    </IconButton>
+                                </InputAdornment>
+                                )
+                            }}
+                            onKeyDown={event => {
+                                if (event.key == "Enter")
+                                    doSubmit();
                             }}
                         />
                     </Fragment>
