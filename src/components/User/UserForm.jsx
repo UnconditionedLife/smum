@@ -41,11 +41,13 @@ export default function UserForm(props) {
         setEditingState(true);
 
     function validUsername(name) {
-        dbGetUserAsync(name)
-        .then( () => {
-            setError('userName', {type: 'manual', message: 'Username is already in use'});
-        })
-        .catch( () => {} );
+        if (isNewUser) {
+            dbGetUserAsync(name)
+            .then( () => {
+                setError('userName', {type: 'manual', message: 'Username is already in use'});
+            })
+            .catch( () => {} );
+        }
         return true;
     }
 
