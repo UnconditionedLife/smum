@@ -11,7 +11,6 @@ import SmumLogo from "../Assets/SmumLogo";
 import { cacheSessionVar, dbGetUserAsync } from '../System/js/Database';
 import { removeErrorPrefix } from '../System/js/GlobalUtils';
 
-
 LoginForm.propTypes = {
     onLogin: PropTypes.func.isRequired,
 }
@@ -20,6 +19,7 @@ export default function LoginForm(props) {
     let [passwordDisplay, setPasswordDisplay] = useState(false);
     let [appState, setAppState] = useState("login");
     let [message, setMessage] = useState("");
+    let [savedCogUser, setCogUser] = useState(null);
 
     let usernameInput = useInput("");
     let passwordInput = useInput("");
@@ -27,14 +27,37 @@ export default function LoginForm(props) {
     let newPassword1Input = useInput("");
     let newPassword2Input = useInput("");
 
-    let [savedCogUser, setCogUser] = useState(null);
-
     function doSubmit() {
         switch (appState) {
             case 'login':
-                doLogin(usernameInput.value, passwordInput.value);
+                // Normal authentication with username and password
+                {
+                    let username = usernameInput.value;
+                    let cogUser = cogSetupUser(username);
+                    setCogUser(cogUser);
+                    let authDetails = cogSetupAuthDetails(username, passwordInput.value);
+                    cogUser.authenticateUser(authDetails, {
+                        onSuccess: (result) => {
+                            completeLogin(cogUser, username, result);
+                        },
+                        onFailure: (err) => {
+                            setMessage(removeErrorPrefix(err));
+                            // console.log('Login error\n', JSON.stringify(err))
+                            if (err.code == 'UserNotConfirmedException')
+                                setAppState("code");
+                            if (err.code == 'PasswordResetRequiredException')
+                                setAppState('newPassword');
+                        },
+                        newPasswordRequired: () => { // (userAttrs, requiredAttrs)
+                            setMessage('Please set a new password.');
+                            setAppState("initPassword")
+                        }
+                    });
+                }
                 break;
+
             case 'initPassword':
+                // Force a newly created user to set a new password on first login.
                 if (newPassword1Input.value != newPassword2Input.value) {
                     setMessage('New passwords must match')
                 } else {
@@ -43,11 +66,8 @@ export default function LoginForm(props) {
                     // In this case, we just pass an empty attributes object.
                     savedCogUser.completeNewPasswordChallenge(newPassword1Input.value, {}, {
                         onSuccess: () => {
-                            setMessage("New Password set! Please log in.");
+                            setMessage("New password set! Please log in.");
                             setAppState("login");
-                            passwordInput.reset();
-                            newPassword1Input.reset();
-                            newPassword2Input.reset();
                         },
                         onFailure: err => {
                             setMessage(removeErrorPrefix(err));
@@ -55,28 +75,16 @@ export default function LoginForm(props) {
                     });
                 }
                 break;
-            case 'code':
-                savedCogUser.confirmRegistration(validationCodeInput.value, true,
-                    err => {
-                        if (err)
-                            setMessage(removeErrorPrefix(err));
-                        else {
-                            setMessage("You're confirmed! Please Login.");
-                            setAppState("login");
-                        }
-                    });
-                break;
+
             case 'newPassword':
+                // Force an existing user to set a new password.
                 if (newPassword1Input.value != newPassword2Input.value) {
                     setMessage('New passwords must match')
                 } else {
                     savedCogUser.confirmPassword(validationCodeInput.value, newPassword1Input.value, {
                         onSuccess: () => {
-                            setMessage("New Password set! Please Login.");
+                            setMessage("New password set! Please log in.");
                             setAppState("login");
-                            validationCodeInput.reset();
-                            newPassword1Input.reset();
-                            newPassword2Input.reset();
                         },
                         onFailure: err => {
                             setMessage(removeErrorPrefix(err));
@@ -84,52 +92,48 @@ export default function LoginForm(props) {
                     });
                 }
                 break;
+
+                case 'code':
+                    // Validate the user's email/phone by entering a code sent there.
+                    // We don't know the administrative action needed to enter this state,
+                    // so this is dead code for now. XXX
+                    savedCogUser.confirmRegistration(validationCodeInput.value, true,
+                        err => {
+                            if (err)
+                                setMessage(removeErrorPrefix(err));
+                            else {
+                                setMessage("User account confirmed! Please log in.");
+                                setAppState("login");
+                            }
+                        });
+                    break;    
         }
     }
 
-    function doLogin(username, password) {
-        let cogUser = cogSetupUser(username);
-        setCogUser(cogUser);
-        let authDetails = cogSetupAuthDetails(username, password);
-        cogUser.authenticateUser(authDetails, {
-            onSuccess: (result) => {
-                const authorization = {
-                    accessToken: result.getAccessToken().getJwtToken(),
-                    idToken: result.idToken.jwtToken,
-                };
-                const refreshToken = result.refreshToken.token;
-  
-                // set up minimal session for first db call
-                cacheSessionVar({ auth: authorization });
-                dbGetUserAsync(username)
-                    .then (user => {
-                        // logout if user is unknown or set to Inactive
-                        if (user == null || user.isActive == "Inactive") {
-                            cogUser.signOut();
-                            setMessage("Sorry, your account is INACTIVE.");
-                        } else {
-                            // Notify parent of succeessful login
-                            props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
-                            usernameInput.reset();
-                            passwordInput.reset();
-                        }
-                    })
-                    .catch(() => {
-                        cogUser.signOut();
-                        setMessage("Sorry, your account is INACTIVE.");
-                    });
-            },
-            onFailure: (err) => {
-                setMessage(removeErrorPrefix(err));
-                console.log('Login error\n', JSON.stringify(err))
-                if (err.code == 'UserNotConfirmedException')
-                    setAppState("code");
-            },
-            newPasswordRequired: () => { // (userAttrs, requiredAttrs)
-                setMessage('Please set a new password.');
-                setAppState("initPassword")
-            }
-        });
+    function completeLogin(cogUser, username, authResult) {
+        const authorization = {
+            accessToken: authResult.getAccessToken().getJwtToken(),
+            idToken: authResult.idToken.jwtToken,
+        };
+        const refreshToken = authResult.refreshToken.token;
+
+        // set up minimal session for first db call
+        cacheSessionVar({ auth: authorization });
+        dbGetUserAsync(username)
+            .then (user => {
+                // logout if user is unknown or set to Inactive
+                if (user == null || user.isActive == "Inactive") {
+                    cogUser.signOut();
+                    setMessage("Sorry, your account is INACTIVE.");
+                } else {
+                    // Notify parent of succeessful login
+                    props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
+                }
+            })
+            .catch(() => {
+                cogUser.signOut();
+                setMessage("Sorry, your account is INACTIVE.");
+            });
     }
 
     function displayLoginForms() {
@@ -172,7 +176,8 @@ export default function LoginForm(props) {
                                         setCogUser(cogUser);
                                         cogUser.forgotPassword({
                                             onSuccess: function (result) {
-                                                setMessage("Validation Code sent to: " + result.CodeDeliveryDetails.Destination);
+                                                setMessage("Validation code sent to: " + 
+                                                    result.CodeDeliveryDetails.Destination);
                                                 setAppState("newPassword");
                                             },
                                             onFailure: function (err) {
@@ -180,7 +185,7 @@ export default function LoginForm(props) {
                                             }
                                         })
                                     }
-                                }} href="#" variant="body2">
+                                }} variant="body2">
                                     Forgot password? Reset it.
                                 </Link>
                             </Grid>
@@ -262,7 +267,7 @@ export default function LoginForm(props) {
         }
         return (
             <Fragment>
-                {appState == "code" || appState == "newPassword" ? (
+                {appState == "code" ? (
                     <Button className="textLink" variant="outlined" color="primary" style={{ textTransform: "none" }}
                         onClick={() => {
                             savedCogUser.resendConfirmationCode(err => {
