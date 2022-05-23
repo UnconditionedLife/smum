@@ -56,7 +56,6 @@ function UserList(props) {
                     { editMode === 'edit' &&
                         <UserPage clearRecord={ clearRecord } userName={ userName }  />
                     }
-                    {editMode}
                 </TableBody>
                 </Table>
             </TableContainer>
