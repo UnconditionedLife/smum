@@ -8,8 +8,6 @@ ClientsRouter.propTypes = {
     handleSearchTermChange: PropTypes.func.isRequired,
     searchTerm: PropTypes.string.isRequired,
     client: PropTypes.object,
-    // updateClient: PropTypes.func.isRequired,
-    // showAlert: PropTypes.func.isRequired,
 }
 
 export default function ClientsRouter(props) {
@@ -66,6 +64,10 @@ export default function ClientsRouter(props) {
         }
         else if (matchPath(url, { path: "/clients/history/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/history", exact: true, strict: false })) {
             checkClient(client, 3);
+        }
+        else {
+            // if path does not match a valid path default to /clients
+            history.push("/clients");
         }
     }
 

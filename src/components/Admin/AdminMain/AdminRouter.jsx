@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
 import { AdminMain } from '..';
@@ -41,6 +41,7 @@ export default function AdminRouter(props) {
 
     const checkAdminURL = () => {
         if (matchPath(url, { path: "/admin/reports", exact: true, strict: false }) || matchPath(url, { path: "/admin", exact: true, strict: false })) {
+            history.push("/admin/reports");
             handleTabChange(0);
         }
         else if (matchPath(url, { path: "/admin/calendar", exact: true, strict: false })) {
@@ -55,7 +56,10 @@ export default function AdminRouter(props) {
         else if (matchPath(url, { path: "/admin/settings", exact: true, strict: false })) {
             handleTabChange(4);
         }
-
+        else {
+            // if path does not match a valid path default to /admin
+            history.push("/admin");
+        }
     }
 
     function handleTabChange(newValue){

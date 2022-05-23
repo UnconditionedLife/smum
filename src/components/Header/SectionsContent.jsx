@@ -14,6 +14,7 @@ SectionsContent.propTypes = {
 }
 
 export default function SectionsContent(props) {
+    const { searchTerm, handleSearchTermChange } = props
     // do not render admin content if userName is not set
     if ( !getUserName() ) return null;
 
@@ -24,8 +25,8 @@ export default function SectionsContent(props) {
             </Route>
             <Route path="/clients">
                 <ClientsRouter
-                    searchTerm={ props.searchTerm }
-                    handleSearchTermChange={ props.handleSearchTermChange }
+                    searchTerm={ searchTerm }
+                    handleSearchTermChange={ handleSearchTermChange }
                 />
             </Route>
             <Route path="/admin">

@@ -6,9 +6,9 @@ import { isAdmin } from '../System/js/Database';
 export default function SearchNavBarContainer() {
     const route = useLocation();
     const history = useHistory();
+    
     const checkSectionURL = () => {
         const url = route.pathname;
-
         if (matchPath(url, { path: "/", exact: true, strict: false })) {
             return 0;
         }
@@ -16,13 +16,21 @@ export default function SearchNavBarContainer() {
             return 0;
         }
         else if (matchPath(url, { path: "/admin", exact: true, strict: false }) || matchPath(url, { path: "/admin/*", exact: true, strict: false })) {
-            return 1;
+            if (isAdmin()) {
+                return 1;
+            } else {
+                history.push("/clients");
+            }
         }
         else if (matchPath(url, { path: "/today", exact: true, strict: false })) {
             return 2;
         }
         else if (matchPath(url, { path: "/user", exact: true, strict: false })) {
             return 3;
+        }
+        else {
+            // if path does not match a valid path default to /clients
+            updateRoute(0)
         }
     }
 
@@ -35,7 +43,7 @@ export default function SearchNavBarContainer() {
             }
             break;
           case 1:
-            if (isAdmin) history.push("/admin");
+            if (isAdmin()) history.push("/admin");
             break;
           case 2:
             history.push("/today");
