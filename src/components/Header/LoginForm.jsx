@@ -27,9 +27,7 @@ export default function LoginForm(props) {
     let newPassword1Input = useInput("");
     let newPassword2Input = useInput("");
 
-
-    let [userAttrs, setUserAttrs] = useState({});
-    let [cogUser, setCogUser] = useState(null);
+    let [savedCogUser, setCogUser] = useState(null);
 
     function doSubmit() {
         switch (appState) {
@@ -37,29 +35,31 @@ export default function LoginForm(props) {
                 doLogin(usernameInput.value, passwordInput.value);
                 break;
             case 'initPassword':
-                // Must delete read-only attributes email_verified and phone_number_verified
-                // from user attributes (second argument). Instead, we just pass an
-                // empty attributes object.
-                // XXX ensure that password entries match
-                cogUser.completeNewPasswordChallenge(newPassword1Input.value, {}, {
-                    onSuccess: () => {
-                        setMessage("New Password set! Please Login.");
-                        setAppState("login");
-                        passwordInput.reset();
-                        newPassword1Input.reset();
-                        newPassword2Input.reset();
-                    },
-                    onFailure: err => {
-                        setMessage(removeErrorPrefix(err));
-                    }
-                });
+                if (newPassword1Input.value != newPassword2Input.value) {
+                    setMessage('New passwords must match')
+                } else {
+                    // The second argument is for setting any missing user attributes. However, we
+                    // must exclude read-only attributes email_verified and phone_number_verified.
+                    // In this case, we just pass an empty attributes object.
+                    savedCogUser.completeNewPasswordChallenge(newPassword1Input.value, {}, {
+                        onSuccess: () => {
+                            setMessage("New Password set! Please log in.");
+                            setAppState("login");
+                            passwordInput.reset();
+                            newPassword1Input.reset();
+                            newPassword2Input.reset();
+                        },
+                        onFailure: err => {
+                            setMessage(removeErrorPrefix(err));
+                        }
+                    });
+                }
                 break;
             case 'code':
-                // let cogUser = cogSetupUser(usernameInput.value);
-                cogUser.confirmRegistration(validationCodeInput.value, true,
+                savedCogUser.confirmRegistration(validationCodeInput.value, true,
                     err => {
                         if (err)
-                            setMessage(err.toString());
+                            setMessage(removeErrorPrefix(err));
                         else {
                             setMessage("You're confirmed! Please Login.");
                             setAppState("login");
@@ -67,156 +67,69 @@ export default function LoginForm(props) {
                     });
                 break;
             case 'newPassword':
-                // let cogUser = cogSetupUser(usernameInput.value);
-                cogUser.confirmPassword(validationCodeInput.value, newPassword1Input.value, {
-                    onSuccess: () => {
-                        setMessage("New Password set! Please Login.");
-                        setAppState("login");
-                        // usernameInput.reset();
-                        // passwordInput.reset();
-                        validationCodeInput.reset();
-                        newPassword1Input.reset();
-                        newPassword2Input.reset();
-                    },
-                    onFailure: err => {
-                        setMessage(removeErrorPrefix(err));
-                    }
-                });
+                if (newPassword1Input.value != newPassword2Input.value) {
+                    setMessage('New passwords must match')
+                } else {
+                    savedCogUser.confirmPassword(validationCodeInput.value, newPassword1Input.value, {
+                        onSuccess: () => {
+                            setMessage("New Password set! Please Login.");
+                            setAppState("login");
+                            validationCodeInput.reset();
+                            newPassword1Input.reset();
+                            newPassword2Input.reset();
+                        },
+                        onFailure: err => {
+                            setMessage(removeErrorPrefix(err));
+                        }
+                    });
+                }
                 break;
         }
     }
 
     function doLogin(username, password) {
-        let localCogUser = cogSetupUser(username);
-        setCogUser(localCogUser);
+        let cogUser = cogSetupUser(username);
+        setCogUser(cogUser);
         let authDetails = cogSetupAuthDetails(username, password);
-        localCogUser.authenticateUser(authDetails, {
+        cogUser.authenticateUser(authDetails, {
             onSuccess: (result) => {
                 const authorization = {
                     accessToken: result.getAccessToken().getJwtToken(),
                     idToken: result.idToken.jwtToken,
                 };
                 const refreshToken = result.refreshToken.token;
-                setMessage("");
-                authorization.accessToken = result.getAccessToken().getJwtToken()
-                authorization.idToken = result.idToken.jwtToken
   
                 // set up minimal session for first db call
                 cacheSessionVar({ auth: authorization });
-
                 dbGetUserAsync(username)
                     .then (user => {
-                        // logout if user is set to Inactive
+                        // logout if user is unknown or set to Inactive
                         if (user == null || user.isActive == "Inactive") {
-                            localCogUser.signOut();
+                            cogUser.signOut();
                             setMessage("Sorry, your account is INACTIVE.");
                         } else {
-                            // sets session in HeaderBar component
-                            props.onLogin({ user: user, auth: authorization, cogUser: localCogUser, refresh: refreshToken });
+                            // Notify parent of succeessful login
+                            props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
                             usernameInput.reset();
                             passwordInput.reset();
-                            // validationCodeInput.reset();
-                            // newPasswordInput.reset();
                         }
+                    })
+                    .catch(() => {
+                        cogUser.signOut();
+                        setMessage("Sorry, your account is INACTIVE.");
                     });
             },
             onFailure: (err) => {
-                // let message = undefined
-                // let appState = undefined
-
                 setMessage(removeErrorPrefix(err));
+                console.log('Login error\n', JSON.stringify(err))
                 if (err.code == 'UserNotConfirmedException')
-                    setAppState('code');
-
-                // if (err == 'Error: Incorrect username or password.') {
-                //     message = "Incorrect username or password"
-                // } else if (err == 'UserNotFoundException: User does not exist.') {
-                //     message = "Username does not exist."
-                // } else if (err == 'NotAuthorizedException: Incorrect username or password.') {
-                //     message = "Incorrect username or password."
-                // } else if (err == 'UserNotConfirmedException: User is not confirmed.') {
-                //     appState = "code"
-                //     message = "Validation Code is required."
-                //     // TODO change login flow to deal with confirmation
-                //     // cogUserConfirm() //userName, verificationCode
-                // } else if (err == 'NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED.') {
-                //     appState = "login"
-                //     message = "No longer UNCONFIRMED"
-                // } else if (err == 'PasswordResetRequiredException: Password reset required for the user') {
-                //     message = "New Password is required."
-                // } else if (err == 'InvalidParameterException: Missing required parameter USERNAME') {
-                //     message = "Username is required."
-                // }
-                // setMessage(message);
-                // if (appState)
-                //     setAppState(appState);
+                    setAppState("code");
             },
-            newPasswordRequired: (attrs, reqAttrs) => {
-                console.log('New password needed. Attrs', attrs)
-                console.log('Required', reqAttrs)
-                setUserAttrs(attrs);
+            newPasswordRequired: () => { // (userAttrs, requiredAttrs)
+                setMessage('Please set a new password.');
                 setAppState("initPassword")
             }
         });
-        }
-
-
-    function displaySubmitButtons() {
-        return (
-            <Fragment>
-                {appState == "code" || appState == "newPassword" ? (
-                    <Button className="textLink" variant="contained" color="primary" style={{ textTransform: "none" }}
-                        onClick={() => {
-                            // let cogUser = cogSetupUser(usernameInput.value);
-                            console.log('User is', usernameInput.value)
-                            cogUser.resendConfirmationCode(err => {
-                                if (err)
-                                    setMessage(err.toString());
-                                else
-                                    setMessage("New code has been sent.");
-                            });
-                        }} >
-                        Resend Validation Code
-                    </Button>
-                ) : null}
-
-                {appState == "login" ? (
-                    <Box m={ 2 } display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
-                        <Button variant="contained" color="primary" style={{ textTransform: "none" }} onClick={ doSubmit } >
-                            Login
-                        </Button>
-                        <Box mt={1}></Box>
-                    </Box>
-                ) : null}
-
-                {appState == "code" ? (
-                    <span>
-                        <Button className="textLink" variant="outlined" color="primary" 
-                            style={{ textTransform: "none" }} onClick={ doSubmit } >
-                            VALIDATE
-                        </Button>
-                    </span>
-                ) : null}
-
-                {appState == "newPassword" ? (
-                    <span>
-                        <Button className="textLink" variant="outlined" color="primary" 
-                            style={{ textTransform: "none" }} onClick={ doSubmit }>
-                            SET PASSWORD
-                        </Button>
-                    </span>
-                ) : null}
-
-                {appState == "initPassword" ? (
-                    <span>
-                        <Button className="textLink" variant="outlined" color="primary" 
-                            style={{ textTransform: "none" }} onClick={ doSubmit }>
-                            SET PASSWORD
-                        </Button>
-                    </span>
-                ) : null}
-            </Fragment>
-        );
     }
 
     function displayLoginForms() {
@@ -251,25 +164,25 @@ export default function LoginForm(props) {
                         <Box ml={1}>
                             <Grid item>
                                 <Link onClick={() => {
-                                    setPasswordDisplay(false);
                                     if (usernameInput.value == "") {
                                         setMessage("Username is required.");
                                     }
-                                    // let cogUser = cogSetupUser(usernameInput.value);
-                                    setCogUser(cogSetupUser(usernameInput.value));
-                                    cogUser.forgotPassword({
-                                        onSuccess: function (result) {
-                                        setMessage("Validation Code sent to: " + result.CodeDeliveryDetails.Destination);
-                                        setAppState("newPassword");
-                                    },
-                                    onFailure: function (err) {
-                                        if (err == "LimitExceededException: Attempt limit exceeded, please try after some time.")
-                                            setMessage("Too many requests. Try again later!");
-                                        else
-                                            setMessage(err.toString());
-                                        }
-                                    })
-                                }} href="#" variant="body2">Forgot password?</Link>
+                                    else {
+                                        let cogUser = cogSetupUser(usernameInput.value);
+                                        setCogUser(cogUser);
+                                        cogUser.forgotPassword({
+                                            onSuccess: function (result) {
+                                                setMessage("Validation Code sent to: " + result.CodeDeliveryDetails.Destination);
+                                                setAppState("newPassword");
+                                            },
+                                            onFailure: function (err) {
+                                                setMessage(removeErrorPrefix(err));
+                                            }
+                                        })
+                                    }
+                                }} href="#" variant="body2">
+                                    Forgot password? Reset it.
+                                </Link>
                             </Grid>
                         </Box>
                     </Fragment>
@@ -278,7 +191,7 @@ export default function LoginForm(props) {
                     <Fragment>
                         <TextField ml='0' variant="outlined" margin="normal" required fullWidth
                             id="loginCode" label="Login Code" name="loginCode" autoComplete="loginCode"
-                            {...validationCodeInput.bind}autoFocus
+                            {...validationCodeInput.bind} autoFocus
                         />
                     </Fragment>
                 ) : null }
@@ -330,6 +243,47 @@ export default function LoginForm(props) {
                 ) : null}
             </Fragment>
         )
+    }
+
+    function displaySubmitButtons() {
+        let buttonText = 'Submit';
+        
+        switch (appState) {
+            case 'login':
+                buttonText = 'Login';
+                break;
+            case 'code':
+                buttonText = 'Validate';
+                break;
+            case 'newPassword':
+            case 'initPassword':
+                buttonText = 'Set Password';
+                break;
+        }
+        return (
+            <Fragment>
+                {appState == "code" || appState == "newPassword" ? (
+                    <Button className="textLink" variant="outlined" color="primary" style={{ textTransform: "none" }}
+                        onClick={() => {
+                            savedCogUser.resendConfirmationCode(err => {
+                                if (err)
+                                    setMessage(removeErrorPrefix(err));
+                                else
+                                    setMessage("New code has been sent.");
+                            });
+                        }} >
+                        Resend Validation Code
+                    </Button>
+                ) : null}
+
+                <Box m={ 2 } display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
+                    <Button variant="contained" color="primary" style={{ textTransform: "none" }} onClick={ doSubmit } >
+                        { buttonText }
+                    </Button>
+                    <Box mt={1}></Box>
+                </Box>
+            </Fragment>
+        );
     }
 
     return (
