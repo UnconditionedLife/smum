@@ -40,6 +40,9 @@ export default function UserForm(props) {
     if (formState.isDirty) 
         setEditingState(true);
 
+    // Warn about trying to add an account with an existing username. However,
+    // because this validation is asynchronous, an error will not prevent
+    // saving the entry (which will overwrite the existing user).
     function validUsername(name) {
         if (isNewUser) {
             dbGetUserAsync(name)
