@@ -35,7 +35,7 @@ export default function ClientPage(props) {
                 data.dependents = calcDependentsAges(data)
                 data.family = calcFamilyCounts(data)
                 updateClient(data);
-                updateClientsURL(data.clientId, 1)
+                updateClientsURL(data.clientId, 2)
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });

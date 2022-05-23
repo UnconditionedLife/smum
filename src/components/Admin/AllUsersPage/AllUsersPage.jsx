@@ -4,9 +4,64 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar, Tabl
      TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@material-ui/core';
 import { Add, ExpandMore } from '@material-ui/icons';
 import { UserPage } from '..';
-import { dbGetAllUsersAsync } from '../../System/js/Database.js';
+import { dbGetAllUsersAsync, navigationAllowed } from '../../System/js/Database';
 
 AllUsersPage.propTypes = {
+}
+
+function UserList(props) {
+    UserList.propTypes = {
+        list: PropTypes.array.isRequired,
+    }
+
+    const [ editMode, setEditMode ] = useState('xxx');
+    const [ userName, setUserName ] = useState(null);
+
+    function handleEditRecord(newUserName){
+        setUserName(newUserName)
+        setEditMode("edit")   
+    }
+
+    function clearRecord() {
+        setEditMode('none')
+        setUserName(null)
+    }
+
+
+    return (
+        <Box width='100%' mx={ 2 }>
+            <TableContainer> 
+                <Table>
+                <TableHead>
+                    <TableRow>
+                    <TableCell align="center">Username</TableCell>
+                    <TableCell align="center">Given Name</TableCell>
+                    <TableCell align="center">Family Name</TableCell>
+                    <TableCell align="center">User Role</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {props.list.map((row) => (
+                    <TableRow 
+                        key={ row.userName }
+                        onClick={ () => handleEditRecord(row.userName) }
+                        selected={ row.userName == userName }
+                    >
+                        <TableCell component="th" scope="row">{row.userName}</TableCell>
+                        <TableCell align="center">{row.givenName}</TableCell>
+                        <TableCell align="center">{row.familyName}</TableCell>
+                        <TableCell align="center">{row.userRole}</TableCell>
+                    </TableRow>
+                    ))}
+                    { editMode === 'edit' &&
+                        <UserPage clearRecord={ clearRecord } userName={ userName }  />
+                    }
+                    {editMode}
+                </TableBody>
+                </Table>
+            </TableContainer>
+        </Box>
+    );
 }
 
 export default function AllUsersPage(props) {
@@ -23,61 +78,6 @@ export default function AllUsersPage(props) {
                 setUsers( usersArray.sort((a, b) => a.userName.localeCompare(b.userName)))
             })
     }
-
-    function UserList(props) {
-        UserList.propTypes = {
-            list: PropTypes.array.isRequired,
-        }
-
-        const [ editMode, setEditMode ] = useState('none');
-        const [ userName, setUserName ] = useState(null);
-    
-        function handleEditRecord(newUserName){
-            setUserName(newUserName)
-            setEditMode("edit")   
-        }
-    
-        function clearRecord() {
-            getUserList()
-            setEditMode('none')
-            setUserName(null)
-        }
-    
-    
-        return (
-            <Box width='100%' mx={ 2 }>
-                <TableContainer> 
-                    <Table>
-                    <TableHead>
-                        <TableRow>
-                        <TableCell align="center">Username</TableCell>
-                        <TableCell align="center">Given Name</TableCell>
-                        <TableCell align="center">Family Name</TableCell>
-                        <TableCell align="center">User Role</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {props.list.map((row) => (
-                        <TableRow 
-                            key={ row.userName }
-                            onClick={ () => handleEditRecord(row.userName) }
-                            selected={ row.userName == userName }
-                        >
-                            <TableCell component="th" scope="row">{row.userName}</TableCell>
-                            <TableCell align="center">{row.givenName}</TableCell>
-                            <TableCell align="center">{row.familyName}</TableCell>
-                            <TableCell align="center">{row.userRole}</TableCell>
-                        </TableRow>
-                        ))}
-                        { editMode === 'edit' &&
-                            <UserPage clearRecord={ clearRecord } userName={ userName }  />
-                        }
-                    </TableBody>
-                    </Table>
-                </TableContainer>
-            </Box>
-        );
-    }
     
     
     if (users === null) return null
@@ -87,7 +87,11 @@ export default function AllUsersPage(props) {
             
             <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
                 <Tooltip title= 'Add User'>
-                    <Fab onClick={()=>setNewUser(true)} size="small" color='default' >
+                    <Fab onClick={()=>{
+                        if (navigationAllowed()) {
+                            setNewUser(true)
+                        }
+                    }} size="small" color='default' >
                         <Add />
                     </Fab>
                 </Tooltip>

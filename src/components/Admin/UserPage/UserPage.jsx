@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import PropTypes from 'prop-types';
-import { dbGetUserAsync } from '../../System/js/Database.js';
+import { dbGetUserAsync, setEditingState } from '../../System/js/Database';
 import { Box, Dialog, DialogContent, DialogTitle } from '@material-ui/core';
 import { UserForm } from '../../User';
 
@@ -12,9 +12,12 @@ UserPage.propTypes = {
 export default function UserPage(props) {
     const [ user, setUser ] = useState("")
     const [ dialogOpen, setDialogOpen ] = useState(true);
+    
+    if (dialogOpen) setEditingState(true)
 
     function closeDialog() {
         setDialogOpen(false);
+        setEditingState(false)
         props.clearRecord();
     }
 

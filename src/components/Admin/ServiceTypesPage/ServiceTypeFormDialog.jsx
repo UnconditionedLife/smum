@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@material-ui/core';
 import { SettingsServiceCats } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { dbSaveSvcTypeAsync, dbSetModifiedTime } from '../../System/js/Database';
+import { dbSaveSvcTypeAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
 import cuid from 'cuid';
 
 ServiceTypeFormDialog.propTypes = {
@@ -23,6 +23,8 @@ export default function ServiceTypeFormDialog(props) {
     const [ saveMessage, setSaveMessage ] = useState(initMsg);
     const svcCats = SettingsServiceCats();
     let data;
+
+    if (dialogOpen) setEditingState(true)
 
     if (isNewSvcType) {
         data = {available: {dateFromDay: "1", dateToDay: "1", dateFromMonth:"0", dateToMonth: "1"},
@@ -44,6 +46,7 @@ export default function ServiceTypeFormDialog(props) {
 
     function handleDialog(state){
         if (!state) { 
+            setEditingState(false)
             props.handleEditMode('cancel')
         }
         setDialogOpen(state)
@@ -110,6 +113,7 @@ export default function ServiceTypeFormDialog(props) {
                 setSaveMessage({ result: 'success', time: data.updatedDateTime });
                 props.handleEditRecord(data);
                 props.updateSvcTypes();
+                setEditingState(false)
                 handleDialog(false)
             })
             .catch( message => {
@@ -142,6 +146,7 @@ export default function ServiceTypeFormDialog(props) {
             if (saveMessage.result === 'success') {
                 // props.handleClientHistory()
                 handleDialog(false)
+                setEditingState(false)
                 props.handleEditMode('cancel')
             }
             clearTimeout(delayInt)

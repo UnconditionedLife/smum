@@ -5,6 +5,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Snackbar, Table, Ta
 import { ExpandMore, Add } from '@material-ui/icons';
 import { dbGetSvcTypesAsync, getSvcTypes } from '../../System/js/Database.js';
 import { ServiceTypeFormDialog } from '..';
+import { navigationAllowed } from '../../System/js/Database';
 
 ServiceTypeList.propTypes = {
     list: PropTypes.array.isRequired,
@@ -99,8 +100,10 @@ export default function ServiceTypePage() {
     }
 
     function handleNewClick() {
-        setIsNew(true)
-        setEditRecord(null)
+        if (navigationAllowed()) {
+            setIsNew(true)
+            setEditRecord(null)
+        }
     }
 
     return (

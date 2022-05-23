@@ -64,6 +64,8 @@ export default function UserForm(props) {
                 setSaveMessage({ result: 'success', time: userData.updatedDateTime });
                 setEditingState(false)
                 reset(formValues);
+                if (props.onClose)
+                    props.onClose();
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });
@@ -73,11 +75,10 @@ export default function UserForm(props) {
     const submitForm = handleSubmit(doSave);
 
     function doCancel() {
-        reset();
         setEditingState(false)
+        reset();
         if (props.onClose)
-            props.onClose();
-        
+            props.onClose();      
     }
 
     return (
