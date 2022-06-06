@@ -17,8 +17,7 @@ export default function FoundPage(props) {
     function handleSelectedClient(event, newClientId) {
         if (clientId !== newClientId) {
             const newClient = clientsFound.filter(obj => obj.clientId == newClientId)
-            changeClient(newClient[0])
-            updateClientsURL(newClient[0].clientId, 1);
+            changeClient(newClient[0], 1)
         }
     }
   
