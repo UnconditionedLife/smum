@@ -16,9 +16,7 @@ HistoryFormDialog.propTypes = {
 }
 
 export default function HistoryFormDialog(props) {
-    const editRecord = props.editRecord
-    const updateClient = props.updateClient
-    const client = props.client
+    const { editRecord, updateClient, client, handleEditMode } = props
     const [ dialogOpen, setDialogOpen ] = useState(true);
     
     const serviceNames = getSvcTypes()
@@ -27,7 +25,7 @@ export default function HistoryFormDialog(props) {
 
     function handleDialog(state){
         if (!state) { 
-            props.handleEditMode('cancel')
+            handleEditMode('cancel')
         }
         setDialogOpen(state)
     }
@@ -39,11 +37,11 @@ export default function HistoryFormDialog(props) {
     })
 
     function doSave(formValues) {
-        saveHistoryFormAsync(editRecord, formValues, props.client, getUserName())
+        saveHistoryFormAsync(editRecord, formValues, client, getUserName())
             .then( savedSvc => {
                 if (savedSvc !== null) { 
                     // update client history to reflect edits
-                    const tempClient = Object.create(client)
+                    const tempClient = Object.assign({}, client)
                     const index = tempClient.svcHistory.findIndex((svc) => svc.serviceId === editRecord.serviceId)
                     tempClient.svcHistory[index] = savedSvc
                     updateClient(tempClient)
