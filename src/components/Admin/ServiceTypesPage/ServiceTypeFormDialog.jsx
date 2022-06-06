@@ -110,7 +110,6 @@ export default function ServiceTypeFormDialog(props) {
         setSaveMessage({ result: 'working' });
         dbSaveSvcTypeAsync(data)
             .then( () => {
-                setSaveMessage({ result: 'success', time: data.updatedDateTime });
                 props.handleEditRecord(data);
                 props.updateSvcTypes();
                 setEditingState(false)
