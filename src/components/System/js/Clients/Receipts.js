@@ -102,7 +102,7 @@ export function prnPrintReminderReceipt(client, nextVisit) {
 	prnFeed(1);
     prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
     prnTextLine('**************************************')
-    prnTextLine(' ' + nextVisit.format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
+    prnTextLine(' ' + moment(nextVisit).format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
     prnTextLine('**************************************');
     prnEndReceipt();
 }
@@ -346,7 +346,7 @@ function prnTestReceipt(receiptType) {
 			prnPrintFoodReceipt(testClient, 'USDA');
 			break;
 		case 2:
-			prnPrintReminderReceipt(testClient);
+			prnPrintReminderReceipt(testClient, new Date());
 			break;
 		case 3:
 			service = getSvcTypes().filter(obj => obj.serviceName == 'Thanksgiving Turkey')[0];
