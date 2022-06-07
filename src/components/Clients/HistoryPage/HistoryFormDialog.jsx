@@ -20,7 +20,7 @@ export default function HistoryFormDialog(props) {
     const [ dialogOpen, setDialogOpen ] = useState(true);
     
     const serviceNames = getSvcTypes()
-        .filter(obj => obj.serviceButtons == "Primary")
+        // .filter(obj => obj.serviceButtons == "Primary")   // removed to allow for changing secondary services
         .map(obj => obj.serviceName)
 
     function handleDialog(state){
