@@ -6,3 +6,5 @@
 
 # Example of dynamic request template: 
     https://stackoverflow.com/questions/61392701/can-a-mapping-template-for-api-gateway-have-both-dynamic-and-hard-coded-values
+
+    https://rdyar.github.io/2016/07/16/aws-api-gateway-mapping-template-with-map-and-list-data-types/
