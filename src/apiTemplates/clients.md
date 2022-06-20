@@ -1,13 +1,13 @@
-API: /clients
+# API: /clients
 
 
-// GET REQUEST
+# GET: REQUEST
 {
     "TableName": "$stageVariables.clientsTable"
 }
 
 
-// GET RESPONSE
+# GET: RESPONSE
 #set($inputRoot = $input.path('$'))
 {
     "count": $inputRoot.Count,
@@ -72,7 +72,7 @@ API: /clients
     #end]
 }
 
-// POST REQUEST
+# POST: REQUEST
 
 #set($inputRoot = $input.path('$'))
 { 
@@ -161,6 +161,6 @@ API: /clients
 }
 
 
-// POST RESPONSE
+# POST: RESPONSE
 
 ** EPMTY **
