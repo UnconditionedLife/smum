@@ -104,7 +104,7 @@ export default function ClientsMain(props) {
         if (!isEmpty(newClient)) {
             if ( newClient.clientId !== "0" ){
                 // TODO client should be sorted and have ids for nested arrays saved to the database
-                // Existing client
+                // Existing client record
                 newClient = utilEmptyPlaceholders(newClient, "remove")
                 newClient = utilCalcAge(newClient)
                 newClient.dependents = calcDependentsAges(newClient)
@@ -121,7 +121,7 @@ export default function ClientsMain(props) {
                         updateClientsURL(newClient.clientId, clientsTab)
                     })
             } else {
-                // New client
+                // New client record
                 dbSetModifiedTime(newClient, true);
                 setClient(newClient)
                 updateClientsURL(newClient.clientId, clientsTab)

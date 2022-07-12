@@ -7,8 +7,6 @@ import cuid from 'cuid';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
-const seniorAge = SettingsSeniorAge
-
 export function arrayAddIds(array, id) {
 	// Check if notes & dependents arrays already have ids
 	if (typeof array[0] !== "undefined") {
@@ -34,6 +32,7 @@ export function calcDependentsAges(client){
 }
 
 export function calcFamilyCounts(client){
+    const seniorAge = SettingsSeniorAge()
 	if (client.family == undefined) client.family = {}
 	// dependents age & family counts
 	let fam = {totalAdults:0, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:0}
