@@ -10,6 +10,7 @@ import NewClientsReport from './Reports/NewClientsReport.jsx';
 import DailyDistributionReport from './Reports/DailyDistributionReport.jsx';
 import MonthlyDistributionReport from './Reports/MonthlyDistributionReport.jsx';
 import AnnualDistributionReport from './Reports/AnnualDistributionReport.jsx';
+import { PatchSeniorCountInServiceDay } from '../../System/js/Patch';
 
 export default function ReportsPage() {
     const [ dayType, handleDayType ] = useState("FOOD")
@@ -69,6 +70,10 @@ export default function ReportsPage() {
         }
     }
 
+    const runServicePatch = () => {
+        PatchSeniorCountInServiceDay( moment(reportDay).format('YYYYMMDD'))
+    }
+
     const handleReportDayChangeUpdated = (event) => {
         handleReportDayChange(moment(event._d).format('YYYYMMDD'))
     }
@@ -99,6 +104,8 @@ export default function ReportsPage() {
                         </FormControl>
                         <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" InputLabelProps={{ shrink: true }} value={ reportDay } onChange={ handleReportDayChangeUpdated } />
                         <Button onClick={runDailyReport} variant="contained" color="primary">Run</Button>
+                        {/* used to patch senior count errors */}
+                        {/* <Button onClick={runServicePatch} variant="contained" color="primary">Patch Senior Count</Button> */}
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Monthly Reports</Typography></Box>
