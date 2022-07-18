@@ -27,26 +27,48 @@ export function PatchSeniorCountInServiceDay(day) {
                         tempClient = utilCalcAge(tempClient)
                         tempClient.dependents = calcDependentsAges(tempClient)
                         tempClient.family = calcFamilyCounts(tempClient)
-
-                        console.log("ID", svc.clientServedId)
-                        console.log("SERVICE", svc.totalSeniorsServed)
-                        console.log("CLIENT", tempClient.family.totalSeniors)
-                        
+                        let updated = false
 
                         if (svc.totalSeniorsServed != tempClient.family.totalSeniors) {
+                            // console.log("SERVICE", svc.totalSeniorsServed)
+                            // console.log("CLIENT", tempClient.family.totalSeniors)
                             tempSvc.totalSeniorsServed = tempClient.family.totalSeniors.toString()
-                            console.log("PATCH")
+                            console.log("PATCH Seniors")
+                            updated = true
+
+                        } 
+                        
+                        if (svc.totalIndividualsServed != tempClient.family.totalSize) {
+                            // console.log ("SVC", svc.totalIndividualsServed)
+                            // console.log ("CLT", tempClient.family.totalSize)
+                            tempSvc.totalIndividualsServed = tempClient.family.totalSize.toString()
+                            console.log("PATCH Total")
+                            updated = true
+                        } 
+                        
+                        if (svc.totalAdultsServed != tempClient.family.totalAdults) {
+                            // console.log ("SVC ADULTS", svc.totalAdultsServed)
+                            // console.log ("CLT ADULTS", tempClient.family.totalAdults)
+                            tempSvc.totalAdultsServed = tempClient.family.totalAdults.toString()
+                            console.log("PATCH Adults")
+                            updated = true
+                        } 
+                        
+                        if (svc.totalChildrenServed != tempClient.family.totalChildren) {
+                            // console.log ("SVC CHLD", svc.totalChildrenServed)
+                            // console.log ("CLT ADULTS", tempClient.family.totalChildren)
+                            tempSvc.totalChildrenServed = tempClient.family.totalChildren.toString()
+                            console.log("PATCH CHLD")
+                            updated = true
+                        } 
+
+                        if (updated === true ) {
+                            console.log(svc.clientServedId, "PATCHED")
                             // Save the Patched service
-
-                            console.log(tempSvc)
-
                             dbSaveServiceRecordAsync(tempSvc)
-
-
                         } else {
-                            console.log("OK")
+                            console.log(svc.clientServedId, "OK")
                         }
-                        console.log("****")
                     })
                 
             });

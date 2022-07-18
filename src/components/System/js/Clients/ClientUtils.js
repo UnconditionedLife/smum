@@ -35,13 +35,13 @@ export function calcFamilyCounts(client){
     const seniorAge = SettingsSeniorAge()
 	if (client.family == undefined) client.family = {}
 	// dependents age & family counts
-	let fam = {totalAdults:0, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:0}
+	let fam = { totalAdults:0, totalChildren:0, totalOtherDependents:0, totalSeniors:0, totalSize:0 }
 	// client individual --- clients must be 18 or older
-	++fam.totalSize
+	++fam.totalSize // add client to total
 	if (client.age >= seniorAge) {
-		++fam.totalSeniors
+		++fam.totalSeniors //add client as senior
 	} else {
-		++fam.totalAdults
+		++fam.totalAdults  //add client as adult
 	}
 	// client dependents
 	for (let i = 0; i < client.dependents.length; i++) {
@@ -67,6 +67,9 @@ export function calcFamilyCounts(client){
 	client.family.totalSize = fam.totalSize
 	// TODO REACT FamilyCounts
 	//uiShowFamilyCounts(fam.totalAdults, fam.totalChildren, fam.totalOtherDependents, fam.totalSeniors, fam.totalSize)
+
+    // console.log("FAMILY COUNTS", client.family)
+
 	return client.family
 }
 
