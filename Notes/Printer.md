@@ -5,6 +5,10 @@
 1. Epson TM-T88V
 2. Firmware v1.05
 
+## Firmware Update
+
+1. https://files.support.epson.com/pdf/pos/bulk/ub-r04-firmware_update_instructions.pdf
+
 ## Private Network Restrictions
 
 1. https://docs.google.com/document/d/1FYPIeP90MQ_pQ6UAo0mCB3g2Z_AynfPWHbDnHIST6VI/edit
