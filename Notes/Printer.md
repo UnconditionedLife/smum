@@ -9,6 +9,8 @@
 
 1. https://files.support.epson.com/pdf/pos/bulk/ub-r04-firmware_update_instructions.pdf
 
+** this did not work because the version is UB-E04 ... and is up to date at version 1.05 **
+
 ## Private Network Restrictions
 
 1. https://docs.google.com/document/d/1FYPIeP90MQ_pQ6UAo0mCB3g2Z_AynfPWHbDnHIST6VI/edit

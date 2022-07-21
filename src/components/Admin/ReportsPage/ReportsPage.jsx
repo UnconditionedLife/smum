@@ -105,7 +105,7 @@ export default function ReportsPage() {
                         <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" InputLabelProps={{ shrink: true }} value={ reportDay } onChange={ handleReportDayChangeUpdated } />
                         <Button onClick={runDailyReport} variant="contained" color="primary">Run</Button>
                         {/* used to patch senior count errors */}
-                        <Button onClick={runServicePatch} variant="contained" color="primary">Patch Service Counts</Button>
+                        {/* <Button onClick={runServicePatch} variant="contained" color="primary">Patch Service Counts</Button> */}
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Monthly Reports</Typography></Box>
