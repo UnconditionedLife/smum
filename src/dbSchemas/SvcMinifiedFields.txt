@@ -1,0 +1,20 @@
+SERVICE OBJECT MINIMUM FIELDS: 
+
+Daily: serviceId, clientServedId,
+clientGivenName, clientFamilyName, clientZipcode,
+totalIndividualsServed, totalChildrenServed, totalAdultsServed,
+totalSeniorsServed, homeless, isUSDA
+
+Monthly: totalIndividualsServed, totalChildrenServed, totalAdultsServed,
+totalSeniorsServed, homeless, isUSDA
+
+Annual: totalIndividualsServed, totalChildrenServed, totalAdultsServed,
+totalSeniorsServed, homeless, isUSDA
+
+All Sevices: totalIndividualsServed, totalChildrenServed, totalAdultsServed,
+totalSeniorsServed, homeless, serviceName, serviceCategory
+
+Union: serviceId, clientServedId,
+clientGivenName, clientFamilyName, clientZipcode,
+totalIndividualsServed, totalChildrenServed, totalAdultsServed,
+totalSeniorsServed, homeless, isUSDA, serviceName, serviceCategory
