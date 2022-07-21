@@ -6,13 +6,13 @@ totalIndividualsServed, totalChildrenServed, totalAdultsServed,
 totalSeniorsServed, homeless, isUSDA
 
 Monthly: totalIndividualsServed, totalChildrenServed, totalAdultsServed,
-totalSeniorsServed, homeless, isUSDA
+totalSeniorsServed, homeless, isUSDA, servicedDay
 
 Annual: totalIndividualsServed, totalChildrenServed, totalAdultsServed,
-totalSeniorsServed, homeless, isUSDA
+totalSeniorsServed, homeless, isUSDA, servicedMonth
 
 All Sevices: totalIndividualsServed, totalChildrenServed, totalAdultsServed,
 totalSeniorsServed, homeless, serviceName, serviceCategory
 
-Union: serviceId, totalIndividualsServed, totalChildrenServed, totalAdultsServed,
+Union: serviceId, servicedMonth, servicedDay, totalIndividualsServed, totalChildrenServed, totalAdultsServed,
 totalSeniorsServed, homeless, isUSDA, serviceName, serviceCategory
