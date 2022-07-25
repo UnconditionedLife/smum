@@ -26,3 +26,9 @@ Once the build code has been generated the next step is to log in to AWS S3 in t
 4. Open the `CloudFront` service and go to the `ECK0BVL24R33L` (foodbank.click) distribution. This used to kill the cached files in the CDN.
 5. Click `Invalidations` in the tab menu.
 6. Either copy existing validaiton or create a new validation for `\index.html`. (Because the code is hashed, we only need to invalidate the index.htm file)
+
+# REST API via AWS API Gateway
+
+## Template Language
+The request and response tranformation tamplates are wrriten in Velocity Template Language (VTL)
+More on VTL: https://velocity.apache.org/engine/devel/index.html
