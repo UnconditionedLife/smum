@@ -326,6 +326,16 @@ export async function dbGetClientActiveServiceHistoryAsync(clientId){
         })
 }
 
+// *****************  NEW DB Table function **********************
+
+export async function dbGetClientActiveSvcHistoryAsync(clientId){
+    return await dbGetDataAsync("/clients/svcs/" + clientId)
+        .then(data => {
+            const activeSvcs = data.svcs.filter(item => item.svcValid === "Y")
+            return  makeOldServices(activeSvcs)
+        })
+}
+
 export async function dbSaveClientAsync(data) {
 	if (data.clientId === "0") {
         dbSetModifiedTime(data, true);
@@ -569,7 +579,7 @@ function makeNewSvcs(services){
 function makeOldServices(svcs){
     svcs.forEach(svc => {
 
-        console.log(svcs);
+        console.log("SVCS", svcs);
         
     });
 }

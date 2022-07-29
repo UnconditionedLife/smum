@@ -4,11 +4,11 @@
 import moment from  'moment';
 import cuid from 'cuid';
 import { utilNow } from '../GlobalUtils';
-import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, 
+import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, 
             getSvcTypes, dbSaveClientAsync, globalMsgFunc } from '../Database';
 
 export async function getServiceHistoryAsync(clientId){
-	return await dbGetClientActiveServiceHistoryAsync(clientId)
+	return await dbGetClientActiveSvcHistoryAsync(clientId)
         .then(
             clientHistory => {
                 return clientHistory.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))

@@ -3,7 +3,7 @@
 //******************************************************************
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from './ClientUtils'
-import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
+import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
     getUserName, dbGetSvcsByIdAndYear } from '../Database';
 import { calFindOpenDate } from '../Calendar.js';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
@@ -499,7 +499,7 @@ function calcValidAgeGrade(at){
 }
 
 async function utilCalcVoucherServiceSignupAsync(client, serviceType){
-	return await dbGetClientActiveServiceHistoryAsync(client.id).then(
+	return await dbGetClientActiveSvcHistoryAsync(client.id).then(
         clientHistory => {
             return clientHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
                 .filter(item => item.serviceTypeId == serviceType.target.service)
