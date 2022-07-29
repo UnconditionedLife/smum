@@ -556,3 +556,20 @@ async function simulatedSave(prob) {
     else
         return Promise.resolve();
 }
+
+function makeNewSvcs(services){
+    services.forEach(service => {
+
+        console.log(service);
+        
+    });
+}
+
+
+function makeOldServices(svcs){
+    svcs.forEach(svc => {
+
+        console.log(svcs);
+        
+    });
+}
