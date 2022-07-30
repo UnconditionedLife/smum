@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
 import moment from 'moment';
-import { dbGetDaysSvcsAsync } from '../../../System/js/Database';
+import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@material-ui/core/styles';
 
 MonthlyDistributionReport.propTypes = {
@@ -123,7 +123,7 @@ export default function MonthlyDistributionReport(props) {
             let servicedDay = String(i)
             if (servicedDay.length < 2) servicedDay = "0"+servicedDay
             servicedDay = props.month + servicedDay
-            promises.push(dbGetDaysSvcsAsync(moment(servicedDay).format('YYYYMMDD')))
+            promises.push(dbGetValidSvcsByDateAsync(moment(servicedDay).format('YYYY-MM-DD')))
         }
 
         Promise.all(promises).then(data => {

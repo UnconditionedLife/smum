@@ -4,7 +4,7 @@
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from './ClientUtils'
 import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
-    getUserName, dbGetSvcsByIdAndYear } from '../Database';
+    getUserName, dbGetSvcsBysvcTypeDateAsync } from '../Database';
 import { calFindOpenDate } from '../Calendar.js';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt, prnFlush } from './Receipts';
@@ -432,7 +432,7 @@ function validateServiceInterval( props ){
 		}
 		//TODO: this is a workaround due to last served not tracking id. Need last served to track by service id.
 		if (activeServiceType.fulfillment.type == "Voucher"){
-			let service = dbGetSvcsByIdAndYear(activeServiceType.serviceTypeId, moment().year())
+			let service = dbGetSvcsBysvcTypeDateAsync(activeServiceType.serviceTypeId, moment().year())
                 .then((svcs) => {
                     return svcs.filter(obj => obj.clientServedId == client.clientId)
                 })

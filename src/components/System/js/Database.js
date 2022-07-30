@@ -334,7 +334,7 @@ export async function dbGetClientActiveServiceHistoryAsync(clientId){
 
 
 // ***************************************************************
-// *****************  NEW DB Table function **********************
+// *********************** NEW SVCS DATABASE *************************
 export async function dbGetClientActiveSvcHistoryAsync(clientId){
     return await dbGetDataAsync("/clients/svcs/" + clientId)
         .then(data => {
@@ -342,8 +342,23 @@ export async function dbGetClientActiveSvcHistoryAsync(clientId){
             return  makeOldServices(activeSvcs)
         })
 }
-// *****************  NEW DB Table function **********************
+// *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
+
+
+// *********************** NEW SVCS DATABASE *************************
+// ***************************************************************
+export async function dbGetSvcsBysvcTypeDateAsync(svcTypeId, date){
+    const paramObj = { svctypeid: svcTypeId, svcdt: date }
+    return await dbGetDataAsync("/clients/svcs/bysvctype/", paramObj).then(data => { 
+        console.log("SVC DATA: ", data)
+        return makeOldServices(data.svcs) 
+    })
+}
+// *********************** NEW SVCS DATABASE *************************
+// ***************************************************************
+
+
 
 export async function dbSaveClientAsync(data) {
 	if (data.clientId === "0") {
@@ -372,13 +387,11 @@ export async function dbSaveClientAsync(data) {
 }
 
 // ***************************************************************
-// *********************** NEW DATABASE *************************
-
+// *********************** NEW SVCS DATABASE *************************
 export async function dbSaveServiceRecordAsync(service) {
 	return await dbPostDataAsync("/clients/svcs", makeNewSvc(service))
 }
-
-// *********************** NEW DATABASE *************************
+// *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
 
 
@@ -388,25 +401,32 @@ export async function dbSaveServiceRecordAsync(service) {
 //     return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
 // }
 
-// *********************** NEW DATABASE *************************
+
+
+// *********************** NEW SVCS DATABASE *************************
+// ***************************************************************
+export async function dbGetValidSvcsByDateAsync(date){
+    return await dbGetDataAsync("/clients/svcs/byvalid", { svcvalid: "Y", svcdt: date })
+        .then(data => { 
+            const oldServices = makeOldServices(data.svcs) 
+
+            console.log("OLD SERVICES", oldServices);
+
+            return oldServices
+        })
+}
+// *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
 
-export async function dbGetDaysSvcsAsync(dayDate){
-    return await dbGetDataAsync("/clients/svcs/byvalid/", { svcvalid: "Y", svcdt: dayDate })
-        .then(data => { return makeOldServices(data.svcs) })
-}
 
-// *********************** NEW DATABASE *************************
-// ***************************************************************
-
-export async function dbGetSvcsByIdAndYear(serviceTypeId, year) {
-	return await dbGetDataAsync("/clients/services/byservicetype/" + serviceTypeId)
-            .then( data => { 
-                return data.services
-                .filter(item => item.serviceValid == 'true')
-                .filter(item => moment(item.servicedDateTime).year() == year)
-            })					
-}
+// export async function dbGetSvcsByIdAndYear(serviceTypeId, year) {
+// 	return await dbGetDataAsync("/clients/services/byservicetype/" + serviceTypeId)
+//             .then( data => { 
+//                 return data.services
+//                 .filter(item => item.serviceValid == 'true')
+//                 .filter(item => moment(item.servicedDateTime).year() == year)
+//             })					
+// }
 
 // formerly utilGetServicesInMonth in app.js
 export async function dbGetSvcsInMonthAsync(monthYear){    
@@ -419,7 +439,7 @@ export async function dbGetSvcsInMonthAsync(monthYear){
     for (var i = 1; i < daysInMonth; i++) {
         const day = String(i).padStart(2, '0')
         const dayDate = monthYear + day
-        monthOfSvcs = monthOfSvcs.concat(await dbGetDaysSvcsAsync(dayDate).then( svcs => { return svcs }))
+        monthOfSvcs = monthOfSvcs.concat(await dbGetValidSvcsByDateAsync(dayDate).then( svcs => { return svcs }))
     }
     return monthOfSvcs
 }
@@ -564,8 +584,9 @@ console.log("POSTING:", data)
     })
 }
 
-async function dbGetDataAsync(subUrl) { 
-    return await fetch(dbUrl + subUrl, {
+async function dbGetDataAsync(subUrl, paramObj) { 
+    const params = (paramObj) ? "?" + new URLSearchParams(paramObj) : ""
+    return await fetch(dbUrl + subUrl + params, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',    
@@ -626,7 +647,7 @@ function makeNewSvc(service){
             svcItems: service.itemsServed,
             svcName: service.serviceName,
             svcTypeId: service.serviceTypeId,
-            svcUpdatedDT: service.updatedDateTime,
+            svcUpdatedDT: ( service.updatedDateTime === undefined ) ? "" : service.updatedDateTime,
             svcUSDA: service.isUSDA,
             svcValid: ( service.serviceValid == true ) ? true : false
         }

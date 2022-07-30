@@ -8,10 +8,10 @@
 
 import moment from 'moment';
 import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils.js';
-import { dbGetDaysSvcsAsync, dbGetSingleClientAsync, utilEmptyPlaceholders , dbSaveServiceRecordAsync } from '../../System/js/Database.js';
+import { dbGetValidSvcsByDateAsync, dbGetSingleClientAsync, utilEmptyPlaceholders , dbSaveServiceRecordAsync } from '../../System/js/Database.js';
 
 export function PatchSeniorCountInServiceDay(day) {
-    dbGetDaysSvcsAsync(day) //YYYYMMDD
+    dbGetValidSvcsByDateAsync(day) //YYYYMMDD
         .then(svcs => {
             const servicesFood = svcs
                 .filter(item => item.serviceValid == 'true')

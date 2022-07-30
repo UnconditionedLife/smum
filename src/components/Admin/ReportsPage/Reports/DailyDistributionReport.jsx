@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
 import moment from 'moment';
-import { dbGetDaysSvcsAsync } from '../../../System/js/Database';
+import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@material-ui/core/styles';
 
 DailyDistributionReport.propTypes = {
@@ -97,7 +97,7 @@ export default function DailyDistributionReport(props) {
     }
 
     function RunReport() {
-        dbGetDaysSvcsAsync(moment(props.day).format('YYYY-MM-DD'))
+        dbGetValidSvcsByDateAsync(moment(props.day).format('YYYY-MM-DD'))
             .then(svcs => {
                 const servicesFood = svcs
                     // .filter(item => item.serviceValid == 'true')
