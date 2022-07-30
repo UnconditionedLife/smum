@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Switch } from '@material-ui/core';
 import { Typography, Button } from '../System';
-import { dbSetUrl } from '../System/js/Database';
+import { dbSetUrl, dbGetSvcsBysvcTypeDateAsync } from '../System/js/Database';
 import { prnTest } from '../System/js/Clients/Receipts';
 import { MoveSvcsTableRecords } from "../System/js/MoveSvcsTable";
 
@@ -15,6 +15,18 @@ export default function DbSwitch() {
     function onChange(event) {
         setSwitchOn(event.target.checked);
     }
+
+    {/* ************************************************************* */}
+
+    {/* Test loading a services with "begins_with" date */}
+    function getSvcs(svcTypeId, date) {
+        dbGetSvcsBysvcTypeDateAsync(svcTypeId, date)
+        .then(svcs => {
+            console.log("SVCS:", svcs)
+        })
+    }
+
+    {/* ************************************************************* */}
 
     return (
         <Box display="flex" flexDirection="row" justifyContent="flex-end" 
