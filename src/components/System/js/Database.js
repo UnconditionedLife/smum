@@ -316,25 +316,34 @@ export async function dbGetNewClientIDAsync(){
     return emptyId
 }
 
+// ***************************************************************
+// *****************  OLD TABLE USED FOR MIGRATION ***************
 export async function dbGetClientActiveServiceHistoryAsync(clientId){
     return await dbGetDataAsync("/clients/services/" + clientId)
         .then(data => {
             const svcs = data.services
-            const activeSvcs = svcs.filter(item => item.serviceValid == "true")
-                .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime))) 
-            return activeSvcs
+                //const activeSvcs = svcs.filter(item => item.serviceValid == "true")
+                // .sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime))) 
+            // return activeSvcs
+            return svcs
         })
 }
+// *****************  OLD TABLE USED FOR MIGRATION ***************
+// ***************************************************************
 
+
+
+// ***************************************************************
 // *****************  NEW DB Table function **********************
-
 export async function dbGetClientActiveSvcHistoryAsync(clientId){
     return await dbGetDataAsync("/clients/svcs/" + clientId)
         .then(data => {
-            const activeSvcs = data.svcs.filter(item => item.svcValid === "Y")
+            const activeSvcs = data.svcs.filter(item => item.svcValid === true)
             return  makeOldServices(activeSvcs)
         })
 }
+// *****************  NEW DB Table function **********************
+// ***************************************************************
 
 export async function dbSaveClientAsync(data) {
 	if (data.clientId === "0") {
@@ -362,13 +371,33 @@ export async function dbSaveClientAsync(data) {
 	}
 }
 
-export async function dbSaveServiceRecordAsync(svc) {
-	return await dbPostDataAsync("/clients/services", svc)
+// ***************************************************************
+// *********************** NEW DATABASE *************************
+
+export async function dbSaveServiceRecordAsync(service) {
+	return await dbPostDataAsync("/clients/svcs", makeNewSvc(service))
 }
 
+// *********************** NEW DATABASE *************************
+// ***************************************************************
+
+
+
+
+// export async function dbGetDaysSvcsAsync(dayDate){
+//     return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
+// }
+
+// *********************** NEW DATABASE *************************
+// ***************************************************************
+
 export async function dbGetDaysSvcsAsync(dayDate){
-    return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
+    return await dbGetDataAsync("/clients/svcs/byvalid/", { svcvalid: "Y", svcdt: dayDate })
+        .then(data => { return makeOldServices(data.svcs) })
 }
+
+// *********************** NEW DATABASE *************************
+// ***************************************************************
 
 export async function dbGetSvcsByIdAndYear(serviceTypeId, year) {
 	return await dbGetDataAsync("/clients/services/byservicetype/" + serviceTypeId)
@@ -567,19 +596,85 @@ async function simulatedSave(prob) {
         return Promise.resolve();
 }
 
-function makeNewSvcs(services){
-    services.forEach(service => {
+function makeNewSvc(service){
+    
+    console.log(service);
 
-        console.log(service);
-        
-    });
+    return (
+        {
+            adults: service.totalAdultsServed,
+            children: service.totalChildrenServed,
+            cFamName: service.clientFamilyName,
+            cGivName: service.clientGivenName,
+            cId: service.clientServedId,
+            cStatus: service.clientStatus,
+            cZip: service.clientZipcode,
+            fillBy: service.fulfillment.byUserName,
+            fillDT: service.fulfillment.dateTime,
+            fillItems: service.fulfillment.itemCount,
+            fillPending: service.fulfillment.pending,
+            fillVoucher: service.fulfillment.voucherNumber,
+            homeless: ( service.homeless === "YES" ) ? true : false,
+            individuals: service.totalIndividualsServed,
+            seniors: service.totalSeniorsServed,
+            svcBtns: service.serviceButtons,
+            svcBy: service.servicedByUserName,
+            svcCat: service.serviceCategory,
+            svcDT: service.servicedDateTime,
+            svcFirst: ( service.svcFirst == true ) ? true : false,
+            svcId: service.serviceId,
+            svcItems: service.itemsServed,
+            svcName: service.serviceName,
+            svcTypeId: service.serviceTypeId,
+            svcUpdatedDT: service.updatedDateTime,
+            svcUSDA: service.isUSDA,
+            svcValid: ( service.serviceValid == true ) ? true : false
+        }
+    )
 }
 
 
 function makeOldServices(svcs){
-    svcs.forEach(svc => {
+    const services = []
 
-        console.log("SVCS", svcs);
-        
+    console.log("SVCS", svcs);
+
+    svcs.forEach(svc => {
+        const fulfillement = { 
+            dateTime: svc.fillDT,
+            byUserName: svc.fillBy,
+            itemCount: svc.fillItems,
+            pending: svc.fillPending,
+            voucherNumber: svc.fillVoucher
+        }
+
+        services.push( 
+            {
+                totalAdultsServed: svc.adults,
+                totalChildrenServed: svc.children,
+                clientFamilyName: svc.cFamName,
+                clientGivenName: svc.cGivName,
+                clientServedId: svc.cId,
+                clientStatus: svc.cStatus,
+                clientZipcode: svc.cZip,
+                fulfillment: fulfillement,
+                homeless: ( svc.homeless === true ) ? "YES" : "NO",
+                totalIndividualsServed: svc.individuals,
+                totalSeniorsServed: svc.seniors,
+                serviceButtons: svc.svcBtns,
+                servicedByUserName: svc.svcBy,
+                serviceCategory: svc.svcCat,
+                servicedDateTime: svc.svcDT,
+                serviceId: svc.svcId,
+                itemsServed: svc.svcItems,
+                serviceName: svc.svcName,
+                serviceTypeId: svc.svcTypeId,
+                svcUpdatedDT: svc.svcUpdatedDT,
+                isUSDA: svc.svcUSDA,
+                serviceValid: ( svc.svcValid === true ) ? "true" : "false"
+            }
+        )
     });
+
+    return services
 }

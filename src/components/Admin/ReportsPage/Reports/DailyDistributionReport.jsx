@@ -97,12 +97,12 @@ export default function DailyDistributionReport(props) {
     }
 
     function RunReport() {
-        dbGetDaysSvcsAsync(moment(props.day).format('YYYYMMDD'))
+        dbGetDaysSvcsAsync(moment(props.day).format('YYYY-MM-DD'))
             .then(svcs => {
                 const servicesFood = svcs
-                    .filter(item => item.serviceValid == 'true')
+                    // .filter(item => item.serviceValid == 'true')
                     .filter(item => item.serviceCategory == "Food_Pantry")
-                    .sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
+                    // .sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
                 const servicesUSDA = servicesFood.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
                 const servicesNonUSDA = servicesFood.filter(item => item.isUSDA == "NonUSDA")
                 const usdaGrid = ListToGrid(servicesUSDA)

@@ -68,6 +68,7 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
 
 export async function removeSvcAsync(client, svc){
     svc.serviceValid = false
+    svc.updatedDateTime = utilNow()
     return await dbSaveServiceRecordAsync(svc)
         .then((savedSvc) => {
             if (Object.keys(savedSvc).length === 0) {
@@ -76,9 +77,6 @@ export async function removeSvcAsync(client, svc){
                 });
                 const tempClient = Object.assign({}, client)
                 tempClient.svcHistory = newHistory
-                if (svc.serviceButtons === 'Primary') {
-                    // tempClient.lastServed = updateLastServed(tempClient)
-                }
                 return tempClient
             } else {
                 return null
