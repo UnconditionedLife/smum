@@ -14,5 +14,10 @@ totalSeniorsServed, homeless, isUSDA, servicedMonth
 All Sevices: totalIndividualsServed, totalChildrenServed, totalAdultsServed,
 totalSeniorsServed, homeless, serviceName, serviceCategory
 
-Union: serviceId, servicedMonth, servicedDay, totalIndividualsServed, totalChildrenServed, totalAdultsServed,
-totalSeniorsServed, homeless, isUSDA, serviceName, serviceCategory
+
+
+
+Union: 
+
+cFamName, cZip, seniors, svcCat, cStatus, svcName, homeless, children, svcDT, individuals, 
+svcId, cId, cGivName, adults, svcUSDA, svcFirst, svcTypeId

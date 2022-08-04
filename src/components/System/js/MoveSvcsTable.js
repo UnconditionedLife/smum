@@ -1,6 +1,6 @@
 import moment from 'moment';
 // import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils.js';
-import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync } from '../../System/js/Database.js';
+import { dbGetClientActiveServiceHistoryAsync, dbSaveSvcAsync } from '../../System/js/Database.js';
 import { beepError } from './GlobalUtils.js';
 
 function transformSvcRecord(svc){
@@ -42,14 +42,18 @@ function transformSvcRecord(svc){
         svcBy: svc.servicedByUserName,
         svcCat: svc.serviceCategory,
         svcDT: svc.servicedDateTime,
+        svcDTId: svc.servicedDateTime + "#" + svc.serviceId,
+        svcDTTypeId: svc.servicedDateTime + "#" + svc.svcTypeId,
         svcFirst: ( svc.svcFirst === true ) ? true : false,
         svcId: svc.serviceId,
         svcItems: svc.itemsServed,
+        svcMonth: svc.servicedDateTime.substr( 0, 7 ),
         svcName: svc.serviceName,
         svcTypeId: svc.serviceTypeId,
         svcUpdatedDT: "",
         svcUSDA: svc.isUSDA,
         svcValid: ( svc.serviceValid === "true" ) ? true : false
+        
     }
 }
 
@@ -103,10 +107,13 @@ console.log("C"+i, svcRecs)
                 console.log(index+1)
                 console.log(JSON.stringify(newSvc))
 
-                dbSaveServiceRecordAsync(newSvc)
+                dbSaveSvcAsync(newSvc)
+                    .then(() => {
+                        console.log("SAVED " + newSvc.cId);
+                    })
                     .catch(() => {
                         // use to break out of loop if error in dbSave *** BREAK IS NOT WORKING
-                        console.log("*** SAVE ERROR ABORTING AT " + i+1 + " ***")
+                        console.log("*** SAVE ERROR ABORTING AT " + newSvc.cId + " ***")
                         state = false
                     }) 
                 return state;

@@ -46,7 +46,7 @@ export default function DbSwitch() {
             {/* Migrate dev-smum-services table to new dev-svcs-table */}
             <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
             style = {{ marginRight: '100px' }} 
-            onClick={ () => MoveSvcsTableRecords(1000,1010) } >
+            onClick={ () => MoveSvcsTableRecords(1, 40) } >
                     Move Svcs
             </Button>
             {/* ************************************************************* */}

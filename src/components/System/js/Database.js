@@ -388,8 +388,12 @@ export async function dbSaveClientAsync(data) {
 
 // ***************************************************************
 // *********************** NEW SVCS DATABASE *************************
-export async function dbSaveServiceRecordAsync(service) {
-	return await dbPostDataAsync("/clients/svcs", makeNewSvc(service))
+export async function dbSaveServiceRecordAsync(svc) {
+	return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
+}
+
+export async function dbSaveSvcAsync(svc) {
+	return await dbPostDataAsync("/clients/svcs", svc)
 }
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
@@ -638,6 +642,7 @@ function makeNewSvc(service){
             homeless: ( service.homeless === "YES" ) ? true : false,
             individuals: service.totalIndividualsServed,
             seniors: service.totalSeniorsServed,
+            svcDTId: service.servicedDateTime + "#" + service.serviceId,
             svcBtns: service.serviceButtons,
             svcBy: service.servicedByUserName,
             svcCat: service.serviceCategory,
@@ -649,7 +654,8 @@ function makeNewSvc(service){
             svcTypeId: service.serviceTypeId,
             svcUpdatedDT: ( service.updatedDateTime === undefined ) ? "" : service.updatedDateTime,
             svcUSDA: service.isUSDA,
-            svcValid: ( service.serviceValid == true ) ? true : false
+            svcValid: ( service.serviceValid == true ) ? true : false,
+            svcYear: service.servicedDateTime.substr( 0, 4 )
         }
     )
 }
