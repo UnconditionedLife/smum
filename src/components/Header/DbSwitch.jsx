@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Switch } from '@material-ui/core';
 import { Typography, Button } from '../System';
-import { dbSetUrl, dbGetSvcsBysvcTypeDateAsync } from '../System/js/Database';
+import { dbSetUrl } from '../System/js/Database';
 import { prnTest } from '../System/js/Clients/Receipts';
 import { MoveSvcsTableRecords, MoveSvcTypeTableRecords } from "../System/js/MoveSvcsTable";
 
@@ -18,13 +18,13 @@ export default function DbSwitch() {
 
     {/* ************************************************************* */}
 
-    {/* Test loading a services with "begins_with" date */}
-    function getSvcs(svcTypeId, date) {
-        dbGetSvcsBysvcTypeDateAsync(svcTypeId, date)
-        .then(svcs => {
-            console.log("SVCS:", svcs)
-        })
-    }
+    // {/* Test loading a services with "begins_with" date */}
+    // function getSvcs(svcTypeId, date) {
+    //     dbGetSvcsBysvcTypeDateAsync(svcTypeId, date)
+    //     .then(svcs => {
+    //         console.log("SVCS:", svcs)
+    //     })
+    // }
 
     {/* ************************************************************* */}
 
@@ -46,7 +46,7 @@ export default function DbSwitch() {
             {/* Migrate dev-smum-services table to new dev-svcs-table */}
             <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
             style = {{ marginRight: '100px' }} 
-            onClick={ () => MoveSvcsTableRecords(1, 10) } >
+            onClick={ () => MoveSvcsTableRecords(10, 50) } >
                     Move Svcs
             </Button>
             {/* ************************************************************* */}

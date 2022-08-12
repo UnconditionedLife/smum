@@ -4,7 +4,7 @@
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from './ClientUtils'
 import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
-    getUserName, dbGetSvcsBysvcTypeDateAsync } from '../Database';
+    getUserName } from '../Database';
 import { calFindOpenDate } from '../Calendar.js';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt, prnFlush } from './Receipts';
@@ -431,19 +431,22 @@ function validateServiceInterval( props ){
 			}
 		}
 		//TODO: this is a workaround due to last served not tracking id. Need last served to track by service id.
-		if (activeServiceType.fulfillment.type == "Voucher"){
-			let service = dbGetSvcsBysvcTypeDateAsync(activeServiceType.serviceTypeId, moment().year())
-                .then((svcs) => {
-                    return svcs.filter(obj => obj.clientServedId == client.clientId)
-                })
+        
+        // *****  Disabled during svc table update ******
+
+		// if (activeServiceType.fulfillment.type == "Voucher"){
+		// 	let service = dbGetSvcsBysvcTypeDateAsync(activeServiceType.serviceTypeId, moment().year())
+        //         .then((svcs) => {
+        //             return svcs.filter(obj => obj.clientServedId == client.clientId)
+        //         })
 				
-			if (service.length == 0){
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
+		// 	if (service.length == 0){
+		// 		return true;
+		// 	}
+		// 	else {
+		// 		return false;
+		// 	}
+		// }
 		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
 		if (inLastServed.length > 0) {
 			// if a voucher fulfill service then need to chech against Voucher service
