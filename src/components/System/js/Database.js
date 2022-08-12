@@ -360,21 +360,6 @@ export async function dbGetClientActiveSvcHistoryAsync(clientId){
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
 
-
-// *********************** NEW SVCS DATABASE *************************
-// ***************************************************************
-export async function dbGetSvcsBysvcTypeDateAsync(svcTypeId, date){
-    const paramObj = { svctypeid: svcTypeId, svcdt: date }
-    return await dbGetDataAsync("/clients/svcs/bysvctype/", paramObj).then(data => { 
-        console.log("SVC DATA: ", data)
-        return makeOldServices(data.svcs) 
-    })
-}
-// *********************** NEW SVCS DATABASE *************************
-// ***************************************************************
-
-
-
 export async function dbSaveClientAsync(data) {
 	if (data.clientId === "0") {
         dbSetModifiedTime(data, true);
