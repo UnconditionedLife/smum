@@ -113,11 +113,11 @@ export default function HistoryDisplay(props) {
                 </TableRow>
             </TableHead>
             <TableBody>
-                <Fragment key={ svcHistory }>
+                <Fragment>
                     { svcHistory.map((svc) => (
-                        <Fragment key={svc.serviceId} >
+                        // <Fragment key={svc.serviceId} >
                             <TableRow 
-                                key={svc.serviceId}
+                                key={ svc.serviceId }
                                 onClick= { (event) => { if (isAdmin()) handleSelectedService(event, svc)} }
                                 selected= { svc.serviceId == selectedService } >
                                 <TableCell align="center">
@@ -132,8 +132,9 @@ export default function HistoryDisplay(props) {
                                 <TableCell align="center">{ svc.totalIndividualsServed }</TableCell>
                                 <TableCell align="center">{ svc.totalSeniorsServed }</TableCell>
                                 <TableCell align="center">{ svc.servicedByUserName }</TableCell>
+                                { console.log(svc) }
                             </TableRow>
-                        </Fragment>
+                        // </Fragment>
                     ))}
                     { editMode === 'edit' &&
                         <HistoryFormDialog client = { client } editMode={ editMode } updateClient = {props.updateClient}

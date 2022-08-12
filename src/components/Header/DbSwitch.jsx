@@ -3,7 +3,7 @@ import { Box, Switch } from '@material-ui/core';
 import { Typography, Button } from '../System';
 import { dbSetUrl, dbGetSvcsBysvcTypeDateAsync } from '../System/js/Database';
 import { prnTest } from '../System/js/Clients/Receipts';
-import { MoveSvcsTableRecords } from "../System/js/MoveSvcsTable";
+import { MoveSvcsTableRecords, MoveSvcTypeTableRecords } from "../System/js/MoveSvcsTable";
 
 export default function DbSwitch() {
     const [switchOn, setSwitchOn] = React.useState(false);
@@ -46,8 +46,17 @@ export default function DbSwitch() {
             {/* Migrate dev-smum-services table to new dev-svcs-table */}
             <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
             style = {{ marginRight: '100px' }} 
-            onClick={ () => MoveSvcsTableRecords(1, 40) } >
+            onClick={ () => MoveSvcsTableRecords(1, 10) } >
                     Move Svcs
+            </Button>
+            {/* ************************************************************* */}
+
+            {/* ************************************************************* */}
+            {/* Migrate dev-smum-services table to new dev-svcs-table */}
+            <Button key="moveSvcTypes" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
+            style = {{ marginRight: '100px' }} 
+            onClick={ () => MoveSvcTypeTableRecords() } >
+                    Move svcTypes
             </Button>
             {/* ************************************************************* */}
 

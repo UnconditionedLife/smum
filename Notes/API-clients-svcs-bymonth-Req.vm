@@ -1,0 +1,15 @@
+## SERVICE MONTH INDEX GET REQUEST TEMPLATE
+## paramaters: "month", "svccat", "date"
+
+#set($p = "|")
+
+{
+    "TableName": "$stageVariables.svcsTable",
+    "IndexName": "svcMonth-svcCatDTId-index",
+    "ScanIndexForward": true,
+    #if($input.params('svccat') != "")"KeyConditionExpression": "svcMonth = :month and begins_with(svcCatDTId, :catdate)"#else"KeyConditionExpression": "svcMonth = :month"#end, 
+    "ExpressionAttributeValues": {
+        ":month": {"S": "$input.params('month')"}
+        #if($input.params('svccat') != ""),":catdate": {"S": "$input.params('svccat')$p$input.params('date')"}#end
+    }
+}

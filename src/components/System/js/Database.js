@@ -83,6 +83,7 @@ export function initCache() {
     dbGetSvcTypesAsync()
         .then( svcTypes => { 
             cachedSvcTypes = svcTypes;
+            console.log(svcTypes)
         });
 }
 
@@ -194,6 +195,9 @@ export function SettingsSchedule() {
 export async function dbGetSvcTypesAsync(){
     return await dbGetDataAsync("/servicetypes")
         .then( data => {
+
+            console.log("DATA", data);
+
             const svcTypes = data.serviceTypes
             // case-insensitive sort
             return  svcTypes.sort((a, b) => a.serviceName.localeCompare(b.serviceName, undefined, {sensitivity: 'base'}));
@@ -205,9 +209,17 @@ export function getSvcTypes(){
     return cachedSvcTypes    
 }
 
+// ********* BEFORE MIGRATION TO NEW TABLE *****
+// export async function dbSaveSvcTypeAsync(data) {
+//     return await dbPostDataAsync('/servicetypes/', data)
+// }
+// ********* BEFORE MIGRATION TO NEW TABLE *****
+
 export async function dbSaveSvcTypeAsync(data) {
-    return await dbPostDataAsync('/servicetypes/', data)
+    return await dbPostDataAsync('/svctypes/', data)
 }
+
+
 
 //******************** USERS *********************
 //************************************************
@@ -336,8 +348,11 @@ export async function dbGetClientActiveServiceHistoryAsync(clientId){
 // ***************************************************************
 // *********************** NEW SVCS DATABASE *************************
 export async function dbGetClientActiveSvcHistoryAsync(clientId){
-    return await dbGetDataAsync("/clients/svcs/" + clientId)
+    console.log("GET HISTORY", clientId);
+    const paramObj = { cid: clientId }
+    return await dbGetDataAsync("/clients/svcs/bycid/", paramObj)
         .then(data => {
+            console.log("DATA", data);
             const activeSvcs = data.svcs.filter(item => item.svcValid === true)
             return  makeOldServices(activeSvcs)
         })
@@ -409,10 +424,14 @@ export async function dbSaveSvcAsync(svc) {
 
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
-export async function dbGetValidSvcsByDateAsync(date){
-    return await dbGetDataAsync("/clients/svcs/byvalid", { svcvalid: "Y", svcdt: date })
+export async function dbGetValidSvcsByDateAsync(month, svcCat, date){
+    const paramObj = { month: month }
+    if (svcCat) paramObj.svccat = svcCat
+    if (date) paramObj.date = date
+    return await dbGetDataAsync( "/clients/svcs/bymonth", paramObj )
         .then(data => { 
-            const oldServices = makeOldServices(data.svcs) 
+            const validSvcs = data.svcs.filter(item => item.svcValid == true)
+            const oldServices = makeOldServices(validSvcs) 
 
             console.log("OLD SERVICES", oldServices);
 
@@ -448,9 +467,11 @@ export async function dbGetSvcsInMonthAsync(monthYear){
     return monthOfSvcs
 }
 
+// ***** NOT USED *****
 export async function dbGetServiceAsync(serviceId){
 	return await dbGetDataAsync("/clients/services/byid/" + serviceId).then( data => { return data.services})
 }
+// ***** NOT USED *****
 
 // export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCategory, itemsServed, isUSDA){
 // 	const serviceDateTime = moment().format('YYYY-MM-DDTHH:mm')
@@ -642,7 +663,7 @@ function makeNewSvc(service){
             homeless: ( service.homeless === "YES" ) ? true : false,
             individuals: service.totalIndividualsServed,
             seniors: service.totalSeniorsServed,
-            svcDTId: service.servicedDateTime + "#" + service.serviceId,
+            // svcDTId: service.servicedDateTime + "#" + service.serviceId,
             svcBtns: service.serviceButtons,
             svcBy: service.servicedByUserName,
             svcCat: service.serviceCategory,
@@ -655,7 +676,6 @@ function makeNewSvc(service){
             svcUpdatedDT: ( service.updatedDateTime === undefined ) ? "" : service.updatedDateTime,
             svcUSDA: service.isUSDA,
             svcValid: ( service.serviceValid == true ) ? true : false,
-            svcYear: service.servicedDateTime.substr( 0, 4 )
         }
     )
 }
