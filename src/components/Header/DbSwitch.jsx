@@ -46,7 +46,7 @@ export default function DbSwitch() {
             {/* Migrate dev-smum-services table to new dev-svcs-table */}
             <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
             style = {{ marginRight: '100px' }} 
-            onClick={ () => MoveSvcsTableRecords(10, 50) } >
+            onClick={ () => MoveSvcsTableRecords(950, 1000) } >
                     Move Svcs
             </Button>
             {/* ************************************************************* */}
@@ -62,11 +62,11 @@ export default function DbSwitch() {
 
             {/* ************************************************************* */}
             {/* Test loading a services with "begins_with" date */}
-            <Button key="getSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
+            {/* <Button key="getSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
             style = {{ marginRight: '100px' }} 
             onClick={ () => getSvcs("cj86davnj00013k7zi3715rf4","2019-01") } >
                     Get Svcs
-            </Button>
+            </Button> */}
 
             {/* ************************************************************* */}
 

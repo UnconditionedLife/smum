@@ -191,8 +191,9 @@ export function SettingsSchedule() {
 
 //************************************************
 //******************* SVCTYPES *******************
+//******************* OLD TABLE ******************
 
-export async function dbGetSvcTypesAsync(){
+export async function dbGetOldSvcTypesAsync(){
     return await dbGetDataAsync("/servicetypes")
         .then( data => {
 
@@ -205,6 +206,22 @@ export async function dbGetSvcTypesAsync(){
     )
 }
 
+//************************************************
+//******************* SVCTYPES *******************
+//******************* NEW TABLE ******************
+
+export async function dbGetSvcTypesAsync(){
+    return await dbGetDataAsync("/svctypes")
+        .then( data => {
+            const serviceTypes = makeOldSvcTypes(data.serviceTypes)
+            // case-insensitive sort
+            return  serviceTypes.sort((a, b) => a.serviceName.localeCompare(b.serviceName, undefined, {sensitivity: 'base'}));
+        }
+    )
+}
+
+
+
 export function getSvcTypes(){
     return cachedSvcTypes    
 }
@@ -216,10 +233,13 @@ export function getSvcTypes(){
 // ********* BEFORE MIGRATION TO NEW TABLE *****
 
 export async function dbSaveSvcTypeAsync(data) {
-    return await dbPostDataAsync('/svctypes/', data)
+    return await dbPostDataAsync('/svctypes/', MakeNewSvcType(data))
 }
 
-
+// *********** USED FOR MIGRATION ONLY **************
+export async function dbMigrateSvcTypeAsync(data) {
+    return await dbPostDataAsync('/svctypes/', data)
+}
 
 //******************** USERS *********************
 //************************************************
@@ -354,7 +374,8 @@ export async function dbGetClientActiveSvcHistoryAsync(clientId){
         .then(data => {
             console.log("DATA", data);
             const activeSvcs = data.svcs.filter(item => item.svcValid === true)
-            return  makeOldServices(activeSvcs)
+            const oldSvcs = makeOldServices(activeSvcs)
+            return oldSvcs
         })
 }
 // *********************** NEW SVCS DATABASE *************************
@@ -668,9 +689,6 @@ function makeNewSvc(service){
 
 function makeOldServices(svcs){
     const services = []
-
-    console.log("SVCS", svcs);
-
     svcs.forEach(svc => {
         const fulfillement = { 
             dateTime: svc.fillDT,
@@ -709,4 +727,52 @@ function makeOldServices(svcs){
     });
 
     return services
+}
+
+function makeOldSvcTypes(svcTypes){
+    const serviceTypes = []
+    svcTypes.forEach(svcType => {
+        serviceTypes.push(
+            {
+                available: svcType.available,
+                createdDateTime: svcType.createdDT,
+                fulfillment: svcType.fulfillment,
+                isActive: ( svcType.isActive ) ? "Active" : "Inactive",
+                isUSDA: svcType.svcUSDA,
+                itemsPer: svcType.itemsPer,
+                numberItems: svcType.numberItems,
+                serviceButtons: svcType.svcBtns,
+                serviceCategory: svcType.svcCat,
+                serviceDescription: svcType.svcDesc,
+                serviceInterval: svcType.svcInterval,
+                serviceName: svcType.svcName,
+                serviceTypeId: svcType.svcTypeId,
+                serviceOldTypeId: svcType.svcOldTypeId,
+                target: svcType.target,
+                updatedDateTime: svcType.updatedDT
+            }
+        )
+    })
+    return serviceTypes
+}
+
+function MakeNewSvcType(old){
+    return {
+        available: old.available,
+        createdDT: old.createdDateTime,
+        fulfillment: old.fulfillment,
+        isActive: ( old.isActive === "Active" ) ? true : false,
+        svcUSDA: old.isUSDA,
+        itemsPer: old.itemsPer,
+        numberItems: old.numberItems,
+        svcBtns: old.serviceButtons,
+        svcCat: old.serviceCategory,
+        svcDesc: old.serviceDescription,
+        svcInterval: old.serviceInterval,
+        svcName: old.serviceName,
+        svcTypeId: old.serviceTypeId,
+        svcOldTypeId: old.serviceOldTypeId,
+        target: old.target,
+        updatedDT: old.updatedDateTime
+    }
 }

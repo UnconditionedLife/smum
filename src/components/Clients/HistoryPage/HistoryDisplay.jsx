@@ -132,7 +132,6 @@ export default function HistoryDisplay(props) {
                                 <TableCell align="center">{ svc.totalIndividualsServed }</TableCell>
                                 <TableCell align="center">{ svc.totalSeniorsServed }</TableCell>
                                 <TableCell align="center">{ svc.servicedByUserName }</TableCell>
-                                { console.log(svc) }
                             </TableRow>
                         // </Fragment>
                     ))}

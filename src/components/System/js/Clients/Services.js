@@ -77,7 +77,7 @@ export function sortButtons(btns){
 }
 
 export function getFoodInterval(aSvcTypes){
-    const svcTypes = aSvcTypes ? aSvcTypes : getSvcTypes()
+    const svcTypes = aSvcTypes.length != 0 ? aSvcTypes : getSvcTypes()
     const usdaArray = [ 'NonUSDA', 'USDA', 'Emergency' ]
     const foodInt = {}
 	svcTypes.forEach((t) => {
@@ -186,26 +186,32 @@ export function getLastServedFood(client){
 			}
 		}
 	})
+
+    console.log("LAST SERVED FOOD", lastServedFood);
+
 	return lastServedFood
 }
 
 export function getActiveSvcTypes(){
-	// build Active Service Types array of Service Types which cover today's date
+	// ACTIVE AS IN AVAILABLE TODAY
+    // build Active Service Types array of Service Types which cover today's date
     let activeSvcTypes = []
     const svcTypes = getSvcTypes()        
     svcTypes.forEach((svc) => {
         if (svc.isActive == "Active"){
             // FROM
-            let fromDateString = []
-            fromDateString.push(moment().year())
-            fromDateString.push(Number(svc.available.dateFromMonth))
-            fromDateString.push(Number(svc.available.dateFromDay))
+            let fromDateString = [
+                moment().year(), 
+                Number(svc.available.dateFromMonth),  
+                Number(svc.available.dateFromDay)
+            ]
             let fromDate = moment(fromDateString).startOf('day')
             // TO
-            let toDateString = []
-            toDateString.push(moment().year())
-            toDateString.push(Number(svc.available.dateToMonth))
-            toDateString.push(Number(svc.available.dateToDay))
+            let toDateString = [
+                moment().year(),
+                Number(svc.available.dateToMonth),
+                Number(svc.available.dateToDay)
+            ]
             let toDate = moment(toDateString).endOf('day')
             // Adjust year dependent on months of TO and FROM
             if (moment(fromDate).isAfter(toDate)) toDate = moment(toDate).add(1, 'y');
