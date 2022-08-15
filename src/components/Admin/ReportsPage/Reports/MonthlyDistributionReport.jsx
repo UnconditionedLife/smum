@@ -15,6 +15,10 @@ export default function MonthlyDistributionReport(props) {
     "children": 0, "adults": 0,
     "seniors": 0, "homelessHouseholds": 0, "homelessSingles": 0,
     "nonClientHouseholds": 0, "nonClientSingles": 0}
+    const defaultTotalsDash = {"households": "-", "individuals": "-",
+    "children": "-", "adults": "-",
+    "seniors": "-", "homelessHouseholds": "-", "homelessSingles": "-",
+    "nonClientHouseholds": "-", "nonClientSingles": "-"}
     const [daysGrid, setDaysGrid] = useState([])
     const [monthTotals, setMonthTotals] = useState(defaultTotals)
     const [usdaTotals, setUsdaTotals] = useState(defaultTotals)
@@ -76,7 +80,7 @@ export default function MonthlyDistributionReport(props) {
 
     function computeGridTotals(gridList) {
         if (gridList.length == 0) {
-            return defaultTotals
+            return defaultTotalsDash
         }
         return gridList.reduce(function(previousValue, currentValue) {
             return {"households": svcNumberToInt(previousValue.households) + svcNumberToInt(currentValue.households), 
@@ -97,7 +101,6 @@ export default function MonthlyDistributionReport(props) {
 
         for (let dayIndex=0; dayIndex<gridList.length; dayIndex++) {
             let day = gridList[dayIndex]
-            console.log(day)
             day["usdaGrid"].forEach(item => {
                 if (!uniqueIds.includes(item.id)) {
                     uniqueIds.push(item.id);
@@ -115,38 +118,30 @@ export default function MonthlyDistributionReport(props) {
     }
 
     function RunReport() {
-        let numDays = moment(props.month, "YYYYMM").endOf("month").format("DD")
-        numDays = parseInt(numDays) + 1
-        let promises = []
-
-        for (let i = 1; i < numDays; i++) {
-            let servicedDay = String(i)
-            if (servicedDay.length < 2) servicedDay = "0"+servicedDay
-            servicedDay = props.month + servicedDay
-            promises.push(dbGetValidSvcsByDateAsync(moment(servicedDay).format('YYYY-MM-DD')))
-        }
-
-        Promise.all(promises).then(data => {
-            let newDaysGrid = []
-            for (let i=0; i<data.length; i++) {
-                let svcs = data[i]
-                let servicedDay = String(i+1)
-                if (servicedDay.length < 2) servicedDay = "0"+servicedDay
-                servicedDay = props.month + servicedDay
-                servicedDay = moment(servicedDay).format('MM/DD/YYYY')
+        dbGetValidSvcsByDateAsync(moment(props.month).format('YYYY-MM'), "Food_Pantry") .then(svcs => {
+            const svcsGroupBy = svcs.reduce(function (r, a) {
+                const key = a.servicedDateTime.substring(0 ,10)
+                r[key] = r[key] || [];
+                r[key].push(a);
+                return r;
+            }, Object.create(null));
+              
+            const newDaysGrid = []
+            for (const [servicedDay, svcs] of Object.entries(svcsGroupBy)) {
+                const servicedDate = moment(servicedDay).format('MM/DD/YYYY')
                 const servicesFood = svcs
                     .filter(item => item.serviceValid == 'true')
                     .filter(item => item.serviceCategory == "Food_Pantry")
-                    .sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
                 const servicesUSDA = servicesFood.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
                 const servicesNonUSDA = servicesFood.filter(item => item.isUSDA == "NonUSDA")
                 const usdaGrid = ListToGrid(servicesUSDA)
                 const nonUsdaGrid = ListToGrid(servicesNonUSDA)
                 const usdaTotals = computeGridTotals(usdaGrid)
                 const nonUsdaTotals = computeGridTotals(nonUsdaGrid)
-                newDaysGrid.push({"day": servicedDay, "usdaGrid": usdaGrid, "nonUsdaGrid": nonUsdaGrid, "usdaTotals": usdaTotals, 
+                newDaysGrid.push({"day": servicedDate, "usdaGrid": usdaGrid, "nonUsdaGrid": nonUsdaGrid, "usdaTotals": usdaTotals, 
                 "nonUsdaTotals": nonUsdaTotals, "totals": computeGridTotals([usdaTotals, nonUsdaTotals])})
             }
+            console.log(newDaysGrid)
             setDaysGrid(newDaysGrid)
             setUsdaTotals(computeGridTotals(newDaysGrid.map(day => day["usdaTotals"])))
             setNonUsdaTotals(computeGridTotals(newDaysGrid.map(day => day["nonUsdaTotals"])))
@@ -237,10 +232,7 @@ export default function MonthlyDistributionReport(props) {
                     </TableCell>
                 </TableRow>) : null}
             {daysGrid.map(day => {
-                console.log(day)
-                console.log(day["totals"]["households"])
                 if (day["totals"]["households"] > 0) { 
-                    console.log("Rendering ",day)
                     return RenderDay(day)
                 }
             })}
