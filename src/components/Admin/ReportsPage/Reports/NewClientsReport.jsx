@@ -17,7 +17,6 @@ export default function NewClientsReport(props) {
     const [loading, setLoading] = useState(true)
 
     let numNewClients = []
-    const USDAServiceTypeId = "cj86davnj00013k7zi3715rf4"
 
 
     function StartRunReport(){
@@ -29,7 +28,6 @@ export default function NewClientsReport(props) {
     function RunReport(){
         dbGetValidSvcsByDateAsync(moment(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
             .then(svcs => {
-                console.log(svcs)
                 const monthOfValidUSDASvcs = svcs.filter(item => item.isUSDA == "USDA")
                 let newClients = []
                 let tempList = []
