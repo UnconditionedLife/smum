@@ -409,8 +409,29 @@ export async function dbSaveClientAsync(data) {
 
 // ***************************************************************
 // *********************** NEW SVCS DATABASE *************************
-export async function dbSaveServiceRecordAsync(svc) {
+export async function dbSaveServicePatchAsync(svc) {
 	return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
+}
+
+export async function dbSaveServiceRecordAsync(svc) {
+    // to be used in production
+    // return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
+
+console.log("OLD SVC", svc);
+
+    // to be used during migration period
+    return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
+        .then( async (r) => {
+            if (Object.keys(r).length === 0) {
+                const svcTypes = getSvcTypes()
+                svcTypes.forEach(s => {
+                    if (s.serviceTypeId === svc.serviceTypeId) 
+                        svc.serviceTypeId = s.serviceOldTypeId
+                });
+                return await dbPostDataAsync("/clients/services", svc)
+            } else
+                return r 
+        })
 }
 
 export async function dbSaveSvcAsync(svc) {
