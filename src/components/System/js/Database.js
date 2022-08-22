@@ -417,8 +417,6 @@ export async function dbSaveServiceRecordAsync(svc) {
     // to be used in production
     // return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
 
-console.log("OLD SVC", svc);
-
     // to be used during migration period
     return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
         .then( async (r) => {
