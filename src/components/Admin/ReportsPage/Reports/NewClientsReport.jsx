@@ -1,7 +1,7 @@
 import { Box, Table, TableContainer, TableRow, TableCell, TableBody, Typography, TableFooter, CircularProgress } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
-import { dbGetSingleClientAsync, dbGetSvcsInMonthAsync, SettingsZipcodes } from '../../../System/js/Database';
+import { dbGetSingleClientAsync, dbGetValidSvcsByDateAsync, SettingsZipcodes } from '../../../System/js/Database';
 import moment from 'moment';
 import { ReportsHeader } from "../..";
 
@@ -17,7 +17,6 @@ export default function NewClientsReport(props) {
     const [loading, setLoading] = useState(true)
 
     let numNewClients = []
-    const USDAServiceTypeId = "cj86davnj00013k7zi3715rf4"
 
 
     function StartRunReport(){
@@ -27,10 +26,9 @@ export default function NewClientsReport(props) {
     }
 
     function RunReport(){
-        dbGetSvcsInMonthAsync(moment(props.yearMonth).format('YYYYMM'))
+        dbGetValidSvcsByDateAsync(moment(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
             .then(svcs => {
-                const monthOfValidSvcs = svcs.filter(item => item.serviceValid == 'true')
-                const monthOfValidUSDASvcs = monthOfValidSvcs.filter(item => item.serviceTypeId == USDAServiceTypeId)
+                const monthOfValidUSDASvcs = svcs.filter(item => item.isUSDA == "USDA")
                 let newClients = []
                 let tempList = []
 
