@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
 import { getSvcTypes, globalMsgFunc, getUserName } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
-import { saveHistoryFormAsync, removeSvcAsync } from '../../System/js/Clients/History';
+import { saveHistoryFormAsync, removeSvcAsync, checkSvcCounts } from '../../System/js/Clients/History';
 
 HistoryFormDialog.propTypes = {
     client: PropTypes.object.isRequired,                // current client
@@ -37,6 +37,12 @@ export default function HistoryFormDialog(props) {
     })
 
     function doSave(formValues) {
+        // check if counts are valid
+        if (checkSvcCounts(formValues) === false) {
+            globalMsgFunc('error', 'Individuals must equal sum of Children, Adults, and Seniors!')
+            return null
+        }
+        
         saveHistoryFormAsync(editRecord, formValues, client, getUserName())
             .then( savedSvc => {
                 if (savedSvc !== null) { 
