@@ -8,7 +8,7 @@
 
 import moment from 'moment';
 import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils.js';
-import { dbGetValidSvcsByDateAsync, dbGetSingleClientAsync, utilEmptyPlaceholders , dbSaveServiceRecordAsync } from '../../System/js/Database.js';
+import { dbGetValidSvcsByDateAsync, dbGetSingleClientAsync, utilEmptyPlaceholders , dbSaveServicePatchAsync } from '../../System/js/Database.js';
 
 export function PatchSeniorCountInServiceDay(day) {
     dbGetValidSvcsByDateAsync(day) //YYYYMMDD
@@ -65,7 +65,7 @@ export function PatchSeniorCountInServiceDay(day) {
                         if (updated === true ) {
                             console.log(svc.clientServedId, "PATCHED")
                             // Save the Patched service
-                            dbSaveServiceRecordAsync(tempSvc)
+                            dbSaveServicePatchAsync(tempSvc)
                         } else {
                             console.log(svc.clientServedId, "OK")
                         }
