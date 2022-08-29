@@ -3,6 +3,7 @@ import { Box, Switch } from '@material-ui/core';
 import { Typography, Button } from '../System';
 import { dbSetUrl } from '../System/js/Database';
 import { prnTest } from '../System/js/Clients/Receipts';
+import { MoveSvcsTableRecords, MoveSvcTypeTableRecords } from "../System/js/MoveSvcsTable";
 
 export default function DbSwitch() {
     const [switchOn, setSwitchOn] = React.useState(false);
@@ -14,6 +15,18 @@ export default function DbSwitch() {
     function onChange(event) {
         setSwitchOn(event.target.checked);
     }
+
+    {/* ************************************************************* */}
+
+    // {/* Test loading a services with "begins_with" date */}
+    // function getSvcs(svcTypeId, date) {
+    //     dbGetSvcsBysvcTypeDateAsync(svcTypeId, date)
+    //     .then(svcs => {
+    //         console.log("SVCS:", svcs)
+    //     })
+    // }
+
+    {/* ************************************************************* */}
 
     return (
         <Box display="flex" flexDirection="row" justifyContent="flex-end" 
@@ -28,6 +41,35 @@ export default function DbSwitch() {
             onClick={ () => prnTest('full') } >
                     Full Printer Test
             </Button>
+
+            {/* ************************************************************* */}
+            {/* Migrate dev-smum-services table to new dev-svcs-table */}
+            <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
+            style = {{ marginRight: '100px' }} 
+            onClick={ () => MoveSvcsTableRecords(950, 1000) } >
+                    Move Svcs
+            </Button>
+            {/* ************************************************************* */}
+
+            {/* ************************************************************* */}
+            {/* Migrate dev-smum-services table to new dev-svcs-table */}
+            <Button key="moveSvcTypes" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
+            style = {{ marginRight: '100px' }} 
+            onClick={ () => MoveSvcTypeTableRecords() } >
+                    Move svcTypes
+            </Button>
+            {/* ************************************************************* */}
+
+            {/* ************************************************************* */}
+            {/* Test loading a services with "begins_with" date */}
+            {/* <Button key="getSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
+            style = {{ marginRight: '100px' }} 
+            onClick={ () => getSvcs("cj86davnj00013k7zi3715rf4","2019-01") } >
+                    Get Svcs
+            </Button> */}
+
+            {/* ************************************************************* */}
+
              </Box>
             { switchOn ? <Typography ml={ 1 } mr={ 1 }>WARNING: Production database selected</Typography> : null }
             <Typography ml={ 1 } mr={ 1 }>Database Access:</Typography>

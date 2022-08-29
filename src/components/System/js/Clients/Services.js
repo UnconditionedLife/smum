@@ -3,8 +3,8 @@
 //******************************************************************
 import moment from  'moment';
 import { utilGradeToNumber, utilCalcTargetServices } from './ClientUtils'
-import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
-    getUserName, dbGetSvcsByIdAndYear } from '../Database';
+import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
+    getUserName } from '../Database';
 import { calFindOpenDate } from '../Calendar.js';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt, prnFlush } from './Receipts';
@@ -77,7 +77,7 @@ export function sortButtons(btns){
 }
 
 export function getFoodInterval(aSvcTypes){
-    const svcTypes = aSvcTypes ? aSvcTypes : getSvcTypes()
+    const svcTypes = aSvcTypes.length != 0 ? aSvcTypes : getSvcTypes()
     const usdaArray = [ 'NonUSDA', 'USDA', 'Emergency' ]
     const foodInt = {}
 	svcTypes.forEach((t) => {
@@ -186,26 +186,32 @@ export function getLastServedFood(client){
 			}
 		}
 	})
+
+    console.log("LAST SERVED FOOD", lastServedFood);
+
 	return lastServedFood
 }
 
 export function getActiveSvcTypes(){
-	// build Active Service Types array of Service Types which cover today's date
+	// ACTIVE AS IN AVAILABLE TODAY
+    // build Active Service Types array of Service Types which cover today's date
     let activeSvcTypes = []
     const svcTypes = getSvcTypes()        
     svcTypes.forEach((svc) => {
         if (svc.isActive == "Active"){
             // FROM
-            let fromDateString = []
-            fromDateString.push(moment().year())
-            fromDateString.push(Number(svc.available.dateFromMonth))
-            fromDateString.push(Number(svc.available.dateFromDay))
+            let fromDateString = [
+                moment().year(), 
+                Number(svc.available.dateFromMonth),  
+                Number(svc.available.dateFromDay)
+            ]
             let fromDate = moment(fromDateString).startOf('day')
             // TO
-            let toDateString = []
-            toDateString.push(moment().year())
-            toDateString.push(Number(svc.available.dateToMonth))
-            toDateString.push(Number(svc.available.dateToDay))
+            let toDateString = [
+                moment().year(),
+                Number(svc.available.dateToMonth),
+                Number(svc.available.dateToDay)
+            ]
             let toDate = moment(toDateString).endOf('day')
             // Adjust year dependent on months of TO and FROM
             if (moment(fromDate).isAfter(toDate)) toDate = moment(toDate).add(1, 'y');
@@ -431,19 +437,22 @@ function validateServiceInterval( props ){
 			}
 		}
 		//TODO: this is a workaround due to last served not tracking id. Need last served to track by service id.
-		if (activeServiceType.fulfillment.type == "Voucher"){
-			let service = dbGetSvcsByIdAndYear(activeServiceType.serviceTypeId, moment().year())
-                .then((svcs) => {
-                    return svcs.filter(obj => obj.clientServedId == client.clientId)
-                })
+        
+        // *****  Disabled during svc table update ******
+
+		// if (activeServiceType.fulfillment.type == "Voucher"){
+		// 	let service = dbGetSvcsBysvcTypeDateAsync(activeServiceType.serviceTypeId, moment().year())
+        //         .then((svcs) => {
+        //             return svcs.filter(obj => obj.clientServedId == client.clientId)
+        //         })
 				
-			if (service.length == 0){
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
+		// 	if (service.length == 0){
+		// 		return true;
+		// 	}
+		// 	else {
+		// 		return false;
+		// 	}
+		// }
 		let inLastServed = client.lastServed.filter(obj => obj.serviceCategory == serviceCategory)
 		if (inLastServed.length > 0) {
 			// if a voucher fulfill service then need to chech against Voucher service
@@ -499,7 +508,7 @@ function calcValidAgeGrade(at){
 }
 
 async function utilCalcVoucherServiceSignupAsync(client, serviceType){
-	return await dbGetClientActiveServiceHistoryAsync(client.id).then(
+	return await dbGetClientActiveSvcHistoryAsync(client.id).then(
         clientHistory => {
             return clientHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
                 .filter(item => item.serviceTypeId == serviceType.target.service)

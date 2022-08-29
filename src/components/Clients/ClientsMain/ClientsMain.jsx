@@ -6,7 +6,7 @@ import { ClientsHeader, ClientsContent } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';
-import { dbSearchClientsAsync, dbGetClientActiveServiceHistoryAsync, dbSetModifiedTime,
+import { dbSearchClientsAsync, dbGetClientActiveSvcHistoryAsync, dbSetModifiedTime,
      utilEmptyPlaceholders, getUserName, globalMsgFunc } from '../../System/js/Database';
 import { getLastServedDays } from '../../System/js/Clients/Services'
 
@@ -114,7 +114,7 @@ export default function ClientsMain(props) {
                 newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
                 // add service handling objects
-                dbGetClientActiveServiceHistoryAsync(newClient.clientId)
+                dbGetClientActiveSvcHistoryAsync(newClient.clientId)
                     .then( history => { 
                         newClient.svcHistory = history
                         setClient(newClient)

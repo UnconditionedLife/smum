@@ -1,0 +1,41 @@
+## UNIVERSAL SERVICE OBJECT GET RESPONSE TEMPLATE
+
+#set($inputRoot = $input.path('$'))
+#set($p = "[|]") ## brackes escape the special character
+
+{
+    "count": $inputRoot.Count,
+    "svcs": [
+        #foreach($elem in $inputRoot.Items) {
+            #set($a = $elem.svcCatDTId.S.split($p))
+            "adults": "$elem.adults.S",
+            "children": "$elem.children.S",
+            "cFamName": #if($elem.cFamName.S)"$elem.cFamName.S"#else""#end,
+            "cGivName": #if($elem.cGivName.S)"$elem.cGivName.S"#else""#end,
+            "cId": "$elem.cId.S",
+            "cStatus": "$elem.cStatus.S",
+            "cZip": #if($elem.cZip.S)"$elem.cZip.S"#else""#end,
+            "fillBy": #if($elem.fillBy.S)"$elem.fillBy.S"#else""#end,
+            "fillDT": #if($elem.fillDT.S)"$elem.fillDT.S"#else""#end,
+            "fillItems": #if($elem.fillItems.S)"$elem.fillItems.S"#else""#end,
+            "fillPending": #if($elem.fillPending.BOOL == true)true #else false#end,
+            "fillVoucher": #if($elem.fillVoucher.S)"$elem.fillVoucher.S"#else""#end,
+            "homeless": $elem.homeless.BOOL,
+            "individuals": "$elem.individuals.S",
+            "seniors": "$elem.seniors.S",
+            "svcBtns": "$elem.svcBtns.S",
+            "svcBy": "$elem.svcBy.S",
+            "svcCat": "$a.get(0)",
+            "svcDT": "$a.get(1)",
+            "svcFirst": $elem.svcFirst.BOOL,
+            "svcId": "$a.get(2)",
+            "svcItems": "$elem.svcItems.S",
+            "svcName": "$elem.svcName.S",
+            "svcTypeId": "$elem.svcTypeId.S",
+            "svcUpdatedDT": #if($elem.svcUpdatedDT.S)"$elem.svcUpdatedDT.S"#else""#end,
+            "svcUSDA": #if($elem.svcUSDA.S != "")"$elem.svcUSDA.S"#else"NA"#end,
+            "svcValid": $elem.svcValid.BOOL
+            
+        }#if($foreach.hasNext),#end
+    #end]
+}

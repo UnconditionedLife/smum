@@ -4,11 +4,11 @@
 import moment from  'moment';
 import cuid from 'cuid';
 import { utilNow } from '../GlobalUtils';
-import { dbGetClientActiveServiceHistoryAsync, dbSaveServiceRecordAsync, 
+import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, 
             getSvcTypes, dbSaveClientAsync, globalMsgFunc } from '../Database';
 
 export async function getServiceHistoryAsync(clientId){
-	return await dbGetClientActiveServiceHistoryAsync(clientId)
+	return await dbGetClientActiveSvcHistoryAsync(clientId)
         .then(
             clientHistory => {
                 return clientHistory.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
@@ -56,6 +56,8 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
     modRecord.updatedDateTime = utilNow()
     modRecord.serviceId = cuid()
 
+    console.log("modRecord", modRecord)
+
     return await dbSaveServiceRecordAsync(modRecord)
         .then((savedSvc) => {
             if (Object.keys(savedSvc).length === 0) {
@@ -68,6 +70,10 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
 
 export async function removeSvcAsync(client, svc){
     svc.serviceValid = false
+    svc.updatedDateTime = utilNow()
+    // incase it's from the new svc table TODO - remove after migration
+    svc.servicedDay = moment(svc.servicedDateTime).format("YYYYMMDD")
+
     return await dbSaveServiceRecordAsync(svc)
         .then((savedSvc) => {
             if (Object.keys(savedSvc).length === 0) {
@@ -76,14 +82,16 @@ export async function removeSvcAsync(client, svc){
                 });
                 const tempClient = Object.assign({}, client)
                 tempClient.svcHistory = newHistory
-                if (svc.serviceButtons === 'Primary') {
-                    // tempClient.lastServed = updateLastServed(tempClient)
-                }
                 return tempClient
             } else {
                 return null
             }
         })
+}
+
+export function checkSvcCounts(svc){
+    const totalSvd = parseInt(svc.totalAdultsServed) + parseInt(svc.totalChildrenServed) + parseInt(svc.totalSeniorsServed)
+    return (totalSvd === parseInt(svc.totalIndividualsServed))
 }
 
 function buildAndSaveLastServed(newClient) {

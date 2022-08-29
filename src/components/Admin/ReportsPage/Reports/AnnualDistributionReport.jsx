@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
 import moment from 'moment';
-import { dbGetDaysSvcsAsync } from '../../../System/js/Database';
+import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@material-ui/core/styles';
 
 AnnualDistributionReport.propTypes = {
@@ -123,34 +123,25 @@ export default function AnnualDistributionReport(props) {
         }
 
         let promises = []
-        let days = []
-        for (let m = moment(start); m.isBefore(end); m.add(1, 'days')) {
-            promises.push(dbGetDaysSvcsAsync(m.format('YYYYMMDD')))
-            days.push(m.format('YYYYMMDD'))
+        let monthsSvc = []
+        for (let m = moment(start); m.isBefore(end); m.add(1, 'months')) {
+            promises.push(dbGetValidSvcsByDateAsync(m.format('YYYY-MM'), "Food_Pantry"))
+            monthsSvc.push(m.format('YYYYMM'))
         }
-
+        console.log(monthsSvc)
         Promise.all(promises).then(data => {
+            console.log(data)
             let monthGrid = {}
             for (let i = 0; i < data.length; i++) {
-                console.log(days[i])
-                let servicedMonth = moment(days[i], "YYYYMMDD").format('MMMM')
+                console.log(monthsSvc)
+                let servicedMonth = moment(monthsSvc[i], "YYYYMM").format('MMMM')
                 let svcs = data[i]
-                const servicesFood = svcs
-                    .filter(item => item.serviceValid == 'true')
-                    .filter(item => item.serviceCategory == "Food_Pantry")
-                    .sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
-                const servicesUSDA = servicesFood.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
-                const servicesNonUSDA = servicesFood.filter(item => item.isUSDA == "NonUSDA")
+                const servicesUSDA = svcs.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
+                const servicesNonUSDA = svcs.filter(item => item.isUSDA == "NonUSDA")
                 const usdaGrid = ListToGrid(servicesUSDA)
                 const nonUsdaGrid = ListToGrid(servicesNonUSDA)                
                 const newData = {"usdaGrid": usdaGrid, "nonUsdaGrid": nonUsdaGrid}
-                if (servicedMonth in monthGrid) {
-                    monthGrid[servicedMonth].push(newData)
-                }
-                else {
-                    monthGrid[servicedMonth] = [newData]
-                }
-
+                monthGrid[servicedMonth] = [newData]
             }
             console.log(monthGrid)
             let months = []
