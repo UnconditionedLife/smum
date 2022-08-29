@@ -10,6 +10,7 @@ import NewClientsReport from './Reports/NewClientsReport.jsx';
 import DailyDistributionReport from './Reports/DailyDistributionReport.jsx';
 import MonthlyDistributionReport from './Reports/MonthlyDistributionReport.jsx';
 import AnnualDistributionReport from './Reports/AnnualDistributionReport.jsx';
+import AllMonthlyServicesReport from './Reports/AllMonthlyServicesReport.jsx';
 import { PatchSeniorCountInServiceDay } from '../../System/js/Patch';
 
 export default function ReportsPage() {
@@ -36,6 +37,14 @@ export default function ReportsPage() {
             setReportHeading("New Clients " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
             setReportOpen(true);
             setReportBody(<NewClientsReport yearMonth={foodYearMonth} />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+        if (foodType == "ALL") {
+            console.log(foodYearMonth)
+            setReportHeading("ALL SERVICES " + moment(reportYear).format('MMM, YYYY') + " Report");
+            setReportOpen(true);
+            setReportBody(<AllMonthlyServicesReport month={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
@@ -114,7 +123,10 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
+                                <MenuItem value="ALL">All Services</MenuItem>
                                 <MenuItem value="NEWCLIENT">New Client</MenuItem>
+                                <MenuItem value="ZIPCODE">By Zipcode</MenuItem>
+                                <MenuItem value="ETHNICITY">By Ethnicity</MenuItem>
                         </Select>
                         </FormControl>
                         <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["year", "month"]} value={ foodYearMonth } onChange={ handleFoodYearMonthChangeUpdated } />
