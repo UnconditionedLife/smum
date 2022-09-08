@@ -422,11 +422,12 @@ export async function dbSaveServiceRecordAsync(svc) {
         .then( async (r) => {
             if (Object.keys(r).length === 0) {
                 const svcTypes = getSvcTypes()
+                const oldSvc = {...svc}
                 svcTypes.forEach(s => {
-                    if (s.serviceTypeId === svc.serviceTypeId) 
-                        svc.serviceTypeId = s.serviceOldTypeId
+                    if (s.serviceTypeId === oldSvc.serviceTypeId) 
+                        oldSvc.serviceTypeId = s.serviceOldTypeId
                 });
-                return await dbPostDataAsync("/clients/services", svc)
+                return await dbPostDataAsync("/clients/services", oldSvc)
             } else
                 return r 
         })
@@ -445,7 +446,16 @@ export async function dbSaveSvcAsync(svc) {
 //     return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
 // }
 
-
+// convert LastEvaluatedKey to map
+function stringToMap(string){
+    let newString = string.replaceAll('{', '{"')
+    newString = newString.replaceAll('={', '":{')
+    newString = newString.replaceAll('=', '":"')
+    newString = newString.replaceAll('}', '"}')
+    newString = newString.replaceAll('}"}', '}}')
+    newString = newString.replaceAll(', ', ', "')
+    return newString
+}
 
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
@@ -453,19 +463,35 @@ export async function dbGetValidSvcsByDateAsync(month, svcCat, date){
     const paramObj = { month: month }
     if (svcCat) paramObj.svccat = svcCat
     if (date) paramObj.date = date
+    let lastKey = null
+    let promises = []
     return await dbGetDataAsync( "/clients/svcs/bymonth", paramObj )
-        .then(data => { 
+        .then(data => {
             const validSvcs = data.svcs.filter(item => item.svcValid == true)
-            const oldServices = makeOldServices(validSvcs) 
+            lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null
+            promises = promises.concat(validSvcs)
 
-            console.log("OLD SERVICES", oldServices);
+            // return if no lastkey
+            if (!lastKey) return makeOldServices(promises)
 
-            return oldServices
+            // loop until no last key
+            while (lastKey) {
+                //  build new params with last key
+                const newParams = { ...paramObj, lastkey: lastKey }    
+                return dbGetDataAsync( "/clients/svcs/bymonth", newParams )
+                    .then(data => {
+                        const validSvcs = data.svcs.filter(item => item.svcValid == true)
+                        promises = promises.concat(validSvcs)
+                        lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null
+                        // return if no lastkey
+                        if (!lastKey) return makeOldServices(promises)
+                    })
+                    
+            }
         })
 }
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
-
 
 // export async function dbGetSvcsByIdAndYear(serviceTypeId, year) {
 // 	return await dbGetDataAsync("/clients/services/byservicetype/" + serviceTypeId)

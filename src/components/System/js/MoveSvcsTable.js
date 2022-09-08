@@ -21,29 +21,29 @@ function getNewSvcId(svcOldTypeId){
     return newSvcId
 }
 
-function transformSvcTypeRecord(old, index){
+// function transformSvcTypeRecord(old, index){
 
-    // getNewSvcId(old.serviceTypeId)
+//     // getNewSvcId(old.serviceTypeId)
 
-    return {
-        available: old.available,
-        createdDT: old.createdDateTime,
-        fulfillment: old.fulfillment,
-        isActive: ( old.isActive === "Active" ) ? true : false,
-        svcUSDA: old.isUSDA,
-        itemsPer: old.itemsPer,
-        numberItems: old.numberItems,
-        svcBtns: old.serviceButtons,
-        svcCat: old.serviceCategory,
-        svcDesc: old.serviceDescription,
-        svcInterval: old.serviceInterval,
-        svcName: old.serviceName,
-        svcTypeId: index,
-        svcOldTypeId: old.serviceTypeId,
-        target: old.target,
-        updatedDT: old.updatedDateTime
-    }
-}
+//     return {
+//         available: old.available,
+//         createdDT: old.createdDateTime,
+//         fulfillment: old.fulfillment,
+//         isActive: ( old.isActive === "Active" ) ? true : false,
+//         svcUSDA: old.isUSDA,
+//         itemsPer: old.itemsPer,
+//         numberItems: old.numberItems,
+//         svcBtns: old.serviceButtons,
+//         svcCat: old.serviceCategory,
+//         svcDesc: old.serviceDescription,
+//         svcInterval: old.serviceInterval,
+//         svcName: old.serviceName,
+//         svcTypeId: index,
+//         svcOldTypeId: old.serviceTypeId,
+//         target: old.target,
+//         updatedDT: old.updatedDateTime
+//     }
+// }
 
 function transformSvcRecord(svc){
 
@@ -99,15 +99,13 @@ function transformSvcRecord(svc){
     }
 }
 
-
-export function MoveSvcsTableRecords(startId, endId) {
-
-    for (let i = startId; i < endId+1; i++) {
-        console.log(i)
-        dbGetClientActiveServiceHistoryAsync(i)
+async function getClientSvcs(i) { // 3
+    await sleep(2000);
+    console.log("Insert Client:", i);
+    dbGetClientActiveServiceHistoryAsync(i)
             .then(svcRecs => {
 
-console.log("C"+i, svcRecs)
+console.log("SVCS", svcRecs)
 
             // check for duplicate svcId(s)
             const seen = []
@@ -147,43 +145,66 @@ console.log("C"+i, svcRecs)
                         }
                 }
                 const newSvc = transformSvcRecord(svc)
-                console.log(index+1)
-                console.log(JSON.stringify(newSvc))
+                // console.log(index+1)
+                // console.log(JSON.stringify(newSvc))
                 if (newSvc.svcDT !== "Invalid date") {
-                    dbSaveSvcAsync(newSvc)
-                        .then(() => {
-                            console.log("SAVED " + newSvc.cId);
-                        })
-                        .catch(() => {
-                            // use to break out of loop if error in dbSave *** BREAK IS NOT WORKING
-                            console.log("*** SAVE ERROR ABORTING AT " + newSvc.cId + " ***")
-                            state = false
-                        }) 
+
+                    // console.log(moment(newSvc.svcDT).year(), 2022);
+
+                    // if (moment(newSvc.svcDT).year() === 2020) {
+                    if ( svc.serviceTypeId === "cjem7yi0z05183iacs4mjuev6") {
+                        dbSaveSvcAsync(newSvc)
+                            .then(() => {
+                                console.log("SAVED " + newSvc.cId);
+                            })
+                            .catch(() => {
+                                // use to break out of loop if error in dbSave *** BREAK IS NOT WORKING
+                                console.log("*** SAVE ERROR ABORTING AT " + newSvc.cId + " ***")
+                                state = false
+                            }) 
+                    }
                 }
                 return state;
             });
         })
-    }
-        
 }
 
-export function MoveSvcTypeTableRecords(){
+function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
+
+
+export async function MoveSvcsTableRecordsAsync(startId, endId) {
+
+    for (let i = startId; i < endId+1; i++) {
+        console.log("CLIENT:", i)
+        // wait for the sleep period between client service
+        await getClientSvcs(i)
+    }    
+}
+
+// export function MoveSvcTypeTableRecords(){
     
-    console.log("IN MOVE SVCTYPES");
+//     console.log("IN MOVE SVCTYPES");
     
-    dbGetOldSvcTypesAsync()
-        .then((oldSvcTypes) => {
+//     dbGetOldSvcTypesAsync()
+//         .then((oldSvcTypes) => {
             
-            console.log("OLD SVCTYPES", oldSvcTypes)
+//             console.log("OLD SVCTYPES", oldSvcTypes)
 
-            oldSvcTypes.forEach((svcType, index) => {
-                console.log("MOVing",svcType);
-                const newSvcType = transformSvcTypeRecord(svcType, index)
-                dbMigrateSvcTypeAsync(newSvcType)
-                    .then(() => {
-                        console.log("SAVED " + newSvcType.svcTypeId);
-                    })
+//             oldSvcTypes.forEach((svcType, index) => {
+//                 console.log("MOVing",svcType);
+//                 const newSvcType = transformSvcTypeRecord(svcType, index)
+//                 dbMigrateSvcTypeAsync(newSvcType)
+//                     .then(() => {
+//                         console.log("SAVED " + newSvcType.svcTypeId);
+//                     })
                 
-            });
-        })
-}
+//             });
+//         })
+// }
+
+// MIGRATE OLD THANKSGIVING SERVICES
+// Turkey service = "cjem7yi0z05183iacs4mjuev6"
+
+// Move table variables:
+// FROM: prod-smum-services-byservicetype-error { old table to be removed }
+// TO: prod-smum-services { old table to be removed }

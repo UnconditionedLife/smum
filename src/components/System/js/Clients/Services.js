@@ -307,13 +307,14 @@ function getActiveServicesButtons( props ) {
 				if (validDependents.length == 0) display = false
 			}
 			if (prop == "service") { // targeting a voucher fulfill service
+                // TODO CLEANUP AND REBUILD VOUCHERS
 				// let servicesVouchers = utilCalcVoucherServiceSignup(client, activeServiceTypes[i])
 				// if (servicesVouchers.length !== 1) display = false
-                utilCalcVoucherServiceSignupAsync(client, svc).then(
-                    vouchers => {
-                        if (vouchers.length !== 1) display = false
-                    }
-                )
+                // utilCalcVoucherServiceSignupAsync(client, svc).then(
+                //     vouchers => {
+                //         if (vouchers.length !== 1) display = false
+                //     }
+                // )
 			} else if (targetServices[i][prop] != client[prop]
 					&& prop.includes("family")==false
 					&& prop.includes("dependents")==false) display = false
@@ -508,7 +509,7 @@ function calcValidAgeGrade(at){
 }
 
 async function utilCalcVoucherServiceSignupAsync(client, serviceType){
-	return await dbGetClientActiveSvcHistoryAsync(client.id).then(
+	return await dbGetClientActiveSvcHistoryAsync(client.clientId).then(
         clientHistory => {
             return clientHistory.filter(item => moment(item.servicedDateTime).year() == moment().year()) // current year service
                 .filter(item => item.serviceTypeId == serviceType.target.service)
