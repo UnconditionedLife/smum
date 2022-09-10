@@ -14,7 +14,7 @@ function getNewSvcId(svcOldTypeId){
         // console.log("SVCTYPE", svcType.serviceOldTypeId);
         // console.log("SERVICE", svcOldTypeId);
         if (svcType.serviceOldTypeId === svcOldTypeId) {
-            newSvcId = svcType.serviceTypeId
+            newSvcId = svcType.svcTypeId
         }
     });
     // console.log("NEW", newSvcId);

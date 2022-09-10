@@ -36,20 +36,20 @@ export default function SecondaryButtons(props) {
         <Fragment key={ buttons }>
             {buttons.map((svc) => {
                 return (
-                    <Fragment key={ svc.serviceTypeId }>
+                    <Fragment key={ svc.svcTypeId }>
                         { (svc.btnType === 'normal') &&
-                            <Button key={ svc.serviceTypeId } m={ .5 } variant="contained" 
+                            <Button key={ svc.svcTypeId } m={ .5 } variant="contained" 
                                 color="primary" size="large" minWidth="176px"
-                                onClick={ () => handleAddSvc( svc.serviceTypeId ) }>
-                                    { svc.serviceName }
+                                onClick={ () => handleAddSvc( svc.svcTypeId ) }>
+                                    { svc.svcName }
                             </Button>
                         }
 
                         { (svc.btnType === 'used') &&
-                            <Button key={ svc.serviceTypeId + "used" } m={ .25 } variant="outlined" 
+                            <Button key={ svc.svcTypeId + "used" } m={ .25 } variant="outlined" 
                                 color="primary" size="large" minWidth="176px" startIcon={<ReplayIcon />}
                                 onClick={ () => handleUndoSvc(svc) }>
-                                    { svc.serviceName }
+                                    { svc.svcName }
                             </Button>
                         }
                     </Fragment>

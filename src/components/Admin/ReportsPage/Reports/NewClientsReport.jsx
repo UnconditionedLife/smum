@@ -28,7 +28,7 @@ export default function NewClientsReport(props) {
     function RunReport(){
         dbGetValidSvcsByDateAsync(moment(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
             .then(svcs => {
-                const monthOfValidUSDASvcs = svcs.filter(item => item.isUSDA == "USDA")
+                const monthOfValidUSDASvcs = svcs.filter(item => item.svcUSDA == "USDA")
                 let newClients = []
                 let tempList = []
 
@@ -36,13 +36,13 @@ export default function NewClientsReport(props) {
                 let homeless = 0
 
                 monthOfValidUSDASvcs.forEach(svc => {    
-                    dbGetSingleClientAsync(svc.clientServedId)
+                    dbGetSingleClientAsync(svc.cId)
                         .then(client => {
                             const dividedYearMonth = moment(props.yearMonth).format('YYYYMM').substring(0,4) + "-" + moment(props.yearMonth).format('YYYYMM').substring(4)
                             const firstSeen = client.firstSeenDate
                         if (firstSeen.substring(0,7) == dividedYearMonth) {
                             console.log("matching MONTH")
-                            tempList.push(svc.clientServedId)
+                            tempList.push(svc.cId)
                             newClients.push(client)
                         }
                         setClientIds(tempList.sort((b, a) => { return b-a }))

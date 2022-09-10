@@ -150,7 +150,7 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select width={ 240 } name="report" label="Report">
                             { voucherSvcTypes.map((item) => (
-                                <MenuItem value={ item.serviceTypeId } key={ item.serviceTypeId }>{ item.serviceName }</MenuItem>
+                                <MenuItem value={ item.svcTypeId } key={ item.svcTypeId }>{ item.svcName }</MenuItem>
                             ))}                          
                         </Select>
                         </FormControl>
@@ -165,7 +165,7 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select width={ 240 } name="report" label="Report">
                             { voucherSvcTypes.map((item) => (
-                                <MenuItem value={ item.serviceTypeId } key={ item.serviceTypeId }>{ item.serviceName }</MenuItem>
+                                <MenuItem value={ item.svcTypeId } key={ item.svcTypeId }>{ item.svcName }</MenuItem>
                             ))} 
                         </Select>
                         </FormControl>

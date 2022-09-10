@@ -12,11 +12,11 @@ import cuid from 'cuid';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
-export async function addServiceAsync( client, svcTypeId ){
+export async function svcInterval( client, svcTypeId ){
     // const { client, svcTypeId, svcCat } = props
 
-    // console.log("client", client)
-    // console.log("svcTypeId", svcTypeId)
+    console.log("client", client)
+    console.log("svcTypeId", svcTypeId)
 
     const svcTypes = getSvcTypes()
 	const svcType = getServiceTypeByID(svcTypes, svcTypeId)
@@ -29,12 +29,13 @@ export async function addServiceAsync( client, svcTypeId ){
 	const servedCounts = calcServiceFamilyCounts( svcTypes, client, svcTypeId)
     const svcRecord = utilBuildServiceRecord( svcType, svcId, servedCounts, svcValid, client )
 
-    // console.log("svcRecord", svcRecord)
+    console.log("svcRecord", svcRecord)
 
 	return await dbSaveServiceRecordAsync(svcRecord)
         .then((savedSvc) => {
 
-            // console.log("savedSVC", savedSvc)
+            console.log("savedSVC", savedSvc)
+
 
             if (Object.keys(savedSvc).length === 0) {
                 if (svcId === "") {
@@ -590,43 +591,52 @@ function getServiceTypeByID(svcTypes, svcTypeId){
 	return svcTypeArr[0]
 }
 
-function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
+function utilBuildServiceRecord(serviceType, svcId, servedCounts, svcValid, client){
 	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
-    let firstFood = false
-	if (svcType.svcCat === "Food_Pantry") {
-        const foodSvcs = client.svcHistory.filter( svc => svc.svcCat === "Food_Pantry" )
-        firstFood = (foodSvcs.length === 0) ? true : false
-    }
-
+	// let emergencyFood = "NO",
+			// servicedMonth = moment().format("YYYYMM"),
+	// servicedDay = moment().format("YYYYMMDD")
+	if (svcId == "") svcId = cuid()
+	// if (serviceType.svcUSDA == "Emergency") emergencyFood = "YES"
+	// define fulfillment vars for non-vouchers
+	let pending = false
+    let fulfillmentDateTime = moment().format('YYYY-MM-DDTHH:mm')
+	let byUserName = getUserName()
+	let itemCount = servedCounts.svcItems
+	if (serviceType.fulfillment.type == "Voucher") {
+		pending = true
+		fulfillmentDateTime = ""
+		byUserName = ""
+		itemCount = ""
+	}
 	let serviceRecord = {
-		svcId: (svcId == "") ? cuid() : svcId,
+		svcId: svcId,
 		svcValid: svcValid,
 		svcDT: moment().format('YYYY-MM-DDTHH:mm'),
+		// servicedDay: servicedDay,
 		cId: client.clientId,
 		cStatus: client.isActive,
 		cGivName: client.givenName,
 		cFamName: client.familyName,
 		cZip: client.zipcode,
 		svcBy: getUserName(),
-		svcTypeId: svcType.svcTypeId,
-		svcName: svcType.svcName,
-		svcCat: svcType.svcCat,
-		svcBtns: svcType.svcBtns,
-        svcFirst: firstFood,
-        svcMonth: moment().format("YYYY-MM"),
-        svcUpdatedDT: "",
-		svcUSDA: svcType.svcUSDA,
+		svcTypeId: serviceType.svcTypeId,
+		svcName: serviceType.svcName,
+		svcCat: serviceType.svcCat,
+		svcBtns: serviceType.svcBtns,
+		svcUSDA: serviceType.svcUSDA,
 		svcItems: servedCounts.svcItems,
-		homeless: (client.homeless === "YES") ? true : false ,
+		homeless: client.homeless,
+		// emergencyFood: emergencyFood,
 		adults: servedCounts.adults,
 		children: servedCounts.children,
 		seniors: servedCounts.seniors,
         individuals: servedCounts.individuals,
-		fillPending: (svcType.fulfillment.type == "Voucher") ? true : false ,
-        fillDT: "",
+		fillPending: pending,
+        fillDT: fulfillmentDateTime,
 		fillVoucher: "",
-        fillBy: "",
-        fillItems: ""
+        fillBy: byUserName,
+        fillItems: itemCount
 	}
 
 	return serviceRecord

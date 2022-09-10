@@ -6,7 +6,7 @@ export async function utilRemoveServiceSync(ethnicGroup){
 	return await dbGetEthnicGroupCountAsync(ethnicGroup)
         .then( async (serviceArray) => {
             let service = serviceArray[0]
-            service.serviceValid = false
+            service.svcValid = false
             return await dbSaveServiceRecordAsync(service)
                 // .then( () => {
                 //     console.log("utilRemoveService = success!");

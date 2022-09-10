@@ -24,8 +24,8 @@ export default function AllMonthlyServicesReport(props) {
     function ListToGrid(svcList) {
         let grid = []
         svcList.forEach(elem => {
-            let item = {"households": "1", "individuals": elem.totalIndividualsServed,
-                "itemsServed": elem.itemsServed}
+            let item = {"households": "1", "individuals": elem.individuals,
+                "itemsServed": elem.svcItems}
             grid.push(item)
         })
         return grid
@@ -60,13 +60,13 @@ export default function AllMonthlyServicesReport(props) {
             let svcsCatGrid = {}
 
             svcs.forEach(svc => {
-                if (!svcsCatGrid[svc.serviceCategory]) {
-                    svcsCatGrid[svc.serviceCategory] = {}
+                if (!svcsCatGrid[svc.svcCat]) {
+                    svcsCatGrid[svc.svcCat] = {}
                 }
-                if (!svcsCatGrid[svc.serviceCategory][svc.serviceName]) {
-                    svcsCatGrid[svc.serviceCategory][svc.serviceName] = []
+                if (!svcsCatGrid[svc.svcCat][svc.svcName]) {
+                    svcsCatGrid[svc.svcCat][svc.svcName] = []
                 }
-                svcsCatGrid[svc.serviceCategory][svc.serviceName].push(svc)
+                svcsCatGrid[svc.svcCat][svc.svcName].push(svc)
             })
 
             let aggregatedTotals = buildTotalsDict(svcsCatGrid)
@@ -183,7 +183,7 @@ export default function AllMonthlyServicesReport(props) {
                         <TableCell>{key2}</TableCell>
                         <TableCell>{aggregatedTotals[key][key2].households}</TableCell>
                         <TableCell>{aggregatedTotals[key][key2].individuals}</TableCell>
-                        <TableCell>{aggregatedTotals[key][key2].itemsServed}</TableCell>
+                        <TableCell>{aggregatedTotals[key][key2].svcItems}</TableCell>
                     </TableRow>)
                 })}
                 </>)

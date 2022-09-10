@@ -32,9 +32,9 @@ export default function PrimaryButtons() {
         for (let i=0; i < buttonData.primary.length; i++){
             let x = buttonData.primary[i]
             let btnClass = "btnPrimary"
-            if ((buttonData.activeServiceTypes[x].serviceCategory == "Administration") || (buttonData.activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
-            let attribs = "\'" + buttonData.activeServiceTypes[x].serviceTypeId + "\', \'" + buttonData.activeServiceTypes[x].serviceCategory + "\', \'" + buttonData.activeServiceTypes[x].serviceButtons + "\'";
-            let image = "<img id=\'image-" + buttonData.activeServiceTypes[x].serviceTypeId + "\' src='/public/images/PrimaryButton" + buttonData.activeServiceTypes[x].serviceCategory + ".png" + ver + "'>";
+            if ((buttonData.activeServiceTypes[x].svcCat == "Administration") || (buttonData.activeServiceTypes[x].isUSDA == "Emergency")) btnClass = "btnAlert"
+            let attribs = "\'" + buttonData.activeServiceTypes[x].serviceTypeId + "\', \'" + buttonData.activeServiceTypes[x].svcCat + "\', \'" + buttonData.activeServiceTypes[x].serviceButtons + "\'";
+            let image = "<img id=\'image-" + buttonData.activeServiceTypes[x].serviceTypeId + "\' src='/public/images/PrimaryButton" + buttonData.activeServiceTypes[x].svcCat + ".png" + ver + "'>";
             //primaryButtons += '<div class=\"' + btnClass + '\" id=\"btn-'+ activeServiceTypes[x].serviceTypeId +'\" onclick=\"clickAddService('+ attribs +')\">' + activeServiceTypes[x].serviceName + "<br>" + image + "</div>";
             buttons.push(buttonData.activeServiceTypes[x])
         }

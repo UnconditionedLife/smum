@@ -37,37 +37,37 @@ export default function DailyDistributionReport(props) {
     function ListToGrid(svcList) {
         let grid = []
         svcList.forEach(elem => {
-            let item = {"serviceId": elem.serviceId,
-                "id": elem.clientServedId, "given": elem.clientGivenName,
-                "family": elem.clientFamilyName, "zipcode": elem.clientZipcode, 
-                "households": "1", "individuals": elem.totalIndividualsServed,
-                "children": elem.totalChildrenServed, "adults": elem.totalAdultsServed,
-                "seniors": elem.totalSeniorsServed}
+            let item = {"svcId": elem.svcId,
+                "id": elem.cId, "given": elem.cGivName,
+                "family": elem.cFamName, "zipcode": elem.cZip, 
+                "households": "1", "individuals": elem.individuals,
+                "children": elem.children, "adults": elem.adults,
+                "seniors": elem.seniors}
             if (elem.homeless == "YES") {
-                if (elem.totalIndividualsServed == 1) {
+                if (elem.individuals == 1) {
                     item["homelessHouseholds"] = "-"
                     item["homelessSingles"] = "1"
                 }
                 else {
                     item["homelessHouseholds"] = "1"
-                    item["homelessSingles"] = elem.totalIndividualsServed
+                    item["homelessSingles"] = elem.individuals
                 }
             } else {
                 item["homelessHouseholds"] = "-"
                 item["homelessSingles"] = "-"
             }
 
-            if (elem.clientStatus == "Client") {
+            if (elem.cStatus == "Client") {
                 item["nonClientHouseholds"] = "-"
                 item["nonClientSingles"] = "-"
             } else {
-                if (elem.totalIndividualsServed == 1) {
+                if (elem.individuals == 1) {
                     item["nonClientHouseholds"] = "-"
                     item["nonClientSingles"] = "1"
                 }
                 else {
                     item["nonClientHouseholds"] = "1"
-                    item["nonClientSingles"] = elem.totalIndividualsServed
+                    item["nonClientSingles"] = elem.individuals
                 }
             }
             grid.push(item)
@@ -100,11 +100,11 @@ export default function DailyDistributionReport(props) {
         dbGetValidSvcsByDateAsync(moment(props.day).format('YYYY-MM'), "Food_Pantry", moment(props.day).format('YYYY-MM-DD'))
             .then(svcs => {
                 const servicesFood = svcs
-                    // .filter(item => item.serviceValid == 'true')
-                    //.filter(item => item.serviceCategory == "Food_Pantry")
-                    // .sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
-                const servicesUSDA = servicesFood.filter(item => item.isUSDA == "USDA" || item.isUSDA == "Emergency")
-                const servicesNonUSDA = servicesFood.filter(item => item.isUSDA == "NonUSDA")
+                    // .filter(item => item.svcValid == 'true')
+                    //.filter(item => item.svcCat == "Food_Pantry")
+                    // .sort((a, b) => moment.utc(a.svcDT).diff(moment.utc(b.svcDT)))
+                const servicesUSDA = servicesFood.filter(item => item.svcUSDA == "USDA" || item.svcUSDA == "Emergency")
+                const servicesNonUSDA = servicesFood.filter(item => item.svcUSDA == "NonUSDA")
                 const usdaGrid = ListToGrid(servicesUSDA)
                 const nonUsdaGrid = ListToGrid(servicesNonUSDA)
                 const usdaTotals = computeGridTotals(usdaGrid)
@@ -121,7 +121,7 @@ export default function DailyDistributionReport(props) {
 
     function RenderSvcList(svcList) {
         const jsxCode = svcList.map(svc => 
-            <TableRow className='rightText' key={svc.serviceId}>
+            <TableRow className='rightText' key={svc.svcId}>
                 <style>
                     {   `@media print { 
                             .rightText { 

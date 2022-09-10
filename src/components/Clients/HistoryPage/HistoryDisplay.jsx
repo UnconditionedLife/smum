@@ -16,7 +16,6 @@ HistoryDisplay.propTypes = {
 export default function HistoryDisplay(props) {
     const { client, updateClient, lastServedFoodDate } = props
     const svcHistory = client.svcHistory
-    
     const [ selectedService, setSelectedService ] = useState(null);
     const [ editMode, setEditMode ] = useState('none');
     const [ anchorEl, setAnchorEl ] = useState(null);
@@ -25,7 +24,7 @@ export default function HistoryDisplay(props) {
     function handleSelectedService(event, newSelSvc) {
         setSelectedService(newSelSvc)
         const record = svcHistory.filter(function( obj ) {
-            return obj.serviceId === newSelSvc.serviceId
+            return obj.svcId === newSelSvc.svcId
         })[0]
         setEditRecord(record)
         setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -115,23 +114,23 @@ export default function HistoryDisplay(props) {
             <TableBody>
                 <Fragment>
                     { svcHistory.map((svc) => (
-                        // <Fragment key={svc.serviceId} >
+                        // <Fragment key={svc.svcId} >
                             <TableRow 
-                                key={ svc.serviceId }
+                                key={ svc.svcId }
                                 onClick= { (event) => { if (isAdmin()) handleSelectedService(event, svc)} }
-                                selected= { svc.serviceId == selectedService } >
+                                selected= { svc.svcId == selectedService } >
                                 <TableCell align="center">
-                                        { moment(svc.servicedDateTime).format("MMM DD, YYYY - h:mm a") }
+                                        { moment(svc.svcDT).format("MMM DD, YYYY - h:mm a") }
                                 </TableCell>
-                                <TableCell align="center">{ svc.serviceName }</TableCell>
-                                <TableCell align="center">{ svc.clientStatus }</TableCell>
-                                <TableCell align="center">{ svc.homeless }</TableCell>
-                                <TableCell align="center">{ svc.itemsServed }</TableCell>
-                                <TableCell align="center">{ svc.totalAdultsServed }</TableCell>
-                                <TableCell align="center">{ svc.totalChildrenServed }</TableCell>
-                                <TableCell align="center">{ svc.totalIndividualsServed }</TableCell>
-                                <TableCell align="center">{ svc.totalSeniorsServed }</TableCell>
-                                <TableCell align="center">{ svc.servicedByUserName }</TableCell>
+                                <TableCell align="center">{ svc.svcName }</TableCell>
+                                <TableCell align="center">{ svc.cStatus }</TableCell>
+                                <TableCell align="center">{ (svc.homeless) ? "YES" : "NO" }</TableCell>
+                                <TableCell align="center">{ svc.svcItems }</TableCell>
+                                <TableCell align="center">{ svc.adults }</TableCell>
+                                <TableCell align="center">{ svc.children }</TableCell>
+                                <TableCell align="center">{ svc.individuals }</TableCell>
+                                <TableCell align="center">{ svc.seniors }</TableCell>
+                                <TableCell align="center">{ svc.svcBy }</TableCell>
                             </TableRow>
                         // </Fragment>
                     ))}

@@ -11,7 +11,7 @@ export async function getServiceHistoryAsync(clientId){
 	return await dbGetClientActiveSvcHistoryAsync(clientId)
         .then(
             clientHistory => {
-                return clientHistory.sort((a, b) => moment.utc(b.servicedDateTime).diff(moment.utc(a.servicedDateTime)))
+                return clientHistory.sort((a, b) => moment.utc(b.svcDT).diff(moment.utc(a.svcDT)))
         }
     )
 }
@@ -31,12 +31,12 @@ export function updateLastServed(client){
     } else {
         return buildAndSaveLastServed(newClient)
     }
-	// const h = newClient.svcHistory.filter(item => item.serviceButtons == "Primary")
+	// const h = newClient.svcHistory.filter(item => item.svcBtns == "Primary")
 	// newClient.lastServed = []
 	// h.forEach((hSvc) => {
-	// 	if (newClient.lastServed.findIndex(item => item.serviceTypeId == hSvc.serviceTypeId) < 0) {
-	// 		newClient.lastServed.push( { serviceTypeId: hSvc.serviceTypeId, serviceDateTime: hSvc.servicedDateTime, 
-    //             serviceCategory: hSvc.serviceCategory, isUSDA: hSvc.isUSDA } )
+	// 	if (newClient.lastServed.findIndex(item => item.svcTypeId == hSvc.svcTypeId) < 0) {
+	// 		newClient.lastServed.push( { svcTypeId: hSvc.svcTypeId, serviceDateTime: hSvc.svcDT, 
+    //             svcCat: hSvc.svcCat, svcUSDA: hSvc.svcUSDA } )
 	// 	}
     // })
 
@@ -46,15 +46,14 @@ export function updateLastServed(client){
 export async function saveHistoryFormAsync(editRecord, formValues, client, userName){
     const modRecord = Object.assign({}, editRecord)
     Object.assign(modRecord, formValues)
-    const serviceType = getSvcTypes().filter(item => item.serviceName == editRecord.serviceName)[0]
+    const svcType = getSvcTypes().filter(item => item.svcName == editRecord.svcName)[0]
     Object.assign(modRecord, {
-        serviceTypeId: serviceType.serviceTypeId, serviceCategory: serviceType.serviceCategory, 
-        isUSDA: serviceType.isUSDA })
+        svcTypeId: svcType.svcTypeId, svcCat: svcType.svcCategory, svcUSDA: svcType.svcUSDA })
 
-    modRecord.servicedDay = moment(editRecord.servicedDateTime).format("YYYYMMDD")
-    modRecord.servicedByUserName = userName
-    modRecord.updatedDateTime = utilNow()
-    modRecord.serviceId = cuid()
+    modRecord.servicedDay = moment(editRecord.svcDT).format("YYYYMMDD")
+    modRecord.svcBy = userName
+    modRecord.svcUpdatedDT = utilNow()
+    modRecord.svcId = cuid()
 
     console.log("modRecord", modRecord)
 
@@ -69,16 +68,16 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
 }
 
 export async function removeSvcAsync(client, svc){
-    svc.serviceValid = false
-    svc.updatedDateTime = utilNow()
+    svc.svcValid = false
+    svc.svcUpdatedDT = utilNow()
     // incase it's from the new svc table TODO - remove after migration
-    svc.servicedDay = moment(svc.servicedDateTime).format("YYYYMMDD")
+    svc.servicedDay = moment(svc.svcDT).format("YYYYMMDD")
 
     return await dbSaveServiceRecordAsync(svc)
         .then((savedSvc) => {
             if (Object.keys(savedSvc).length === 0) {
                 const newHistory = client.svcHistory.filter(function( obj ) {
-                    return obj.serviceId !== svc.serviceId;
+                    return obj.svcId !== svc.svcId;
                 });
                 const tempClient = Object.assign({}, client)
                 tempClient.svcHistory = newHistory
@@ -90,17 +89,17 @@ export async function removeSvcAsync(client, svc){
 }
 
 export function checkSvcCounts(svc){
-    const totalSvd = parseInt(svc.totalAdultsServed) + parseInt(svc.totalChildrenServed) + parseInt(svc.totalSeniorsServed)
-    return (totalSvd === parseInt(svc.totalIndividualsServed))
+    const totalSvd = parseInt(svc.adults) + parseInt(svc.children) + parseInt(svc.seniors)
+    return (totalSvd === parseInt(svc.individuals))
 }
 
 function buildAndSaveLastServed(newClient) {
-	const h = newClient.svcHistory.filter(item => item.serviceButtons == "Primary")
+	const h = newClient.svcHistory.filter(item => item.svcBtns == "Primary")
 	newClient.lastServed = []
 	h.forEach((hSvc) => {
-		if (newClient.lastServed.findIndex(item => item.serviceTypeId == hSvc.serviceTypeId) < 0) {
-			newClient.lastServed.push( { serviceTypeId: hSvc.serviceTypeId, serviceDateTime: hSvc.servicedDateTime, 
-                serviceCategory: hSvc.serviceCategory, isUSDA: hSvc.isUSDA } )
+		if (newClient.lastServed.findIndex(item => item.svcTypeId == hSvc.svcTypeId) < 0) {
+			newClient.lastServed.push( { svcTypeId: hSvc.svcTypeId, svcDT: hSvc.svcDT, 
+                svcCat: hSvc.svcCat, svcUSDA: hSvc.svcUSDA } )
 		}
     })
 

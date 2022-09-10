@@ -29,7 +29,7 @@ export default function ServicesPage(props) {
     // const [ lastServedDays, setLastServedDays ] = useState(null)
     // const [ lastServedFoodDate, setLastServedFoodDate ] = useState(null)
     const [ lastServedText, setLastServedText ] = useState(null)
-    const [ nextServiceDate, setNextServiceDate ] = useState(null)
+    // const [ nextServiceDate, setNextServiceDate ] = useState(null)
     const [ nextServiceText, setNextServiceText ] = useState(null)
     const [ activeServiceTypes, setActiveServiceTypes ] = useState(null)
     const [ targetServices, setTargetServices ] = useState(null)
@@ -86,8 +86,8 @@ export default function ServicesPage(props) {
         }
     },[ client ])
 
-    function handleAddSvc(serviceTypeId){        
-        addServiceAsync( client, serviceTypeId )
+    function handleAddSvc(svcTypeId){
+        addServiceAsync( client, svcTypeId )
             .then((updatedClient) => {
                 if (updatedClient !== null){
                     // updates svcHistory

@@ -30,8 +30,8 @@ export default function ServiceTypeFormDialog(props) {
         data = {available: {dateFromDay: "1", dateToDay: "1", dateFromMonth:"0", dateToMonth: "1"},
         fulfillment: {fromDateTime:"", toDateTime:"", type:""},
         target: {homeless: "", gender:"", family:"", child:"", childMinGrade:"Unselected", childMaxGrade:"Unselected", childMinAge:"0", childMaxAge:"0", service:""},
-        isActive:"", isUSDA:"", itemsPer:"", numberItems:"",
-        serviceButtons:"", serviceCategory:"",serviceDescription:"",serviceInterval:"",serviceName:""
+        isActive:"", svcUSDA:"", itemsPer:"", numberItems:"",
+        svcBtns:"", svcCat:"",svcDesc:"",svcInterval:"",svcName:""
         };
         data.fromdate = packFromDate(data)
         data.todate = packToDate(data)
@@ -92,20 +92,19 @@ export default function ServiceTypeFormDialog(props) {
         const tosplit = todate.split("-")
 
         return {"available": {
-                    "dateFromMonth": (parseInt(fromsplit[1])-1).toString(), 
-                    "dateFromDay": parseInt(fromsplit[2]).toString(),
-                    "dateToMonth": (parseInt(tosplit[1])-1).toString(), 
-                    "dateToDay": parseInt(tosplit[2]).toString()
-                    }
-               } 
-
+            "dateFromMonth": (parseInt(fromsplit[1])-1).toString(), 
+            "dateFromDay": parseInt(fromsplit[2]).toString(),
+            "dateToMonth": (parseInt(tosplit[1])-1).toString(), 
+            "dateToDay": parseInt(tosplit[2]).toString()
+            }
+        } 
     }
 
     function saveSvcType(data) {
         dbSetModifiedTime(data, isNewSvcType)
         console.log(data)
         if (isNewSvcType) {
-            data.serviceTypeId = cuid()
+            data.svcTypeId = cuid()
         }
         setSaveMessage({ result: 'working' });
         dbSaveSvcTypeAsync(data)
@@ -176,10 +175,10 @@ export default function ServiceTypeFormDialog(props) {
                     <Box mt={ 0 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>General Info</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
              
-                    <FormTextField name="serviceName" label="Service Name" fieldsize="lg" error={ errors.serviceName } 
+                    <FormTextField name="svcName" label="Service Name" fieldsize="lg" error={ errors.svcName } 
                         control={ control } rules={ {required: 'Required'}} />
 
-                    <FormSelect name="serviceCategory" label="Service Category" fieldsize="md" error={ errors.serviceName } 
+                    <FormSelect name="svcCat" label="Service Category" fieldsize="md" error={ errors.svcCat } 
                         control={ control } rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
                         { svcCats.map((item) => (
@@ -190,14 +189,14 @@ export default function ServiceTypeFormDialog(props) {
                     <FormSelect name="isActive" label="Status" control={ control } fieldsize="sm" error={ errors.isActive }
                         rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
-                        <MenuItem value="Active">Active</MenuItem>
-                        <MenuItem value="Inactive">Inactive</MenuItem>
+                        <MenuItem value={ true }>Active</MenuItem>
+                        <MenuItem value={ false }>Inactive</MenuItem>
                     </FormSelect>
 
-                    <FormTextField name="serviceDescription" label="Service Description" fieldsize="xl" error={ errors.serviceDescription } 
+                    <FormTextField name="svcDesc" label="Service Description" fieldsize="xl" error={ errors.svcDesc } 
                         control={ control } rules={ {required: 'Required'}} />
 
-                    <FormSelect name="serviceButtons" label="Buttons" control={ control } fieldsize="sm" error={ errors.serviceButtons }
+                    <FormSelect name="svcBtns" label="Buttons" control={ control } fieldsize="sm" error={ errors.svcBtns }
                         rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
                         <MenuItem value="Primary">Primary</MenuItem>
@@ -214,10 +213,10 @@ export default function ServiceTypeFormDialog(props) {
                         <MenuItem value="Person">Person</MenuItem>
                     </FormSelect>
 
-                    <FormTextField fieldsize="xs" name="serviceInterval" label="Interval" error={ errors.serviceInterval } 
+                    <FormTextField fieldsize="xs" name="svcInterval" label="Interval" error={ errors.svcInterval } 
                         control={ control } rules={ {required: 'Required'}} />
 
-                    <FormSelect fieldsize="sm" name="isUSDA" label="USDA" control={ control } error={ errors.isUSDA }
+                    <FormSelect fieldsize="md" name="svcUSDA" label="USDA" control={ control } error={ errors.svcUSDA }
                         rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
                         <MenuItem value="NA">N/A</MenuItem>
@@ -335,7 +334,7 @@ export default function ServiceTypeFormDialog(props) {
                                 <MenuItem value="">&nbsp;</MenuItem>
                                 <MenuItem value="Unselected">Unselected</MenuItem>
                                 { targetServices.map((item) => (
-                                    <MenuItem value={ item.serviceTypeId } key={ item.serviceTypeId }>{ item.serviceName }</MenuItem>
+                                    <MenuItem value={ item.svcTypeId } key={ item.svcTypeId }>{ item.svcName }</MenuItem>
                                 ))}
                         </FormSelect>}
                     </Box>

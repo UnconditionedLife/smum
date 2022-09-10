@@ -43,7 +43,7 @@ function ServiceTypeList(props) {
         setSelectedService(newServiceId)
 
         const record = props.list.filter(function( obj ) {
-            return obj.serviceTypeId === newServiceId
+            return obj.svcTypeId === newServiceId
         })[0]
         // console.log(record)
         // setEditMode('none')
@@ -65,12 +65,12 @@ function ServiceTypeList(props) {
                 <TableBody>
                     {props.list.map((row) => (
                     <TableRow 
-                        key={ row.serviceTypeId }
-                        onClick= { (event) => handleSelectedService(event, row.serviceTypeId)}
-                        selected= { row.serviceTypeId == selectedService } >
-                        <TableCell component="th" scope="row">{row.serviceName}</TableCell>
-                        <TableCell align="center">{row.serviceCategory}</TableCell>
-                        <TableCell align="center">{row.serviceDescription}</TableCell>
+                        key={ row.svcTypeId }
+                        onClick= { (event) => handleSelectedService(event, row.svcTypeId)}
+                        selected= { row.svcTypeId == selectedService } >
+                        <TableCell component="th" scope="row">{row.svcName}</TableCell>
+                        <TableCell align="center">{row.svcCat}</TableCell>
+                        <TableCell align="center">{row.svcDesc}</TableCell>
                     </TableRow>
                     ))}
                     { editMode === 'edit' &&
@@ -126,7 +126,7 @@ export default function ServiceTypePage() {
                 <AccordionDetails>
                     <ServiceTypeList 
                         updateSvcTypes={ updateSvcTypes }
-                        list={ svcTypes.filter(s => s.isActive == 'Active') }
+                        list={ svcTypes.filter(s => s.isActive == "true" ) }
                     />
                 </AccordionDetails>
             </Accordion>
@@ -137,7 +137,7 @@ export default function ServiceTypePage() {
                 <AccordionDetails>
                     <ServiceTypeList
                         updateSvcTypes={ updateSvcTypes } 
-                        list={ svcTypes.filter(s => s.isActive != 'Active') } 
+                        list={ svcTypes.filter(s => s.isActive == "false" ) } 
                     />
                 </AccordionDetails>
             </Accordion>

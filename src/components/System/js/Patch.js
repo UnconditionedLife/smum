@@ -39,7 +39,7 @@ export function PatchSeniorCountInServiceDay(day) {
                         } 
                         
                         if (svc.totalIndividualsServed != tempClient.family.totalSize) {
-                            // console.log ("SVC", svc.totalIndividualsServed)
+                            // console.log ("SVC", svc.individuals)
                             // console.log ("CLT", tempClient.family.totalSize)
                             tempSvc.totalIndividualsServed = tempClient.family.totalSize.toString()
                             console.log("PATCH Total")

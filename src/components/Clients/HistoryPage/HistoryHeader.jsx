@@ -10,11 +10,9 @@ HistoryHeader.propTypes = {
 
 export default function HistoryHeader(props) {
     const { client, lastServedFoodDate } = props;
-
-    let lsFoodDate = "** Never **"
-    if (lastServedFoodDate !== null) {
-        lsFoodDate = moment(lastServedFoodDate).format("MMM DD, YYYY - h:mm a")
-    } 
+    const lsFoodDate = (lastServedFoodDate !== null) 
+        ? moment(lastServedFoodDate).format("MMM DD, YYYY - h:mm a") 
+        : "** Never **"
     
     return (
         <TableContainer key={ lastServedFoodDate }> 

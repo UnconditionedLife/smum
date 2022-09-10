@@ -115,8 +115,11 @@ export default function ClientsMain(props) {
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
                 // add service handling objects
                 dbGetClientActiveSvcHistoryAsync(newClient.clientId)
-                    .then( history => { 
-                        newClient.svcHistory = history
+                    .then( svcHistory => { 
+
+                        console.log(svcHistory)
+
+                        newClient.svcHistory = svcHistory
                         setClient(newClient)
                         updateClientsURL(newClient.clientId, clientsTab)
                     })

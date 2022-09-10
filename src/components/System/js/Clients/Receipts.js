@@ -21,7 +21,7 @@ export function prnConnect(settings) {
     ePosDev.connect(settings.printerIP, port, prnCallback_connect);
 }
 
-export function prnPrintFoodReceipt(client, isUSDA) {
+export function prnPrintFoodReceipt(client, svcUSDA) {
 	prnStartReceipt();
 	prnServiceHeader(client, 'EMERGENCY FOOD PANTRY PROGRAM');
 	prnTextLine('(' + client.zipcode +	')');
@@ -32,15 +32,15 @@ export function prnPrintFoodReceipt(client, isUSDA) {
 	prnTextLine('FAMILY | FAMILIA:\t\t' + client.family.totalSize);
 	prnFeed(1);
 	prnTextLine('**************************************')
-	prnTextLine(' ' + isUSDA + ' ', 2, 2, ['inverse']);
+	prnTextLine(' ' + svcUSDA + ' ', 2, 2, ['inverse']);
 	prnTextLine('**************************************');
 	prnEndReceipt();
 }
 
 export function prnPrintVoucherReceipt(client, serviceType, dependents, grouping) {
-	let serviceName = serviceType.serviceName;
+	let svcName = serviceType.svcName;
 	prnStartReceipt();
-	prnServiceHeader(client, serviceName.toUpperCase());
+	prnServiceHeader(client, svcName.toUpperCase());
 	prnFeed(1);
 	if (dependents) {
 		let sortingFn, groupingFn;
@@ -339,7 +339,7 @@ function prnTestReceipt(receiptType) {
     const children = testClient.dependents.filter(d => d.age < 18);
 	switch(receiptType) {
 		case 0:
-			service = getSvcTypes().filter(obj => obj.serviceName == 'Clothes')[0];
+			service = getSvcTypes().filter(obj => obj.svcName == 'Clothes')[0];
 			prnPrintClothesReceipt(testClient, service);
 			break;
 		case 1:
@@ -349,15 +349,15 @@ function prnTestReceipt(receiptType) {
 			prnPrintReminderReceipt(testClient, new Date());
 			break;
 		case 3:
-			service = getSvcTypes().filter(obj => obj.serviceName == 'Thanksgiving Turkey')[0];
+			service = getSvcTypes().filter(obj => obj.svcName == 'Thanksgiving Turkey')[0];
 			prnPrintVoucherReceipt(testClient, service);
 			break;
 		case 4:
-			service = getSvcTypes().filter(obj => obj.serviceName == 'Christmas Toy')[0];
+			service = getSvcTypes().filter(obj => obj.svcName == 'Christmas Toy')[0];
 			prnPrintVoucherReceipt(testClient, service, children, 'age');
 			break;
 		case 5:
-			service = getSvcTypes().filter(obj => obj.serviceName == 'First Step')[0];
+			service = getSvcTypes().filter(obj => obj.svcName == 'First Step')[0];
 			prnPrintVoucherReceipt(testClient, service, children, 'grade');
 			break;
 	}

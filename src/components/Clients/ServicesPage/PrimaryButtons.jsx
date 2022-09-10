@@ -144,30 +144,30 @@ export default function PrimaryButtons(props) {
     return (
         <Fragment key={ buttons } >
         { buttons.map((svc) => (
-            <Fragment key={ svc.serviceTypeId + "-" + svc.btnType }>
+            <Fragment key={ svc.svcTypeId + "-" + svc.btnType }>
                 { (svc.btnType === 'normal') &&
                     <Box style={ buttonStyleNormal }>
                         <ButtonBase
                             focusRipple
-                            key={ svc.serviceTypeId }
+                            key={ svc.svcTypeId }
                             className={ classes.image }
                             focusVisibleClassName={ classes.focusVisible }
-                            onClick={ () => handleAddSvc(svc.serviceTypeId, 
-                                svc.serviceCategory, svc.serviceButtons) }>
+                            onClick={ () => handleAddSvc(svc.svcTypeId, 
+                                svc.svcCat, svc.svcBtns) }>
                                 <>
                                     <span className={ classes.imageSrc }
                                     style={{ backgroundImage: `url(${ 
-                                        ( svc.serviceCategory === "Food_Pantry" ) ? Food_Pantry : 
-                                        ( svc.serviceCategory === "Clothes_Closet" ) ? Clothes_Closet : 
-                                        ( svc.serviceCategory === "Administration" ) ? Administration : 
-                                        ( svc.serviceCategory === "Back_To_School" ) ? Administration : 
-                                        ( svc.serviceCategory === "Thanksgiving" ) ? Administration : 
-                                        ( svc.serviceCategory === "Christmas" ) ? Administration : "" })` }} />
+                                        ( svc.svcCat === "Food_Pantry" ) ? Food_Pantry : 
+                                        ( svc.svcCat === "Clothes_Closet" ) ? Clothes_Closet : 
+                                        ( svc.svcCat === "Administration" ) ? Administration : 
+                                        ( svc.svcCat === "Back_To_School" ) ? Administration : 
+                                        ( svc.svcCat === "Thanksgiving" ) ? Administration : 
+                                        ( svc.svcCat === "Christmas" ) ? Administration : "" })` }} />
                                     <span className={classes.imageBackdrop} />
                                     <span className={classes.imageButton}>
                                     <Typography component="span" variant="button" color="inherit"
                                     className={classes.imageTitle} >
-                                    <strong>{ svc.serviceName.toUpperCase() }</strong>
+                                    <strong>{ svc.svcName.toUpperCase() }</strong>
                                     <span className={classes.imageMarked} />
                                     </Typography>
                                     </span>
@@ -180,25 +180,25 @@ export default function PrimaryButtons(props) {
                     <Box style={ buttonStyleHighlight }>
                         <ButtonBase
                             focusRipple
-                            key={ svc.serviceTypeId }
+                            key={ svc.svcTypeId }
                             className={ classes.image }
                             focusVisibleClassName={ classes.focusVisible }
-                            onClick={ () => handleAddSvc(svc.serviceTypeId, 
-                                svc.serviceCategory, svc.serviceButtons) }
+                            onClick={ () => handleAddSvc(svc.svcTypeId, 
+                                svc.svcCat, svc.svcBtns) }
                         >
                             <span className={classes.imageSrc}
                                 style={{ backgroundImage: `url(${ 
-                                    ( svc.serviceCategory === "Food_Pantry" ) ? Food_Pantry : 
-                                    ( svc.serviceCategory === "Clothes_Closet" ) ? Clothes_Closet : 
-                                    ( svc.serviceCategory === "Administration" ) ? Administration : 
-                                    ( svc.serviceCategory === "Back_To_School" ) ? Administration : 
-                                    ( svc.serviceCategory === "Thanksgiving" ) ? Administration : 
-                                    ( svc.serviceCategory === "Christmas" ) ? Administration : "" })` }} />
+                                    ( svc.svcCat === "Food_Pantry" ) ? Food_Pantry : 
+                                    ( svc.svcCat === "Clothes_Closet" ) ? Clothes_Closet : 
+                                    ( svc.svcCat === "Administration" ) ? Administration : 
+                                    ( svc.svcCat === "Back_To_School" ) ? Administration : 
+                                    ( svc.svcCat === "Thanksgiving" ) ? Administration : 
+                                    ( svc.svcCat === "Christmas" ) ? Administration : "" })` }} />
                             <span className={classes.imageBackdrop} />
                             <span className={classes.imageButton}>
                                 <Typography component="span" variant="button" color="inherit"
                                     className={classes.imageTitle} >
-                                    <strong>{ svc.serviceName.toUpperCase() }</strong>
+                                    <strong>{ svc.svcName.toUpperCase() }</strong>
                                     <span className={classes.imageMarked} />
                                 </Typography>
                             </span>
@@ -210,7 +210,7 @@ export default function PrimaryButtons(props) {
                     <Box m={ .5 } p={ 0 } width={ buttonSizes[2] } height={ buttonSizes[2] } bgcolor='#FFF' display='flex' >
                             <Button m={ 0 } width={ buttonSizes[2] } height={ buttonSizes[2] } color='primary' style={{ borderRadius: '15px', border: '5px dashed #ddd' }}
                                 onClick={ () => handleUndoSvc( svc ) } startIcon={<ReplayIcon />}>
-                                <strong> { svc.serviceName.toUpperCase() }</strong>
+                                <strong> { svc.svcName.toUpperCase() }</strong>
                             </Button>
                     </Box>
                 }
