@@ -5,7 +5,6 @@ import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@
 import { SettingsServiceCats } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { dbSaveSvcTypeAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
-import cuid from 'cuid';
 
 ServiceTypeFormDialog.propTypes = {
     // editMode: PropTypes.string.isRequired,              // 'edit' = display form
@@ -17,6 +16,7 @@ ServiceTypeFormDialog.propTypes = {
 }
 
 export default function ServiceTypeFormDialog(props) {
+    const { serviceTypes } = props
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const isNewSvcType = (props.editRecord == null);
     const initMsg = isNewSvcType ? {} : {result: 'success', time: props.editRecord.updatedDateTime};
@@ -81,8 +81,7 @@ export default function ServiceTypeFormDialog(props) {
     })
 
     function getTargetServices() {
-        console.log(props.serviceTypes)
-        return props.serviceTypes.filter(function( obj ) {
+        return serviceTypes.filter(function( obj ) {
             return obj.fulfillment.type == "Voucher"
         })
     }
@@ -104,7 +103,8 @@ export default function ServiceTypeFormDialog(props) {
         dbSetModifiedTime(data, isNewSvcType)
         console.log(data)
         if (isNewSvcType) {
-            data.svcTypeId = cuid()
+            const topId = Math.max(...serviceTypes.map(o => o.svcTypeId))
+            data.svcTypeId = topId + 1
         }
         setSaveMessage({ result: 'working' });
         dbSaveSvcTypeAsync(data)
@@ -139,22 +139,6 @@ export default function ServiceTypeFormDialog(props) {
         reset(values);
     }
 
-    function startMessageTimer(boo){
-        if (boo === false) {
-            if (saveMessage.result === 'success') {
-                // props.handleClientHistory()
-                handleDialog(false)
-                setEditingState(false)
-                props.handleEditMode('cancel')
-            }
-            clearTimeout(delayInt)
-        } else {
-            delayInt = setTimeout(function(){
-                startMessageTimer(false)
-            }, 1200)
-        }
-    }
-
     const submitForm = handleSubmit(doSave);
     const childSelected = watch("target.child")
     const fulfillType = watch("fulfillment.type")
@@ -164,8 +148,8 @@ export default function ServiceTypeFormDialog(props) {
     const toTime = watch("fulfillment.toDateTime");
 
     const targetServices = getTargetServices()
-    console.log(targetServices)
-    console.log(svcCats)
+    // console.log(targetServices)
+    // console.log(svcCats)
     return (
         <Dialog maxWidth="md" open={ dialogOpen } aria-labelledby="form-dialog-title"> 
             <DialogTitle id="form-dialog-title">Service Type Record</DialogTitle>

@@ -52,14 +52,15 @@ function ServiceTypeList(props) {
     }
 
     return (
-        <Box width='100%' mx={ 2 }>
+        <Box width='95%' mx={ 2 }>
             <TableContainer> 
                 <Table>
                 <TableHead>
                     <TableRow>
-                    <TableCell align="center">Name</TableCell>
-                    <TableCell align="center">Category</TableCell>
-                    <TableCell align="center">Description</TableCell>
+                        <TableCell align="center">ID</TableCell>
+                        <TableCell align="center">Name</TableCell>
+                        <TableCell align="center">Category</TableCell>
+                        <TableCell align="center">Description</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -68,9 +69,10 @@ function ServiceTypeList(props) {
                         key={ row.svcTypeId }
                         onClick= { (event) => handleSelectedService(event, row.svcTypeId)}
                         selected= { row.svcTypeId == selectedService } >
+                        <TableCell component="th" scope="row">{row.svcTypeId}</TableCell>
                         <TableCell component="th" scope="row">{row.svcName}</TableCell>
-                        <TableCell align="center">{row.svcCat}</TableCell>
-                        <TableCell align="center">{row.svcDesc}</TableCell>
+                        <TableCell align="left">{row.svcCat}</TableCell>
+                        <TableCell align="left">{row.svcDesc}</TableCell>
                     </TableRow>
                     ))}
                     { editMode === 'edit' &&
