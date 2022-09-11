@@ -10,6 +10,8 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { setGlobalMsgFunc } from "../System/js/Database";
 import { beepError } from '../System/js/GlobalUtils';
 
+console.log("React v." + React.version)
+
 function HeaderMain(){
     const [ open, setOpen ] = useState(false);
     const [ globalMsg, setGlobalMsg ] = useState("")
