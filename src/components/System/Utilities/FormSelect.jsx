@@ -24,7 +24,7 @@ export default function FormSelect(props) {
     const width = getFormFieldSize(props.fieldsize) // xs, sm, md, lg, xl
 
     return (
-        <FormControl variant='outlined' size='small'>
+        <FormControl size='small'>
             <InputLabel>{ props.label }</InputLabel>
             <Controller as={ Select } width={ width } { ...selectProps }   />
             <Typography ml={ 0.5 } variant='body2' color='error'>

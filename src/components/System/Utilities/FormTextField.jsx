@@ -24,7 +24,7 @@ export default function FormTextField(props) {
     const width = getFormFieldSize(props.fieldsize) // xs, sm, md, lg, xl
     
     return (
-        <FormControl variant='outlined'>
+        <FormControl>
             <Controller as={ TextField } m={ 0 } width={ width } size="small" { ...textProps } />
             <Typography ml={ 0.5 } variant='body2' color='error'>
                 { props.error ? props.error.message : '' }

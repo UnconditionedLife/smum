@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
-import ChipInput from 'material-ui-chip-input';
+import { MuiChipsInput } from 'mui-chips-input';
 import { Box, Card, CardContent, CardHeader, Container, MenuItem, Typography } from '@mui/material';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
@@ -106,33 +106,42 @@ function SettingsForm(props) {
     }
 
     return (
-        <>
+        <Fragment>
             <form>
                 <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Interface</Typography></Box>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormSelect name="sounds" label="Enable Sounds" error={ errors.sounds } 
+                    <FormSelect fieldsize="sm" name="sounds" label="Enable Sounds" error={ errors.sounds } 
                         control={ control } rules={ {required: 'Required'}} >
                             <MenuItem value="YES">Yes</MenuItem>
                             <MenuItem value="NO">No</MenuItem>
                     </FormSelect>
-                    <FormTextField name="printerIP" label="Printer Address" error={ errors.printerIP } 
+                    <FormTextField fieldsize="sm" name="printerIP" label="Printer Address" error={ errors.printerIP } 
                         control={ control } rules={ {required: 'Required'}} />
                 </Box>
 
                 <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Services</Typography></Box>
-                <ChipInput label='Service Zip Codes' value={ serviceZip } variant='outlined'
-                    blurBehavior='clear' onAdd={ addZipcode } onDelete={ deleteZipcode } />
-                <ChipInput label='Service Categories' value={ serviceCat } variant='outlined'
-                    blurBehavior='clear' onAdd={ addServiceCat } onDelete={ deleteServiceCat } />
-
+                <MuiChipsInput value={ serviceZip }
+                    label='Service Zip Codes'
+                    onAddChip={ addZipcode } 
+                    onDeleteChip={ deleteZipcode }
+                    hideClearAll 
+                    disableDeleteOnBackspace 
+                />
+                <MuiChipsInput value={ serviceCat }
+                    label='Service Categories'
+                    onAddChip={ addServiceCat } 
+                    onDeleteChip={ deleteServiceCat }
+                    hideClearAll 
+                    disableDeleteOnBackspace 
+                />
                 <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Clients</Typography></Box>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField name="seniorAge" label="Senior Age" error={ errors.seniorAge } 
+                    <FormTextField fieldsize="sm" name="seniorAge" label="Senior Age" error={ errors.seniorAge } 
                             control={ control } rules={ {required: 'Required'}} />
                 </Box>
             </form>
             <SaveCancel disabled={ !(formState.isDirty || fieldsDirty) } message={ saveMessage }
                 onClick={ (isSave) => { isSave ? submitForm() : doCancel() } } />
-        </>
+        </Fragment>
     );
 }
