@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { InputLabel } from '@material-ui/core';
+import { InputLabel } from '@mui/material';
 import Select from '../Core/Select.jsx';
 import FormControl from '../Core/FormControl.jsx';
 import Typography from '../Core/Typography.jsx';

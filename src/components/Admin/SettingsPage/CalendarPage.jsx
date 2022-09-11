@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Card, CardContent, CardHeader, Container, Popper, Dialog, DialogTitle } from '@material-ui/core';
+import { Box, Card, CardContent, CardHeader, Container, Popper, Dialog, DialogTitle } from '@mui/material';
 import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
 import moment from 'moment-timezone';
 import FullCalendar from '@fullcalendar/react';

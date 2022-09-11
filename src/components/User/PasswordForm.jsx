@@ -1,6 +1,6 @@
 import React, { Fragment, useState } from 'react';
 import { useForm } from "react-hook-form";
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { FormTextField, SaveCancel } from '../System';
 import { getCognitoHandle, getUserName, setEditingState } from '../System/js/Database';
 import { cogChangePasswordAsync } from '../System/js/Cognito';

@@ -2,8 +2,8 @@ import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useReactToPrint } from 'react-to-print';
 import { navigationAllowed } from '../../System/js/Database';
-import { Box, Tooltip } from '@material-ui/core';
-import { Print } from '@material-ui/icons';
+import { Box, Tooltip } from '@mui/material';
+import { Print } from '@mui/icons-material';
 import { Fab, Typography } from '../../System';
 import moment from 'moment';
 

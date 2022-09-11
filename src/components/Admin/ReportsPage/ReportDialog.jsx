@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Table, TableContainer, TableFooter, Tooltip } from '@material-ui/core';
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Table, TableContainer, TableFooter, Tooltip } from '@mui/material';
 import { Button,  } from '../../System';
 import ReactToPrint from 'react-to-print';
 import { useRef } from 'react';
-import { Print } from '@material-ui/icons';
+import { Print } from '@mui/icons-material';
 
 ReportDialog.propTypes = {
     dialogOpen: PropTypes.bool,

@@ -1,6 +1,6 @@
-import { styled } from "@material-ui/core/styles";
-import { spacing, sizing } from "@material-ui/system";
-import MuiIconButton from "@material-ui/core/IconButton";
+import { styled } from "@mui/material/styles";
+import { spacing, sizing } from "@mui/system";
+import MuiIconButton from "@mui/material/IconButton";
 
 const IconButtonSpacing = styled(MuiIconButton)(spacing);
 const IconButton = styled(IconButtonSpacing)(sizing);

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { FoundPage, ServicesPage, ClientPage, HistoryPage } from '..';
 import { useRouteMatch, Route, Switch } from "react-router-dom";
 import SmumLogo from "../../Assets/SmumLogo";

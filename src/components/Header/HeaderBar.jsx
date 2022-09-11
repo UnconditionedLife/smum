@@ -1,10 +1,11 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { alpha, makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { AppBar, Box, Dialog, Toolbar, Tooltip, Typography, InputBase, MenuItem, Menu  } from '@material-ui/core';
-import { Search, AccountCircle, ExitToApp, Settings, People, Today} from '@material-ui/icons';
+import { alpha, ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles';
+import { AppBar, Box, Dialog, Toolbar, Tooltip, Typography, InputBase, MenuItem, Menu  } from '@mui/material';
+import { Search, AccountCircle, ExitToApp, Settings, People, Today} from '@mui/icons-material';
 import { Button } from '../System';
-import { Hidden } from '@material-ui/core';
+import { Hidden } from '@mui/material';
 import { LoginForm, SectionsContent }  from '.';
 import theme from '../Theme.jsx';
 import DbSwitch from './DbSwitch.jsx';
@@ -45,10 +46,10 @@ const useStyles = makeStyles((theme) => ({
     '&:hover': {
       backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
       marginLeft: theme.spacing(3),
     },
-    [theme.breakpoints.down('xs')]: {
+    [theme.breakpoints.down('sm')]: {
         marginLeft: theme.spacing(1),
         marginRight: theme.spacing(1),
         minWidth:'170px',
@@ -85,13 +86,13 @@ const useStyles = makeStyles((theme) => ({
     // },
   },
   buttonContainer: {
-    [theme.breakpoints.down('xs')]: {
+    [theme.breakpoints.down('sm')]: {
         marginRight: theme.spacing(0.5),
         marginLeft: theme.spacing(0.5),
     },
   },
   icon: {
-    [theme.breakpoints.down('sm')]: {
+    [theme.breakpoints.down('md')]: {
         marginRight: theme.spacing(-1),
     },
   },
@@ -259,31 +260,32 @@ export default function HeaderBar(props) {
                 />
             </Box>
             <Box className={classes.sectionDesktop} justifyContent="flex-end">
-                <Button  className={classes.buttonContainer} onClick={() => handleSectionChange(0)} minWidth="30px" startIcon={ <People className={classes.icon}/>  }
-                    variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" >
+                <Button  className={classes.buttonContainer} onClick={() => handleSectionChange(0)} startIcon={ <People className={classes.icon} />  }
+                    variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" style={{ minWidth:"30px" }}>
                     {/* flexShrink={2} */}
-                    <Hidden smDown> Clients </Hidden>
+                    <Hidden mdDown> Clients </Hidden>
                 </Button>
                     
-                <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(2)} minWidth="30px" startIcon={<Today className={classes.icon}/>}
-                    variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" >
+                <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(2)} startIcon={<Today className={classes.icon}/>}
+                    variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" style={{ minWidth:"30px" }} >
                         {/* flexShrink={1} */}
-                    <Hidden smDown> Today </Hidden>
+                    <Hidden mdDown> Today </Hidden>
                 </Button>
 
-                <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} minWidth="30px" startIcon={<Settings className={classes.icon}/>}
-                    disabled={!isAdmin()} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" >
+                <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} startIcon={<Settings className={classes.icon}/>}
+                    disabled={!isAdmin()} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" style={{ minWidth:"30px" }} >
                         {/* flexShrink={1} */}
-                    <Hidden smDown> Admin </Hidden>
+                    <Hidden mdDown> Admin </Hidden>
                 </Button>
 
-                <Button className={classes.buttonContainer} ml= '0' minWidth="30px" startIcon={<AccountCircle className={classes.icon}/>} style={{ textTransform: 'none' }}
+                <Button className={classes.buttonContainer} ml= '0' startIcon={<AccountCircle className={classes.icon}/>} 
+                    style={{ textTransform: 'none', minWidth:"30px" }}
                     aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
                     onClick={ handleUserMenuOpen }
                     color="inherit"
-                    variant={ (selectedSection === 3) ? 'outlined' : 'text' }  >
+                    variant={ (selectedSection === 3) ? 'outlined' : 'text' } >
                         {/* flexShrink={1} */}
-                    <Hidden smDown>  { userName ? userName : ''} </Hidden>
+                    <Hidden mdDown>  { userName ? userName : ''} </Hidden>
                 </Button>
             </Box>
         </Fragment >
@@ -304,34 +306,36 @@ export default function HeaderBar(props) {
     );
 
     return (
-        <ThemeProvider theme={theme}>
-            <Dialog open={ !(userName) }>
-                <LoginForm onLogin={ (x) => setSession(x, true) } />
-            </Dialog>
-            <Box flexGrow={1} >
-                <AppBar position="fixed">
-                    <Toolbar>
-                        <Hidden xsDown> 
-                            <Tooltip title={ appVersion }>
-                                <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
-                                    <SmumLogo width='44px' height='44px' display="solid" /> 
-                                </Box>
-                            </Tooltip>
-                        </Hidden> 
-                        <Box mr={ 4 } mt={ 1 } className={ classes.appName } >
-                            <Typography variant='h6' noWrap className={ classes.title } >
-                                Santa Maria Urban Ministry
-                            </Typography>
-                            <HeaderDateTime color='textPrimary' size='overline' />
-                        </Box>
-                        {userName ? appbarControls : null}
-                    </Toolbar>
-                </AppBar>
-                { renderMenu }
-                {/* environment variable coming from webpack configuration */}
-                { (process.env.dbSetUrl === "dev") && <DbSwitch /> } 
-                <SectionsContent searchTerm={ searchTerm } handleSearchTermChange={ handleSearchTermChange } />
-            </Box>
-        </ThemeProvider>
-    )
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={theme}>
+                <Dialog open={ !(userName) }>
+                    <LoginForm onLogin={ (x) => setSession(x, true) } />
+                </Dialog>
+                <Box flexGrow={1} >
+                    <AppBar position="fixed">
+                        <Toolbar>
+                            <Hidden smDown> 
+                                <Tooltip title={ appVersion }>
+                                    <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
+                                        <SmumLogo width='44px' height='44px' display="solid" /> 
+                                    </Box>
+                                </Tooltip>
+                            </Hidden> 
+                            <Box mr={ 4 } mt={ 1 } className={ classes.appName } >
+                                <Typography variant='h6' noWrap className={ classes.title } >
+                                    Santa Maria Urban Ministry
+                                </Typography>
+                                <HeaderDateTime color='textPrimary' size='overline' />
+                            </Box>
+                            {userName ? appbarControls : null}
+                        </Toolbar>
+                    </AppBar>
+                    { renderMenu }
+                    {/* environment variable coming from webpack configuration */}
+                    { (process.env.dbSetUrl === "dev") && <DbSwitch /> } 
+                    <SectionsContent searchTerm={ searchTerm } handleSearchTermChange={ handleSearchTermChange } />
+                </Box>
+            </ThemeProvider>
+        </StyledEngineProvider>
+    );
 }

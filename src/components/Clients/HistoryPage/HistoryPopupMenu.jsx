@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Box,  Tooltip, Typography } from '@material-ui/core';
-import { Delete, Edit, Cancel, CheckCircle } from '@material-ui/icons';
+import { Box,  Tooltip, Typography } from '@mui/material';
+import { Delete, Edit, Cancel, CheckCircle } from '@mui/icons-material';
 import { IconButton } from '../../System';
 
 HistoryPopupMenu.propTypes = {

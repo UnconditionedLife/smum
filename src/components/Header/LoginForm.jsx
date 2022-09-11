@@ -3,9 +3,9 @@
 import React, { useState, Fragment } from "react";
 import PropTypes from 'prop-types';
 import { cogSetupUser, cogSetupAuthDetails } from '../System/js/Cognito.js';
-import { Visibility, VisibilityOff } from '@material-ui/icons';
-import { Box, Grid, IconButton, InputAdornment, Typography, Link } from '@material-ui/core';
-import Alert from '@material-ui/lab/Alert';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Box, Grid, IconButton, InputAdornment, Typography, Link } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import { Button, TextField, useInput } from '../System';
 import SmumLogo from "../Assets/SmumLogo";
 import { cacheSessionVar, dbGetUserAsync } from '../System/js/Database';
@@ -154,7 +154,8 @@ export default function LoginForm(props) {
                                         <IconButton
                                             aria-label="toggle password visibility"
                                             onClick={() => setPasswordDisplay(!passwordDisplay)}
-                                            edge="end">
+                                            edge="end"
+                                            size="large">
                                                 {passwordDisplay ? <Visibility /> : <VisibilityOff />}
                                         </IconButton>
                                     </InputAdornment>
@@ -212,7 +213,7 @@ export default function LoginForm(props) {
                                         aria-label="toggle password visibility"
                                         onClick={() => setPasswordDisplay(!passwordDisplay)}
                                         edge="end"
-                                    >
+                                        size="large">
                                     {passwordDisplay ? <Visibility /> : <VisibilityOff />}
                                     </IconButton>
                                 </InputAdornment>
@@ -233,7 +234,7 @@ export default function LoginForm(props) {
                                         aria-label="toggle password visibility"
                                         onClick={() => setPasswordDisplay(!passwordDisplay)}
                                         edge="end"
-                                    >
+                                        size="large">
                                     {passwordDisplay ? <Visibility /> : <VisibilityOff />}
                                     </IconButton>
                                 </InputAdornment>
@@ -247,7 +248,7 @@ export default function LoginForm(props) {
                     </Fragment>
                 ) : null}
             </Fragment>
-        )
+        );
     }
 
     function displaySubmitButtons() {

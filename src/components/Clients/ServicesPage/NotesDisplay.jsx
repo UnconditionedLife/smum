@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Delete, Edit, NotificationImportant } from '@material-ui/icons';
-import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@material-ui/core';
+import { Delete, Edit, NotificationImportant } from '@mui/icons-material';
+import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@mui/material';
 import { Card, IconButton } from '../../System';
 import { NoteForm } from '..';
 import { dbSaveClientAsync, getUserName, setEditingState } from '../../System/js/Database.js';

@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
-import { Box, MenuItem } from '@material-ui/core';
+import { Box, MenuItem } from '@mui/material';
 import { FormTextField, FormSelect, SaveCancel } from '../../System';
 
 export default function TestForm(props) {

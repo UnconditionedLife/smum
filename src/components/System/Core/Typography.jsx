@@ -1,6 +1,6 @@
-import { styled } from "@material-ui/core/styles";
-import { spacing, sizing } from "@material-ui/system";
-import MuiTypography from "@material-ui/core/Typography";
+import { styled } from "@mui/material/styles";
+import { spacing, sizing } from "@mui/system";
+import MuiTypography from "@mui/material/Typography";
 
 const TypographySpacing = styled(MuiTypography)(spacing);
 const Typography = styled(TypographySpacing)(sizing);

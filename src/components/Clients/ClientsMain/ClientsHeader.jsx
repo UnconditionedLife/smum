@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import PropTypes from 'prop-types';
-import { AppBar, Box, Tab, Tabs, Tooltip, Snackbar } from '@material-ui/core';
-import { Add, Pageview, RoomService, House, History } from '@material-ui/icons';
+import { AppBar, Box, Tab, Tabs, Tooltip, Snackbar } from '@mui/material';
+import { Add, Pageview, RoomService, House, History } from '@mui/icons-material';
 import { Fab } from '../../System';
 // import { HeaderTitle } from '..';
 import { navigationAllowed } from '../../System/js/Database';

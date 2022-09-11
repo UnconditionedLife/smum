@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Box, InputAdornment, Typography } from '@material-ui/core';
+import { Box, InputAdornment, Typography } from '@mui/material';
 import { FormTextField, SaveCancel } from '../../System';
 import { useForm } from "react-hook-form";
 import { setEditingState } from '../../System/js/Database';

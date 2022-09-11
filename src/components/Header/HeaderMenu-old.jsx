@@ -1,7 +1,8 @@
 import React, { Fragment, useState, useEffect  } from 'react';
-import { fade, makeStyles, ThemeProvider } from '@material-ui/core/styles';
-import { AppBar, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@material-ui/core';
-import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '@material-ui/icons';
+import { alpha, ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles';
+import { AppBar, Toolbar, Tooltip, IconButton, Typography, InputBase, MenuItem, Menu, Box } from '@mui/material';
+import { MoreVert, Search, AccountCircle, ExitToApp, Face, People, Today} from '@mui/icons-material';
 import { Button } from '../System';
 
 const useStyles = makeStyles((theme) => ({
@@ -126,11 +127,16 @@ export default function HeaderMenu(props){
                 </Button>
             </Box>
             <Box justifyContent="flex-end" display="flex" className={classes.mobile}>
-                <IconButton aria-label="show more" aria-controls={ mobileMenuId } aria-haspopup="true"
-                    onClick={ handleMobileMenuOpen } color="inherit">
+                <IconButton
+                    aria-label="show more"
+                    aria-controls={ mobileMenuId }
+                    aria-haspopup="true"
+                    onClick={ handleMobileMenuOpen }
+                    color="inherit"
+                    size="large">
                     <MoreVert />
                 </IconButton>
             </Box>
         </Box >
-    )
+    );
 }

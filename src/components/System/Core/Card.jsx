@@ -1,6 +1,6 @@
-import { styled } from "@material-ui/core/styles";
-import { spacing, sizing, palette } from "@material-ui/system";
-import MuiCard from "@material-ui/core/Card";
+import { styled } from "@mui/material/styles";
+import { spacing, sizing, palette } from "@mui/system";
+import MuiCard from "@mui/material/Card";
 
 const CardSpacing = styled(MuiCard)(spacing);
 const CardStyled = styled(CardSpacing)(sizing);

@@ -1,8 +1,8 @@
 /* eslint-disable react/jsx-key */
 import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@material-ui/core';
-import { Add } from '@material-ui/icons';
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import { Fab } from '../../System';
 import { DependentsFormDialog } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils.js';

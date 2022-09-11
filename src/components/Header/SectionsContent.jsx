@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 import { Route, Redirect } from "react-router-dom";
-import Container from '@material-ui/core/Container';
+import Container from '@mui/material/Container';
 import { ClientsRouter } from '../Clients';
 import { AdminRouter } from '../Admin';
 import UserMain from '../User/UserMain.jsx';

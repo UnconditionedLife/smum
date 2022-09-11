@@ -1,4 +1,4 @@
-import { Box, Table, TableContainer, TableRow, TableCell, TableBody, Typography, TableFooter, CircularProgress } from "@material-ui/core";
+import { Box, Table, TableContainer, TableRow, TableCell, TableBody, Typography, TableFooter, CircularProgress } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { dbGetSingleClientAsync, dbGetValidSvcsByDateAsync, SettingsZipcodes } from '../../../System/js/Database';

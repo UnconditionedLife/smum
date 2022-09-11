@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Snackbar } from '@material-ui/core';
-import { Alert } from '@material-ui/lab';
+import { Box, Snackbar } from '@mui/material';
+import { Alert } from '@mui/material';
 import { ClientsHeader, ClientsContent } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
@@ -27,7 +27,7 @@ export default function ClientsMain(props) {
     const [ showServices, setShowService ] = useState(false);
     const [ showClient, setShowClient ] = useState(false);
     const [ openAlert, setOpenAlert ] = useState(false)
-    const [ alertSeverity, setAlertSeverity ] = useState("")
+    const [ alertSeverity, setAlertSeverity ] = useState("info")
     const [ alertMsg, setAlertMsg ] = useState("")
     const [ lastServedDays, setLastServedDays ] = useState(null)
     const [ lastServedFoodDate, setLastServedFoodDate ] = useState(null)

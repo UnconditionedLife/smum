@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment';
-import { Box, CardContent, CardHeader, Fab, Tooltip } from '@material-ui/core';
+import { Box, CardContent, CardHeader, Fab, Tooltip } from '@mui/material';
 import { Card } from '../System';
 import DailyDistributionReport from '../Admin/ReportsPage/Reports/DailyDistributionReport.jsx';
 import ReactToPrint from 'react-to-print';
-import { Print } from '@material-ui/icons';
+import { Print } from '@mui/icons-material';
 
 export default function PageToday() {
     const [ reportDay ] = useState(moment().format('YYYYMMDD'))

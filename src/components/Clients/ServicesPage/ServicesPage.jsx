@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
 import { addServiceAsync, getLastServedDays, getActiveSvcTypes, getTargetServices } from '../../System/js/Clients/Services'
 import { PrimaryButtons, SecondaryButtons, ServiceNotes } from '..';
 import { removeSvcAsync } from '../../System/js/Clients/History';

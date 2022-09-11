@@ -1,10 +1,10 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles'
-import { Box, ButtonBase } from '@material-ui/core';
+import makeStyles from '@mui/styles/makeStyles';
+import { Box, ButtonBase } from '@mui/material';
 import { Button, Typography } from '../../System';
 import { getButtonData } from '../../System/js/Clients/Services'
-import ReplayIcon from '@material-ui/icons/Replay';
+import ReplayIcon from '@mui/icons-material/Replay';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 import Food_Pantry from "../../../../public/images/Food_Pantry.jpg";
 import Clothes_Closet from "../../../../public/images/Clothes_Closet.jpg";
@@ -50,7 +50,7 @@ export default function PrimaryButtons(props) {
           margin: 0,
           width: buttonSizes[0],
           height: buttonSizes[0],
-            [theme.breakpoints.down('xs')]: {
+            [theme.breakpoints.down('sm')]: {
             width: buttonSizes[1], // Overrides inline-style
             height: buttonSizes[0],
           },
@@ -101,7 +101,7 @@ export default function PrimaryButtons(props) {
         },
         imageTitle: {
           position: 'relative',
-          padding: `${theme.spacing(2)}px ${theme.spacing(2)}px ${theme.spacing(1) + 6}px`,
+          padding: `${theme.spacing(2)} ${theme.spacing(2)} calc(${theme.spacing(1)} + 6px)`,
         },
         imageMarked: {
           height: 3,

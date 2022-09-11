@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import PropTypes from 'prop-types';
 import { dbGetUserAsync, setEditingState } from '../../System/js/Database';
-import { Box, Dialog, DialogContent, DialogTitle } from '@material-ui/core';
+import { Box, Dialog, DialogContent, DialogTitle } from '@mui/material';
 import { UserForm } from '../../User';
 
 UserPage.propTypes = {

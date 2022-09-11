@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Tooltip } from '@material-ui/core';
-import Alert from '@material-ui/lab/Alert';
+import { Box, Tooltip } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import Button from '../Core/Button.jsx';
 import moment from 'moment';
 

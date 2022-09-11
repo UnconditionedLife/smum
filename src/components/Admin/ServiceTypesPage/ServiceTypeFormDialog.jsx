@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
-import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@material-ui/core';
+import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@mui/material';
 import { SettingsServiceCats } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { dbSaveSvcTypeAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';

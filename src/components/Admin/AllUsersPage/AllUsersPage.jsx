@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar, Table, TableBody,
-     TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@material-ui/core';
-import { Add, ExpandMore } from '@material-ui/icons';
+     TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
+import { Add, ExpandMore } from '@mui/icons-material';
 import { UserPage } from '..';
 import { dbGetAllUsersAsync, navigationAllowed } from '../../System/js/Database';
 

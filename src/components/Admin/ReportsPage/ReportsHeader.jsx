@@ -1,5 +1,5 @@
 import React  from "react";
-import { Box, TableRow, TableCell, Typography, TableHead } from "@material-ui/core";
+import { Box, TableRow, TableCell, Typography, TableHead } from "@mui/material";
 import moment from 'moment';
 import logo from '/public/images/receipt-logo.png';
 import PropTypes from 'prop-types';

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { hot } from 'react-hot-loader'
-import { ThemeProvider } from '@material-ui/core/styles';
-import { Box, Snackbar } from '@material-ui/core';
-import Alert from '@material-ui/lab/Alert';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import { Box, Snackbar } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import { CookiesProvider } from 'react-cookie';
 import { HeaderRouter } from ".";
 import theme from '../Theme.jsx'
@@ -39,13 +39,15 @@ function HeaderMain(){
 
     return (
         <Box style={{ width: '100%', maxHeight: '100vh', overflowY: 'none', marginTop: 64, }}>
-            <ThemeProvider theme={ theme }>
-                <Router>
-                    <CookiesProvider>
-                        <HeaderRouter />
-                    </CookiesProvider>
-                </Router>
-            </ThemeProvider>
+            <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={ theme }>
+                    <Router>
+                        <CookiesProvider>
+                            <HeaderRouter />
+                        </CookiesProvider>
+                    </Router>
+                </ThemeProvider>
+            </StyledEngineProvider>
 
             <Snackbar open={open} autoHideDuration={9000} onClose={closeGlobalMsg}>
                 <Alert onClose={closeGlobalMsg} severity={ globalMsg.severity } >
@@ -53,7 +55,7 @@ function HeaderMain(){
                 </Alert>
             </Snackbar>
         </Box>
-    )
+    );
 }
 
 export default hot(module)(HeaderMain);

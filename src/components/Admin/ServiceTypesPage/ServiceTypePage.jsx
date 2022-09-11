@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Snackbar, Table, TableBody,
-    TableCell, TableContainer, TableHead, TableRow, Typography, Tooltip, Fab } from '@material-ui/core';
-import { ExpandMore, Add } from '@material-ui/icons';
+    TableCell, TableContainer, TableHead, TableRow, Typography, Tooltip, Fab } from '@mui/material';
+import { ExpandMore, Add } from '@mui/icons-material';
 import { dbGetSvcTypesAsync, getSvcTypes } from '../../System/js/Database.js';
 import { ServiceTypeFormDialog } from '..';
 import { navigationAllowed } from '../../System/js/Database';

@@ -1,8 +1,8 @@
 import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
-// import { Alert } from '@material-ui/lab';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar, Tooltip, Typography } from '@material-ui/core';
-import { Add, ExpandMore } from '@material-ui/icons';
+// import { Alert } from '@mui/lab';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar, Tooltip, Typography } from '@mui/material';
+import { Add, ExpandMore } from '@mui/icons-material';
 import { DependentsDisplay } from '..';
 import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } from '..';
@@ -47,7 +47,9 @@ export default function ClientPage(props) {
     return (
         <Fragment>
             <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true } style={{ marginBottom: "60px" }}>
-                <PrintClientInfo client={ client } />
+                <Box>
+                    <PrintClientInfo client={ client } />
+                </Box>
             </Snackbar>
 
             <Box mt={ 6 } width={ 1 } style={{ overflowY: 'scroll' }}>

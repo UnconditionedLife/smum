@@ -1,6 +1,6 @@
-import { styled } from "@material-ui/core/styles";
-import { spacing, sizing } from "@material-ui/system";
-import MuiFab from "@material-ui/core/Fab";
+import { styled } from "@mui/material/styles";
+import { spacing, sizing } from "@mui/system";
+import MuiFab from "@mui/material/Fab";
 
 const FabSpacing = styled(MuiFab)(spacing);
 const Fab = styled(FabSpacing)(sizing);

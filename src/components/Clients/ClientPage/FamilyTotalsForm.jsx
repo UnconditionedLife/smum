@@ -1,6 +1,6 @@
 import React from 'react';
 // import PropTypes from 'prop-types';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { FormTextField, SaveCancel } from '../../System';
 import { useForm } from "react-hook-form";
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types';
 import { Typography } from '../../System';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 
 LastServed.propTypes = {
     lastServed: PropTypes.string.isRequired,

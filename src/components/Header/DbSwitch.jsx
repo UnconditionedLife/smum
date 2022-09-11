@@ -1,9 +1,9 @@
 import React from 'react';
-import { Box, Switch } from '@material-ui/core';
+import { Box, Switch } from '@mui/material';
 import { Typography, Button } from '../System';
 import { dbSetUrl } from '../System/js/Database';
 import { prnTest } from '../System/js/Clients/Receipts';
-import { MoveSvcsTableRecordsAsync } from "../System/js/MoveSvcsTable";
+// import { MoveSvcsTableRecordsAsync } from "../System/js/MoveSvcsTable";
 
 export default function DbSwitch() {
     const [switchOn, setSwitchOn] = React.useState(false);
@@ -32,11 +32,11 @@ export default function DbSwitch() {
         <Box display="flex" flexDirection="row" justifyContent="flex-end" 
          bgcolor={ switchOn ? 'warning.main' : 'gray' }>
              <Box>
-             <Button key="print1" m={ .5 } variant="outlined" color="primary" size="small" minWidth="168px" 
+             <Button key="print1" m={ .5 } variant="outlined" color="primary" size="small" 
             onClick={ () => prnTest('minimal') } >
                     Min Printer Test
             </Button>
-            <Button key="print2" m={ .5 } variant="outlined" color="primary" size="small" minWidth="168px"
+            <Button key="print2" m={ .5 } variant="outlined" color="primary" size="small"
             style = {{ marginRight: '100px' }} 
             onClick={ () => prnTest('full') } >
                     Full Printer Test

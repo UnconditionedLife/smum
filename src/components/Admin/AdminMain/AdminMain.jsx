@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { AppBar, Box, Tab, Tabs } from '@material-ui/core';
-import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications } from '@material-ui/icons';
+import { AppBar, Box, Tab, Tabs } from '@mui/material';
+import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications } from '@mui/icons-material';
 import { AllUsersPage, CalendarPage, ReportsPage, 
             ServiceTypePage, SettingsPage } from '..';
 import { getUserName } from '../../System/js/Database';

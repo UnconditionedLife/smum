@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Popper, Table, TableBody, TableCell, TableContainer, 
-            TableHead, TableRow } from '@material-ui/core';
+            TableHead, TableRow } from '@mui/material';
 import { Card } from '../../System';
 import { HistoryFormDialog, HistoryPopupMenu } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils';

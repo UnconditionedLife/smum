@@ -1,6 +1,6 @@
-import { styled } from "@material-ui/core/styles";
-import { spacing, sizing } from "@material-ui/system";
-import MuiContainer from "@material-ui/core/Container";
+import { styled } from "@mui/material/styles";
+import { spacing, sizing } from "@mui/system";
+import MuiContainer from "@mui/material/Container";
 
 const ContainerSpacing = styled(MuiContainer)(spacing);
 const Container = styled(ContainerSpacing)(sizing);

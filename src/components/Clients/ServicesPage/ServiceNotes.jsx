@@ -1,11 +1,11 @@
 import React,  { Fragment, useState, useEffect  } from 'react';
 import PropTypes from 'prop-types';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
-import { Box, Badge, CardContent, Fade, Tooltip, Typography } from '@material-ui/core';
+import { Box, Badge, CardContent, Fade, Tooltip, Typography } from '@mui/material';
 import { setEditingState } from '../../System/js/Database.js';
 import NotesDisplay from './NotesDisplay.jsx';
 import NoteForm from './NoteForm.jsx';
-import AddIcon from '@material-ui/icons/Add';
+import AddIcon from '@mui/icons-material/Add';
 import { Card, Fab } from '../../System';
 
 ServiceNotes.propTypes = {

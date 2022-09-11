@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { getButtonData } from '../../System/js/Clients/Services'
 import { Button } from '../../System';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
-import ReplayIcon from '@material-ui/icons/Replay';
+import ReplayIcon from '@mui/icons-material/Replay';
 
 SecondaryButtons.propTypes = {
     client: PropTypes.object.isRequired,
@@ -39,16 +39,18 @@ export default function SecondaryButtons(props) {
                     <Fragment key={ svc.svcTypeId }>
                         { (svc.btnType === 'normal') &&
                             <Button key={ svc.svcTypeId } m={ .5 } variant="contained" 
-                                color="primary" size="large" minWidth="176px"
-                                onClick={ () => handleAddSvc( svc.svcTypeId ) }>
+                                color="primary" size="large" 
+                                onClick={ () => handleAddSvc( svc.svcTypeId ) }
+                                style={{ minWidth:"176px" }} >
                                     { svc.svcName }
                             </Button>
                         }
 
                         { (svc.btnType === 'used') &&
                             <Button key={ svc.svcTypeId + "used" } m={ .25 } variant="outlined" 
-                                color="primary" size="large" minWidth="176px" startIcon={<ReplayIcon />}
-                                onClick={ () => handleUndoSvc(svc) }>
+                                color="primary" size="large" startIcon={<ReplayIcon />}
+                                onClick={ () => handleUndoSvc(svc) }
+                                style={{ minWidth:"176px" }}>
                                     { svc.svcName }
                             </Button>
                         }

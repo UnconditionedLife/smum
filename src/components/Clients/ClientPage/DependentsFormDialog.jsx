@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
-import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@material-ui/core';
+import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@mui/material';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { setEditingState } from '../../System/js/Database';
 import cuid from 'cuid';
