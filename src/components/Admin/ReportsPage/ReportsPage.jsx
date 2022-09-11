@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Box, Button, Card, CardContent, CardHeader, Container, FormControl, InputLabel, MenuItem, Typography } from '@mui/material';
 import { Select, TextField } from '../../System'
 import { DatePicker } from '@mui/x-date-pickers' // MuiPickersUtilsProvider
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { getSvcTypes } from '../../System/js/Database.js';
-import MomentUtils from '@date-io/moment';
+// import MomentUtils from '@date-io/moment';
 import moment from 'moment';
 import ReportDialog from './ReportDialog.jsx';
 import NewClientsReport from './Reports/NewClientsReport.jsx';
@@ -111,7 +113,15 @@ export default function ReportsPage() {
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                         </Select>
                         </FormControl>
-                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" InputLabelProps={{ shrink: true }} value={ reportDay } onChange={ handleReportDayChangeUpdated } />
+                        <LocalizationProvider dateAdapter={ AdapterMoment } >
+                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" 
+                                InputLabelProps={{ shrink: true }} 
+                                value={ reportDay } 
+                                renderInput={(params) => <TextField {...params} />}
+                                onChange={ handleReportDayChangeUpdated }
+                                minDate={moment("2017-01-01")}
+                                maxDate={moment()} />
+                        </LocalizationProvider>
                         <Button onClick={runDailyReport} variant="contained" color="primary">Run</Button>
                         {/* used to patch senior count errors */}
                         {/* <Button onClick={runServicePatch} variant="contained" color="primary">Patch Service Counts</Button> */}
@@ -129,7 +139,13 @@ export default function ReportsPage() {
                                 <MenuItem value="ETHNICITY">By Ethnicity</MenuItem>
                         </Select>
                         </FormControl>
-                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["year", "month"]} value={ foodYearMonth } onChange={ handleFoodYearMonthChangeUpdated } />
+                        <LocalizationProvider dateAdapter={ AdapterMoment } >
+                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["month", "year"]} value={ foodYearMonth } 
+                                renderInput={(params) => <TextField {...params} />}
+                                onChange={ handleFoodYearMonthChangeUpdated }
+                                minDate={moment("2017-01-01")}
+                                maxDate={moment()} />
+                        </LocalizationProvider>
                         <Button onClick={runFoodReport} variant="contained" color="primary">Run</Button>
                     </Box>
 
@@ -141,7 +157,14 @@ export default function ReportsPage() {
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                         </Select>
                         </FormControl>
-                        <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportYear } onChange={ handleReportYearChangeUpdated } />
+                        <LocalizationProvider dateAdapter={ AdapterMoment } >
+                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportYear } 
+                                renderInput={(params) => <TextField {...params} />}
+                                onChange={ handleReportYearChangeUpdated }
+                                minDate={moment("2017-01-01")}
+                                maxDate={moment()}
+                                 />
+                        </LocalizationProvider>
                         <Button onClick={runYearReport} variant="contained" color="primary">Run</Button>
                     </Box>
                     {/* <Box mt={ 10 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Voucher Distribution Reports</Typography></Box>
