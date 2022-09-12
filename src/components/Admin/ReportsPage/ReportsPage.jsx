@@ -44,14 +44,14 @@ export default function ReportsPage() {
         }
         if (foodType == "ALL") {
             console.log(foodYearMonth)
-            setReportHeading("ALL SERVICES " + moment(reportYear).format('MMM, YYYY') + " Report");
+            setReportHeading("ALL SERVICES " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
             setReportOpen(true);
             setReportBody(<AllMonthlyServicesReport month={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (foodType == "FOOD") {
-            setReportHeading("Distribution " + moment(reportYear).format('MMM, YYYY') + " Report");
+            setReportHeading("Distribution " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
             setReportOpen(true);
             console.log(foodYearMonth)
             setReportBody(<MonthlyDistributionReport month={foodYearMonth} />);

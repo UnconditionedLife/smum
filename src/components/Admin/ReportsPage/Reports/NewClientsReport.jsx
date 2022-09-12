@@ -17,6 +17,7 @@ export default function NewClientsReport(props) {
     const [loading, setLoading] = useState(true)
 
     let numNewClients = []
+    const reportMonth = moment(props.yearMonth, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
 
 
     function StartRunReport(){
@@ -112,6 +113,7 @@ export default function NewClientsReport(props) {
                     }
                 </style>
                 <ReportsHeader reportType="MONTHLY REPORT" 
+                    reportDate={ reportMonth }
                     reportCategory="NEW CLIENT" 
                     columns={["Zipcode", "Total", "Homeless"]} />
                 <TableBody>
