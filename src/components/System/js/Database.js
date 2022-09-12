@@ -469,34 +469,26 @@ export async function dbGetValidSvcsByDateAsync(month, svcCat, date){
     const paramObj = { month: month }
     if (svcCat) paramObj.svccat = svcCat
     if (date) paramObj.date = date
-    let lastKey = null
+    let lastKey = 'start'
     let allSvcs = []
-    return await dbGetDataAsync( "/clients/svcs/bymonth", paramObj )
-        .then(data => {
-            const validSvcs = data.svcs.filter(item => item.svcValid == true)
-            lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null
-            allSvcs = allSvcs.concat(validSvcs)
+    let counter = 0
+    while (lastKey != null) {
+        //  build new params with last key
+        const newParams = (lastKey != "start") ? { ...paramObj, lastkey: lastKey } : paramObj
+        const x = await dbGetDataAsync( "/clients/svcs/bymonth", newParams )
+            .then(data => {
 
-            // return if no lastkey
-            // if (!lastKey) return makeOldServices(allSvcs)
-            if (!lastKey) return allSvcs
+                counter ++
+                console.log("CALL #" + counter);
+                console.log("DATA", data);
 
-            // loop until no last key
-            while (lastKey) {
-                //  build new params with last key
-                const newParams = { ...paramObj, lastkey: lastKey }    
-                return dbGetDataAsync( "/clients/svcs/bymonth", newParams )
-                    .then(data => {
-                        const validSvcs = data.svcs.filter(item => item.svcValid == true)
-                        allSvcs = allSvcs.concat(validSvcs)
-                        lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null
-                        // return if no lastkey
-                        // if (!lastKey) return makeOldServices(allSvcs)
-                        if (!lastKey) return allSvcs
-                    })
-                    
-            }
-        })
+                const validSvcs = data.svcs.filter(item => item.svcValid == true)
+                lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null
+                return validSvcs
+            })
+        allSvcs = allSvcs.concat(x)    
+    }
+    return allSvcs
 }
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************

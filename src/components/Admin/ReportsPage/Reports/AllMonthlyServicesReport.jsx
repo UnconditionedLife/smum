@@ -56,7 +56,7 @@ export default function AllMonthlyServicesReport(props) {
 
     function RunReport() {
         dbGetValidSvcsByDateAsync(moment(props.month).format('YYYY-MM')) .then(svcs => {
-            console.log(svcs)
+            console.log("SVCS", svcs)
             let svcsCatGrid = {}
 
             svcs.forEach(svc => {
