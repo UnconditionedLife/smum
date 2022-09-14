@@ -606,6 +606,7 @@ function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
 		cStatus: client.isActive,
 		cGivName: client.givenName,
 		cFamName: client.familyName,
+        cEthnicGrp: (svcType.svcCat === "Food_Pantry") ? client.ethnicGroup : "",
 		cZip: client.zipcode,
 		svcBy: getUserName(),
 		svcTypeId: svcType.svcTypeId,
