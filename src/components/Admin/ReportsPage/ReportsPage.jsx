@@ -14,6 +14,7 @@ import MonthlyDistributionReport from './Reports/MonthlyDistributionReport.jsx';
 import AnnualDistributionReport from './Reports/AnnualDistributionReport.jsx';
 import AllMonthlyServicesReport from './Reports/AllMonthlyServicesReport.jsx';
 import { PatchSeniorCountInServiceDay } from '../../System/js/Patch';
+import EthnicityReport from './Reports/EthnicityReport.jsx';
 
 export default function ReportsPage() {
     const [ dayType, handleDayType ] = useState("FOOD")
@@ -55,6 +56,14 @@ export default function ReportsPage() {
             setReportOpen(true);
             console.log(foodYearMonth)
             setReportBody(<MonthlyDistributionReport month={foodYearMonth} />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+        if (foodType == "ETHNICITY") {
+            setReportHeading("Ethnicity " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
+            setReportOpen(true);
+            console.log(foodYearMonth)
+            setReportBody(<EthnicityReport yearMonth={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }

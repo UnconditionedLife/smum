@@ -43,7 +43,7 @@
     "babel-loader": "^8.1.0",
     "css-loader": "^5.0.1",
     "cuid": "^2.1.8",
-    "dynamodbexportcsv": "^0.2.7",
+    "dynamodbexportcsv": "^0.1.5",
     "express": "^4.17.1",
     "fast-csv": "^4.3.6",
     "file-loader": "^6.2.0",
