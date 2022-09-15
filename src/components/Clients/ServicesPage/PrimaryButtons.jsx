@@ -29,9 +29,14 @@ PrimaryButtons.propTypes = {
 }
 
 export default function PrimaryButtons(props) {
-    const { client, lastServedFoodDate, activeServiceTypes, targetServices, lastServedDays, handleAddSvc, handleUndoSvc } = props
+    const { client, lastServedFoodDate, activeServiceTypes, 
+        targetServices, lastServedDays, handleAddSvc, handleUndoSvc } = props
     // const handleAddSvc = props.handleAddSvc
     // const handleUndoSvc = props.handleUndoSvc
+
+// console.log("AST", activeServiceTypes);
+// console.log("TARGET SVCS", targetServices);
+
     const [ buttons, setButtons ] = useState([]);
 
     let buttonSizes = [ 168, '168px !important', 176 ]
@@ -160,9 +165,9 @@ export default function PrimaryButtons(props) {
                                         ( svc.svcCat === "Food_Pantry" ) ? Food_Pantry : 
                                         ( svc.svcCat === "Clothes_Closet" ) ? Clothes_Closet : 
                                         ( svc.svcCat === "Administration" ) ? Administration : 
-                                        ( svc.svcCat === "Back_To_School" ) ? Administration : 
-                                        ( svc.svcCat === "Thanksgiving" ) ? Administration : 
-                                        ( svc.svcCat === "Christmas" ) ? Administration : "" })` }} />
+                                        ( svc.svcCat === "Back_To_School" ) ? Back_To_School : 
+                                        ( svc.svcCat === "Thanksgiving" ) ? Thanksgiving : 
+                                        ( svc.svcCat === "Christmas" ) ? Christmas : "" })` }} />
                                     <span className={classes.imageBackdrop} />
                                     <span className={classes.imageButton}>
                                     <Typography component="span" variant="button" color="inherit"
@@ -191,9 +196,9 @@ export default function PrimaryButtons(props) {
                                     ( svc.svcCat === "Food_Pantry" ) ? Food_Pantry : 
                                     ( svc.svcCat === "Clothes_Closet" ) ? Clothes_Closet : 
                                     ( svc.svcCat === "Administration" ) ? Administration : 
-                                    ( svc.svcCat === "Back_To_School" ) ? Administration : 
-                                    ( svc.svcCat === "Thanksgiving" ) ? Administration : 
-                                    ( svc.svcCat === "Christmas" ) ? Administration : "" })` }} />
+                                    ( svc.svcCat === "Back_To_School" ) ? Back_To_School : 
+                                    ( svc.svcCat === "Thanksgiving" ) ? Thanksgiving : 
+                                    ( svc.svcCat === "Christmas" ) ? Christmas : "" })` }} />
                             <span className={classes.imageBackdrop} />
                             <span className={classes.imageButton}>
                                 <Typography component="span" variant="button" color="inherit"

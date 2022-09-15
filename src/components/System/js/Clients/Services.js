@@ -606,7 +606,7 @@ function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
 		cStatus: client.isActive,
 		cGivName: client.givenName,
 		cFamName: client.familyName,
-        cEthnicGrp: (svcType.svcCat === "Food_Pantry") ? client.ethnicGroup : "",
+        cEthnicGrp: client.ethnicGroup,
 		cZip: client.zipcode,
 		svcBy: getUserName(),
 		svcTypeId: svcType.svcTypeId,
@@ -648,20 +648,20 @@ function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
         }
     } else if (svcCat == 'Clothes_Closet') {
         prnPrintClothesReceipt( client, svcType )
-    } else if (svcCat == 'Back_To_School' && svcType.target.service == 'Unselected') { // ignore fulfillment
+    } else if (svcCat == 'Back_To_School' && svcType.fulfillment.type == 'Voucher') { // ignore fulfillment
         const targetService = utilCalcTargetServices([svcType])
         const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
         // TODO use function here
         //let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
         prnPrintVoucherReceipt( client, svcType, dependents, 'grade' );
         prnPrintVoucherReceipt( svcType, dependents, 'grade');
-    } else if (svcCat == 'Thanksgiving' && svcType.target.service == 'Unselected') { // ignore fulfillment
+    } else if (svcCat == 'Thanksgiving' && svcType.fulfillment.type == 'Voucher') { // ignore fulfillment
         //const targetService = utilCalcTargetServices([svcType])
         // TODO use function here
-        let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
-        prnPrintVoucherReceipt({ service: service })
-        prnPrintVoucherReceipt({ service: service })
-    } else if (svcCat == 'Christmas' && svcType.target.service == 'Unselected') { // ignore fulfillment
+        // let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
+        prnPrintVoucherReceipt({ client: client, svcType: svcType })
+        prnPrintVoucherReceipt({ client: client, svcType: svcType })
+    } else if (svcCat == 'Christmas' && svcType.fulfillment.type == 'Voucher') { // ignore fulfillment
         const targetService = utilCalcTargetServices([svcType])
         let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
         if (targetService[0].family_totalChildren == "Greater Than 0") {

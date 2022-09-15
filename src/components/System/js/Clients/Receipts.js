@@ -37,8 +37,9 @@ export function prnPrintFoodReceipt(client, svcUSDA) {
 	prnEndReceipt();
 }
 
-export function prnPrintVoucherReceipt(client, serviceType, dependents, grouping) {
-	let svcName = serviceType.svcName;
+export function prnPrintVoucherReceipt(props) {
+    const {client, svcType, dependents, grouping} = props
+	let svcName = svcType.svcName;
 	prnStartReceipt();
 	prnServiceHeader(client, svcName.toUpperCase());
 	prnFeed(1);
@@ -65,8 +66,8 @@ export function prnPrintVoucherReceipt(client, serviceType, dependents, grouping
 		prnFeed(1);
 	}
 	prnAlign('center');
-	prnPickupTimes(serviceType.fulfillment.fromDateTime,
-		serviceType.fulfillment.toDateTime);
+	prnPickupTimes(svcType.fulfillment.fromDateTime,
+		svcType.fulfillment.toDateTime);
   prnEndReceipt();
 }
 
