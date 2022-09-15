@@ -16,10 +16,10 @@ ServiceTypeFormDialog.propTypes = {
 }
 
 export default function ServiceTypeFormDialog(props) {
-    const { serviceTypes } = props
+    const { serviceTypes, updateSvcTypes, editRecord, handleEditMode, handleEditRecord } = props
     const [ dialogOpen, setDialogOpen ] = useState(true);
-    const isNewSvcType = (props.editRecord == null);
-    const initMsg = isNewSvcType ? {} : {result: 'success', time: props.editRecord.updatedDateTime};
+    const isNewSvcType = (editRecord == null);
+    const initMsg = isNewSvcType ? {} : {result: 'success', time: editRecord.updatedDateTime};
     const [ saveMessage, setSaveMessage ] = useState(initMsg);
     const svcCats = SettingsServiceCats();
     let data;
@@ -37,17 +37,15 @@ export default function ServiceTypeFormDialog(props) {
         data.todate = packToDate(data)
     }
     else {
-        data = props.editRecord;
-        data.fromdate = packFromDate(props.editRecord)
-        data.todate = packToDate(props.editRecord)
+        data = editRecord;
+        data.fromdate = packFromDate(editRecord)
+        data.todate = packToDate(editRecord)
     }
-
-    let delayInt
 
     function handleDialog(state){
         if (!state) { 
             setEditingState(false)
-            props.handleEditMode('cancel')
+            handleEditMode('cancel')
         }
         setDialogOpen(state)
     }
@@ -91,17 +89,17 @@ export default function ServiceTypeFormDialog(props) {
         const tosplit = todate.split("-")
 
         return {"available": {
-            "dateFromMonth": (parseInt(fromsplit[1])-1).toString(), 
-            "dateFromDay": parseInt(fromsplit[2]).toString(),
-            "dateToMonth": (parseInt(tosplit[1])-1).toString(), 
-            "dateToDay": parseInt(tosplit[2]).toString()
+            "dateFromMonth": (parseInt(fromsplit[1])-1), 
+            "dateFromDay": parseInt(fromsplit[2]),
+            "dateToMonth": (parseInt(tosplit[1])-1), 
+            "dateToDay": parseInt(tosplit[2])
             }
         } 
     }
 
     function saveSvcType(data) {
         dbSetModifiedTime(data, isNewSvcType)
-        console.log(data)
+        // console.log(data)
         if (isNewSvcType) {
             const topId = Math.max(...serviceTypes.map(o => o.svcTypeId))
             data.svcTypeId = topId + 1
@@ -109,8 +107,8 @@ export default function ServiceTypeFormDialog(props) {
         setSaveMessage({ result: 'working' });
         dbSaveSvcTypeAsync(data)
             .then( () => {
-                props.handleEditRecord(data);
-                props.updateSvcTypes();
+                handleEditRecord(data);
+                updateSvcTypes();
                 setEditingState(false)
                 handleDialog(false)
             })
@@ -125,16 +123,27 @@ export default function ServiceTypeFormDialog(props) {
         let available = data.available;
         let target = data.target;
 
+        // Add missing attributes
+        if (target.child !== "YES") {
+            target.childMaxAge = 0
+            target.childMaxGrade = "Unselected"
+            target.childMinAge = 0
+            target.childMinGrade = "Unselected"
+        }
+
         Object.assign(data, values);
         Object.assign(fullfillment, values.fulfillment);
         Object.assign(available, values.available);
         Object.assign(target, values.target);
-        Object.assign(data, unpackDates(values.fromdate, values.todate));
 
+        // Unpack dates into month day atttributes and place in "available" object
+        Object.assign(data, unpackDates(values.fromdate, values.todate));
+        data.numberItems = parseInt(data.numberItems)
         data.fulfillment = fullfillment;
-        data.available = available;
+        // data.available = available;
         data.target = target;
-        console.log(data)
+
+        // console.log(data)
         saveSvcType(data)
         reset(values);
     }
@@ -313,7 +322,7 @@ export default function ServiceTypeFormDialog(props) {
                         control={ control } />
                         </React.Fragment>}
                         {fulfillType == "Voucher_Fulfill" &&
-                        <FormSelect fieldsize="lg" name="target.service" label="Type" control={ control } error={ errors.target?.service }
+                        <FormSelect fieldsize="lg" name="target.service" label="Voucher Service Type" control={ control } error={ errors.target?.service }
                             rules={ {required: 'Required'}} >
                                 <MenuItem value="">&nbsp;</MenuItem>
                                 <MenuItem value="Unselected">Unselected</MenuItem>
