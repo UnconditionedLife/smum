@@ -26,45 +26,58 @@ export default function NewClientsReport(props) {
         }, 200)
     }
 
+    console.log("IN NEW CLIENT REPORT");
+
     function RunReport(){
         dbGetValidSvcsByDateAsync(moment(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
             .then(svcs => {
-                const monthOfValidUSDASvcs = svcs.filter(item => item.svcUSDA == "USDA")
-                let newClients = []
-                let tempList = []
+
+                console.log("SVCS", svcs);
+
+                let firstSvcs = svcs.filter(item => item.svcFirst == true)
+
+                console.log("#firstSvcs", firstSvcs.length);
+
+                // let newClients = []
+                // let tempList = []
 
                 let total = 0
                 let homeless = 0
 
-                monthOfValidUSDASvcs.forEach(svc => {    
-                    dbGetSingleClientAsync(svc.cId)
-                        .then(client => {
-                            const dividedYearMonth = moment(props.yearMonth).format('YYYYMM').substring(0,4) + "-" + moment(props.yearMonth).format('YYYYMM').substring(4)
-                            const firstSeen = client.firstSeenDate
-                        if (firstSeen.substring(0,7) == dividedYearMonth) {
-                            console.log("matching MONTH")
-                            tempList.push(svc.cId)
-                            newClients.push(client)
-                        }
-                        setClientIds(tempList.sort((b, a) => { return b-a }))
+                // monthOfValidUSDASvcs.forEach(svc => {    
+                //     dbGetSingleClientAsync(svc.cId)
+                //         .then(client => {
+                //             const dividedYearMonth = moment(props.yearMonth).format('YYYYMM').substring(0,4) + "-" + moment(props.yearMonth).format('YYYYMM').substring(4)
+                //             const firstSeen = client.firstSeenDate
+                //         if (firstSeen.substring(0,7) == dividedYearMonth) {
+                //             console.log("matching MONTH")
+                //             tempList.push(svc.cId)
+                //             newClients.push(client)
+                //         }
+                //         setClientIds(tempList.sort((b, a) => { return b-a }))
+
                         const zipCodes = SettingsZipcodes()
                         total = 0
                         homeless = 0
 
-
                         zipCodes.forEach(zip => {
-                            let zipRecord = { area: zip }
-                            zipRecord.total = newClients.filter(client => client.zipcode == zip).length
-                            zipRecord.homeless = newClients.filter(client => client.zipcode == zip && client.homeless == "YES").length
+                            const zipRecord = { area: zip }
+                            const zipTotalSvcs = firstSvcs.filter(svc => svc.cZip == zip)
+                            
+                            zipRecord.total = zipTotalSvcs.length
+                            zipRecord.homeless = zipTotalSvcs.filter(svc => svc.homeless == true).length
                             numNewClients = updateCounts(numNewClients, zipRecord.total, zipRecord.homeless, zip)
                             total += zipRecord.total
                             homeless += zipRecord.homeless
                             setCounts(numNewClients)
+
+                            // remove these svcs with this zip from all list
+                            firstSvcs = firstSvcs.filter(svc => svc.cZip != zip)
                         })
 
                         let zipRecord = { area: "Out Of Area" }
-                        zipRecord.total = newClients.filter(client => !zipCodes.includes(client.zipcode)).length
-                        zipRecord.homeless = newClients.filter(client => !zipCodes.includes(client.zipcode) && client.homeless == "YES").length
+                        zipRecord.total = firstSvcs.length
+                        zipRecord.homeless = firstSvcs.filter(svc => svc.homeless == true).length
                         numNewClients = updateCounts(numNewClients, zipRecord.total, zipRecord.homeless, "Out Of Area")
                         setCounts(numNewClients)
                         total += zipRecord.total
@@ -72,9 +85,10 @@ export default function NewClientsReport(props) {
                         setTotalNewClients(total)
                         setTotalNewHomeless(homeless)
                         setLoading(false)
+
+                        console.log("#CLIENTS", numNewClients); 
+
                     })
-                })
-            })
     }
 
     function updateCounts(countsList, total, homeless, zip) {
@@ -114,7 +128,7 @@ export default function NewClientsReport(props) {
                 </style>
                 <ReportsHeader reportType="MONTHLY REPORT" 
                     reportDate={ reportMonth }
-                    reportCategory="NEW CLIENT" 
+                    reportCategory="NEW CLIENTS BY ZIP" 
                     columns={["Zipcode", "Total", "Homeless"]} />
                 <TableBody>
                     {loading ? (<TableRow>
@@ -125,28 +139,28 @@ export default function NewClientsReport(props) {
                     { counts.map((item) => (
                         <TableRow key={ item.area } >
                             <TableCell align="center">{ item.area }</TableCell>
-                            <TableCell align="center">{ item.total }</TableCell>
-                            <TableCell align="center">{ item.homeless }</TableCell>
+                            <TableCell align="center"><strong>{ item.total }</strong> { " (" + Math.round(item.total/totalNewClients * 100) + "%)" }</TableCell>
+                            <TableCell align="center"><strong>{ item.homeless }</strong> { " (" + Math.round(item.homeless/totalNewHomeless * 100)  + "%)" }</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
                 <TableFooter>
                     <TableRow>
                         <TableCell align="center"><Typography variant='h6' align='center'>TOTAL</Typography></TableCell>
-                        <TableCell align="center"><Typography variant='h6' align='center'>{ totalNewClients }</Typography></TableCell>
-                        <TableCell align="center"><Typography variant='h6' align='center'>{ totalNewHomeless }</Typography></TableCell>
+                        <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalNewClients }</strong> { " (100%)" }</Typography></TableCell>
+                        <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalNewHomeless }</strong> { " (" + Math.round(totalNewHomeless/totalNewClients * 100)  + "%)" }</Typography></TableCell>
                     </TableRow>
                 </TableFooter>
             </Table>
         </TableContainer> 
-        <Box mt={ 3 } maxWidth="100%">
+        {/* <Box mt={ 3 } maxWidth="100%">
             <Typography variant='h6'>NEW CLIENT IDs</Typography>
             <Box mt={ 1 } width="1000px" style={{ lineHeight: "30px" }}>
                 { clientIds.map((id) =>(
                     <strong key={ id }>{ id }&nbsp;&nbsp; </strong>
                 )) }
             </Box>
-            </Box>
-        </Box>
+            </Box> */}
+        </Box> 
     )
 }

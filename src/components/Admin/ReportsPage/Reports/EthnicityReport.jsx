@@ -74,7 +74,7 @@ export default function EthnicityReport(props) {
                 </style>
                 <ReportsHeader reportType="MONTHLY REPORT" 
                     reportDate={ reportMonth }
-                    reportCategory="ETHNICITY" 
+                    reportCategory="CLIENTS BY ETHNICITY" 
                     columns={["Ethnicity", "Total", "Homeless"]} />
                 <TableBody>
                     {loading ? (<TableRow>
@@ -86,8 +86,8 @@ export default function EthnicityReport(props) {
                         return (
                             <TableRow key={ key } >
                                 <TableCell align="center">{ key }</TableCell>
-                                <TableCell align="center">{ counts[key].total }</TableCell>
-                                <TableCell align="center">{ counts[key].homeless }</TableCell>
+                                <TableCell align="center"><strong>{ counts[key].total }</strong> { "  (" + Math.round(counts[key].total / totalClients * 100) + "%)" }</TableCell>
+                                <TableCell align="center"><strong>{ counts[key].homeless }</strong> { "  (" + Math.round(counts[key].homeless / totalHomeless * 100) + "%)" }</TableCell>
                             </TableRow>
                         )
                     })}
@@ -95,8 +95,8 @@ export default function EthnicityReport(props) {
                 <TableFooter>
                     <TableRow>
                         <TableCell align="center"><Typography variant='h6' align='center'>TOTAL</Typography></TableCell>
-                        <TableCell align="center"><Typography variant='h6' align='center'>{ totalClients }</Typography></TableCell>
-                        <TableCell align="center"><Typography variant='h6' align='center'>{ totalHomeless }</Typography></TableCell>
+                        <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalClients }</strong>  (100%)</Typography></TableCell>
+                        <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalHomeless }</strong> {"  (" + Math.round(totalHomeless / totalClients * 100) + "%)" }</Typography></TableCell>
                     </TableRow>
                 </TableFooter>
             </Table>

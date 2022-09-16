@@ -143,9 +143,8 @@ export default function ReportsPage() {
                         <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                                 <MenuItem value="ALL">All Services</MenuItem>
-                                <MenuItem value="NEWCLIENT">New Client</MenuItem>
-                                <MenuItem value="ZIPCODE">By Zipcode</MenuItem>
-                                <MenuItem value="ETHNICITY">By Ethnicity</MenuItem>
+                                <MenuItem value="NEWCLIENT">New Clients By Zip</MenuItem>
+                                <MenuItem value="ETHNICITY">Clients By Ethnicity</MenuItem>
                         </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterMoment } >
