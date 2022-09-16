@@ -380,8 +380,23 @@ export async function dbGetClientActiveSvcHistoryAsync(clientId){
             return oldSvcs
         })
 }
+
+export async function dbGetAllClientSvcsAsync(clientId){
+    console.log("GET ALL SVCS", clientId);
+    const paramObj = { cid: clientId }
+    return await dbGetDataAsync("/clients/svcs/bycid/", paramObj)
+        .then(data => {
+            // console.log("DATA", data);
+            // const activeSvcs = data.svcs.filter(item => item.svcValid === true)
+            // const oldSvcs = activeSvcs
+            return data.svcs
+        })
+}
+
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
+
+
 
 export async function dbSaveClientAsync(data) {
 	if (data.clientId === "0") {

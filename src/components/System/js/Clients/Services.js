@@ -236,10 +236,10 @@ export function getActiveSvcTypes(){
     return activeSvcTypes
 }
 
-export function getTargetServices(activeServiceTypes) {
+export function getTargetServices(activeSvcTypes) {
 	let targets = [];
 	// build list of client target items for each Active Service Type
-	activeServiceTypes.forEach((aSvcType, i) => {
+	activeSvcTypes.forEach((aSvcType, i) => {
 		// make list of specific targets.... for each type.
 		targets[i] = {}
 		// target homeless
@@ -298,10 +298,13 @@ function getActiveServicesButtons( props ) {
     let validDependents = []
     const intervals = getFoodInterval(activeServiceTypes)
 
+
+    console.log('CLIENT', client);
+
     // check for not a valid service based on interval between services  
-	activeServiceTypes.forEach((svc, i) => {
+	activeServiceTypes.forEach((svcType, i) => {
 		let display = true;
-		if (!validateSvcInterval({ client, activeServiceType: svc, lastServedDays, intervals })) return;
+		if (!validateSvcInterval({ client, activeServiceType: svcType, lastServedDays, intervals })) return;
 		// loop through each property in each targetServices
 		for (let prop in targetServices[i]) {
 			if (prop=="family_totalChildren") {
@@ -315,26 +318,20 @@ function getActiveServicesButtons( props ) {
 				}
 				if (validDependents.length == 0) display = false
 			}
+            // TODO SIMPLIFY THIS CODE  
 			if (prop == "service") { // targeting a voucher fulfill service
-                // TODO CLEANUP AND REBUILD VOUCHERS
-				// let servicesVouchers = utilCalcVoucherServiceSignup(client, activeServiceTypes[i])
-				// if (servicesVouchers.length !== 1) display = false
-                // utilCalcVoucherServiceSignupAsync(client, svc).then(
-                //     vouchers => {
-                //         if (vouchers.length !== 1) display = false
-                //     }
-                // )
+                
 			} else if (targetServices[i][prop] != client[prop]
 					&& prop.includes("family")==false
 					&& prop.includes("dependents")==false) display = false
 		}
 		if (display) {
-            let btn = Object.assign({}, svc)
+            let btn = Object.assign({}, svcType)
             // btnType is used to display "normal" button (grey outline), "highlight" button (red outline), 
             // or "used" button, (undo icon)
             btn.btnType = "normal"
             
-            if (svc.svcBtns == "Primary") {
+            if (svcType.svcBtns == "Primary") {
                 if ((btn.svcCat === "Administration") || (btn.svcUSDA == "Emergency")) {
                     btn.btnType = "highlight"
                 }      
@@ -446,42 +443,56 @@ function validateSvcInterval( props ){
 				if (voucherDays == 10000) return false
 			}
 		}
-		//TODO: this is a workaround due to last served not tracking id. Need last served to track by service id.
-        
-        // *****  Disabled during svc table update ******
+		if (activeServiceType.fulfillment.type == "Voucher"){
+            const voucherSvcs = client.svcHistory.filter(hSvc => {
+                return hSvc.svcTypeId == activeServiceType.svcTypeId
+            })
 
-		// if (activeServiceType.fulfillment.type == "Voucher"){
-		// 	let service = dbGetSvcsBysvcTypeDateAsync(activeServiceType.svcTypeId, moment().year())
-        //         .then((svcs) => {
-        //             return svcs.filter(obj => obj.cId == client.clientId)
-        //         })
-				
-		// 	if (service.length == 0){
-		// 		return true;
-		// 	}
-		// 	else {
-		// 		return false;
-		// 	}
-		// }
-		let inLastServed = client.lastServed.filter(obj => obj.svcCat == svcCat)
-		if (inLastServed.length > 0) {
-			// if a voucher fulfill service then need to chech against Voucher service
+            let found = false
+            voucherSvcs.forEach(vSvc => {
+                // Check that the service is within the service period - i.e. not from another year
+                if (moment().diff(vSvc.svcDT, 'days') <= activeServiceType.svcInterval ) {
+                    found = true
+                }
+            })
+
+            if (found) return false
+        }
+		// let inLastServed = client.lastServed.filter(obj => obj.svcCat == svcCat)
+		// if (inLastServed.length > 0) {
+			// if a voucher fulfill service then need to check against Voucher service
 			if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
-				// get voucher service
-				const voucherHistory = getHistoryLastService({ svcHistory: client.svcHistory, serviceType: activeServiceType })
-				if (voucherHistory.length > 0) {
-					return false;
-				}
-			} else {
-				inLastServed = inLastServed[0].serviceDateTime
+				// get voucher services
+                const voucherSvcs = client.svcHistory.filter(hSvc => {
+                    return hSvc.svcTypeId == activeServiceType.target.service
+                })
+
+                if (voucherSvcs.length === 0) return false
+
+                let found = true
+                voucherSvcs.forEach(vSvc => {
+                    // Check that the service is within the service period - i.e. not from another year
+                    if (moment().diff(vSvc.svcDT, 'days') < activeServiceType.svcInterval ) {
+                        found = true
+                    }
+                })
+                if (!found) return false
+
+
+				// const voucherHistory = getHistoryLastService({ svcHistory: client.svcHistory, serviceType: activeServiceType })
+				// if (voucherHistory.length > 0) {
+				// 	return false;
+				// }
+			// } else {
+			// 	inLastServed = inLastServed[0].serviceDateTime
 			}
-		} else if (svcCat == "Administration") {
-			inLastServed = client.familyIdCheckedDate
-		} else {
-			inLastServed = "2000-01-01"
-		}
-		const lastServedDate = moment(inLastServed).startOf('day')
-		if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.svcInterval) return false
+		// } else if (svcCat == "Administration") {
+		// 	inLastServed = client.familyIdCheckedDate
+		// } else {
+		// 	inLastServed = "2000-01-01"
+		// }
+		// const lastServedDate = moment(inLastServed).startOf('day')
+		// if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.svcInterval) return false
 	} else {
 		// secondary buttons
         // Greater than 0 lowest day is used to provide same day buffer for secondary buttons
@@ -635,11 +646,7 @@ function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
 
 function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
     if (svcCat === 'Food_Pantry') {
-        // TODO Use function here
-        let service = svcTypes.filter(function( obj ) {
-                return obj.svcTypeId === svcTypeId
-            })[0]
-        prnPrintFoodReceipt(client, service.svcUSDA )
+        prnPrintFoodReceipt(client, svcType.svcUSDA )
         if (client.isActive === 'Client') {
             // Determine next visit date
             let targetDate = moment().add(14, 'days');
@@ -648,30 +655,53 @@ function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
         }
     } else if (svcCat == 'Clothes_Closet') {
         prnPrintClothesReceipt( client, svcType )
-    } else if (svcCat == 'Back_To_School' && svcType.fulfillment.type == 'Voucher') { // ignore fulfillment
-        const targetService = utilCalcTargetServices([svcType])
-        const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
-        // TODO use function here
-        //let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
-        prnPrintVoucherReceipt( client, svcType, dependents, 'grade' );
-        prnPrintVoucherReceipt( svcType, dependents, 'grade');
-    } else if (svcCat == 'Thanksgiving' && svcType.fulfillment.type == 'Voucher') { // ignore fulfillment
-        //const targetService = utilCalcTargetServices([svcType])
-        // TODO use function here
-        // let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
-        prnPrintVoucherReceipt({ client: client, svcType: svcType })
-        prnPrintVoucherReceipt({ client: client, svcType: svcType })
-    } else if (svcCat == 'Christmas' && svcType.fulfillment.type == 'Voucher') { // ignore fulfillment
-        const targetService = utilCalcTargetServices([svcType])
-        let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
-        if (targetService[0].family_totalChildren == "Greater Than 0") {
-            const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
-            prnPrintVoucherReceipt(svcType, dependents, 'age');
-            prnPrintVoucherReceipt(svcType, dependents, 'age');
-        } else {
-            prnPrintVoucherReceipt({ service: service });
-            prnPrintVoucherReceipt({ service: service });
+    } else if (svcType.fulfillment.type == 'Voucher') {
+        let params
+        if (svcCat == 'Back_To_School') {
+            const targetService = utilCalcTargetServices([svcType])
+            const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
+            params = { client: client, svcType: svcType, dependents: dependents, gradeOrAge: 'grade' }
+        
+        } else if (svcCat == 'Thanksgiving') {
+            params = { client: client, svcType: svcType }
+
+        } else if (svcCat == 'Christmas') {
+            const targetService = utilCalcTargetServices([svcType])
+            
+            if (targetService[0].family_totalChildren == "Greater Than 0") {
+                const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
+                params = { client: client, svcType: svcType, dependents: dependents, gradeOrAge: 'grade' }
+            } else {
+                params = { client: client, svcType: svcType }
+            }
         }
+
+        prnPrintVoucherReceipt(params);
+        prnPrintVoucherReceipt(params);
+    // } else if (svcCat == 'Back_To_School' && svcType.fulfillment.type == 'Voucher') {
+    //     const targetService = utilCalcTargetServices([svcType])
+    //     const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
+    //     // TODO use function here
+    //     //let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
+    //     const params = { client: client, svcType: svcType, dependents: dependents, gradeOrAge: 'grade' }
+    //     prnPrintVoucherReceipt(params);
+    //     prnPrintVoucherReceipt(params);
+    // } else if (svcCat == 'Thanksgiving' && svcType.fulfillment.type == 'Voucher') {
+    //     const params = { client: client, svcType: svcType }
+    //     prnPrintVoucherReceipt(params)
+    //     prnPrintVoucherReceipt(params)
+    // } else if (svcCat == 'Christmas' && svcType.fulfillment.type == 'Voucher') {
+    //     const targetService = utilCalcTargetServices([svcType])
+    //     let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
+    //     if (targetService[0].family_totalChildren == "Greater Than 0") {
+    //         const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
+    //         const params = { client: client, svcType: svcType, dependents: dependents, gradeOrAge: 'grade' }
+    //         prnPrintVoucherReceipt(params);
+    //         prnPrintVoucherReceipt(params);
+    //     } else {
+    //         prnPrintVoucherReceipt({ service: service });
+    //         prnPrintVoucherReceipt({ service: service });
+    //     }
     }
     prnFlush();
 }
