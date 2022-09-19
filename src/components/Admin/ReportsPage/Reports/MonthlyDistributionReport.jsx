@@ -128,7 +128,7 @@ export default function MonthlyDistributionReport(props) {
               
             const newDaysGrid = []
             for (const [servicedDay, svcs] of Object.entries(svcsGroupBy)) {
-                const servicedDate = moment(servicedDay).format('MM/DD/YYYY')
+                const servicedDate = moment(servicedDay).format('MMM DD YYYY')
                 const servicesFood = svcs
                     .filter(item => item.svcValid == true)
                     .filter(item => item.svcCat == "Food_Pantry")

@@ -37,7 +37,7 @@ export default function ReportsPage() {
 
     const runFoodReport = () => {
         if (foodType == "NEWCLIENT") {
-            setReportHeading("New Clients " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
+            setReportHeading("New Clients - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY'));
             setReportOpen(true);
             setReportBody(<NewClientsReport yearMonth={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
@@ -45,14 +45,14 @@ export default function ReportsPage() {
         }
         if (foodType == "ALL") {
             console.log(foodYearMonth)
-            setReportHeading("ALL SERVICES " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
+            setReportHeading("ALL Services - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY') );
             setReportOpen(true);
             setReportBody(<AllMonthlyServicesReport month={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (foodType == "FOOD") {
-            setReportHeading("Distribution " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
+            setReportHeading("Food Pantry - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY'));
             setReportOpen(true);
             console.log(foodYearMonth)
             setReportBody(<MonthlyDistributionReport month={foodYearMonth} />);
@@ -60,7 +60,7 @@ export default function ReportsPage() {
             setReportActions(buttonCode);
         }
         if (foodType == "ETHNICITY") {
-            setReportHeading("Ethnicity " + moment(foodYearMonth).format('MMM, YYYY') + " Report");
+            setReportHeading("Ethnicity - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY'));
             setReportOpen(true);
             console.log(foodYearMonth)
             setReportBody(<EthnicityReport yearMonth={foodYearMonth} />);
@@ -71,7 +71,7 @@ export default function ReportsPage() {
 
     const runYearReport = () => {
         if (yearType == "FOOD") {
-            setReportHeading("Distribution " + moment(reportYear).format('YYYY') + " Report");
+            setReportHeading("Food Pantry - Annual Report - " + moment(reportYear).format('YYYY'));
             setReportOpen(true);
             console.log(reportYear)
             setReportBody(<AnnualDistributionReport year={reportYear} />);
@@ -82,7 +82,7 @@ export default function ReportsPage() {
 
     const runDailyReport = () => {
         if (dayType == "FOOD") {
-            setReportHeading("Distribution " + moment(reportDay).format('MMM, DD, YYYY') + " Report");
+            setReportHeading("Food Pantry - Daily Report - " + moment(reportDay).format('MMM DD YYYY'));
             setReportOpen(true);
             setReportBody(<DailyDistributionReport day={ reportDay } />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
