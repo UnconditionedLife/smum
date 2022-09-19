@@ -134,7 +134,7 @@ export function getAppVersion() {
 //************************************************
 
 export async function dbGetSettingsAsync() {
-    return await dbGetDataAsync("/settings")
+    return await dbGetDataPageAsync("/settings")
         .then( settings => {
             const fields = ["serviceZip", "serviceCat", "calClosed",
                 "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"];
@@ -193,13 +193,9 @@ export function SettingsSchedule() {
 //******************* SVCTYPES *******************
 //******************* OLD TABLE ******************
 
-export async function dbGetOldSvcTypesAsync(){
-    return await dbGetDataAsync("/servicetypes")
-        .then( data => {
-
-            console.log("DATA", data);
-
-            const svcTypes = data.serviceTypes
+export async function dbGetOldSvcTypesAsync() {
+    return await dbGetDataAsync("serviceTypes", "/servicetypes")
+        .then(svcTypes => {
             // case-insensitive sort
             return  svcTypes.sort((a, b) => a.svcName.localeCompare(b.svcName, undefined, {sensitivity: 'base'}));
         }
@@ -211,10 +207,8 @@ export async function dbGetOldSvcTypesAsync(){
 //******************* NEW TABLE ******************
 
 export async function dbGetSvcTypesAsync(){
-    return await dbGetDataAsync("/svctypes")
-        .then( data => {
-            // const serviceTypes = makeOldSvcTypes(data.serviceTypes)
-            const serviceTypes = data.serviceTypes
+    return await dbGetDataAsync("serviceTypes", "/svctypes")
+        .then(serviceTypes => {
             // case-insensitive sort
             return  serviceTypes.sort((a, b) => a.svcName.localeCompare(b.svcName, undefined, {sensitivity: 'base'}));
         }
@@ -247,9 +241,8 @@ export async function dbMigrateSvcTypeAsync(data) {
 //************************************************
 
 export async function dbGetUserAsync(userName) {
-    return await dbGetDataAsync("/users/" + userName)
-        .then( data => {
-            const users = data.users
+    return await dbGetDataAsync("users", "/users/" + userName)
+        .then( users => {
             if (users.length == 1)
                 return users[0];
             else
@@ -259,7 +252,7 @@ export async function dbGetUserAsync(userName) {
 }
 
 export async function dbGetAllUsersAsync() {
-	return await dbGetDataAsync("/users").then( data => { return data.users });
+	return await dbGetDataAsync("users", "/users");
 }
 
 export async function dbSaveUserAsync(data) { 
@@ -290,22 +283,22 @@ async function dbGetClientsAsync(searchTerm, isDate){
 	if (isDate){
 		searchTerm = utilCleanUpDate(searchTerm)
 		// searchTerm = moment(searchTerm, 'MM-DD-YYYY').format('YYYY-MM-DD') // moved to utilCleanUpDate
-		return await dbGetDataAsync("/clients/dob/" + searchTerm).then(data => { return data.clients })
+		return await dbGetDataAsync("clients", "/clients/dob/" + searchTerm)
 	} else if (!isNaN(searchTerm) && searchTerm.length < MAX_ID_DIGITS){
-		return await dbGetDataAsync("/clients/" + searchTerm).then(data => { return data.clients })
+		return await dbGetDataAsync("clients", "/clients/" + searchTerm)
 	} else if (searchTerm.includes(" ")){
 		searchTerm = utilChangeWordCase(searchTerm)
 		let split = searchTerm.split(" ")
 //*** TODO deal with more than two words ***
-		const d1 = await dbGetDataAsync("/clients/givenname/" + split[0]).then(data => { return data.clients })
-		const d2 = await dbGetDataAsync("/clients/familyname/" + split[0]).then(data => { return data.clients })
-		const d3 = await dbGetDataAsync("/clients/givenname/" + split[1]).then(data => { return data.clients })
-		const d4 = await dbGetDataAsync("/clients/familyname/" + split[1]).then(data => { return data.clients })
+		const d1 = await dbGetDataAsync("clients", "/clients/givenname/" + split[0])
+		const d2 = await dbGetDataAsync("clients", "/clients/familyname/" + split[0])
+		const d3 = await dbGetDataAsync("clients", "/clients/givenname/" + split[1])
+		const d4 = await dbGetDataAsync("clients", "/clients/familyname/" + split[1])
 		return utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
 	} else if (clientData==null||clientData.length==0){
 		searchTerm = utilChangeWordCase(searchTerm)
-		const d2 = await dbGetDataAsync("/clients/givenname/" + searchTerm).then(data => { return data.clients })
-		const d1 = await dbGetDataAsync("/clients/familyname/" + searchTerm).then(data => { return data.clients })
+		const d2 = await dbGetDataAsync("clients", "/clients/givenname/" + searchTerm)
+		const d1 = await dbGetDataAsync("clients", "/clients/familyname/" + searchTerm)
 		if (d1.length > 0 && d2.length < 1){
 			return utilRemoveDupClients(d1.concat(d2))
 		}	else if (d2.length > 0){
@@ -315,9 +308,8 @@ async function dbGetClientsAsync(searchTerm, isDate){
 }
 
 export async function dbGetSingleClientAsync(clientId) {
-    return await dbGetDataAsync("/clients/" + clientId)
-        .then( data => {
-            let result = data.clients
+    return await dbGetDataAsync("clients", "/clients/" + clientId)
+        .then(result => {
             if (result.length === 1)
                 return result[0];
             else
@@ -327,11 +319,11 @@ export async function dbGetSingleClientAsync(clientId) {
 
 export async function dbGetNewClientIDAsync(){
     let emptyId = 0
-    let newId = await dbGetDataAsync("/clients/lastid")
+    let newId = await dbGetDataPageAsync("/clients/lastid")
         .then( async data => { return parseInt(data.lastId) + 1 })
 
     while(emptyId === 0) {
-        emptyId = await dbGetDataAsync("/clients/exists/" + newId)
+        emptyId = await dbGetDataPageAsync("/clients/exists/" + newId)
             .then( data => {
                 if (data.count == 0) {
                     emptyId = newId
@@ -353,14 +345,7 @@ export async function dbGetNewClientIDAsync(){
 // ***************************************************************
 // *****************  OLD TABLE USED FOR MIGRATION ***************
 export async function dbGetClientActiveServiceHistoryAsync(clientId){
-    return await dbGetDataAsync("/clients/services/" + clientId)
-        .then(data => {
-            const svcs = data.services
-                //const activeSvcs = svcs.filter(item => item.svcValid == true)
-                // .sort((a, b) => moment.utc(b.svcDT).diff(moment.utc(a.svcDT))) 
-            // return activeSvcs
-            return svcs
-        })
+    return await dbGetDataAsync("services", "/clients/services/" + clientId)
 }
 // *****************  OLD TABLE USED FOR MIGRATION ***************
 // ***************************************************************
@@ -372,12 +357,9 @@ export async function dbGetClientActiveServiceHistoryAsync(clientId){
 export async function dbGetClientActiveSvcHistoryAsync(clientId){
     console.log("GET HISTORY", clientId);
     const paramObj = { cid: clientId }
-    return await dbGetDataAsync("/clients/svcs/bycid/", paramObj)
-        .then(data => {
-            console.log("DATA", data);
-            const activeSvcs = data.svcs.filter(item => item.svcValid === true)
-            const oldSvcs = activeSvcs
-            return oldSvcs
+    return await dbGetDataAsync("svcs", "/clients/svcs/bycid/", paramObj)
+        .then(svcs => {
+            return svcs.filter(item => item.svcValid === true);
         })
 }
 
@@ -464,54 +446,30 @@ export async function dbSaveSvcAsync(svc) {
 
 
 // export async function dbGetDaysSvcsAsync(dayDate){
-//     return await dbGetDataAsync("/clients/services/byday/" + dayDate).then(data => { return data.services })
+//     return await dbGetDataAsync("services", "/clients/services/byday/" + dayDate)
 // }
 
-// convert LastEvaluatedKey to map
-function stringToMap(string){
-    let newString = string.replaceAll('{', '{"')
-    newString = newString.replaceAll('={', '":{')
-    newString = newString.replaceAll('=', '":"')
-    newString = newString.replaceAll('}', '"}')
-    newString = newString.replaceAll('}"}', '}}')
-    newString = newString.replaceAll(', ', ', "')
-    return newString
-}
 
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
-export async function dbGetValidSvcsByDateAsync(month, svcCat, date){
+export async function dbGetValidSvcsByDateAsync(month, svcCat, date) {
     const paramObj = { month: month }
     if (svcCat) paramObj.svccat = svcCat
     if (date) paramObj.date = date
-    let lastKey = 'start'
-    let allSvcs = []
-    let counter = 0
-    while (lastKey != null) {
-        //  build new params with last key
-        const newParams = (lastKey != "start") ? { ...paramObj, lastkey: lastKey } : paramObj
-        const x = await dbGetDataAsync( "/clients/svcs/bymonth", newParams )
-            .then(data => {
 
-                counter ++
-                console.log("CALL #" + counter);
-                console.log("DATA", data);
-
-                const validSvcs = data.svcs.filter(item => item.svcValid == true)
-                lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null
-                return validSvcs
-            })
-        allSvcs = allSvcs.concat(x)    
-    }
-    return allSvcs
+    return await dbGetDataAsync("svcs", "/clients/svcs/bymonth", paramObj)
+        .then(svcs => {
+            return svcs.filter(item => item.svcValid == true);
+        })
 }
+
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
 
 // export async function dbGetSvcsByIdAndYear(serviceTypeId, year) {
-// 	return await dbGetDataAsync("/clients/services/byservicetype/" + serviceTypeId)
+// 	return await dbGetDataAsync("services", "/clients/services/byservicetype/" + serviceTypeId)
 //             .then( data => { 
-//                 return data.services
+//                 return data
 //                 .filter(item => item.serviceValid == 'true')
 //                 .filter(item => moment(item.svcDT).year() == year)
 //             })					
@@ -534,8 +492,8 @@ export async function dbGetSvcsInMonthAsync(monthYear){
 }
 
 // ***** NOT USED *****
-export async function dbGetServiceAsync(svcId){
-	return await dbGetDataAsync("/clients/services/byid/" + svcId).then( data => { return data.services})
+export async function dbGetServiceAsync(svcId) {
+	return await dbGetDataAsync("services", "/clients/services/byid/" + svcId)
 }
 // ***** NOT USED *****
 
@@ -569,14 +527,14 @@ export async function dbGetEthnicGroupCountAsync(ethnicGroup){
 
     console.log("CACHED SESSION", cachedSession)
 
-    return await dbGetDataAsync("/clients/ethnicgroup/" + ethnicGroup)
+    return await dbGetDataPageAsync("/clients/ethnicgroup/" + ethnicGroup)
         .then( data => { return data.count})
 }
 
 // NOT CURRENTLY BEING CALLED
 // async function  dbGetDaysServicesAsync(dayDate){
 // 	dayDate = moment(dayDate).format("YYYYMMDD")
-// 	return dbGetDataAsync("/clients/services/byday/" + dayDate ).then( data => { return data.services })
+// 	return dbGetDataAsync("services", "/clients/services/byday/" + dayDate )
 // }
 
 //******************* UTILITIES *******************
@@ -641,6 +599,18 @@ function httpMessage(result) {
         return 'Unknown Error ' + result;
 }
 
+// convert LastEvaluatedKey to map
+function stringToMap(string) {
+    let newString = string.replaceAll('{', '{"')
+    newString = newString.replaceAll('={', '":{')
+    newString = newString.replaceAll('=', '":"')
+    newString = newString.replaceAll('}', '"}')
+    newString = newString.replaceAll('}"}', '}}')
+    newString = newString.replaceAll(', ', ', "')
+    return newString
+}
+
+
 async function dbPostDataAsync(subUrl, data) {
 
 console.log("POSTING:", data)
@@ -675,8 +645,23 @@ console.log("POSTING:", data)
     })
 }
 
-async function dbGetDataAsync(subUrl, paramObj) { 
-    const params = (paramObj) ? "?" + new URLSearchParams(paramObj) : ""
+async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
+    let lastKey = null;
+    let allData = [];
+    do {
+        const queryParams = (lastKey) ? { ... paramObj, lastkey: lastKey } : paramObj;
+        const dataPage = await dbGetDataPageAsync(subUrl, queryParams)
+            .then(data => {
+                lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null;
+                return data[arrayName];
+            })
+        allData = allData.concat(dataPage);  
+    } while (lastKey != null);
+    return allData;
+}
+
+async function dbGetDataPageAsync(subUrl, paramObj) { 
+    const params = (paramObj) ? "?" + new URLSearchParams(paramObj) : "";
     return await fetch(dbUrl + subUrl + params, {
         method: 'GET',
         headers: {
