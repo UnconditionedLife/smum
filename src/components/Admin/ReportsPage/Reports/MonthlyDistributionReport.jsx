@@ -141,7 +141,6 @@ export default function MonthlyDistributionReport(props) {
                 newDaysGrid.push({"day": servicedDate, "usdaGrid": usdaGrid, "nonUsdaGrid": nonUsdaGrid, "usdaTotals": usdaTotals, 
                 "nonUsdaTotals": nonUsdaTotals, "totals": computeGridTotals([usdaTotals, nonUsdaTotals])})
             }
-            console.log(newDaysGrid)
             setDaysGrid(newDaysGrid)
             setUsdaTotals(computeGridTotals(newDaysGrid.map(day => day["usdaTotals"])))
             setNonUsdaTotals(computeGridTotals(newDaysGrid.map(day => day["nonUsdaTotals"])))
@@ -155,7 +154,7 @@ export default function MonthlyDistributionReport(props) {
         const newTitle = isTotals ? <strong>{title}</strong> : title
         return (
             <TableRow className={ isTotals ? 'greenBackground' : 'rightText' } 
-                style={isTotals ? { backgroundColor: theme.palette.primary.light } : null} key={title}>
+                style={isTotals ? { backgroundColor: theme.palette.primary.light } : null}>
                 <style>
                     { `@media print { 
                             .greenBackground { 
@@ -190,7 +189,7 @@ export default function MonthlyDistributionReport(props) {
 
     function RenderDay(totals) {
         return (
-            <React.Fragment>
+            <React.Fragment key={totals["day"]}>
                 <TableRow>
                     <TableCell className='centerText' align="center" colSpan={13}>
                         <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>

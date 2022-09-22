@@ -44,7 +44,6 @@ export default function ReportsPage() {
             setReportActions(buttonCode);
         }
         if (foodType == "ALL") {
-            console.log(foodYearMonth)
             setReportHeading("ALL Services - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY') );
             setReportOpen(true);
             setReportBody(<AllMonthlyServicesReport month={foodYearMonth} />);
@@ -54,7 +53,6 @@ export default function ReportsPage() {
         if (foodType == "FOOD") {
             setReportHeading("Food Pantry - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY'));
             setReportOpen(true);
-            console.log(foodYearMonth)
             setReportBody(<MonthlyDistributionReport month={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
@@ -62,7 +60,6 @@ export default function ReportsPage() {
         if (foodType == "ETHNICITY") {
             setReportHeading("Ethnicity - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY'));
             setReportOpen(true);
-            console.log(foodYearMonth)
             setReportBody(<EthnicityReport yearMonth={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
@@ -73,7 +70,6 @@ export default function ReportsPage() {
         if (yearType == "FOOD") {
             setReportHeading("Food Pantry - Annual Report - " + moment(reportYear).format('YYYY'));
             setReportOpen(true);
-            console.log(reportYear)
             setReportBody(<AnnualDistributionReport year={reportYear} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
@@ -103,7 +99,6 @@ export default function ReportsPage() {
     }
 
     const handleReportYearChangeUpdated = (event) => {
-        console.log(event)
         handleReportYearChange(moment(event._d).format("YYYY"))
     }
 

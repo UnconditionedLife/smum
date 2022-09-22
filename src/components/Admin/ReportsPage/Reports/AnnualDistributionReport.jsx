@@ -128,12 +128,9 @@ export default function AnnualDistributionReport(props) {
             promises.push(dbGetValidSvcsByDateAsync(m.format('YYYY-MM'), "Food_Pantry"))
             monthsSvc.push(m.format('YYYYMM'))
         }
-        console.log(monthsSvc)
         Promise.all(promises).then(data => {
-            console.log(data)
             let monthGrid = {}
             for (let i = 0; i < data.length; i++) {
-                console.log(monthsSvc)
                 let servicedMonth = moment(monthsSvc[i], "YYYYMM").format('MMMM')
                 let svcs = data[i]
                 const servicesUSDA = svcs.filter(item => item.svcUSDA == "USDA" || item.svcUSDA == "Emergency")
@@ -143,7 +140,6 @@ export default function AnnualDistributionReport(props) {
                 const newData = {"usdaGrid": usdaGrid, "nonUsdaGrid": nonUsdaGrid}
                 monthGrid[servicedMonth] = [newData]
             }
-            console.log(monthGrid)
             let months = []
             for (const month in monthGrid) {
                 let usdaGridMonth = monthGrid[month].map(function (currentElement) {
@@ -161,7 +157,6 @@ export default function AnnualDistributionReport(props) {
                 months.push({"month": month, "usdaGrid": usdaGridMonth, "nonUsdaGrid": nonUsdaGridMonth, "usdaTotals": usdaTotals, 
                  "nonUsdaTotals": nonUsdaTotals, "totals": computeGridTotals([usdaTotals, nonUsdaTotals])})
             }
-            console.log(months)
             setMonthGrid(months)
             setYearTotals(computeGridTotals(months.map(month => month["totals"])))
             setUsdaTotals(computeGridTotals(months.map(month => month["usdaTotals"])))
@@ -210,7 +205,7 @@ export default function AnnualDistributionReport(props) {
 
     function RenderMonth(totals) {
         return (
-            <React.Fragment>
+            <React.Fragment key={totals["month"]}>
                 <TableRow>
                     <TableCell className='centerText' align="center" colSpan={13}>
                         <style>
@@ -223,9 +218,9 @@ export default function AnnualDistributionReport(props) {
                                 }`
                             }
                         </style>
-                        <box>
+                        <Box>
                             <strong>{totals["month"]}</strong>
-                        </box>
+                        </Box>
                     </TableCell>
                 </TableRow>
                 {RenderListTotals(totals["usdaTotals"], "USDA", false)}

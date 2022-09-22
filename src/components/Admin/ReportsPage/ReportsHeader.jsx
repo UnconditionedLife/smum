@@ -16,7 +16,6 @@ export default function ReportsHeader(props) {
     const { reportDate, reportType, reportCategory, columns, groupColumns } = props
 
 
-    console.log("DATE", reportDate )
 
 
     return (

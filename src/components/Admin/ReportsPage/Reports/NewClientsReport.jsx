@@ -26,17 +26,12 @@ export default function NewClientsReport(props) {
         }, 200)
     }
 
-    console.log("IN NEW CLIENT REPORT");
 
     function RunReport(){
         dbGetValidSvcsByDateAsync(moment(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
             .then(svcs => {
 
-                console.log("SVCS", svcs);
-
                 let firstSvcs = svcs.filter(item => item.svcFirst == true)
-
-                console.log("#firstSvcs", firstSvcs.length);
 
                 // let newClients = []
                 // let tempList = []
@@ -85,8 +80,6 @@ export default function NewClientsReport(props) {
                         setTotalNewClients(total)
                         setTotalNewHomeless(homeless)
                         setLoading(false)
-
-                        console.log("#CLIENTS", numNewClients); 
 
                     })
     }

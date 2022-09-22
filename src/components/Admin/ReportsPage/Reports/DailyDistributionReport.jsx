@@ -27,7 +27,6 @@ export default function DailyDistributionReport(props) {
     const reportDay = moment( props.day ).format("MMM. DD, YYYY").toLocaleUpperCase()
 
 
-    console.log("DAY", props.day)
 
 
     useEffect(()=>{
