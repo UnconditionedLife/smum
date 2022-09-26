@@ -39,7 +39,7 @@ export default function AnnualDistributionReport(props) {
                 "households": "1", "individuals": elem.individuals,
                 "children": elem.children, "adults": elem.adults,
                 "seniors": elem.seniors}
-            if (elem.homeless == "YES") {
+            if (elem.homeless == true) {
                 if (elem.individuals == 1) {
                     item["homelessHouseholds"] = "-"
                     item["homelessSingles"] = "1"

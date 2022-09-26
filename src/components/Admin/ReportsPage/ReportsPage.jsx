@@ -140,7 +140,9 @@ export default function ReportsPage() {
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleReportDayChangeUpdated }
                                 minDate={moment("2017-01-01")}
-                                maxDate={moment()} />
+                                maxDate={moment()} 
+                                inputFormat="MMM DD YYYY"
+                                />
                         </LocalizationProvider>
                         <Button onClick={runDailyReport} variant="contained" color="primary">Run</Button>
                         {/* used to patch senior count errors */}
