@@ -83,7 +83,7 @@ export function initCache() {
     dbGetSvcTypesAsync()
         .then( svcTypes => { 
             cachedSvcTypes = svcTypes;
-            console.log(svcTypes)
+            console.log("svcTypes", svcTypes)
         });
 }
 
@@ -366,12 +366,12 @@ export async function dbGetClientActiveSvcHistoryAsync(clientId){
 export async function dbGetAllClientSvcsAsync(clientId){
     console.log("GET ALL SVCS", clientId);
     const paramObj = { cid: clientId }
-    return await dbGetDataAsync("/clients/svcs/bycid/", paramObj)
-        .then(data => {
+    return await dbGetDataAsync("svcs", "/clients/svcs/bycid/", paramObj)
+        .then(svcs => {
             // console.log("DATA", data);
             // const activeSvcs = data.svcs.filter(item => item.svcValid === true)
             // const oldSvcs = activeSvcs
-            return data.svcs
+            return svcs
         })
 }
 
