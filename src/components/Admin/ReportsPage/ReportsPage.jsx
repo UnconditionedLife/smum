@@ -10,6 +10,7 @@ import moment from 'moment';
 import ReportDialog from './ReportDialog.jsx';
 import NewClientsReport from './Reports/NewClientsReport.jsx';
 import DailyDistributionReport from './Reports/DailyDistributionReport.jsx';
+import DailyFoodBankReport from './Reports/DailyFoodBankReport.jsx';
 import MonthlyDistributionReport from './Reports/MonthlyDistributionReport.jsx';
 import AnnualDistributionReport from './Reports/AnnualDistributionReport.jsx';
 import AllMonthlyServicesReport from './Reports/AllMonthlyServicesReport.jsx';
@@ -43,8 +44,15 @@ export default function ReportsPage() {
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
-        if (foodType == "ALL") {
-            setReportHeading("ALL Services - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY') );
+        if (foodType == "ALLTOTALS") {
+            setReportHeading("ALL Services Totals - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY') );
+            setReportOpen(true);
+            setReportBody(<AllMonthlyServicesReport month={foodYearMonth} />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+        if (foodType == "ALLBYDAY") {
+            setReportHeading("ALL Services By Day - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY') );
             setReportOpen(true);
             setReportBody(<AllMonthlyServicesReport month={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
@@ -84,6 +92,13 @@ export default function ReportsPage() {
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
+        if (dayType == "FOODBANK") {
+            setReportHeading("Food Bank - Daily Report - " + moment(reportDay).format('MMM DD YYYY'));
+            setReportOpen(true);
+            setReportBody(<DailyFoodBankReport day={ reportDay } />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
     }
 
     const runServicePatch = () => {
@@ -115,6 +130,7 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
+                                <MenuItem value="FOODBANK">Food Bank EFA7</MenuItem>
                         </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterMoment } >
@@ -137,7 +153,8 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
-                                <MenuItem value="ALL">All Services</MenuItem>
+                                <MenuItem value="ALLTOTALS">All Services Totals</MenuItem>
+                                <MenuItem value="ALLBYDAY">All Services By Day</MenuItem>
                                 <MenuItem value="NEWCLIENT">New Clients By Zip</MenuItem>
                                 <MenuItem value="ETHNICITY">Clients By Ethnicity</MenuItem>
                         </Select>
