@@ -1,6 +1,8 @@
 import moment from 'moment';
 // import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils.js';
-import { dbGetClientActiveServiceHistoryAsync, dbSaveSvcAsync, dbMigrateSvcTypeAsync, dbGetOldSvcTypesAsync, getSvcTypes } from '../../System/js/Database.js';
+import { dbGetAllClientSvcsAsync, dbGetClientActiveServiceHistoryAsync, 
+        dbSaveSvcAsync, dbMigrateSvcTypeAsync, dbGetOldSvcTypesAsync, getSvcTypes,
+        dbGetSingleClientAsync } from '../../System/js/Database.js';
 import { beepError } from './GlobalUtils.js';
 
 
@@ -99,75 +101,120 @@ function transformSvcRecord(svc){
     }
 }
 
-async function getClientSvcs(i) { // 3
+// async function getOldClientSvcs(i) { // 3
+//     await sleep(2000);
+//     console.log("Insert Client:", i);
+//     dbGetClientActiveServiceHistoryAsync(i)
+//             .then(svcRecs => {
+
+// console.log("SVCS", svcRecs)
+
+//             // check for duplicate svcId(s)
+//             const seen = []
+//             svcRecs.forEach((obj, x) => {
+//                 if (seen.includes(obj.serviceId)) {
+//                     // Duplicate
+//                     const dups = svcRecs.filter(s => s.serviceId === obj.serviceId);
+//                     if (dups.length > 2) { beepError; console.log("***ERROR MORE THAN TWO DUPLICATES***") }
+//                     if (obj.serviceValid === "true") svcRecs[x].serviceId = obj.serviceId + "-new"
+//                     if (obj.serviceValid === "false") svcRecs[x].serviceId = obj.serviceId + "-old"
+
+//                     console.log("FOUND DUP", dups )
+
+//                 } else {
+//                     seen.push(obj.serviceId)
+//                 }
+//             });
+
+//             // Sort assending to check for first food service
+//             svcRecs = svcRecs.sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
+
+//             let foundFirstFood = false
+//             let state = true
+        
+//             svcRecs.every(( svc, index ) => {
+//                 if (foundFirstFood === false) {
+//                     // check to see if it's one of the food services
+//                     if (( svc.serviceOldTypeId === "c2e6fbfcd32adcfdyht56a14c166d0b304da3aa32") ||
+//                         ( svc.serviceOldTypeId === "cj86davnj00013k7zi3715rf4") ||
+//                         ( svc.serviceOldTypeId === "cjd3tc95v00003i8ex6gltfjl" )
+//                         )
+//                         {
+//                             if (svc.serviceValid === "true") {
+//                                 svcRecs[index].svcFirst = true
+//                                 foundFirstFood = true
+//                             }
+//                         }
+//                 }
+//                 const newSvc = transformSvcRecord(svc)
+//                 // console.log(index+1)
+//                 // console.log(JSON.stringify(newSvc))
+//                 if (newSvc.svcDT !== "Invalid date") {
+
+//                     // console.log(moment(newSvc.svcDT).year(), 2022);
+
+//                     // if (moment(newSvc.svcDT).year() === 2020) {
+//                     if ( svc.serviceTypeId === "cjem7yi0z05183iacs4mjuev6") {
+//                         dbSaveSvcAsync(newSvc)
+//                             .then(() => {
+//                                 console.log("SAVED " + newSvc.cId);
+//                             })
+//                             .catch(() => {
+//                                 // use to break out of loop if error in dbSave *** BREAK IS NOT WORKING
+//                                 console.log("*** SAVE ERROR ABORTING AT " + newSvc.cId + " ***")
+//                                 state = false
+//                             }) 
+//                     }
+//                 }
+//                 return state;
+//             });
+//         })
+// }
+
+
+// *** USED TO UPDATE EXISTING SVC RECORDS ***
+async function getNewClientSvcs(i) { // 3
     await sleep(2000);
     console.log("Insert Client:", i);
-    dbGetClientActiveServiceHistoryAsync(i)
-            .then(svcRecs => {
-
-console.log("SVCS", svcRecs)
-
-            // check for duplicate svcId(s)
-            const seen = []
-            svcRecs.forEach((obj, x) => {
-                if (seen.includes(obj.serviceId)) {
-                    // Duplicate
-                    const dups = svcRecs.filter(s => s.serviceId === obj.serviceId);
-                    if (dups.length > 2) { beepError; console.log("***ERROR MORE THAN TWO DUPLICATES***") }
-                    if (obj.serviceValid === "true") svcRecs[x].serviceId = obj.serviceId + "-new"
-                    if (obj.serviceValid === "false") svcRecs[x].serviceId = obj.serviceId + "-old"
-
-                    console.log("FOUND DUP", dups )
-
-                } else {
-                    seen.push(obj.serviceId)
-                }
-            });
-
-            // Sort assending to check for first food service
-            svcRecs = svcRecs.sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
-
-            let foundFirstFood = false
-            let state = true
+    dbGetSingleClientAsync(i).then(client => {
         
-            svcRecs.every(( svc, index ) => {
-                if (foundFirstFood === false) {
-                    // check to see if it's one of the food services
-                    if (( svc.serviceOldTypeId === "c2e6fbfcd32adcfdyht56a14c166d0b304da3aa32") ||
-                        ( svc.serviceOldTypeId === "cj86davnj00013k7zi3715rf4") ||
-                        ( svc.serviceOldTypeId === "cjd3tc95v00003i8ex6gltfjl" )
-                        )
-                        {
-                            if (svc.serviceValid === "true") {
-                                svcRecs[index].svcFirst = true
-                                foundFirstFood = true
-                            }
+        console.log("client", client)
+
+        dbGetAllClientSvcsAsync(i)
+                .then(svcs => {
+
+console.log("SVCS", svcs)
+
+
+                // Sort assending to check for first food service
+                const svcRecsAss = svcs.sort((a, b) => moment.utc(a.svcDT).diff(moment.utc(b.svcDT)))
+
+                let foundFirstFood = false
+            
+                svcRecsAss.forEach(( svc ) => {
+                    if (foundFirstFood === false) {
+                        // check to see if it's one of the food services
+                        if ( svc.svcCat === "Food_Pantry" && svc.svcValid == true) {
+                            svc.svcFirst = true
+                            foundFirstFood = true
                         }
-                }
-                const newSvc = transformSvcRecord(svc)
-                // console.log(index+1)
-                // console.log(JSON.stringify(newSvc))
-                if (newSvc.svcDT !== "Invalid date") {
-
-                    // console.log(moment(newSvc.svcDT).year(), 2022);
-
-                    // if (moment(newSvc.svcDT).year() === 2020) {
-                    if ( svc.serviceTypeId === "cjem7yi0z05183iacs4mjuev6") {
-                        dbSaveSvcAsync(newSvc)
-                            .then(() => {
-                                console.log("SAVED " + newSvc.cId);
-                            })
-                            .catch(() => {
-                                // use to break out of loop if error in dbSave *** BREAK IS NOT WORKING
-                                console.log("*** SAVE ERROR ABORTING AT " + newSvc.cId + " ***")
-                                state = false
-                            }) 
                     }
-                }
-                return state;
-            });
+
+                    svc.cEthnicGrp = client.ethnicGroup
+
+                    dbSaveSvcAsync(svc)
+                        .then(() => {
+                            console.log("SAVED " + svc.cId);
+                        })
+                        .catch(() => {
+                            console.log("*** SAVE ERROR " + svc.cId + " ***")
+                        }) 
+                    
+                })
+            })
         })
 }
+
 
 function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 
@@ -177,7 +224,16 @@ export async function MoveSvcsTableRecordsAsync(startId, endId) {
     for (let i = startId; i < endId+1; i++) {
         console.log("CLIENT:", i)
         // wait for the sleep period between client service
-        await getClientSvcs(i)
+        await getOldClientSvcs(i)
+    }    
+}
+
+export async function UpdateSvcRecordsAsync(startId, endId) {
+
+    for (let i = startId; i < endId+1; i++) {
+        console.log("CLIENT:", i)
+        // wait for the sleep period between client service
+        await getNewClientSvcs(i)
     }    
 }
 

@@ -3,7 +3,7 @@ import { Box, Switch } from '@mui/material';
 import { Typography, Button } from '../System';
 import { dbSetUrl } from '../System/js/Database';
 import { prnTest } from '../System/js/Clients/Receipts';
-// import { MoveSvcsTableRecordsAsync } from "../System/js/MoveSvcsTable";
+import { MoveSvcsTableRecordsAsync, UpdateSvcRecordsAsync } from "../System/js/MoveSvcsTable";
 
 export default function DbSwitch() {
     const [switchOn, setSwitchOn] = React.useState(false);
@@ -43,7 +43,7 @@ export default function DbSwitch() {
             </Button>
 
             {/* ************************************************************* */}
-            {/* Migrate dev-smum-services table to new dev-svcs-table */}
+            {/* Migrate dev-smum-services table to new dev-smum-svcs table */}
             {/* <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
             style = {{ marginRight: '100px' }} 
             onClick={ () => MoveSvcsTableRecordsAsync(1, 6800) } >
@@ -52,7 +52,15 @@ export default function DbSwitch() {
             {/* ************************************************************* */}
 
             {/* ************************************************************* */}
-            {/* Migrate dev-smum-services table to new dev-svcs-table */}
+            {/* Udate dev-smum-svcs to include svcFirst & cEthnicGrp */}
+            <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" style = {{ marginRight: '100px' }} 
+            onClick={ () => UpdateSvcRecordsAsync(8880, 8900) } >
+                    UpDate Svcs
+            </Button>
+            {/* ************************************************************* */}
+
+            {/* ************************************************************* */}
+            {/* Migrate dev-smum-servicetypes table to new dev-smum-svcstypes table */}
             {/* <Button key="moveSvcTypes" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
             style = {{ marginRight: '100px' }} 
             onClick={ () => MoveSvcTypeTableRecords() } >
