@@ -117,7 +117,7 @@ export default function ClientsMain(props) {
                 dbGetClientActiveSvcHistoryAsync(newClient.clientId)
                     .then( svcHistory => { 
 
-                        console.log(svcHistory)
+                        // console.log(svcHistory)
 
                         newClient.svcHistory = svcHistory
                         setClient(newClient)

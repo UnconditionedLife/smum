@@ -34,8 +34,8 @@ export default function PrimaryButtons(props) {
     // const handleAddSvc = props.handleAddSvc
     // const handleUndoSvc = props.handleUndoSvc
 
-console.log("AST", activeServiceTypes);
-console.log("TARGET SVCS", targetServices);
+// console.log("AST", activeServiceTypes);
+// console.log("TARGET SVCS", targetServices);
 
     const [ buttons, setButtons ] = useState([]);
 

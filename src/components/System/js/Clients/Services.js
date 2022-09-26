@@ -196,7 +196,7 @@ export function getLastServedFood(client){
 		}
 	})
 
-    console.log("LAST SERVED FOOD", lastServedFood);
+    // console.log("LAST SERVED FOOD", lastServedFood);
 
 	return lastServedFood
 }
@@ -299,7 +299,7 @@ function getActiveServicesButtons( props ) {
     const intervals = getFoodInterval(activeServiceTypes)
 
 
-    console.log('CLIENT', client);
+    // console.log('CLIENT', client);
 
     // check for not a valid service based on interval between services  
 	activeServiceTypes.forEach((svcType, i) => {
