@@ -24,7 +24,7 @@ export default function DailyDistributionReport(props) {
 
     const theme = useTheme()
     const greenBackground = { backgroundColor: theme.palette.primary.light }
-    const reportDay = moment( props.day ).format("MMM. DD, YYYY").toLocaleUpperCase()
+    const reportDay = moment( props.day ).format("MMM DD, YYYY").toLocaleUpperCase()
 
 
 
@@ -42,7 +42,7 @@ export default function DailyDistributionReport(props) {
                 "households": "1", "individuals": elem.individuals,
                 "children": elem.children, "adults": elem.adults,
                 "seniors": elem.seniors}
-            if (elem.homeless == "YES") {
+            if (elem.homeless == true) {
                 if (elem.individuals == 1) {
                     item["homelessHouseholds"] = "-"
                     item["homelessSingles"] = "1"
@@ -213,7 +213,7 @@ export default function DailyDistributionReport(props) {
                         {"name": "Clients Served", "length": 5}, 
                         {"name": "Homeless", "length": 2}, 
                         {"name":"NonClients", "length": 2}]}
-                    columns={["ID", "Given", "Family", "Zip", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Hholds", "Indiv", "Hholds", "Indiv"]} />
+                    columns={["ID", "Given", "Family", "Zip", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Families", "Indiv", "Families", "Indiv"]} />
             <TableBody>
             {loading ? (
                 <TableRow>

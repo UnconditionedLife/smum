@@ -42,7 +42,7 @@ export default function MonthlyDistributionReport(props) {
                 "households": "1", "individuals": elem.individuals,
                 "children": elem.children, "adults": elem.adults,
                 "seniors": elem.seniors}
-            if (elem.homeless == "YES") {
+            if (elem.homeless == true) {
                 if (elem.individuals == 1) {
                     item["homelessHouseholds"] = "-"
                     item["homelessSingles"] = "1"
@@ -222,7 +222,7 @@ export default function MonthlyDistributionReport(props) {
                         {"name": "Clients Serviced", "length": 5}, 
                         {"name": "Homeless", "length": 2}, 
                         {"name":"NonClients", "length": 2}]}
-                    columns={["USDA/Non USDA", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Hholds", "Indiv", "Hholds", "Indiv"]} />
+                    columns={["USDA/Non USDA", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Families", "Indiv", "Families", "Indiv"]} />
             <TableBody>
             {loading ? (
                 <TableRow>
