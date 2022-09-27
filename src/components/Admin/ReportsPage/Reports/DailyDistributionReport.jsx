@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
 import moment from 'moment';
-import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
+import { dbGetAllSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 
 DailyDistributionReport.propTypes = {
@@ -15,19 +15,17 @@ export default function DailyDistributionReport(props) {
     "children": 0, "adults": 0,
     "seniors": 0, "homelessHouseholds": 0, "homelessSingles": 0,
     "nonClientHouseholds": 0, "nonClientSingles": 0}
+    const [canceledFood, setCanceledFood] = useState([])
     const [servicesUSDA, setServicesUSDA] = useState([])
     const [servicesNonUSDA, setServicesNonUSDA] = useState([])
     const [totalsUSDA, setTotalsUSDA] = useState(defaultTotals)
     const [totalsNonUSDA, setTotalsNonUSDA] = useState(defaultTotals)
     const [totalsDay, setTotalsDay] = useState(defaultTotals)
     const [loading, setLoading] = useState(true)
-
     const theme = useTheme()
     const greenBackground = { backgroundColor: theme.palette.primary.light }
+    const redBackground = { backgroundColor: theme.palette.error.light }
     const reportDay = moment( props.day ).format("MMM DD, YYYY").toLocaleUpperCase()
-
-
-
 
     useEffect(()=>{
         RunReport()
@@ -96,14 +94,14 @@ export default function DailyDistributionReport(props) {
     }
 
     function RunReport() {
-        dbGetValidSvcsByDateAsync(moment(props.day).format('YYYY-MM'), "Food_Pantry", moment(props.day).format('YYYY-MM-DD'))
+        dbGetAllSvcsByDateAsync(moment(props.day).format('YYYY-MM'), "Food_Pantry", moment(props.day).format('YYYY-MM-DD'))
             .then(svcs => {
-                const servicesFood = svcs
-                    // .filter(item => item.svcValid == 'true')
-                    //.filter(item => item.svcCat == "Food_Pantry")
-                    // .sort((a, b) => moment.utc(a.svcDT).diff(moment.utc(b.svcDT)))
-                const servicesUSDA = servicesFood.filter(item => item.svcUSDA == "USDA" || item.svcUSDA == "Emergency")
-                const servicesNonUSDA = servicesFood.filter(item => item.svcUSDA == "NonUSDA")
+                // const servicesFood = svcs
+                const activeFood = svcs.filter(item => item.svcValid == true)
+                const canceledSvcs = svcs.filter(item => item.svcValid == false)
+                const canceledGrid = ListToGrid(canceledSvcs)
+                const servicesUSDA = activeFood.filter(item => item.svcUSDA == "USDA" || item.svcUSDA == "Emergency")
+                const servicesNonUSDA = activeFood.filter(item => item.svcUSDA == "NonUSDA")
                 const usdaGrid = ListToGrid(servicesUSDA)
                 const nonUsdaGrid = ListToGrid(servicesNonUSDA)
                 const usdaTotals = computeGridTotals(usdaGrid)
@@ -111,6 +109,7 @@ export default function DailyDistributionReport(props) {
                 const dayTotals = computeGridTotals([usdaTotals, nonUsdaTotals])
                 setServicesUSDA(usdaGrid)
                 setServicesNonUSDA(nonUsdaGrid)
+                setCanceledFood(canceledGrid)
                 setTotalsUSDA(usdaTotals)
                 setTotalsNonUSDA(nonUsdaTotals)
                 setTotalsDay(dayTotals)
@@ -252,6 +251,38 @@ export default function DailyDistributionReport(props) {
                 </TableCell>
             </TableRow>
             {RenderListTotals(totalsDay, "Day Grand Totals")}
+            <TableRow>
+                <TableCell className='centerText' align="center" colSpan={13}>
+                    <style>
+                        {`@media print { 
+                            .centerText { 
+                                text-align: center;
+                                font-size: 14px;
+                                }
+                            }`
+                        }
+                    </style>
+                    <strong>•</strong>
+                </TableCell>
+            </TableRow>
+            <TableRow className='redBackground'>
+                <style>
+                    {`@media print { 
+                        .greenBackground { 
+                            background-color: rgb(104, 179, 107);
+                            text-align: right;
+                            -webkit-print-color-adjust: exact;
+                            break-before: avoid-page;
+                            break-after: avoid-page;
+                            }
+                        }`
+                    }
+                </style>
+                <TableCell style={ redBackground } align="center" colSpan={13}>
+                    <strong>DAY CANCELED SERVICES</strong>
+                </TableCell>
+            </TableRow>
+            {RenderSvcList(canceledFood)}
             </TableBody>
             </Table>
         </TableContainer>

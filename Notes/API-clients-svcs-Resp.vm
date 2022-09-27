@@ -4,7 +4,8 @@
 #set($p = "[|]") ## brackes escape the special character
 
 {
-    "count": $inputRoot.Count,
+    #if($inputRoot.Count != '')"count": $inputRoot.Count,#end
+    #if($inputRoot.LastEvaluatedKey != '')"LastEvaluatedKey": "$inputRoot.LastEvaluatedKey",#end
     "svcs": [
         #foreach($elem in $inputRoot.Items) {
             #set($a = $elem.svcCatDTId.S.split($p))
@@ -14,6 +15,8 @@
             "cGivName": #if($elem.cGivName.S)"$elem.cGivName.S"#else""#end,
             "cId": "$elem.cId.S",
             "cStatus": "$elem.cStatus.S",
+            "cEthnicGrp": #if($elem.cEthnicGrp.S)"$elem.cEthnicGrp.S"#else""#end,
+            "cStreet": #if($elem.cStreet.S)"$elem.cStreet.S"#else""#end,
             "cZip": #if($elem.cZip.S)"$elem.cZip.S"#else""#end,
             "fillBy": #if($elem.fillBy.S)"$elem.fillBy.S"#else""#end,
             "fillDT": #if($elem.fillDT.S)"$elem.fillDT.S"#else""#end,

@@ -452,6 +452,17 @@ export async function dbSaveSvcAsync(svc) {
 
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
+export async function dbGetAllSvcsByDateAsync(month, svcCat, date) {
+    const paramObj = { month: month }
+    if (svcCat) paramObj.svccat = svcCat
+    if (date) paramObj.date = date
+
+    return await dbGetDataAsync("svcs", "/clients/svcs/bymonth", paramObj)
+        .then(svcs => {
+            return svcs
+        })
+}
+
 export async function dbGetValidSvcsByDateAsync(month, svcCat, date) {
     const paramObj = { month: month }
     if (svcCat) paramObj.svccat = svcCat

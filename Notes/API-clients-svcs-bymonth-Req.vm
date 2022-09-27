@@ -24,5 +24,5 @@ SORT KEY: svcCatDTId
 
 PROJECTED ATTRIBUTES:
 
-cFamName, cZip, seniors, cStatus, svcName, homeless, children, individuals, svcFirst, 
+cFamName, cZip, cStreet, seniors, cStatus, svcName, homeless, children, individuals, svcFirst, 
 svcValid, svcItems, svcTypeId, cId, cGivName, adults, svcUSDA, cEthnicGrp

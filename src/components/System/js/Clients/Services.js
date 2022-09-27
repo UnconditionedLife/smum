@@ -618,6 +618,7 @@ function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
 		cGivName: client.givenName,
 		cFamName: client.familyName,
         cEthnicGrp: client.ethnicGroup,
+        cStreet: client.street,
 		cZip: client.zipcode,
 		svcBy: getUserName(),
 		svcTypeId: svcType.svcTypeId,

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
 import moment from 'moment';
-import { dbSearchClientsAsync, dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
+import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 
 DailyDistributionReport.propTypes = {
@@ -24,7 +24,7 @@ export default function DailyDistributionReport(props) {
 
     const theme = useTheme()
     const greenBackground = { backgroundColor: theme.palette.primary.light }
-    const reportDay = moment( props.day ).format("MMM. DD, YYYY").toLocaleUpperCase()
+    const reportDay = moment( props.day ).format("MMM DD, YYYY").toLocaleUpperCase()
 
 
 
@@ -39,6 +39,8 @@ export default function DailyDistributionReport(props) {
             let item = {"svcId": elem.svcId,
                 "id": elem.cId, "given": elem.cGivName,
                 "family": elem.cFamName, "zipcode": elem.cZip, 
+                "street": (elem.cStreet == "(8)") ? "(homeless)": elem.cStreet,
+                
                 "households": "1", "individuals": elem.individuals,
                 "children": elem.children, "adults": elem.adults,
                 "seniors": elem.seniors}
@@ -92,7 +94,9 @@ export default function DailyDistributionReport(props) {
         return gridList.reduce(function(previousValue, currentValue) {
             const usda = (currentValue.USDA == "YES") ? 1 : 0
             const nonusda = (currentValue.NonUSDA == "NO") ? 1 : 0
-            return { "adults": svcNumberToInt(previousValue.adults) + svcNumberToInt(currentValue.adults), 
+            const adults = svcNumberToInt(currentValue.adults + currentValue.seniors)
+
+            return { "adults": svcNumberToInt(previousValue.adults) + adults, 
                     "children": svcNumberToInt(previousValue.children) + svcNumberToInt(currentValue.children), 
                     "USDA": previousValue.USDA + usda,
                     "NonUSDA": previousValue.NonUSDA + nonusda }
@@ -102,47 +106,6 @@ export default function DailyDistributionReport(props) {
     function RunReport() {
         dbGetValidSvcsByDateAsync(moment(props.day).format('YYYY-MM'), "Food_Pantry", moment(props.day).format('YYYY-MM-DD'))
             .then(svcs => {
-
-//                 const svcsWithStreet = Object.assign([],svcs)
-
-//                 svcs.forEach( (svc, i) => {
-//                     if (!svcsWithStreet[i].street){
-//                         dbSearchClientsAsync(svc.cId)
-//                             .then( client =>{
-//                                 console.log("client", client);
-
-//                                 svcs.forEach( (svcSt, index ) => {
-//                                     if (svcSt.cId === client.clientId) {
-//                                         svcsWithStreet[index].street = client.street
-//                                         console.log("SVCw/street", svcsWithStreet[index]);
-//                                     }
-//                                 })
-//                         })
-//                     }
-//                 })
-
-// console.log("array1",svcs );                
-// console.log("array2",svcsWithStreet );
-
-//                 const lastSvcIndex = svcsWithStreet.length - 1
-
-// console.log("index",lastSvcIndex );
-
-//                 let hasStreet = false
-
-//                 while (!hasStreet) {
-//                     const lastSvc = svcsWithStreet[lastSvcIndex]
-
-// console.log("lastSvc",lastSvc );                    
-
-//                     const keys = Object.keys(lastSvc)
-//                     hasStreet = keys.includes("street") 
-
-//                     const waiting = true
-//                     console.log("waiting", waiting);
-//                 }
-
-//                 console.log(svcsWithStreet);
                 const servicesFood = svcs
                 const foodGrid = ListToGrid(servicesFood)
                 const foodTotals = computeGridTotals(foodGrid)
@@ -184,8 +147,8 @@ export default function DailyDistributionReport(props) {
                 <style> { `@media print { .leftText { text-align: left; font-size: 14px; } }` } </style>
                 {svc.family}
             </TableCell>
-            <TableCell align="right">{svc.street}</TableCell>
-            <TableCell align="right">{svc.zipcode}</TableCell>
+            <TableCell align="left">{svc.street}</TableCell>
+            <TableCell align="left">{svc.zipcode}</TableCell>
             <TableCell align="center">{svc.adults}</TableCell>
             <TableCell align="center">{svc.children}</TableCell>
             <TableCell align="center">{svc.USDA}</TableCell>
