@@ -42,8 +42,8 @@ export default function DailyDistributionReport(props) {
                 "street": (elem.cStreet == "(8)") ? "(homeless)": elem.cStreet,
                 
                 "households": "1", "individuals": elem.individuals,
-                "children": elem.children, "adults": elem.adults,
-                "seniors": elem.seniors}
+                "children": elem.children, 
+                "adults": svcNumberToInt(elem.adults) + svcNumberToInt(elem.seniors) }
             if (elem.homeless == "YES") {
                 if (elem.individuals == 1) {
                     item["homelessHouseholds"] = "-"
@@ -94,9 +94,8 @@ export default function DailyDistributionReport(props) {
         return gridList.reduce(function(previousValue, currentValue) {
             const usda = (currentValue.USDA == "YES") ? 1 : 0
             const nonusda = (currentValue.NonUSDA == "NO") ? 1 : 0
-            const adults = svcNumberToInt(currentValue.adults + currentValue.seniors)
 
-            return { "adults": svcNumberToInt(previousValue.adults) + adults, 
+            return { "adults": svcNumberToInt(previousValue.adults) + svcNumberToInt(currentValue.adults), 
                     "children": svcNumberToInt(previousValue.children) + svcNumberToInt(currentValue.children), 
                     "USDA": previousValue.USDA + usda,
                     "NonUSDA": previousValue.NonUSDA + nonusda }
