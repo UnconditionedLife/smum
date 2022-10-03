@@ -14,6 +14,8 @@ import DailyFoodBankReport from './Reports/DailyFoodBankReport.jsx';
 import MonthlyDistributionReport from './Reports/MonthlyDistributionReport.jsx';
 import AnnualDistributionReport from './Reports/AnnualDistributionReport.jsx';
 import AllMonthlyServicesReport from './Reports/AllMonthlyServicesReport.jsx';
+import AllServicesByDayReport from './Reports/AllServicesByDayReport.jsx';
+
 import { PatchSeniorCountInServiceDay } from '../../System/js/Patch';
 import EthnicityReport from './Reports/EthnicityReport.jsx';
 
@@ -54,7 +56,7 @@ export default function ReportsPage() {
         if (foodType == "ALLBYDAY") {
             setReportHeading("ALL Services By Day - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY') );
             setReportOpen(true);
-            setReportBody(<AllMonthlyServicesReport month={foodYearMonth} />);
+            setReportBody(<AllServicesByDayReport month={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
@@ -93,7 +95,7 @@ export default function ReportsPage() {
             setReportActions(buttonCode);
         }
         if (dayType == "FOODBANK") {
-            setReportHeading("Food Bank - Daily Report - " + moment(reportDay).format('MMM DD YYYY'));
+            setReportHeading("Food Bank EFA 7 - Daily Report - " + moment(reportDay).format('MMM DD YYYY'));
             setReportOpen(true);
             setReportBody(<DailyFoodBankReport day={ reportDay } />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
@@ -130,7 +132,7 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
-                                <MenuItem value="FOODBANK">Food Bank EFA7</MenuItem>
+                                <MenuItem value="FOODBANK">Food Bank EFA 7</MenuItem>
                         </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterMoment } >

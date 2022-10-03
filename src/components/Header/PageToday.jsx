@@ -1,20 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import moment from 'moment';
-import { Box, CardContent, CardHeader, Fab, Tooltip } from '@mui/material';
+import React, { useRef } from 'react';
+import { Box, CardActions, CardContent, Fab, Tooltip } from '@mui/material';
 import { Card } from '../System';
 import DailyDistributionReport from '../Admin/ReportsPage/Reports/DailyDistributionReport.jsx';
+import DailyFoodBankReport from '../Admin/ReportsPage/Reports/DailyFoodBankReport.jsx';
 import ReactToPrint from 'react-to-print';
 import { Print } from '@mui/icons-material';
 
 export default function PageToday() {
-    const [ reportDay ] = useState(moment().format('YYYYMMDD'))
-    const [ reportHeading, setReportHeading ] = useState('')
-    const [ reportBody, setReportBody ] = useState(null)
-
-    useEffect(() => {
-        setReportHeading("Today " + moment(reportDay).format('MMM, DD, YYYY') + " Report");
-        setReportBody(<DailyDistributionReport/>);
-    }, [reportDay])
     const ref = useRef()
     const getPageMargins = () => {
         return `@page { margin: 20px 20px 40px 20px; }`;
@@ -23,20 +15,33 @@ export default function PageToday() {
     return (
         <React.Fragment>
         <Card>
-            <CardHeader>{ reportHeading }</CardHeader>
             <CardContent>
-                <Box ref={ref}>{ reportBody }</Box>
-                <Box display='flex' justifyContent="right">
-                    <ReactToPrint
-                        trigger={() => <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
-                        content={() => ref.current}
-                        copyStyles={ false }
-                        pageStyle={ getPageMargins() }
-                    />
+                <Box ref={ref}>
+                    <Box mb={4}><DailyDistributionReport/></Box>
+                    <style>
+                        {`@media print { 
+                            .break { 
+                                break-before: avoid-page;
+                                break-after: avoid-page;
+                                page-break-before: always;
+                                }
+                            }`
+                        }
+                    </style>
+                    <Box className="break">
+                        <DailyFoodBankReport />
+                    </Box>
                 </Box>
             </CardContent>
+            <CardActions style={{display:"flex", justifyContent:"flex-end"}}>
+                <ReactToPrint
+                    trigger={() => <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
+                    content={() => ref.current}
+                    copyStyles={ false }
+                    pageStyle={ getPageMargins() }
+                />
+            </CardActions>
         </Card>
-  
         </React.Fragment>
     );
 }   

@@ -6,11 +6,11 @@ import moment from 'moment';
 import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 
-AllMonthlyServicesReport.propTypes = {
+AllServicesByDayReport.propTypes = {
     month: PropTypes.string
 }
 
-export default function AllMonthlyServicesReport(props) {
+export default function AllServicesByDayReport(props) {
     const [aggregatedTotals, setAggregatedTotals] = useState({})
     const [loading, setLoading] = useState(true)
 
@@ -30,7 +30,7 @@ export default function AllMonthlyServicesReport(props) {
         })
         return grid
     }
-
+    
     function svcNumberToInt(svcNumber) {
         return isNaN(svcNumber) ? 0 :  parseInt(svcNumber)
     }
@@ -56,20 +56,32 @@ export default function AllMonthlyServicesReport(props) {
 
     function RunReport() {
         dbGetValidSvcsByDateAsync(moment(props.month).format('YYYY-MM')) .then(svcs => {
-            let svcsCatGrid = {}
+            const svcsGroupBy = svcs.reduce(function (r, a) {
+                const key = a.svcDT.substring(0 ,10)
+                r[key] = r[key] || [];
+                r[key].push(a);
+                return r;
+            }, Object.create(null));
+            console.log(svcsGroupBy)
+            let svcsDayGrid = {}
 
-            svcs.forEach(svc => {
-                if (!svcsCatGrid[svc.svcCat]) {
-                    svcsCatGrid[svc.svcCat] = {}
-                }
-                if (!svcsCatGrid[svc.svcCat][svc.svcName]) {
-                    svcsCatGrid[svc.svcCat][svc.svcName] = []
-                }
-                svcsCatGrid[svc.svcCat][svc.svcName].push(svc)
-            })
+            for (const [servicedDay, svcs] of Object.entries(svcsGroupBy)) {
+                svcs.forEach(svc => {
+                    console.log(servicedDay)
+                    console.log(svc)
+                    if (!svcsDayGrid[servicedDay]) {
+                        svcsDayGrid[servicedDay] = {}
+                    }
+                    if (!svcsDayGrid[servicedDay][svc.svcName]) {
+                        svcsDayGrid[servicedDay][svc.svcName] = []
+                    }
+                    svcsDayGrid[servicedDay][svc.svcName].push(svc)
+                })
+            }
 
-            let aggregatedTotals = buildTotalsDict(svcsCatGrid)
+            let aggregatedTotals = buildTotalsDict(svcsDayGrid)
             setAggregatedTotals(aggregatedTotals)
+            console.log(aggregatedTotals)
             setLoading(false)
         })
     }
@@ -88,50 +100,39 @@ export default function AllMonthlyServicesReport(props) {
                 </style>
                 <ReportsHeader reportDate={ reportMonth }
                     reportType="MONTHLY REPORT"
-                    reportCategory="ALL SERVICES TOTALS"
-                    groupColumns={[{"name": "Category", "length": 1}, 
-                        {"name": "Service", "length": 1}, 
-                        {"name": "Households", "length": 1}, 
-                        {"name":"Individuals", "length": 1},
-                        {"name":"Items", "length": 1}
-                    ]}
-                    columns={["", "", "", "", ""]} />
+                    reportCategory="ALL SERVICES BY DAY"
+                    groupColumns={[{"name": "Service", "length": 1}, 
+                    {"name": "Households", "length": 1}, 
+                    {"name":"Individuals", "length": 1},
+                    {"name":"Items", "length": 1}]}
+                    columns={["", "", "", ""]} />
             <TableBody>
             {loading ? (
                 <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={5}>
+                    <TableCell className='centerText' align="center" colSpan={13}>
                         <CircularProgress color="secondary" />
                     </TableCell>
                 </TableRow>) : null}
-            {Object.keys(aggregatedTotals).map(key => {
+            {Object.keys(aggregatedTotals).map(day => {
                 return (
-                <React.Fragment key={key}>
-                <TableRow className="greenBackground" style={{backgroundColor: theme.palette.primary.light }}>
-                    <style>
-                        { `@media print { 
-                                .greenBackground { 
-                                    text-align: left;
-                                    background-color: rgb(104, 179, 107);
-                                    -webkit-print-color-adjust: exact;
-                                    font-size: 14px;
-                                }
-                            }`
-                        }
-                    </style>
-                    <TableCell className='centerText' align="left" colSpan={5}>
-                        <strong>{ key }</strong>
-                    </TableCell>
-                </TableRow>
-                    {Object.keys(aggregatedTotals[key]).map(key2 => {
-                        return (<TableRow key={key2}>
-                            <TableCell></TableCell>
-                            <TableCell>{key2}</TableCell>
-                            <TableCell>{aggregatedTotals[key][key2].households}</TableCell>
-                            <TableCell>{aggregatedTotals[key][key2].individuals}</TableCell>
-                            <TableCell>{aggregatedTotals[key][key2].itemsServed}</TableCell>
-                        </TableRow>)
-                    })}
-                </React.Fragment>)
+                    <React.Fragment key={day}>
+                        <TableRow>
+                            <TableCell className='centerText' align="center" colSpan={4}>
+                                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
+                                <strong>{ moment(day).format('MMM DD YYYY') }</strong>
+                            </TableCell>
+                        </TableRow>
+                        {Object.keys(aggregatedTotals[day]).map(svcName => {
+                        return (
+                            <TableRow key={svcName+day}>
+                                <TableCell>{svcName}</TableCell>
+                                <TableCell>{aggregatedTotals[day][svcName].households}</TableCell>
+                                <TableCell>{aggregatedTotals[day][svcName].individuals}</TableCell>
+                                <TableCell>{aggregatedTotals[day][svcName].itemsServed}</TableCell>
+                            </TableRow>
+                        )})}
+                    </React.Fragment>
+                )
             })}
             </TableBody>
             </Table>
