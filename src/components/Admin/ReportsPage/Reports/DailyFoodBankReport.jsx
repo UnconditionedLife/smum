@@ -146,12 +146,30 @@ export default function DailyDistributionReport(props) {
                 <style> { `@media print { .leftText { text-align: left; font-size: 14px; } }` } </style>
                 {svc.family}
             </TableCell>
-            <TableCell align="left">{svc.street}</TableCell>
-            <TableCell align="left">{svc.zipcode}</TableCell>
-            <TableCell align="center">{svc.adults}</TableCell>
-            <TableCell align="center">{svc.children}</TableCell>
-            <TableCell align="center">{svc.USDA}</TableCell>
-            <TableCell align="center">{svc.NonUSDA}</TableCell>
+            <TableCell className='leftText' align="left">
+                <style> {  `@media print { .leftText { text-align: left; font-size: 14px; } }` } </style>
+                {svc.street}
+            </TableCell>
+            <TableCell className='leftText' align="left">
+                <style> { `@media print { .leftText { text-align: left; font-size: 14px; } }` } </style>
+                {svc.zipcode}
+            </TableCell>
+            <TableCell className='centerText' align="center">
+                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }` } </style>
+                {svc.adults}
+            </TableCell>
+            <TableCell className='centerText' align="center">
+                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }` } </style>
+                {svc.children}
+            </TableCell>
+            <TableCell className='centerText' align="center">
+                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }` } </style>
+                {svc.USDA}
+            </TableCell>
+            <TableCell className='centerText' align="center">
+                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }` } </style>
+                {svc.NonUSDA}
+            </TableCell>
             { console.log(svc)}
             </TableRow>
         )
@@ -165,7 +183,7 @@ export default function DailyDistributionReport(props) {
                     {`@media print { 
                         .greenBackground { 
                             background-color: rgb(104, 179, 107);
-                            text-align: right;
+                            text-align: center;
                             -webkit-print-color-adjust: exact;
                             break-before: avoid-page;
                             break-after: avoid-page;
@@ -196,11 +214,11 @@ export default function DailyDistributionReport(props) {
                 </style>
                 <ReportsHeader reportDate={ reportDay }
                     reportType="DAILY REPORT" 
-                    reportCategory="FOOD BANK"
+                    reportCategory="FOOD BANK EFA 7"
                     groupColumns={[{"name": "Print Name (Clients)", "length": 3}, 
                         {"name": "Address (Include Zip Code)", "length": 2}, 
                         {"name": "Family Size", "length": 2}, 
-                        {"name": "Is this your 1st time receiving USDA food this month", "length": 2}]}
+                        {"name": "Is this your 1st time receiving USDA food this month?", "length": 2}]}
                     columns={["ID", "Given", "Family", "Address", "Zip", "A", "C", "USDA", "NonUSDA" ]} />
             <TableBody>
             {loading ? (
