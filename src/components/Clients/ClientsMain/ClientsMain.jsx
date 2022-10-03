@@ -6,7 +6,7 @@ import { ClientsHeader, ClientsContent } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import moment from 'moment';
-import { dbSearchClientsAsync, dbGetClientActiveSvcHistoryAsync, dbSetModifiedTime,
+import { dbSearchClientsAsync, dbGetAllClientSvcsAsync, dbSetModifiedTime,
      utilEmptyPlaceholders, getUserName, globalMsgFunc } from '../../System/js/Database';
 import { getLastServedDays } from '../../System/js/Clients/Services'
 
@@ -114,12 +114,21 @@ export default function ClientsMain(props) {
                 newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
                 // add service handling objects
-                dbGetClientActiveSvcHistoryAsync(newClient.clientId)
+                dbGetAllClientSvcsAsync(newClient.clientId)
                     .then( svcHistory => { 
 
-                        // console.log(svcHistory)
+                        console.log(svcHistory)
 
-                        newClient.svcHistory = svcHistory
+                        newClient.svcHistory = svcHistory.filter(svc => { 
+                            return svc.svcValid === true 
+                        })
+                        newClient.invalidSvcs = svcHistory.filter(svc => {
+                            return svc.svcValid === false
+                        })
+
+                        console.log(newClient.svcHistory)
+                        console.log(newClient.invalidSvcs)
+
                         setClient(newClient)
                         updateClientsURL(newClient.clientId, clientsTab)
                     })

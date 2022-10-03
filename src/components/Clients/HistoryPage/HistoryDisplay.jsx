@@ -114,25 +114,53 @@ export default function HistoryDisplay(props) {
             <TableBody>
                 <Fragment>
                     { svcHistory.map((svc) => (
-                        // <Fragment key={svc.svcId} >
+                        <Fragment key={svc.svcId} >
                             <TableRow 
                                 key={ svc.svcId }
-                                onClick= { (event) => { if (isAdmin()) handleSelectedService(event, svc)} }
-                                selected= { svc.svcId == selectedService } >
-                                <TableCell align="center">
+                                onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
+                                selected= { svc.svcId == selectedService }>
+                                <TableCell align="center" 
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
                                         { moment(svc.svcDT).format("MMM DD, YYYY - h:mm a") }
                                 </TableCell>
-                                <TableCell align="center">{ svc.svcName }</TableCell>
-                                <TableCell align="center">{ svc.cStatus }</TableCell>
-                                <TableCell align="center">{ (svc.homeless) ? "YES" : "NO" }</TableCell>
-                                <TableCell align="center">{ svc.svcItems }</TableCell>
-                                <TableCell align="center">{ svc.adults }</TableCell>
-                                <TableCell align="center">{ svc.children }</TableCell>
-                                <TableCell align="center">{ svc.individuals }</TableCell>
-                                <TableCell align="center">{ svc.seniors }</TableCell>
-                                <TableCell align="center">{ svc.svcBy }</TableCell>
+                                <TableCell align="center" 
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                        { svc.svcName }
+                                </TableCell>
+                                <TableCell align="center"
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                        { svc.cStatus }
+                                </TableCell>
+                                <TableCell align="center" 
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                        { (svc.homeless) ? "YES" : "NO" }
+                                </TableCell>
+                                <TableCell align="center" 
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                        { svc.svcItems }
+                                </TableCell>
+                                <TableCell align="center"
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                        { svc.adults }
+                                </TableCell>
+                                <TableCell align="center"
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                        { svc.children }
+                                </TableCell>
+                                <TableCell align="center"
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                        { svc.individuals }
+                                </TableCell>
+                                <TableCell align="center"
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                        { svc.seniors }
+                                </TableCell>
+                                <TableCell align="center"
+                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                        { svc.svcBy }
+                                </TableCell>
                             </TableRow>
-                        // </Fragment>
+                        </Fragment>
                     ))}
                     { editMode === 'edit' &&
                         <HistoryFormDialog client = { client } editMode={ editMode } updateClient = {props.updateClient}
