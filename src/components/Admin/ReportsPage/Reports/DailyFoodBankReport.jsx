@@ -170,7 +170,6 @@ export default function DailyDistributionReport(props) {
                 <style> { `@media print { .centerText { text-align: center; font-size: 14px; }` } </style>
                 {svc.NonUSDA}
             </TableCell>
-            { console.log(svc)}
             </TableRow>
         )
         return jsxCode
