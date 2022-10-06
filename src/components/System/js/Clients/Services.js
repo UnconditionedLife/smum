@@ -33,9 +33,7 @@ export async function addServiceAsync( client, svcTypeId ){
 
 	return await dbSaveServiceRecordAsync(svcRecord)
         .then((savedSvc) => {
-
-            // console.log("savedSVC", savedSvc)
-
+            // empty object denotes saved with not errors
             if (Object.keys(savedSvc).length === 0) {
                 if (svcId === "") {
                     printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat)                    

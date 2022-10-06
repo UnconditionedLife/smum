@@ -1,25 +1,39 @@
 import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Popper, Table, TableBody, TableCell, TableContainer, 
+import { Box, Popper, Table, TableBody, TableCell, TableContainer, 
             TableHead, TableRow } from '@mui/material';
+import DoNotDisturbOnIcon from '@mui/icons-material/DoNotDisturbOn';
 import { Card } from '../../System';
 import { HistoryFormDialog, HistoryPopupMenu } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils';
 import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc, isAdmin } from '../../System/js/Database';
 import moment from 'moment';
+import { useEffect } from 'react';
 
 HistoryDisplay.propTypes = {
     client: PropTypes.object.isRequired, updateClient: PropTypes.func.isRequired,
 }
 
 export default function HistoryDisplay(props) {
-    const { client, updateClient, lastServedFoodDate } = props
-    const svcHistory = client.svcHistory
+    const { client, updateClient } = props
     const [ selectedService, setSelectedService ] = useState(null);
     const [ editMode, setEditMode ] = useState('none');
     const [ anchorEl, setAnchorEl ] = useState(null);
     const [ editRecord, setEditRecord ] = useState(null);
+    const [ svcHistory, setSvcHistory ] = useState([])
+
+    useEffect(() => {
+        // build svcHistory array by combining and sorting valid & invalid services
+        let tempHistory = client.svcHistory.concat(client.invalidSvcs)
+        // descending sort by updated date/time if avialable or created date/time
+        const svcHistoryTemp = tempHistory.sort((a, b) => {
+            const x = (a.svcUpdatedDT) ? moment(a.svcUpdatedDT) : moment(a.svcDT)
+            const y = (b.svcUpdatedDT) ? moment(b.svcUpdatedDT) : moment(b.svcDT)
+            return y.diff(x)
+        })
+        setSvcHistory(svcHistoryTemp)
+    }, [ client.svcHistory, client.invalidSvcs ])
     
     function handleSelectedService(event, newSelSvc) {
         setSelectedService(newSelSvc)
@@ -80,10 +94,12 @@ export default function HistoryDisplay(props) {
         clearSelection()
     }
 
+    if (isEmpty(svcHistory)) return null
+
     const menuOpen = Boolean(anchorEl);
     const id = menuOpen ? 'simple-popper' : undefined;
-
-    if (isEmpty(svcHistory)) return null
+    const validRow = {color: 'black' }
+    const invalidRow = { color: 'red', cursor:'default' }
 
     return (
         <Fragment>
@@ -99,7 +115,7 @@ export default function HistoryDisplay(props) {
             <Table >
             <TableHead>
                 <TableRow>
-                    <TableCell align="center">Served</TableCell>
+                    <TableCell align="center">Updated <br/> Served</TableCell>
                     <TableCell align="center">Service</TableCell>
                     <TableCell align="center">Client Status</TableCell>
                     <TableCell align="center">Homeless</TableCell>
@@ -120,43 +136,63 @@ export default function HistoryDisplay(props) {
                                 onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
                                 selected= { svc.svcId == selectedService }>
                                 <TableCell align="center" 
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
-                                        { moment(svc.svcDT).format("MMM DD, YYYY - h:mm a") }
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
+                                        { (svc.svcValid) ? 
+                                            <span style={{ fontSize: '85%'}}>
+                                                { (moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
+                                                    moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                                <br/>
+                                                { moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                            </span> : 
+                                            <Box display="flex">
+                                                <Box mr={ .25 } mt={ 1.4 }>
+                                                    { (svc.svcValid) ? "" : <DoNotDisturbOnIcon fontSize="small" /> }
+                                                </Box>
+                                                <Box>
+                                                    <span style={{ fontSize: '69%'}}>
+                                                        { (moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
+                                                            moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                                        <br/>
+                                                        { moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                                    </span>
+                                                </Box>
+                                            </Box>
+                                        }
                                 </TableCell>
                                 <TableCell align="center" 
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { svc.svcName }
                                 </TableCell>
                                 <TableCell align="center"
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { svc.cStatus }
                                 </TableCell>
                                 <TableCell align="center" 
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { (svc.homeless) ? "YES" : "NO" }
                                 </TableCell>
                                 <TableCell align="center" 
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { svc.svcItems }
                                 </TableCell>
                                 <TableCell align="center"
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { svc.adults }
                                 </TableCell>
                                 <TableCell align="center"
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { svc.children }
                                 </TableCell>
                                 <TableCell align="center"
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { svc.individuals }
                                 </TableCell>
                                 <TableCell align="center"
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { svc.seniors }
                                 </TableCell>
                                 <TableCell align="center"
-                                    style={ (svc.svcValid) ? {color: 'black' } : { color: 'red' } }>
+                                    style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { svc.svcBy }
                                 </TableCell>
                             </TableRow>

@@ -364,10 +364,8 @@ export async function dbGetClientActiveSvcHistoryAsync(clientId){
 }
 
 export async function dbGetAllClientSvcsAsync(clientId){
-    console.log("GET ALL SVCS", clientId);
     const paramObj = { cid: clientId }
     return await dbGetDataAsync("svcs", "/clients/svcs/bycid/", paramObj)
-        // .then(svcs => { return svcs })
 }
 
 // *********************** NEW SVCS DATABASE *************************

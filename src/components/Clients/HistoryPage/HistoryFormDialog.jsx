@@ -53,9 +53,16 @@ export default function HistoryFormDialog(props) {
                     updateClient(tempClient)
                     const oldRecord = Object.assign({}, editRecord)
                     removeSvcAsync(client, oldRecord)
-                        .then( oldSvc => {
-                            if (oldSvc !== null) { 
+                        .then( updatedClient => {
+                            if (updatedClient !== null) { 
+
+console.log("Updated Client", updatedClient);
+
                                 globalMsgFunc('success', 'Saved changes and archived old history record!')
+
+                                // update invalidSvcs in client to include old unedited svc
+                                // tempClient.invalidSvcs.unshift(oldSvc)
+                                updateClient(updatedClient)
                                 handleDialog(false)
                             } else {
                                 globalMsgFunc('error', 'Failed to removed old service history!')

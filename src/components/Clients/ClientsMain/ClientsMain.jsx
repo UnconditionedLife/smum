@@ -115,20 +115,19 @@ export default function ClientsMain(props) {
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
                 // add service handling objects
                 dbGetAllClientSvcsAsync(newClient.clientId)
-                    .then( svcHistory => { 
-
-                        console.log(svcHistory)
-
-                        newClient.svcHistory = svcHistory.filter(svc => { 
+                    .then( svcHistory => {
+                        //add svcHistory to client record
+                        const tempSvcHistory = svcHistory.filter(svc => { 
                             return svc.svcValid === true 
                         })
-                        newClient.invalidSvcs = svcHistory.filter(svc => {
+                        newClient.svcHistory = (Array.isArray(tempSvcHistory)) ? tempSvcHistory : []
+
+                        //add invalidSvcs to client record
+                        const tempInvalidSvcs = svcHistory.filter(svc => {
                             return svc.svcValid === false
                         })
 
-                        console.log(newClient.svcHistory)
-                        console.log(newClient.invalidSvcs)
-
+                        newClient.invalidSvcs = (Array.isArray(tempInvalidSvcs)) ? tempInvalidSvcs : []
                         setClient(newClient)
                         updateClientsURL(newClient.clientId, clientsTab)
                     })

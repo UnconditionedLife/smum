@@ -59,11 +59,10 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
 
     return await dbSaveServiceRecordAsync(modRecord)
         .then((savedSvc) => {
-            if (Object.keys(savedSvc).length === 0) {
+            if (Object.keys(savedSvc).length === 0)
                 return modRecord
-            } else {
+            else
                 return null
-            }
         })
 }
 
@@ -76,11 +75,14 @@ export async function removeSvcAsync(client, svc){
     return await dbSaveServiceRecordAsync(svc)
         .then((savedSvc) => {
             if (Object.keys(savedSvc).length === 0) {
+                // remove the deleted record from history
                 const newHistory = client.svcHistory.filter(function( obj ) {
                     return obj.svcId !== svc.svcId;
                 });
                 const tempClient = Object.assign({}, client)
                 tempClient.svcHistory = newHistory
+                // add the removed record to invalid list
+                tempClient.invalidSvcs.unshift(svc)
                 return tempClient
             } else {
                 return null
