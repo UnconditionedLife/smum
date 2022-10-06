@@ -53,10 +53,10 @@ export default function DbSwitch() {
 
             {/* ************************************************************* */}
             {/* Udate dev-smum-svcs to include svcFirst & cEthnicGrp */}
-            <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" style = {{ marginRight: '100px' }} 
+            {/* <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" style = {{ marginRight: '100px' }} 
             onClick={ () => UpdateSvcRecordsAsync(8880, 8900) } >
                     UpDate Svcs
-            </Button>
+            </Button> */}
             {/* ************************************************************* */}
 
             {/* ************************************************************* */}
