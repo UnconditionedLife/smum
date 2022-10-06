@@ -103,10 +103,6 @@ export default function ReportsPage() {
         }
     }
 
-    const runServicePatch = () => {
-        PatchSeniorCountInServiceDay( moment(reportDay).format('YYYYMMDD'))
-    }
-
     const handleReportDayChangeUpdated = (event) => {
         handleReportDayChange(moment(event._d).format('YYYYMMDD'))
     }
@@ -142,13 +138,12 @@ export default function ReportsPage() {
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleReportDayChangeUpdated }
                                 minDate={moment("2017-01-01")}
-                                maxDate={moment()} 
+                                maxDate={moment()}
                                 inputFormat="MMM DD YYYY"
+                                disableMaskedInput
                                 />
                         </LocalizationProvider>
                         <Button onClick={runDailyReport} variant="contained" color="primary">Run</Button>
-                        {/* used to patch senior count errors */}
-                        {/* <Button onClick={runServicePatch} variant="contained" color="primary">Patch Service Counts</Button> */}
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Monthly Reports</Typography></Box>
