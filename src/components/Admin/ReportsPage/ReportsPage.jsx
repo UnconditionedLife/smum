@@ -128,7 +128,7 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
-                                <MenuItem value="FOODBANK">Food Bank EFA 7</MenuItem>
+                                <MenuItem value="FOODBANK">Food Bank USDA EFA 7</MenuItem>
                         </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterMoment } >

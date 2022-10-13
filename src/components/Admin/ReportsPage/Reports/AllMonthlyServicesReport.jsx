@@ -126,9 +126,9 @@ export default function AllMonthlyServicesReport(props) {
                         return (<TableRow key={key2}>
                             <TableCell></TableCell>
                             <TableCell>{key2}</TableCell>
-                            <TableCell>{aggregatedTotals[key][key2].households}</TableCell>
-                            <TableCell>{aggregatedTotals[key][key2].individuals}</TableCell>
-                            <TableCell>{aggregatedTotals[key][key2].itemsServed}</TableCell>
+                            <TableCell align="center">{aggregatedTotals[key][key2].households}</TableCell>
+                            <TableCell align="center">{aggregatedTotals[key][key2].individuals}</TableCell>
+                            <TableCell align="center">{aggregatedTotals[key][key2].itemsServed}</TableCell>
                         </TableRow>)
                     })}
                 </React.Fragment>)

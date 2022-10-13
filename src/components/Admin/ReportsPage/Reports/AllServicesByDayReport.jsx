@@ -126,9 +126,9 @@ export default function AllServicesByDayReport(props) {
                         return (
                             <TableRow key={svcName+day}>
                                 <TableCell>{svcName}</TableCell>
-                                <TableCell>{aggregatedTotals[day][svcName].households}</TableCell>
-                                <TableCell>{aggregatedTotals[day][svcName].individuals}</TableCell>
-                                <TableCell>{aggregatedTotals[day][svcName].itemsServed}</TableCell>
+                                <TableCell align="right">{aggregatedTotals[day][svcName].households}</TableCell>
+                                <TableCell align="right">{aggregatedTotals[day][svcName].individuals}</TableCell>
+                                <TableCell align="right">{aggregatedTotals[day][svcName].itemsServed}</TableCell>
                             </TableRow>
                         )})}
                     </React.Fragment>
