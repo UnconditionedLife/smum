@@ -5,6 +5,7 @@ import DailyDistributionReport from '../Admin/ReportsPage/Reports/DailyDistribut
 import DailyFoodBankReport from '../Admin/ReportsPage/Reports/DailyFoodBankReport.jsx';
 import ReactToPrint from 'react-to-print';
 import { Print } from '@mui/icons-material';
+import DailyFoodBankReportNonUSDA from '../Admin/ReportsPage/Reports/DailyFoodBankReportNonUSDA.jsx';
 
 export default function PageToday() {
     const ref = useRef()
@@ -28,8 +29,11 @@ export default function PageToday() {
                             }`
                         }
                     </style>
-                    <Box className="break">
+                    <Box mb={4} className="break">
                         <DailyFoodBankReport />
+                    </Box>
+                    <Box className="break">
+                        <DailyFoodBankReportNonUSDA />
                     </Box>
                 </Box>
             </CardContent>

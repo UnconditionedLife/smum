@@ -6,27 +6,20 @@ import moment from 'moment';
 import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 
-DailyDistributionReport.propTypes = {
+DailyFoodBankReportNonUSDA.propTypes = {
     day: PropTypes.string
 }
 
-export default function DailyDistributionReport(props) {
-    const defaultTotals = {"households": 0, "individuals": 0,
-    "children": 0, "adults": 0,
-    "seniors": 0, "homelessHouseholds": 0, "homelessSingles": 0,
-    "nonClientHouseholds": 0, "nonClientSingles": 0}
+export default function DailyFoodBankReportNonUSDA(props) {
     const [services, setServices] = useState([])
     // const [servicesNonUSDA, setServicesNonUSDA] = useState([])
     // const [totalsUSDA, setTotalsUSDA] = useState(defaultTotals)
     // const [totalsNonUSDA, setTotalsNonUSDA] = useState(defaultTotals)
-    const [totalsDay, setTotalsDay] = useState(defaultTotals)
     const [loading, setLoading] = useState(true)
 
-    const theme = useTheme()
-    const greenBackground = { backgroundColor: theme.palette.primary.light }
     const reportDay = moment( props.day ).format("MMM DD, YYYY").toLocaleUpperCase()
 
-
+    const theme = useTheme()
 
 
     useEffect(()=>{
@@ -87,29 +80,12 @@ export default function DailyDistributionReport(props) {
         return isNaN(svcNumber) ? 0 :  parseInt(svcNumber)
     }
 
-    function computeGridTotals(gridList) {
-        if (gridList.length == 0) {
-            return defaultTotals
-        }
-        return gridList.reduce(function(previousValue, currentValue) {
-            const usda = (currentValue.USDA == "YES") ? 1 : 0
-            const nonusda = (currentValue.NonUSDA == "NO") ? 1 : 0
-
-            return { "adults": svcNumberToInt(previousValue.adults) + svcNumberToInt(currentValue.adults), 
-                    "children": svcNumberToInt(previousValue.children) + svcNumberToInt(currentValue.children), 
-                    "USDA": previousValue.USDA + usda,
-                    "NonUSDA": previousValue.NonUSDA + nonusda }
-        }, {"adults": 0, "children": 0, "USDA": 0, "NonUSDA": 0 })
-    }
-
     function RunReport() {
         dbGetValidSvcsByDateAsync(moment(props.day).format('YYYY-MM'), "Food_Pantry", moment(props.day).format('YYYY-MM-DD'))
             .then(svcs => {
-                const servicesFood = svcs.filter(item => item.svcUSDA == "USDA")
+                const servicesFood = svcs.filter(item => item.svcUSDA == "NonUSDA")
                 const foodGrid = ListToGrid(servicesFood)
-                const foodTotals = computeGridTotals(foodGrid)
                 setServices(foodGrid)
-                setTotalsDay(foodTotals)
                 setLoading(false)
             })
     }
@@ -162,41 +138,9 @@ export default function DailyDistributionReport(props) {
                 <style> { `@media print { .centerText { text-align: center; font-size: 14px; }` } </style>
                 {svc.children}
             </TableCell>
-            <TableCell className='centerText' align="center">
-                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }` } </style>
-                {svc.USDA}
-            </TableCell>
-            <TableCell className='centerText' align="center">
-                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }` } </style>
-                {svc.NonUSDA}
-            </TableCell>
             </TableRow>
         )
         return jsxCode
-    }
-
-    function RenderListTotals(totals, title) {
-        return (
-            <TableRow className='greenBackground' key={title}>
-                <style>
-                    {`@media print { 
-                        .greenBackground { 
-                            background-color: rgb(104, 179, 107);
-                            text-align: center;
-                            -webkit-print-color-adjust: exact;
-                            break-before: avoid-page;
-                            break-after: avoid-page;
-                            }
-                        }`
-                    }
-                </style>
-                <TableCell style={ greenBackground } align="center" colSpan={5}><strong>{title}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.adults}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.children}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.USDA}</strong></TableCell>
-                <TableCell style={ greenBackground } align="center"><strong>{totals.NonUSDA}</strong></TableCell>
-            </TableRow>
-        )
     }
 
     return (
@@ -213,23 +157,50 @@ export default function DailyDistributionReport(props) {
                 </style>
                 <ReportsHeader reportDate={ reportDay }
                     reportType="DAILY REPORT" 
-                    reportCategory="FOOD BANK USDA EFA 7"
+                    reportCategory="FOOD BANK NON USDA"
                     groupColumns={[{"name": "Print Name (Clients)", "length": 3}, 
                         {"name": "Address (Include Zip Code)", "length": 2}, 
-                        {"name": "Family Size", "length": 2}, 
-                        {"name": "Is this your 1st time receiving USDA food this month?", "length": 2}]}
-                    columns={["ID", "Given", "Family", "Address", "Zip", "A", "C", "USDA", "NonUSDA" ]} />
+                        {"name": "Family Size", "length": 2}]}
+                    columns={["ID", "Given", "Family", "Address", "Zip", "A", "C"]} />
             <TableBody>
             {loading ? (
                 <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={9}>
+                    <TableCell className='centerText' align="center" colSpan={7}>
                         <CircularProgress color="secondary" />
                     </TableCell>
                 </TableRow>) : null}
 
             {RenderSvcList(services)}
             {/* {RenderListTotals(totalsUSDA, "USDA Totals")} */}
-            {RenderListTotals(totalsDay, 'Total the responses from the last three columns into the last row. i.e. total family size, how many "Yes", how many "No"' )}
+            <TableRow className="greenBackground centerText" style={{ backgroundColor: theme.palette.primary.light }}>
+                <style>
+                    { `@media print { 
+                            .greenBackground { 
+                                text-align: right;
+                                background-color: rgb(104, 179, 107);
+                                -webkit-print-color-adjust: exact;
+                                font-size: 14px;
+                            },
+                            .rightText { text-align: right; font-size: 14px; }
+                        }`
+                    }
+                </style>
+                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
+                <TableCell className='centerText' align="center" colSpan={7}>
+                    <strong>Office Use Only</strong>
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell style={{borderBottom:"none"}} className='centerText' align="center">Households = _____</TableCell>
+                <TableCell style={{borderBottom:"none"}} className='centerText' align="center">Individuals = _____</TableCell>
+                <TableCell style={{borderBottom:"none"}} className='centerText' align="center">Children = _____</TableCell>
+                <TableCell style={{borderBottom:"none"}} className='centerText' align="center">Adults = _____</TableCell>
+                <TableCell style={{borderBottom:"none"}} className='rightText' align="right" colSpan={3}>Homeless: F = _____</TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell colspan={4}></TableCell>
+                <TableCell className='rightText' align="right" colSpan={3}>T = _____</TableCell>
+            </TableRow>
             </TableBody>
             </Table>
         </TableContainer>

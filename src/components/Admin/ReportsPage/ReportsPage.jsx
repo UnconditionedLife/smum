@@ -18,6 +18,7 @@ import AllServicesByDayReport from './Reports/AllServicesByDayReport.jsx';
 
 import { PatchSeniorCountInServiceDay } from '../../System/js/Patch';
 import EthnicityReport from './Reports/EthnicityReport.jsx';
+import DailyFoodBankReportNonUSDA from './Reports/DailyFoodBankReportNonUSDA.jsx';
 
 export default function ReportsPage() {
     const [ dayType, handleDayType ] = useState("FOOD")
@@ -101,6 +102,13 @@ export default function ReportsPage() {
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
+        if (dayType == "FOODBANKNONUSDA") {
+            setReportHeading("Food Bank Non USDA - Daily Report - " + moment(reportDay).format('MMM DD YYYY'));
+            setReportOpen(true);
+            setReportBody(<DailyFoodBankReportNonUSDA day={ reportDay } />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
     }
 
     const handleReportDayChangeUpdated = (event) => {
@@ -129,6 +137,7 @@ export default function ReportsPage() {
                         <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                                 <MenuItem value="FOODBANK">Food Bank USDA EFA 7</MenuItem>
+                                <MenuItem value="FOODBANKNONUSDA">Food Bank Non USDA</MenuItem>
                         </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterMoment } >
