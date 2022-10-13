@@ -116,8 +116,20 @@ export default function AllServicesByDayReport(props) {
             {Object.keys(aggregatedTotals).map(day => {
                 return (
                     <React.Fragment key={day}>
-                        <TableRow>
-                            <TableCell className='centerText' align="center" colSpan={4}>
+                        <TableRow style={{ backgroundColor: theme.palette.primary.light }}>
+                            <TableCell className='centerText greenBackground' align="center" colSpan={4}>
+                                <style>
+                                    {`@media print { 
+                                        .greenBackground { 
+                                            background-color: rgb(104, 179, 107);
+                                            text-align: right;
+                                            -webkit-print-color-adjust: exact;
+                                            break-before: avoid-page;
+                                            break-after: avoid-page;
+                                            }
+                                        }`
+                                    }
+                                </style>
                                 <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
                                 <strong>{ moment(day).format('MMM DD YYYY') }</strong>
                             </TableCell>
@@ -126,9 +138,10 @@ export default function AllServicesByDayReport(props) {
                         return (
                             <TableRow key={svcName+day}>
                                 <TableCell>{svcName}</TableCell>
-                                <TableCell align="right">{aggregatedTotals[day][svcName].households}</TableCell>
-                                <TableCell align="right">{aggregatedTotals[day][svcName].individuals}</TableCell>
-                                <TableCell align="right">{aggregatedTotals[day][svcName].itemsServed}</TableCell>
+                                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
+                                <TableCell className="centerText" align="center">{aggregatedTotals[day][svcName].households}</TableCell>
+                                <TableCell className="centerText" align="center">{aggregatedTotals[day][svcName].individuals}</TableCell>
+                                <TableCell className="centerText" align="center">{aggregatedTotals[day][svcName].itemsServed}</TableCell>
                             </TableRow>
                         )})}
                     </React.Fragment>
