@@ -212,7 +212,8 @@ export default function DailyDistributionReport(props) {
                     }
                 </style>
                 <ReportsHeader reportDate={ reportDay }
-                    reportType="DAILY REPORT" 
+                    reportType="DAILY REPORT"
+                    showEfa7Header={true} 
                     reportCategory="FOOD BANK USDA EFA 7"
                     groupColumns={[{"name": "Print Name (Clients)", "length": 3}, 
                         {"name": "Address (Include Zip Code)", "length": 2}, 

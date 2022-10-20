@@ -9,12 +9,13 @@ ReportsHeader.propTypes = {
     reportType: PropTypes.string.isRequired,
     reportCategory: PropTypes.string.isRequired,
     groupColumns: PropTypes.array,
-    columns: PropTypes.array.isRequired
+    columns: PropTypes.array.isRequired,
+    showEfa7Header: PropTypes.bool
 }
 
 export default function ReportsHeader(props) {
     const { reportDate, reportType, reportCategory, columns, groupColumns } = props
-
+    const showEfa7Header = props.showEfa7Header ? props.showEfa7Header : false
 
 
 
@@ -46,6 +47,26 @@ export default function ReportsHeader(props) {
                             {reportType}
                         </Box>
                     </Box>
+                    { showEfa7Header ?
+                        <Box style={{fontWeight: 'normal',
+                        justifyContent: 'left',
+                        alignItems: 'left',
+                        textAlign: 'left'}}>
+                           <strong>You self-declare that:</strong>
+                           <Box ml={4}>
+                            <ol>
+                                    <li>Your name and address listed is correct; if homeless, you can put homeless as the address.</li>
+                                    <li>Your household size as stated and resides within this state and organization’s service area.</li>
+                                    <li>Your income is within 235% of the Federal Poverty Guidelines as posted for this distribution.</li>
+                                    <li>You agree that TEFAP food is for home consumption only and will not be sold, traded, or bartered.</li>
+                                    <li>You have been shown and have read the full USDA Nondiscrimination Statement.</li>
+                            </ol>
+                           </Box>
+                           <Box style={{border:"solid 2px black", padding:"8px", marginTop:"16px", marginBottom:"16px"}}>
+                                <strong>You will not be denied TEFAP food if you refuse to disclose any information that is not a requirement of TEFAP.</strong> You will <strong><i>never</i></strong> need to provide your social security number or proof of income.
+                           </Box>
+                        </Box> : null
+                    }
                 </TableCell>
             </TableRow>
             {groupColumns ? (<TableRow>
