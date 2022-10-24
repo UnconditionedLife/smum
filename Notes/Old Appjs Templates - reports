@@ -1,0 +1,204 @@
+<template id="reportsForm">
+   <div class="adminReportsFormDiv">
+      <div class="headingDiv span6"><span style="font-size: 20px; line-height: 30px;">Distribution Reports</span></div>
+      <div class="headingDiv span6">Daily Reports</div>
+      <div class="lableDiv">Report</div>
+      <div>
+         <select id="reportsDailyType" class="inputBox reportsForm">
+            <!-- <option value="ALL">All Services</option> -->
+            <option value="FOOD" selected>Food Only</option>
+         </select>
+      </div>
+      <div class="lableDiv">Date</div>
+      <div><input id="reportsDailyDate" type="date" class="inputBox reportsForm"></div>
+      <div></div>
+      <div><input id="dailyReportButton" class="solidButton" onclick="clickGenerateDailyReport(this, 'report')" type="button" value="Run"></div>
+      <div class="headingDiv span6">Annual Reports</div>
+      <div class="lableDiv">Report</div>
+      <div>
+         <select id="reportsDailyType" class="inputBox reportsForm">
+            <!-- <option value="ALL">All Services</option> -->
+            <option value="FOOD" selected>Food Only</option>
+         </select>
+      </div>
+      <div class="lableDiv">Year</div>
+      <div><input id="reportFoodYear" type="number" class="inputBox reportsForm"></div>
+      <div></div>
+      <div><input id="annualReportButton" class="solidButton" onclick="clickGenerateAnnualReport(this)" type="button" value="Run"></div>
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6">Monthly Reports</div>
+      <div class="lableDiv">Report</div>
+      <div>
+         <select id="reportsMonthlyType" class="inputBox reportsForm">
+            <option value="ALL">All Services</option>
+            <option value="FOOD" selected>Food Only</option>
+         </select>
+      </div>
+      <div class="lableDiv">Month</div>
+      <div><input id="reportsMonthlyMonth" type="month" class="inputBox reportsForm"></div>
+      <div></div>
+      <div><input id="monthlyReportButton" class="solidButton" onclick="clickGenerateMonthlyReport(this)" type="button" value="Run"></div>
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6">Voucher Distribution Reports</div>
+      <div class="lableDiv">Report</div>
+      <div>
+         <select id="reportVoucherDistro" class="inputBox reportsForm"></select>
+      </div>
+      <div class="lableDiv">Year</div>
+      <div><input id="reportVoucherDistroYear" type="number" class="inputBox reportsForm"></div>
+      <div></div>
+      <div><input id="voucherDistroReportButton" class="solidButton" onclick="clickGenerateVoucherReport(this, 'Distro')" type="button" value="Run"></div>
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6">Voucher Final Count Reports</div>
+      <div class="lableDiv">Report</div>
+      <div>
+         <select id="reportVoucherCount" class="inputBox reportsForm"></select>
+      </div>
+      <div class="lableDiv">Year</div>
+      <div><input id="reportVoucherCountYear" type="number" class="inputBox reportsForm"></div>
+      <div></div>
+      <div><input id='voucherCountReportButton'  class="solidButton" onclick="clickGenerateVoucherReport(this, 'Count')" type="button" value="Run"></div>
+      <!-- <div class="headingDiv span6"></div>
+      <div class="headingDiv span6"><span style="font-size: 20px; line-height: 30px;">Family Reports</span></div>
+      <div class="headingDiv span6">Clients Reports</div>
+      <div class="lableDiv">Report</div>
+      <div>
+         <select id="reportFamilyType" class="inputBox reportsForm">
+            <option value="Children">With Children</option>
+         </select>
+      </div>
+      <div></div>
+      <div><input class="solidButton" onclick="utilGenerateFamiliesReport()" type="button" value="Run"></div> -->
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6"></div>
+      <div class="headingDiv span6"></div>
+      <div></div>
+      <div></div>
+   </div>
+</template>
+
+<!-- report templates -->
+<template id="reportHeader">
+   <div class="reportHeaderBox">
+      <div id="reportHeaderLeft" class="reportHeaderSides">DAILY</div>
+         <div class="reportHeaderCenter">
+            <div id="reportOrgName">SANTA MARIA URBAN MINISTRY</div>
+            <div id="reportName">00000</div>
+            <div id="reportDates">REPORT DATE</div>
+         </div>
+      <div id="reportHeaderRight" class="reportHeaderSides">REPORT</div>
+   </div>
+</template>
+
+<template id="todayHeader">
+   <div class="reportHeaderBox">
+      <div id="todayHeaderLeft" class="reportHeaderSides">DAILY</div>
+         <div class="reportHeaderCenter">
+            <div id="todayOrgName">SANTA MARIA URBAN MINISTRY</div>
+            <div id="todayName">00000</div>
+            <div id="todayDates">REPORT DATE</div>
+         </div>
+      <div id="todayHeaderRight" class="reportHeaderSides">REPORT</div>
+   </div>
+</template>
+
+<template id="dailyReportHeader">
+   <div class="todayReportBodyHeaderBox">
+      <div id="headerClient" class="bodyHeaderItem">Client</div>
+      <div id="headerClientsServed" class="bodyHeaderItem">Clients Served</div>
+      <div id="headerHomelessServed" class="bodyHeaderItem">Homeless Served</div>
+      <div id="headerNonClientsServed" class="bodyHeaderItem">NonClients Served</div>
+      <div class="bodyHeaderItem">ID</div>
+      <div class="bodyHeaderItem">Given</div>
+      <div class="bodyHeaderItem">Family</div>
+      <div class="bodyHeaderItem">ZIP</div>
+      <div class="bodyHeaderItem">Households</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Children</div>
+      <div class="bodyHeaderItem">Adults</div>
+      <div class="bodyHeaderItem">Seniors</div>
+      <div class="bodyHeaderItem">Families</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Families</div>
+      <div class="bodyHeaderItem">Individuals</div>
+   </div>
+</template>
+
+<template id="allServicesBodyHeader">
+   <div class="allServicesBodyHeaderBox">
+      <div class="bodyHeaderItem">Category</div>
+      <div class="bodyHeaderItem">Service</div>
+      <div class="bodyHeaderItem">Households</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Items</div>
+   </div>
+</template>
+
+<template id="foodBodyHeader">
+   <div class="foodBodyHeaderBox">
+      <div id="headerUSDA" class="bodyHeaderItem">USDA<br />NonUSDA</div>
+      <div id="headerClientsServed" class="bodyHeaderItem">Clients Services</div>
+      <div id="headerHomelessServed" class="bodyHeaderItem">Homeless Services</div>
+      <div id="headerNonClientsServed" class="bodyHeaderItem">NonClients Services</div>
+      <div class="bodyHeaderItem">Households</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Children</div>
+      <div class="bodyHeaderItem">Adults</div>
+      <div class="bodyHeaderItem">Seniors</div>
+      <div class="bodyHeaderItem">Families</div>
+      <div class="bodyHeaderItem">Individuals</div>
+      <div class="bodyHeaderItem">Families</div>
+      <div class="bodyHeaderItem">Individuals</div>
+   </div>
+</template>
+
+<template id="reportVoucherDistroHeader">
+   <div class="voucherBodyHeaderBox voucherDistro">
+      <div class="hdrCell stacked2Line">Client #<br># De Cliente</div>
+      <div class="hdrCell stacked2Line">Client Name<br>Nombre</div>
+      <div class="hdrCell stacked2Line">CLIENT SIGNATURE<br>FIRMA</div>
+      <div class="hdrCell stacked2Line">Total #</div>
+   </div>
+</template>
+
+<template id="reportVoucherGradesCountHeader"> <!-- backpacks -->
+   <div class="voucherBodyHeaderBox voucherCount">
+      <div class="hdrCell stacked">Grade Group</div>
+      <div class="hdrCell stacked">Gender</div>
+      <div class="hdrCell stacked">Registered</div>
+      <div class="hdrCell stacked">Delivered</div>
+   </div>
+</template>
+
+<template id="reportVoucherAgesCountHeader"> <!-- toys -->
+   <div class="voucherBodyHeaderBox voucherCount">
+      <div class="hdrCell stacked">Age Group</div>
+      <div class="hdrCell stacked">Gender</div>
+      <div class="hdrCell stacked">Registered</div>
+      <div class="hdrCell stacked">Delivered</div>
+   </div>
+</template>
+
+<template id="reportVoucherCountHeader"> <!-- turkey, gift cards  -->
+   <div class="voucherBodyHeaderBox voucherCount">
+      <div class="hdrCell stacked">Registered</div>
+      <div class="hdrCell stacked">Delivered</div>
+      <div class="hdrCell stacked">No-Show</div>
+      <div class="hdrCell stacked">% Delivered</div>
+   </div>
+</template>
+
+<template id="reportFamiliesChildrenHeader">
+   <div class="familiesBodyHeaderBox">
+      <div class="hdrCell stacked">Client #</div>
+      <div class="hdrCell">Client Name</div>
+      <div class="hdrCell">Telephone</div>
+      <div class="hdrCell">Zipcode</div>
+      <div class="hdrCell">Last Visit</div>
+      <div class="hdrCell secondary">Child Name</div>
+      <div class="hdrCell secondary">Age</div>
+      <div class="hdrCell secondary">Gender</div>
+      <div class="hdrCell secondary">Grade</div>
+   </div>
+</template>
