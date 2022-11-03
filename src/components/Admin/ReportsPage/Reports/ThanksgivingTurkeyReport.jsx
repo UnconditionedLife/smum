@@ -172,7 +172,7 @@ export default function ThanksgivingTurkeyReport(props) {
                     }
                 </style>
                 <ReportsHeader reportDate={ reportYear }
-                    reportType="ANNUAL REPORT" 
+                    reportType="TURKEY REPORT" 
                     reportCategory="THANKSGIVING"
                     groupColumns={[{"name": "Client", "length": 4}, 
                     {"name": "Clients Served", "length": 5}, 
