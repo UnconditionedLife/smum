@@ -19,6 +19,7 @@ import AllServicesByDayReport from './Reports/AllServicesByDayReport.jsx';
 import { PatchSeniorCountInServiceDay } from '../../System/js/Patch';
 import EthnicityReport from './Reports/EthnicityReport.jsx';
 import DailyFoodBankReportNonUSDA from './Reports/DailyFoodBankReportNonUSDA.jsx';
+import ThanksgivingTurkeyReport from './Reports/ThanksgivingTurkeyReport.jsx';
 
 export default function ReportsPage() {
     const [ dayType, handleDayType ] = useState("FOOD")
@@ -29,6 +30,9 @@ export default function ReportsPage() {
     
     const [ yearType, handleYearType ] = useState("FOOD")
     const [ reportYear, handleReportYearChange ] = useState(moment().format('YYYY'))
+
+    const [ voucherType, handleVoucherType ] = useState("TURKEY")
+    const [ reportVoucherYear, handleReportVoucherYearChange ] = useState(moment().format('YYYY'))
 
     
     const [reportOpen, setReportOpen] = useState(false)
@@ -87,6 +91,16 @@ export default function ReportsPage() {
         }
     }
 
+    const runVoucherReport = () => {
+        if (voucherType == "TURKEY") {
+            setReportHeading("Thanksgiving Turkey - Annual Report - " + moment(reportVoucherYear).format('YYYY'));
+            setReportOpen(true);
+            setReportBody(<ThanksgivingTurkeyReport year={reportVoucherYear} />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+    }
+
     const runDailyReport = () => {
         if (dayType == "FOOD") {
             setReportHeading("Food Pantry - Daily Report - " + moment(reportDay).format('MMM DD YYYY'));
@@ -121,6 +135,10 @@ export default function ReportsPage() {
 
     const handleReportYearChangeUpdated = (event) => {
         handleReportYearChange(moment(event._d).format("YYYY"))
+    }
+
+    const handleReportVoucherYearChangeUpdated = (event) => {
+        handleReportVoucherYearChange(moment(event._d).format("YYYY"))
     }
 
     return (
@@ -195,6 +213,26 @@ export default function ReportsPage() {
                         </LocalizationProvider>
                         <Button onClick={runYearReport} variant="contained" color="primary">Run</Button>
                     </Box>
+
+                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Annual Reports</Typography></Box>
+                    <Box display="flex" flexDirection="row" flexWrap="wrap">
+                        <FormControl variant='outlined' size='small'>
+                        <InputLabel>Report</InputLabel>
+                        <Select value={voucherType} onChange={(event) => handleVoucherType(event.target.value)} width={ 240 } name="report" label="Report">
+                                <MenuItem value="TURKEY">Thanksgiving Turkey</MenuItem>
+                        </Select>
+                        </FormControl>
+                        <LocalizationProvider dateAdapter={ AdapterMoment } >
+                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportVoucherYear } 
+                                renderInput={(params) => <TextField {...params} />}
+                                onChange={ handleReportVoucherYearChangeUpdated }
+                                minDate={moment("2017-01-01")}
+                                maxDate={moment()}
+                                 />
+                        </LocalizationProvider>
+                        <Button onClick={runVoucherReport} variant="contained" color="primary">Run</Button>
+                    </Box>
+
                     {/* <Box mt={ 10 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Voucher Distribution Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
