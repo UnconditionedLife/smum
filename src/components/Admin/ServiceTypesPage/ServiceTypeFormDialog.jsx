@@ -31,8 +31,8 @@ export default function ServiceTypeFormDialog(props) {
         fulfillment: {fromDateTime:"", toDateTime:"", type:""},
         target: {homeless: "", gender:"", family:"", child:"", childMinGrade:"Unselected", childMaxGrade:"Unselected", childMinAge:"0", childMaxAge:"0", service:""},
         isActive:"", svcUSDA:"", itemsPer:"", numberItems:"",
-        svcBtns:"", svcCat:"",svcDesc:"",svcInterval:"",svcName:""
-        };
+        svcBtns:"", svcCat:"",svcDesc:"",svcInterval:"",svcName:"", svcPeriod: "", 
+        svcFrequency: ""};
         data.fromdate = packFromDate(data)
         data.todate = packToDate(data)
     }
@@ -131,6 +131,14 @@ export default function ServiceTypeFormDialog(props) {
             target.childMinGrade = "Unselected"
         }
 
+        if (values.svcPeriod == "") {
+            values.svcPeriod = "0"
+        }
+
+        if (values.svcFrequency == "") {
+            values.svcFrequency = "0"
+        }
+
         Object.assign(data, values);
         Object.assign(fullfillment, values.fulfillment);
         Object.assign(available, values.available);
@@ -143,7 +151,7 @@ export default function ServiceTypeFormDialog(props) {
         // data.available = available;
         data.target = target;
 
-        // console.log(data)
+        console.log(data)
         saveSvcType(data)
         reset(values);
     }
@@ -206,9 +214,6 @@ export default function ServiceTypeFormDialog(props) {
                         <MenuItem value="Person">Person</MenuItem>
                     </FormSelect>
 
-                    <FormTextField fieldsize="xs" name="svcInterval" label="Interval" error={ errors.svcInterval } 
-                        control={ control } rules={ {required: 'Required'}} />
-
                     <FormSelect fieldsize="md" name="svcUSDA" label="USDA" control={ control } error={ errors.svcUSDA }
                         rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
@@ -218,6 +223,17 @@ export default function ServiceTypeFormDialog(props) {
                         <MenuItem value="Emergency">Emergency</MenuItem>
                     </FormSelect>
                     </Box>
+
+                    <Box mt={ 0 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Service Qualifications</Typography></Box>
+                    <Box display="flex" flexDirection="row" flexWrap="wrap">
+                    <FormTextField fieldsize="sm" name="svcInterval" label="Svc Interval" error={ errors.svcInterval } 
+                        control={ control } rules={ {required: 'Required'}} />
+                    <FormTextField fieldsize="sm" name="svcPeriod" label="Svc Period" error={ errors.svcPeriod } 
+                        control={ control } />
+                    <FormTextField fieldsize="sm" name="svcFrequency" label="Svc Frequency" error={ errors.svcFrequency } 
+                        control={ control } />
+                    </Box>
+
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Service Available</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                     <FormTextField fieldsize="md" name="fromdate" rules={{required: "Required", 
