@@ -351,15 +351,15 @@ function prnTestReceipt(receiptType) {
 			break;
 		case 3:
 			service = getSvcTypes().filter(obj => obj.svcName == 'Thanksgiving Turkey')[0];
-			prnPrintVoucherReceipt(testClient, service);
+			prnPrintVoucherReceipt({ client: testClient, svcType: service });
 			break;
 		case 4:
 			service = getSvcTypes().filter(obj => obj.svcName == 'Christmas Toy')[0];
-			prnPrintVoucherReceipt(testClient, service, children, 'age');
+			prnPrintVoucherReceipt({ client: testClient, svcType: service, dependents: children, grouping: 'age' });
 			break;
 		case 5:
 			service = getSvcTypes().filter(obj => obj.svcName == 'First Step')[0];
-			prnPrintVoucherReceipt(testClient, service, children, 'grade');
+			prnPrintVoucherReceipt({ client: testClient, svcType: service, dependents: children, grouping: 'grade' });
 			break;
 	}
 }
