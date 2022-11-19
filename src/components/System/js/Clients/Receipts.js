@@ -116,7 +116,7 @@ export function prnTest(type) {
     if (type == 'minimal') {
         prnStartReceipt();
         prnFeed(2);
-        prnTextLine('* Test Receipt *', 1, 2);
+        prnTextLine('* Test Receipt *', 1, 2, false);
         prnEndReceipt();
     }
     if (type == 'full') {
