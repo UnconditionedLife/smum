@@ -8,6 +8,7 @@ import { getSvcTypes } from '../Database';
 
 let ePosDev = new window.epson.ePOSDevice();
 let printer = null;
+let curr_align = '';
 let logo;
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
@@ -32,7 +33,7 @@ export function prnPrintFoodReceipt(client, svcUSDA) {
 	prnTextLine('FAMILY | FAMILIA:\t\t' + client.family.totalSize);
 	prnFeed(1);
 	prnTextLine('**************************************')
-	prnTextLine(' ' + svcUSDA + ' ', 2, 2, ['inverse']);
+	prnTextLine(' ' + svcUSDA + ' ', 2, 2, true);
 	prnTextLine('**************************************');
 	prnEndReceipt();
 }
@@ -45,15 +46,14 @@ export function prnPrintVoucherReceipt(props) {
 	prnFeed(1);
 	if (dependents) {
 		let sortingFn, groupingFn;
-		prnAlign('left');
         if (grouping == 'age') {
 			sortingFn = utilSortDependentsByAge;
 			groupingFn = utilCalcAgeGrouping;
-			prnTextLine('CHILDREN / NIÑOS        GENDER   AGE');
+			prnTextLine('CHILDREN / NIÑOS        GENDER   AGE', 1, 1, false, 'left');
 		} else if (grouping == 'grade') {
 			sortingFn = utilSortDependentsByGrade;
 			groupingFn = utilCalcGradeGrouping;
-			prnTextLine('CHILDREN / NIÑOS        GENDER   GRADE');
+			prnTextLine('CHILDREN / NIÑOS        GENDER   GRADE', 1, 1, false, 'left');
 		}
 		prnFeed(1);
 		for (let dep of sortingFn(dependents)) {
@@ -61,11 +61,10 @@ export function prnPrintVoucherReceipt(props) {
 				' ' + dep.familyName.toUpperCase(), 24);
 			let gender =  utilPadTrimString(dep.gender.toUpperCase(), 9);
 			let group = utilPadTrimString(groupingFn(dep), 5);
-			prnTextLine(childName + gender + group);
+			prnTextLine(childName + gender + group, 1, 1, false, 'left');
 		}
 		prnFeed(1);
 	}
-	prnAlign('center');
 	prnPickupTimes(svcType.fulfillment.fromDateTime,
 		svcType.fulfillment.toDateTime);
   prnEndReceipt();
@@ -87,7 +86,7 @@ export function prnPrintClothesReceipt(client, serviceType) {
 	prnFeed(1);
 	prnTextLine('TOTAL ITEMS | ARTÍCULOS');
 	prnTextLine('**************************************')
-	prnTextLine(' ' + numArticles + ' ', 2, 2, ['inverse']);
+	prnTextLine(' ' + numArticles + ' ', 2, 2, true);
 	prnTextLine('**************************************');
     prnFeed(1);
 	prnTextLine('MAXIMUM TIME ' + timeLimit + ' MINUTES');
@@ -103,7 +102,7 @@ export function prnPrintReminderReceipt(client, nextVisit) {
 	prnFeed(1);
     prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
     prnTextLine('**************************************')
-    prnTextLine(' ' + moment(nextVisit).format("MMMM Do, YYYY") + ' ', 1, 2, ['inverse']);
+    prnTextLine(' ' + moment(nextVisit).format("MMMM Do, YYYY") + ' ', 1, 2, true);
     prnTextLine('**************************************');
     prnEndReceipt();
 }
@@ -130,14 +129,13 @@ export function prnTest(type) {
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 
 function prnStartReceipt() {
+    prnAlign('center');
 	if (printer) {
-		printer.addTextAlign(printer.ALIGN_CENTER);
 		printer.addTextSmooth(true);
 		printer.addImage(logo.getContext('2d'), 0, 0, logo.width, logo.height,
 			printer.COLOR_1, printer.MODE_GRAY16);
 	} else {
 		let prnWindow = prnGetWindow();
-		prnWindow.document.writeln('<p align="center">');
 		let logo_id = 'logo' + Math.floor(Math.random() * 10000);
 		let w = Math.floor(logo.width * 2 / 3);
 		let h = Math.floor(logo.height * 2 / 3);
@@ -153,24 +151,25 @@ function prnStartReceipt() {
 }
 
 function prnAlign(align) {
+    if (align == curr_align)
+        return;
 	if (printer) {
-		if (align == 'left')
-			printer.addTextAlign(printer.ALIGN_LEFT);
-		else if (align == 'center')
-			printer.addTextAlign(printer.ALIGN_CENTER);
+        if (align == 'center')
+            printer.addTextAlign(printer.ALIGN_CENTER);
+        else if (align == 'left')
+            printer.addTextAlign(printer.ALIGN_LEFT);
+        else if (align == 'right')
+            printer.addTextAlign(printer.ALIGN_RIGHT);
 	}
 	else {
 		let prnWindow = prnGetWindow();
 		prnWindow.document.writeln('</p><p align="' + align + '">')
 	}
+    curr_align = align;
 }
 
-function prnTextLine(str, width, height, attrs) {
-	if (width == null)
-		width = 1;
-	if (height == null)
-		height = 1;
-	let inverse = attrs && attrs.indexOf('inverse') >= 0;
+function prnTextLine(str, width=1, height=1, inverse=false, align='center') {
+    prnAlign(align);
 	if (printer) {
 		printer.addTextSize(width, height);
 		if (inverse)
@@ -185,8 +184,8 @@ function prnTextLine(str, width, height, attrs) {
 			style += 'font-size:' + height*100 + '%;';
 		if (inverse)
 			style += 'color:white;background-color:black;';
-		prnWindow.document.writeln('<span style="' + style + '">' +
-			str.replace(/ /g, '&nbsp;') + '<br/></span>')
+        prnWindow.document.writeln('<span style="' + style + '">' +
+			str.replace(/ /g, '&nbsp;') + '<br/></span>');
 	}
 }
 
@@ -219,17 +218,17 @@ function prnServiceHeader(client, title) {
 	prnFeed(1);
 	prnTextLine(client.givenName + ' ' + client.familyName, 2, 2);
 	prnFeed(1);
-	prnTextLine(' ' + client.clientId + ' ', 2, 1, ['inverse']);
+	prnTextLine(' ' + client.clientId + ' ', 2, 1, true);
 }
 
 function prnPickupTimes(fromDateTime, toDateTime) {
 	prnTextLine('**************************************')
 	prnTextLine('PRESENT THIS FOR PICKUP')
 	prnTextLine('HAY QUE PRESENTAR PARA RECLAMAR')
-	prnTextLine(' ' + moment(fromDateTime).format("MMMM Do, YYYY")+ ' ', 2, 2, ['inverse']);
+	prnTextLine(' ' + moment(fromDateTime).format("MMMM Do, YYYY")+ ' ', 2, 2, true);
 	prnFeed(1);
 	prnTextLine(' ' + moment(fromDateTime).format("h:mm a") + ' - ' +
-		moment(toDateTime).format("h:mm a") + ' ', 1, 1, ['inverse']);
+		moment(toDateTime).format("h:mm a") + ' ', 1, 1, true);
 	prnTextLine('**************************************');
 }
 
