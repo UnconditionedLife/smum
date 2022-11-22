@@ -129,7 +129,7 @@ export function prnTest(type) {
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 
 function prnStartReceipt() {
-    prnAlign('center');
+    prnAlign('center', true);
 	if (printer) {
 		printer.addTextSmooth(true);
 		printer.addImage(logo.getContext('2d'), 0, 0, logo.width, logo.height,
@@ -150,21 +150,21 @@ function prnStartReceipt() {
 	prnTextLine('(408) 292-3314');
 }
 
-function prnAlign(align) {
-    if (align == curr_align)
-        return;
-	if (printer) {
-        if (align == 'center')
-            printer.addTextAlign(printer.ALIGN_CENTER);
-        else if (align == 'left')
-            printer.addTextAlign(printer.ALIGN_LEFT);
-        else if (align == 'right')
-            printer.addTextAlign(printer.ALIGN_RIGHT);
-	}
-	else {
-		let prnWindow = prnGetWindow();
-		prnWindow.document.writeln('</p><p align="' + align + '">')
-	}
+function prnAlign(align, force=false) {
+    if (force || align != curr_align) {
+        if (printer) {
+            if (align == 'center')
+                printer.addTextAlign(printer.ALIGN_CENTER);
+            else if (align == 'left')
+                printer.addTextAlign(printer.ALIGN_LEFT);
+            else if (align == 'right')
+                printer.addTextAlign(printer.ALIGN_RIGHT);
+        }
+        else {
+            let prnWindow = prnGetWindow();
+            prnWindow.document.writeln('</p><p align="' + align + '">')
+        }
+    }
     curr_align = align;
 }
 
