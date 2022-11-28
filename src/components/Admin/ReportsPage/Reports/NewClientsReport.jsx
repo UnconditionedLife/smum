@@ -26,60 +26,88 @@ export default function NewClientsReport(props) {
         }, 200)
     }
 
-
     function RunReport(){
+        const zipCodes = SettingsZipcodes()
+
         dbGetValidSvcsByDateAsync(moment(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
             .then(svcs => {
 
                 let firstSvcs = svcs.filter(item => item.svcFirst == true)
 
-                // let newClients = []
-                // let tempList = []
+                let newIds = []
+                let newClients = []
 
                 let total = 0
                 let homeless = 0
 
-                // monthOfValidUSDASvcs.forEach(svc => {    
-                //     dbGetSingleClientAsync(svc.cId)
-                //         .then(client => {
-                //             const dividedYearMonth = moment(props.yearMonth).format('YYYYMM').substring(0,4) + "-" + moment(props.yearMonth).format('YYYYMM').substring(4)
-                //             const firstSeen = client.firstSeenDate
+                const numSvcs = firstSvcs.length
+                firstSvcs.forEach((svc, i )=> {    
+                    dbGetSingleClientAsync(svc.cId)
+                        .then(c => {
+
+                            console.log("client", c);
+                            // const dividedYearMonth = moment(props.yearMonth).format('YYYYMM').substring(0,4) + "-" + moment(props.yearMonth).format('YYYYMM').substring(4)
+                            // const created = c.firstSeenDate
+
+                            console.log("CREATED", c.createdDateTime);
+                            console.log("REPORT MONTH", props.yearMonth);
+                            console.log("DIFF", moment(c.createdDateTime).format('YYYYMM'))
+
+
+                            if (moment(c.createdDateTime).format('YYYYMM') === props.yearMonth ){
+                                newClients.push(svc)
+                                newIds.push(svc.cId)
+                            }
+                            if (i === (numSvcs -1)) {
+
+                                console.log("FINISHED");
+                                let sortedNewIds = newIds.sort((b, a) => { return b-a })
+
+                                setClientIds(sortedNewIds)
+
+                                zipCodes.forEach(zip => {
+
+                                    console.log("ZIP", zip);
+
+                                    const zipRecord = { area: zip }
+                                    const zipTotalSvcs = newClients.filter(s => s.cZip == zip)
+                                    
+                                    zipRecord.total = zipTotalSvcs.length
+                                    zipRecord.homeless = zipTotalSvcs.filter(s => s.homeless == true).length
+                                    numNewClients = updateCounts(numNewClients, zipRecord.total, zipRecord.homeless, zip)
+                                    total += zipRecord.total
+                                    homeless += zipRecord.homeless
+                                    setCounts(numNewClients)
+
+                                    // remove these svcs with this zip from list
+                                    newClients = newClients.filter(s => s.cZip != zip)
+                                })
+                                let zipRecord = { area: "Emergency" }
+                                zipRecord.total = newClients.length
+                                zipRecord.homeless = newClients.filter(svc => svc.homeless == true).length
+                                numNewClients = updateCounts(numNewClients, zipRecord.total, zipRecord.homeless, "Emergency")
+                                setCounts(numNewClients)
+                                total += zipRecord.total
+                                homeless += zipRecord.homeless
+                                setTotalNewClients(total)
+                                setTotalNewHomeless(homeless)
+                                setLoading(false)
+                            }
+                        })
                 //         if (firstSeen.substring(0,7) == dividedYearMonth) {
                 //             console.log("matching MONTH")
                 //             tempList.push(svc.cId)
                 //             newClients.push(client)
                 //         }
-                //         setClientIds(tempList.sort((b, a) => { return b-a }))
 
-                        const zipCodes = SettingsZipcodes()
-                        total = 0
-                        homeless = 0
+                    
+                })
 
-                        zipCodes.forEach(zip => {
-                            const zipRecord = { area: zip }
-                            const zipTotalSvcs = firstSvcs.filter(svc => svc.cZip == zip)
-                            
-                            zipRecord.total = zipTotalSvcs.length
-                            zipRecord.homeless = zipTotalSvcs.filter(svc => svc.homeless == true).length
-                            numNewClients = updateCounts(numNewClients, zipRecord.total, zipRecord.homeless, zip)
-                            total += zipRecord.total
-                            homeless += zipRecord.homeless
-                            setCounts(numNewClients)
 
-                            // remove these svcs with this zip from all list
-                            firstSvcs = firstSvcs.filter(svc => svc.cZip != zip)
-                        })
 
-                        let zipRecord = { area: "Out Of Area" }
-                        zipRecord.total = firstSvcs.length
-                        zipRecord.homeless = firstSvcs.filter(svc => svc.homeless == true).length
-                        numNewClients = updateCounts(numNewClients, zipRecord.total, zipRecord.homeless, "Out Of Area")
-                        setCounts(numNewClients)
-                        total += zipRecord.total
-                        homeless += zipRecord.homeless
-                        setTotalNewClients(total)
-                        setTotalNewHomeless(homeless)
-                        setLoading(false)
+                
+
+
 
                     })
     }
@@ -105,7 +133,8 @@ export default function NewClientsReport(props) {
         StartRunReport()
     },[])
 
-
+    console.log("COUNTS", counts);
+    console.log("IDs", clientIds);
 
     return (
         <Box m={ 1 } maxWidth="100%">
@@ -146,14 +175,14 @@ export default function NewClientsReport(props) {
                 </TableFooter>
             </Table>
         </TableContainer> 
-        {/* <Box mt={ 3 } maxWidth="100%">
+        <Box mt={ 3 } maxWidth="100%">
             <Typography variant='h6'>NEW CLIENT IDs</Typography>
-            <Box mt={ 1 } width="1000px" style={{ lineHeight: "30px" }}>
+            <Box mt={ 1 } style={{ fontSize: "15px", lineHeight: "25px" }}>
                 { clientIds.map((id) =>(
                     <strong key={ id }>{ id }&nbsp;&nbsp; </strong>
                 )) }
             </Box>
-            </Box> */}
+            </Box>
         </Box> 
     )
 }

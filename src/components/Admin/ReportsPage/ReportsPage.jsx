@@ -15,6 +15,7 @@ import MonthlyDistributionReport from './Reports/MonthlyDistributionReport.jsx';
 import AnnualDistributionReport from './Reports/AnnualDistributionReport.jsx';
 import AllMonthlyServicesReport from './Reports/AllMonthlyServicesReport.jsx';
 import AllServicesByDayReport from './Reports/AllServicesByDayReport.jsx';
+import PopulationChildrenByAgeReport from './Reports/PopulationChildrenByAgeReport.jsx';
 
 import { PatchSeniorCountInServiceDay } from '../../System/js/Patch';
 import EthnicityReport from './Reports/EthnicityReport.jsx';
@@ -33,6 +34,10 @@ export default function ReportsPage() {
 
     const [ voucherType, handleVoucherType ] = useState("TURKEY")
     const [ reportVoucherYear, handleReportVoucherYearChange ] = useState(moment().format('YYYY'))
+
+    const [ populationType, handlePopulationType ] = useState("ALL-CHILDREN")
+    
+
 
     
     const [reportOpen, setReportOpen] = useState(false)
@@ -123,6 +128,24 @@ export default function ReportsPage() {
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
+    }
+
+    const runPopulationReport = () => {
+        if (populationType == "CHILDREN-BY-VISITS") {
+            setReportHeading("Children in Population by Food Services in 90 Days");
+            setReportOpen(true);
+            setReportBody(<PopulationChildrenByAgeReport day={ reportDay } />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+
+        // if (populationType == "ALL-CHILDREN-BY-VISITS") {
+        //     setReportHeading("All Children in Population - Visits");
+        //     setReportOpen(true);
+        //     setReportBody(<PopulationChildrenByAgeByVisitsReport day={ reportDay } />);
+        //     const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+        //     setReportActions(buttonCode);
+        // }
     }
 
     const handleReportDayChangeUpdated = (event) => {
@@ -231,6 +254,16 @@ export default function ReportsPage() {
                                  />
                         </LocalizationProvider>
                         <Button onClick={runVoucherReport} variant="contained" color="primary">Run</Button>
+                    </Box>
+                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Population Reports</Typography></Box>
+                    <Box display="flex" flexDirection="row" flexWrap="wrap">
+                        <FormControl variant='outlined' size='small'>
+                        <InputLabel>Report</InputLabel>
+                        <Select value={populationType} onChange={(event) => handlePopulationType(event.target.value)} width={ 300 } name="report" label="Report">
+                            <MenuItem value="CHILDREN-BY-VISITS">Children by Food Svc in 90 Days</MenuItem>
+                        </Select>
+                        </FormControl>
+                        <Button onClick={runPopulationReport} variant="contained" color="primary">Run</Button>
                     </Box>
 
                     {/* <Box mt={ 10 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Voucher Distribution Reports</Typography></Box>

@@ -302,7 +302,11 @@ function getActiveServicesButtons( props ) {
     // check for not a valid service based on interval between services  
 	activeServiceTypes.forEach((svcType, i) => {
 		let display = true;
+        // check the interval since last service of same type
 		if (!validateSvcInterval({ client, activeServiceType: svcType, lastServedDays, intervals })) return;
+        // check to see if food has been served within svcPeriod the number of time (svcFrequency) defined
+        if (!usageQualified({client, svcType})) return;
+
 		// loop through each property in each targetServices
 		for (let prop in targetServices[i]) {
 			if (prop=="family_totalChildren") {
@@ -503,11 +507,36 @@ function validateSvcInterval( props ){
 	return true
 }
 
-function calcValidAgeGrade(at){ 
-    const { client, gradeOrAge, targetService } = at
+function usageQualified( props ){
+    const { client, svcType } = props
+    const svcPeriod = svcType.svcPeriod
+    const svcFrequency = svcType.svcFrequency
+
+    if ( svcFrequency == 0 ) return true;
+    // get history and filter matching services in svc period
+    let periodSvcs = []
+    if ( svcPeriod > 0 ) {
+        periodSvcs = client.svcHistory.filter(svc => {
+            return (moment().diff(svc.svcDT, 'days') <= svcPeriod && svc.svcCat === "Food_Pantry")
+         }) 
+    } else {
+        periodSvcs = client.svcHistory.filter(svc => {
+            return ( svc.svcCat === "Food_Pantry" )
+        })
+    }
+
+    // if number of services >= frequency of services
+    if (periodSvcs.length < svcFrequency) return false
+
+    return true
+}
+
+
+function calcValidAgeGrade(props){ 
+    const { client, gradeOrAge, targetService } = props
 	let dependents = []
 	for (let j = 0; j < client.dependents.length; j++) {
-		if (at.gradeOrAge=="grade" &&
+		if (gradeOrAge=="grade" &&
 		!(client.dependents[j].grade == undefined || client.dependents[j].grade == "") && client.dependents[j].isActive=="Active"){
 			let currentGrade = utilGradeToNumber(client.dependents[j].grade)
 			if (currentGrade >= utilGradeToNumber(targetService['dependents_gradeMin'])
@@ -522,7 +551,7 @@ function calcValidAgeGrade(at){
 				dependents.push(client.dependents[j])
 			}
 		}
-  }
+    }
 	return dependents
 }
 
@@ -573,10 +602,10 @@ function calcServiceFamilyCounts(svcTypes, client, svcTypeId){
 			} else {
 				let numChildren = 0;
 				if (targetService[0].dependents_ageMax !== undefined){
-					numChildren = calcValidAgeGrade("age", targetService[0]).length
+					numChildren = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0]} ).length
 				}
 				if (targetService[0].dependents_gradeMax !== undefined){
-					numChildren = Math.abs(numChildren - calcValidAgeGrade("grade", targetService[0]).length)
+					numChildren = Math.abs(numChildren - calcValidAgeGrade( { client: client, gradeOrAge: "grade", targetService: targetService[0] }).length)
 				}
 
 				servedCounts = {
@@ -666,10 +695,10 @@ function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
 
         } else if (svcCat == 'Christmas') {
             const targetService = utilCalcTargetServices([svcType])
-            
+
             if (targetService[0].family_totalChildren == "Greater Than 0") {
                 const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
-                params = { client: client, svcType: svcType, dependents: dependents, gradeOrAge: 'grade' }
+                params = { client: client, svcType: svcType, dependents: dependents, grouping: 'age' }
             } else {
                 params = { client: client, svcType: svcType }
             }
@@ -689,18 +718,7 @@ function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
     //     const params = { client: client, svcType: svcType }
     //     prnPrintVoucherReceipt(params)
     //     prnPrintVoucherReceipt(params)
-    // } else if (svcCat == 'Christmas' && svcType.fulfillment.type == 'Voucher') {
-    //     const targetService = utilCalcTargetServices([svcType])
-    //     let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
-    //     if (targetService[0].family_totalChildren == "Greater Than 0") {
-    //         const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
-    //         const params = { client: client, svcType: svcType, dependents: dependents, gradeOrAge: 'grade' }
-    //         prnPrintVoucherReceipt(params);
-    //         prnPrintVoucherReceipt(params);
-    //     } else {
-    //         prnPrintVoucherReceipt({ service: service });
-    //         prnPrintVoucherReceipt({ service: service });
-    //     }
+    // }
     }
     prnFlush();
 }

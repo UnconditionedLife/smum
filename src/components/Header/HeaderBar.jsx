@@ -220,8 +220,6 @@ export default function HeaderBar(props) {
 
     function handleLogout() {
         let myCogUser = cogSetupUser(getUserName());
-
-        console.log('Logout')
         setEditingState(false);
         handleSectionChange(0);
         handleSearchTermChange('');

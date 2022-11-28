@@ -307,6 +307,10 @@ async function dbGetClientsAsync(searchTerm, isDate){
 	}
 }
 
+export async function dbGetAllClientsAsync(){
+		return await dbGetDataAsync("clients", "/clients/")
+}
+
 export async function dbGetSingleClientAsync(clientId) {
     return await dbGetDataAsync("clients", "/clients/" + clientId)
         .then(result => {
@@ -656,6 +660,9 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
         const queryParams = (lastKey) ? { ... paramObj, lastkey: lastKey } : paramObj;
         const dataPage = await dbGetDataPageAsync(subUrl, queryParams)
             .then(data => {
+
+console.log("DATA",data);
+
                 lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null;
                 return data[arrayName];
             })

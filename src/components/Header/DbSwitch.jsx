@@ -3,7 +3,8 @@ import { Box, Switch } from '@mui/material';
 import { Typography, Button } from '../System';
 import { dbSetUrl } from '../System/js/Database';
 import { prnTest } from '../System/js/Clients/Receipts';
-import { MoveSvcsTableRecordsAsync, UpdateSvcRecordsAsync } from "../System/js/MoveSvcsTable";
+// import { MoveSvcsTableRecordsAsync, UpdateSvcRecordsAsync } from "../System/js/MoveSvcsTable";
+import { UpdateClientRecordsAsync } from "../System/js/UpdateClient"
 
 export default function DbSwitch() {
     const [switchOn, setSwitchOn] = React.useState(false);
@@ -75,6 +76,16 @@ export default function DbSwitch() {
             onClick={ () => getSvcs("cj86davnj00013k7zi3715rf4","2019-01") } >
                     Get Svcs
             </Button> */}
+
+            {/* ************************************************************* */}
+
+            {/* ************************************************************* */}
+            {/* Add month field to clients table */}
+            <Button key="getSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
+                style = {{ marginRight: '100px' }} 
+                onClick={ () => UpdateClientRecordsAsync() } >
+                    ADD month2clients
+            </Button>
 
             {/* ************************************************************* */}
 

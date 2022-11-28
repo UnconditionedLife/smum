@@ -173,7 +173,7 @@ export default function ServiceTypeFormDialog(props) {
             <DialogContent>
                 <Box>
                 <form>   
-                    <Box mt={ 0 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>General Info</Typography></Box>
+                    <Box mt={ 0 } display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>General Info</strong></Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
              
                     <FormTextField name="svcName" label="Service Name" fieldsize="lg" error={ errors.svcName } 
@@ -204,7 +204,7 @@ export default function ServiceTypeFormDialog(props) {
                         <MenuItem value="Secondary">Secondary</MenuItem>
                     </FormSelect>
 
-                    <FormTextField name="numberItems" fieldsize="sm" label="# of Items" error={ errors.numberItems } 
+                    <FormTextField name="numberItems" fieldsize="xs" label="# of Items" error={ errors.numberItems } 
                         control={ control } rules={ {required: 'Required'}} />
                     
                     <FormSelect fieldsize="sm" name="itemsPer" label="Items Per" control={ control } error={ errors.itemsPer }
@@ -214,7 +214,10 @@ export default function ServiceTypeFormDialog(props) {
                         <MenuItem value="Person">Person</MenuItem>
                     </FormSelect>
 
-                    <FormSelect fieldsize="md" name="svcUSDA" label="USDA" control={ control } error={ errors.svcUSDA }
+                    <FormTextField fieldsize="xs" name="svcInterval" label="Interval" error={ errors.svcInterval } 
+                        control={ control } rules={ {required: 'Required'}} />
+
+                    <FormSelect fieldsize="sm" name="svcUSDA" label="USDA" control={ control } error={ errors.svcUSDA }
                         rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
                         <MenuItem value="NA">N/A</MenuItem>
@@ -224,17 +227,18 @@ export default function ServiceTypeFormDialog(props) {
                     </FormSelect>
                     </Box>
 
-                    <Box mt={ 0 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Service Qualifications</Typography></Box>
-                    <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField fieldsize="sm" name="svcInterval" label="Svc Interval" error={ errors.svcInterval } 
-                        control={ control } rules={ {required: 'Required'}} />
-                    <FormTextField fieldsize="sm" name="svcPeriod" label="Svc Period" error={ errors.svcPeriod } 
-                        control={ control } />
-                    <FormTextField fieldsize="sm" name="svcFrequency" label="Svc Frequency" error={ errors.svcFrequency } 
-                        control={ control } />
+                    <Box mt={ 0 } display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Service Qualifications</strong></Typography></Box>
+                    <Box display="flex" flexDirection="row" flexWrap="wrap" alignItems="bottom">
+                        <Box py={1.9} ml={1}><Typography>Minimum food visits:</Typography></Box>
+                        <FormTextField fieldsize="xs" name="svcFrequency" label="" error={ errors.svcFrequency } 
+                            control={ control } />
+                        <Box py={1.9}><Typography>times in</Typography></Box>
+                        <FormTextField fieldsize="xs" name="svcPeriod" label="" error={ errors.svcPeriod } 
+                            control={ control } />
+                        <Box py={1.9}><Typography>days.</Typography></Box>
                     </Box>
 
-                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Service Available</Typography></Box>
+                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Service Available</strong></Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                     <FormTextField fieldsize="md" name="fromdate" rules={{required: "Required", 
                         validate: (value) => value <= toDate || 'From date must be before or same as to date'}} label="From" type="date" error={ errors.fromdate }
@@ -243,7 +247,7 @@ export default function ServiceTypeFormDialog(props) {
                         control={ control } />
                     </Box>
 
-                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Target Recipient</Typography></Box>
+                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Target Recipient</strong></Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                     <FormSelect fieldsize="sm" name="target.homeless" label="Homeless" control={ control } error={ errors.target?.homeless }
                         rules={ {required: 'Required'}} >
@@ -320,7 +324,7 @@ export default function ServiceTypeFormDialog(props) {
                         
                     }
                     </Box>
-                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Fulfillment</Typography></Box>
+                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Fulfillment</strong></Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormSelect fieldsize="md" name="fulfillment.type" label="Type" control={ control } error={ errors.fulfillment?.type }
                             rules={ {required: 'Required'}} >

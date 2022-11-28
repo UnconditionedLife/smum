@@ -11,16 +11,15 @@ DailyFoodBankReportNonUSDA.propTypes = {
 }
 
 export default function DailyFoodBankReportNonUSDA(props) {
+    const defaultTotals = {"households": 0, "individuals": 0,
+    "children": 0, "adults": 0,
+    "seniors": 0, "homelessFamilies": 0, "homelessTotal": 0}
     const [services, setServices] = useState([])
-    // const [servicesNonUSDA, setServicesNonUSDA] = useState([])
-    // const [totalsUSDA, setTotalsUSDA] = useState(defaultTotals)
-    // const [totalsNonUSDA, setTotalsNonUSDA] = useState(defaultTotals)
+    const [totals, setTotals] = useState(defaultTotals)
     const [loading, setLoading] = useState(true)
-
+    
     const reportDay = moment( props.day ).format("MMM DD, YYYY").toLocaleUpperCase()
-
     const theme = useTheme()
-
 
     useEffect(()=>{
         RunReport()
@@ -36,40 +35,20 @@ export default function DailyFoodBankReportNonUSDA(props) {
                 
                 "households": "1", "individuals": elem.individuals,
                 "children": elem.children, 
-                "adults": svcNumberToInt(elem.adults) + svcNumberToInt(elem.seniors) }
-            if (elem.homeless == "YES") {
-                if (elem.individuals == 1) {
-                    item["homelessHouseholds"] = "-"
-                    item["homelessSingles"] = "1"
-                }
-                else {
-                    item["homelessHouseholds"] = "1"
-                    item["homelessSingles"] = elem.individuals
-                }
-            } else {
-                item["homelessHouseholds"] = "-"
-                item["homelessSingles"] = "-"
-            }
+                "adults": svcNumberToInt(elem.adults) + svcNumberToInt(elem.seniors)}
 
-            if (elem.cStatus == "Client") {
-                item["nonClientHouseholds"] = "-"
-                item["nonClientSingles"] = "-"
-            } else {
+            if (elem.homeless == true) {
                 if (elem.individuals == 1) {
-                    item["nonClientHouseholds"] = "-"
-                    item["nonClientSingles"] = "1"
+                    item["homelessFamilies"] = "0"
+                    item["homelessTotal"] = "1"
                 }
                 else {
-                    item["nonClientHouseholds"] = "1"
-                    item["nonClientSingles"] = elem.individuals
+                    item["homelessFamilies"] = "1"
+                    item["homelessTotal"] = "1"
                 }
-            }
-            if (elem.svcUSDA == "USDA") {
-                item["USDA"] = "YES"
-                item["NonUSDA"] = ""
             } else {
-                item["USDA"] = ""
-                item["NonUSDA"] = "NO"
+                item["homelessFamilies"] = "0"
+                item["homelessTotal"] = "0"
             }
             grid.push(item)
         })
@@ -80,12 +59,31 @@ export default function DailyFoodBankReportNonUSDA(props) {
         return isNaN(svcNumber) ? 0 :  parseInt(svcNumber)
     }
 
+    function computeGridTotals(gridList) {
+        if (gridList.length == 0) {
+            return defaultTotals
+        }
+        return gridList.reduce(function(previousValue, currentValue) {
+            return { "households": svcNumberToInt(previousValue.households) + 1, 
+                    "individuals": svcNumberToInt(previousValue.individuals) + svcNumberToInt(currentValue.individuals), 
+                    "adults": svcNumberToInt(previousValue.adults) + svcNumberToInt(currentValue.adults), 
+                    "children": svcNumberToInt(previousValue.children) + svcNumberToInt(currentValue.children), 
+                    "homelessFamilies": previousValue.homelessFamilies + svcNumberToInt(currentValue.homelessFamilies),
+                    "homelessTotal": previousValue.homelessTotal + svcNumberToInt(currentValue.homelessTotal)}
+        }, {"households": 0, "individuals": 0, "children": 0, "adults": 0, "homelessFamilies": 0, "homelessTotal": 0 })
+    }
+
     function RunReport() {
         dbGetValidSvcsByDateAsync(moment(props.day).format('YYYY-MM'), "Food_Pantry", moment(props.day).format('YYYY-MM-DD'))
             .then(svcs => {
                 const servicesFood = svcs.filter(item => item.svcUSDA == "NonUSDA")
                 const foodGrid = ListToGrid(servicesFood)
+
+                console.log("GRID", foodGrid)
+
+                const foodTotals = computeGridTotals(foodGrid)
                 setServices(foodGrid)
+                setTotals(foodTotals)
                 setLoading(false)
             })
     }
@@ -143,6 +141,34 @@ export default function DailyFoodBankReportNonUSDA(props) {
         return jsxCode
     }
 
+    function RenderListTotals(totals, title) {
+
+        console.log("TOTALS", totals); 
+        return (
+            <TableRow className='greenBackground' key={title}>
+                <style>
+                    {`@media print { 
+                        .greenBackground { 
+                            background-color: rgb(104, 179, 107);
+                            text-align: center;
+                            -webkit-print-color-adjust: exact;
+                            break-before: avoid-page;
+                            break-after: avoid-page;
+                            }
+                        }`
+                    }
+                </style>
+                <TableCell align="center"><strong>Households = {totals.households}</strong></TableCell>
+                <TableCell align="center"><strong>Individuals = {totals.individuals}</strong></TableCell>
+                <TableCell align="center"><strong>Children = {totals.children}</strong></TableCell>
+                <TableCell align="center"><strong>Adults = {totals.adults}</strong></TableCell>
+                <TableCell align="center"><strong>Homeless <br/> Families = {totals.homelessFamilies}</strong></TableCell>
+                <TableCell align="center"colSpan={2} ><strong>Homeless <br/> Total = {totals.homelessTotal}</strong></TableCell>
+                
+            </TableRow>
+        )
+    }
+
     return (
         <Box m={ 1 }>
         <TableContainer align="center">
@@ -158,50 +184,44 @@ export default function DailyFoodBankReportNonUSDA(props) {
                 <ReportsHeader reportDate={ reportDay }
                     reportType="DAILY REPORT" 
                     reportCategory="FOOD BANK NON USDA"
-                    groupColumns={[{"name": "Print Name (Clients)", "length": 3}, 
+                    groupColumns={[{"name": "Client", "length": 3}, 
                         {"name": "Address (Include Zip Code)", "length": 2}, 
                         {"name": "Family Size", "length": 2}]}
-                    columns={["ID", "Given", "Family", "Address", "Zip", "A", "C"]} />
-            <TableBody>
-            {loading ? (
-                <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={7}>
-                        <CircularProgress color="secondary" />
-                    </TableCell>
-                </TableRow>) : null}
-
-            {RenderSvcList(services)}
-            {/* {RenderListTotals(totalsUSDA, "USDA Totals")} */}
-            <TableRow className="greenBackground centerText" style={{ backgroundColor: theme.palette.primary.light }}>
-                <style>
-                    { `@media print { 
-                            .greenBackground { 
-                                text-align: right;
-                                background-color: rgb(104, 179, 107);
-                                -webkit-print-color-adjust: exact;
-                                font-size: 14px;
-                            },
-                            .rightText { text-align: right; font-size: 14px; }
-                        }`
-                    }
-                </style>
-                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
-                <TableCell className='centerText' align="center" colSpan={7}>
-                    <strong>Office Use Only</strong>
-                </TableCell>
-            </TableRow>
-            <TableRow>
-                <TableCell style={{borderBottom:"none"}} className='centerText' align="center">Households = _____</TableCell>
-                <TableCell style={{borderBottom:"none"}} className='centerText' align="center">Individuals = _____</TableCell>
-                <TableCell style={{borderBottom:"none"}} className='centerText' align="center">Children = _____</TableCell>
-                <TableCell style={{borderBottom:"none"}} className='centerText' align="center">Adults = _____</TableCell>
-                <TableCell style={{borderBottom:"none"}} className='rightText' align="right" colSpan={3}>Homeless: F = _____</TableCell>
-            </TableRow>
-            <TableRow>
-                <TableCell colspan={4}></TableCell>
-                <TableCell className='rightText' align="right" colSpan={3}>T = _____</TableCell>
-            </TableRow>
-            </TableBody>
+                    columns={["ID", "Given Name", "Family Name", "Address", "Zip", "A", "C"]} />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={7}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
+                    {RenderSvcList(services)}
+                    <TableRow className="greenBackground centerText" style={{ backgroundColor: theme.palette.primary.light }}>
+                        <style>
+                            { `@media print { 
+                                    .greenBackground { 
+                                        text-align: right;
+                                        background-color: rgb(104, 179, 107);
+                                        -webkit-print-color-adjust: exact;
+                                        font-size: 14px;
+                                    },
+                                    .rightText { text-align: right; font-size: 14px; }
+                                }`
+                            }
+                        </style>
+                        <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
+                        <TableCell className='centerText' align="center" colSpan={7}>
+                            <strong>Office Use Only</strong>
+                        </TableCell>
+                    </TableRow>
+                    <TableRow>  
+                        <TableCell colspan={7} style={{ color:"white" }}>|</TableCell>
+                    </TableRow>
+                    {RenderListTotals(totals,'')}
+                    <TableRow>  
+                        <TableCell colspan={7} style={{ color:"white" }}>|</TableCell>
+                    </TableRow>
+                </TableBody>
             </Table>
         </TableContainer>
         </Box>
