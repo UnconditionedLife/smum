@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Button, Card, CardContent, CardHeader, Container, FormControl, InputLabel, MenuItem, Typography } from '@mui/material';
-import { Select, TextField } from '../../System'
+import { Select, TextField, FormTextField } from '../../System'
 import { DatePicker } from '@mui/x-date-pickers' // MuiPickersUtilsProvider
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
@@ -35,7 +35,11 @@ export default function ReportsPage() {
     const [ voucherType, handleVoucherType ] = useState("TURKEY")
     const [ reportVoucherYear, handleReportVoucherYearChange ] = useState(moment().format('YYYY'))
 
-    const [ populationType, handlePopulationType ] = useState("ALL-CHILDREN")
+    const [ populationType, handlePopulationType ] = useState("CHILDREN-BY-VISITS")
+
+    const [ days, handleDaysChange] = useState(90)
+    const [ minVisits, handleMinVisitsChange] = useState(3)
+    const [ maxVisits, handleMaxVisitsChange] = useState(5)
     
 
 
@@ -132,9 +136,9 @@ export default function ReportsPage() {
 
     const runPopulationReport = () => {
         if (populationType == "CHILDREN-BY-VISITS") {
-            setReportHeading("Children in Population by Food Services in 90 Days");
+            setReportHeading("Children in Population by Food Services in " + days + " Days");
             setReportOpen(true);
-            setReportBody(<PopulationChildrenByAgeReport day={ reportDay } />);
+            setReportBody(<PopulationChildrenByAgeReport days={ days } minVisits={ minVisits } maxVisits={ maxVisits }/>);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
@@ -162,6 +166,18 @@ export default function ReportsPage() {
 
     const handleReportVoucherYearChangeUpdated = (event) => {
         handleReportVoucherYearChange(moment(event._d).format("YYYY"))
+    }
+
+    const handleDays = (value) => {
+        handleDaysChange(value)
+    }
+
+    const handleMinVisits = (value) => {
+        handleMinVisitsChange(value)
+    }
+
+    const handleMaxVisits = (value) => {
+        handleMaxVisitsChange(value)
     }
 
     return (
@@ -259,10 +275,22 @@ export default function ReportsPage() {
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
-                        <Select value={populationType} onChange={(event) => handlePopulationType(event.target.value)} width={ 300 } name="report" label="Report">
-                            <MenuItem value="CHILDREN-BY-VISITS">Children by Food Svc in 90 Days</MenuItem>
-                        </Select>
+                       
+                        <Box display='flex'>
+                            <Select value={populationType} onChange={(event) => handlePopulationType(event.target.value)} width={ 240 } name="report" label="Report">
+                                <MenuItem default={ true } value="CHILDREN-BY-VISITS">Children by Food Services</MenuItem>
+                            </Select>
+                            <TextField style={{ width: "60px", height:"28px", marginTop: "0", marginLeft: "16px", marginRight: "4px" }} 
+                                value={ days } size="small" name="days" label="Days"
+                                onChange={(event) => handleDays(event.target.value)}/>
+                            <TextField style={{ width: "75px", height:"22px", marginTop: "0", marginLeft: "4px", marginRight: "4px" }} 
+                                value={ minVisits } size="small" name="minVisits" label="Min Visits"
+                                onChange={(event) => handleMinVisits(event.target.value)}/>
+                            <TextField style={{ width: "80px", height:"22px", marginTop: "0", marginLeft: "4px", marginRight: "0px" }} value={ maxVisits } size="small" name="maxVisits" label="Max Visits"
+                                onChange={(event) => handleMaxVisits(event.target.value)}/>
+                        </Box>
                         </FormControl>
+
                         <Button onClick={runPopulationReport} variant="contained" color="primary">Run</Button>
                     </Box>
 
