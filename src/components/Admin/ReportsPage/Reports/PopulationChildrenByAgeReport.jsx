@@ -4,13 +4,13 @@ import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
 import moment from 'moment';
 import { dbGetValidSvcsByDateAsync, dbGetAllClientsAsync, globalMsgFunc } from '../../../System/js/Database';
-import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../../System/js/Clients/ClientUtils';
+import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge, utilCalcAgeGroupingAllDeps } from '../../../System/js/Clients/ClientUtils';
 import { useTheme } from '@mui/material/styles';
 
 PopulationChildrenAgeReport.propTypes = {
-    days: PropTypes.string,
-    minVisits: PropTypes.string,
-    maxVisits: PropTypes.string
+    days: PropTypes.number,
+    minVisits: PropTypes.number,
+    maxVisits: PropTypes.number
 }
 
 export default function PopulationChildrenAgeReport(props) {
@@ -137,31 +137,7 @@ export default function PopulationChildrenAgeReport(props) {
                 newC.family = calcFamilyCounts(newC)
                 newC.dependents.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
                 newC.dependents = arrayAddIds(newC.dependents, 'depId')
-                let familyCounts = [ 0, 0, 0, 0, 0, 0, 0 ]
-                newC.dependents.forEach(kid => {
-                    if (kid.age < 2 ) {
-                        familyCounts[0] = familyCounts[0] + 1
-                    }
-                    if (kid.age > 1 & kid.age < 4) {
-                        familyCounts[1] = familyCounts[1] + 1
-                    }
-                    if (kid.age > 3 & kid.age < 7) {
-                        familyCounts[2] = familyCounts[2] + 1
-                    }
-                    if (kid.age > 6 & kid.age < 9) { 
-                        familyCounts[3] = familyCounts[3] + 1
-                    }
-                    if (kid.age > 8 & kid.age < 11) { 
-                        familyCounts[4] = familyCounts[4] + 1
-                    }
-                    if (kid.age > 10 & kid.age < 13) { 
-                        familyCounts[5] = familyCounts[5] + 1
-                    }
-                    if (kid.age > 12 & kid.age < 18) {
-                        familyCounts[6] = familyCounts[6] + 1
-                    }
-                })
-
+                const familyCounts = utilCalcAgeGroupingAllDeps(newC.dependents)
                 familyCounts.forEach((c, i) => {
                     groups[i].count0 = groups[i].count0 + c
                 })
