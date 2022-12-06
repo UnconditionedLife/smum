@@ -44,23 +44,6 @@ export default function DbSwitch() {
             </Button>
 
             {/* ************************************************************* */}
-            {/* Migrate dev-smum-services table to new dev-smum-svcs table */}
-            {/* <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
-            style = {{ marginRight: '100px' }} 
-            onClick={ () => MoveSvcsTableRecordsAsync(1, 6800) } >
-                    Move Svcs
-            </Button> */}
-            {/* ************************************************************* */}
-
-            {/* ************************************************************* */}
-            {/* Udate dev-smum-svcs to include svcFirst & cEthnicGrp */}
-            {/* <Button key="moveSvcs" m={ .5 } variant="outlined" color="error" size="small" style = {{ marginRight: '100px' }} 
-            onClick={ () => UpdateSvcRecordsAsync(8880, 8900) } >
-                    UpDate Svcs
-            </Button> */}
-            {/* ************************************************************* */}
-
-            {/* ************************************************************* */}
             {/* Migrate dev-smum-servicetypes table to new dev-smum-svcstypes table */}
             {/* <Button key="moveSvcTypes" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
             style = {{ marginRight: '100px' }} 
@@ -81,11 +64,11 @@ export default function DbSwitch() {
 
             {/* ************************************************************* */}
             {/* Add month field to clients table */}
-            <Button key="getSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
+            {/* <Button key="getSvcs" m={ .5 } variant="outlined" color="error" size="small" minWidth="168px"
                 style = {{ marginRight: '100px' }} 
                 onClick={ () => UpdateClientRecordsAsync() } >
                     ADD month2clients
-            </Button>
+            </Button> */}
 
             {/* ************************************************************* */}
 

@@ -189,22 +189,11 @@ export function SettingsSchedule() {
     };
 }
 
-//************************************************
-//******************* SVCTYPES *******************
-//******************* OLD TABLE ******************
 
-export async function dbGetOldSvcTypesAsync() {
-    return await dbGetDataAsync("serviceTypes", "/servicetypes")
-        .then(svcTypes => {
-            // case-insensitive sort
-            return  svcTypes.sort((a, b) => a.svcName.localeCompare(b.svcName, undefined, {sensitivity: 'base'}));
-        }
-    )
-}
 
-//************************************************
+
 //******************* SVCTYPES *******************
-//******************* NEW TABLE ******************
+//************************************************
 
 export async function dbGetSvcTypesAsync(){
     return await dbGetDataAsync("serviceTypes", "/svctypes")
@@ -215,17 +204,9 @@ export async function dbGetSvcTypesAsync(){
     )
 }
 
-
-
 export function getSvcTypes(){
     return cachedSvcTypes    
 }
-
-// ********* BEFORE MIGRATION TO NEW TABLE *****
-// export async function dbSaveSvcTypeAsync(data) {
-//     return await dbPostDataAsync('/servicetypes/', data)
-// }
-// ********* BEFORE MIGRATION TO NEW TABLE *****
 
 export async function dbSaveSvcTypeAsync(data) {
     // return await dbPostDataAsync('/svctypes/', MakeNewSvcType(data))
@@ -347,19 +328,9 @@ export async function dbGetNewClientIDAsync(){
 }
 
 // ***************************************************************
-// *****************  OLD TABLE USED FOR MIGRATION ***************
-export async function dbGetClientActiveServiceHistoryAsync(clientId){
-    return await dbGetDataAsync("services", "/clients/services/" + clientId)
-}
-// *****************  OLD TABLE USED FOR MIGRATION ***************
-// ***************************************************************
+// *********************** SVCS TABLE *************************
 
-
-
-// ***************************************************************
-// *********************** NEW SVCS DATABASE *************************
 export async function dbGetClientActiveSvcHistoryAsync(clientId){
-    console.log("GET HISTORY", clientId);
     const paramObj = { cid: clientId }
     return await dbGetDataAsync("svcs", "/clients/svcs/bycid/", paramObj)
         .then(svcs => {
@@ -372,7 +343,7 @@ export async function dbGetAllClientSvcsAsync(clientId){
     return await dbGetDataAsync("svcs", "/clients/svcs/bycid/", paramObj)
 }
 
-// *********************** NEW SVCS DATABASE *************************
+// *********************** SVCS TABLE *************************
 // ***************************************************************
 
 
@@ -404,7 +375,8 @@ export async function dbSaveClientAsync(data) {
 }
 
 // ***************************************************************
-// *********************** NEW SVCS DATABASE *************************
+// *********************** NEW SVCS TABLE ************************
+
 export async function dbSaveServicePatchAsync(svc) {
 	// return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
     return await dbPostDataAsync("/clients/svcs", svc)
@@ -436,18 +408,9 @@ export async function dbSaveServiceRecordAsync(svc) {
 export async function dbSaveSvcAsync(svc) {
 	return await dbPostDataAsync("/clients/svcs", svc)
 }
-// *********************** NEW SVCS DATABASE *************************
-// ***************************************************************
 
 
-
-
-// export async function dbGetDaysSvcsAsync(dayDate){
-//     return await dbGetDataAsync("services", "/clients/services/byday/" + dayDate)
-// }
-
-
-// *********************** NEW SVCS DATABASE *************************
+// *********************** NEW SVCS TABLE *************************
 // ***************************************************************
 export async function dbGetAllSvcsByDateAsync(month, svcCat, date) {
     const paramObj = { month: month }
@@ -503,47 +466,14 @@ export async function dbGetSvcsInMonthAsync(monthYear){
 export async function dbGetServiceAsync(svcId) {
 	return await dbGetDataAsync("services", "/clients/services/byid/" + svcId)
 }
-// ***** NOT USED *****
-
-// export async function dbSaveLastServedAsync(client, serviceTypeId, serviceCategory, itemsServed, isUSDA){
-// 	const serviceDateTime = moment().format('YYYY-MM-DDTHH:mm')
-//     const newClient = Object.assign({}, client)
-// 	const newRecord = { serviceTypeId, serviceDateTime, serviceCategory, itemsServed, isUSDA }
-// 	const newLastServed = []
-// 	let notPushed = true
-// 	if (newClient.lastServed) {
-// 		newClient.lastServed.forEach((svcRecord) => {
-//             if (serviceTypeId == svcRecord.serviceTypeId) {
-// 				notPushed = false
-// 				newLastServed.push(newRecord)
-// 			} else {
-// 				newLastServed.push(svcRecord)
-// 			}
-//         })
-// 	}
-// 	if (notPushed) newLastServed.push(newRecord)
-// 	newClient.lastServed = newLastServed
-//     return await dbSaveClientAsync(newClient).then(() => {
-//         return newLastServed
-//     })
-// }
 
 //******************* REPORTS *********************
 //*************************************************
 
 export async function dbGetEthnicGroupCountAsync(ethnicGroup){
-
-    console.log("CACHED SESSION", cachedSession)
-
     return await dbGetDataPageAsync("/clients/ethnicgroup/" + ethnicGroup)
         .then( data => { return data.count})
 }
-
-// NOT CURRENTLY BEING CALLED
-// async function  dbGetDaysServicesAsync(dayDate){
-// 	dayDate = moment(dayDate).format("YYYYMMDD")
-// 	return dbGetDataAsync("services", "/clients/services/byday/" + dayDate )
-// }
 
 //******************* UTILITIES *******************
 //*************************************************
@@ -620,9 +550,6 @@ function stringToMap(string) {
 
 
 async function dbPostDataAsync(subUrl, data) {
-
-console.log("POSTING:", data)
-
     return fetch(dbUrl + subUrl, {
         method: 'POST',
         headers: {
@@ -660,9 +587,6 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
         const queryParams = (lastKey) ? { ... paramObj, lastkey: lastKey } : paramObj;
         const dataPage = await dbGetDataPageAsync(subUrl, queryParams)
             .then(data => {
-
-console.log("DATA",data);
-
                 lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null;
                 return data[arrayName];
             })
@@ -703,45 +627,6 @@ async function simulatedSave(prob) {
     else
         return Promise.resolve();
 }
-
-// function makeNewSvc(service){
-    
-//     console.log(service);
-
-//     return (
-//         {
-//             adults: service.totalAdultsServed,
-//             children: service.totalChildrenServed,
-//             cFamName: service.clientFamilyName,
-//             cGivName: service.clientGivenName,
-//             cId: service.clientServedId,
-//             cStatus: service.clientStatus,
-//             cZip: service.clientZipcode,
-//             fillBy: (service.fulfillment.dateTime === service.servicedDateTime) ? "" : service.fulfillment.byUserName,
-//             fillDT: (service.fulfillment.dateTime === service.servicedDateTime) ? "" : service.fulfillment.dateTime,
-//             fillItems: (service.fulfillment.dateTime === service.servicedDateTime) ? "" : service.fulfillment.itemCount,
-//             fillPending: service.fulfillment.pending,
-//             fillVoucher: (service.fulfillment.dateTime === service.servicedDateTime) ? "" : service.fulfillment.voucherNumber,
-//             homeless: ( service.homeless === "YES" ) ? true : false,
-//             individuals: service.totalIndividualsServed,
-//             seniors: service.totalSeniorsServed,
-//             // svcDTId: service.servicedDateTime + "#" + service.serviceId,
-//             svcBtns: service.serviceButtons,
-//             svcBy: service.servicedByUserName,
-//             svcCat: service.serviceCategory,
-//             svcDT: service.servicedDateTime,
-//             svcFirst: ( service.svcFirst == true ) ? true : false,
-//             svcId: service.serviceId,
-//             svcItems: service.itemsServed,
-//             svcName: service.serviceName,
-//             svcTypeId: service.serviceTypeId,
-//             svcUpdatedDT: ( service.updatedDateTime === undefined ) ? "" : service.updatedDateTime,
-//             svcUSDA: service.isUSDA,
-//             svcValid: ( service.serviceValid == true ) ? true : false,
-//         }
-//     )
-// }
-
 
 function makeOldServices(svcs){
     const svcTypes = getSvcTypes()
@@ -789,51 +674,3 @@ function makeOldServices(svcs){
 
     return services
 }
-
-// function makeOldSvcTypes(svcTypes){
-//     const serviceTypes = []
-//     svcTypes.forEach(svcType => {
-//         serviceTypes.push(
-//             {
-//                 available: svcType.available,
-//                 createdDateTime: svcType.createdDT,
-//                 fulfillment: svcType.fulfillment,
-//                 isActive: ( svcType.isActive ) ? "Active" : "Inactive",
-//                 isUSDA: svcType.svcUSDA,
-//                 itemsPer: svcType.itemsPer,
-//                 numberItems: svcType.numberItems,
-//                 serviceButtons: svcType.svcBtns,
-//                 serviceCategory: svcType.svcCat,
-//                 serviceDescription: svcType.svcDesc,
-//                 serviceInterval: svcType.svcInterval,
-//                 serviceName: svcType.svcName,
-//                 serviceTypeId: svcType.svcTypeId,
-//                 serviceOldTypeId: svcType.svcOldTypeId,
-//                 target: svcType.target,
-//                 updatedDateTime: svcType.updatedDT
-//             }
-//         )
-//     })
-//     return serviceTypes
-// }
-
-// function MakeNewSvcType(old){
-//     return {
-//         available: old.available,
-//         createdDT: old.createdDateTime,
-//         fulfillment: old.fulfillment,
-//         isActive: ( old.isActive === "Active" ) ? true : false,
-//         svcUSDA: old.isUSDA,
-//         itemsPer: old.itemsPer,
-//         numberItems: old.numberItems,
-//         svcBtns: old.serviceButtons,
-//         svcCat: old.serviceCategory,
-//         svcDesc: old.serviceDescription,
-//         svcInterval: old.serviceInterval,
-//         svcName: old.serviceName,
-//         svcTypeId: old.serviceTypeId,
-//         svcOldTypeId: old.serviceOldTypeId,
-//         target: old.target,
-//         updatedDT: old.updatedDateTime
-//     }
-// }
