@@ -19,7 +19,7 @@
   "homepage": "https://github.com/UnconditionedLife/smum#readme",
   "dependencies": {
     "dynamodbexportcsv": "^0.2.6",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "requirejs": "^2.3.6"
   }
 }
