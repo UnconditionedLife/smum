@@ -16,6 +16,7 @@ import AnnualDistributionReport from './Reports/AnnualDistributionReport.jsx';
 import AllMonthlyServicesReport from './Reports/AllMonthlyServicesReport.jsx';
 import AllServicesByDayReport from './Reports/AllServicesByDayReport.jsx';
 import PopulationChildrenByAgeReport from './Reports/PopulationChildrenByAgeReport.jsx';
+import PopulationChildrenByAgeReportClientInfo from './Reports/PopulationChildrenByAgeReportClientInfo.jsx';
 
 import { PatchSeniorCountInServiceDay } from '../../System/js/Patch';
 import EthnicityReport from './Reports/EthnicityReport.jsx';
@@ -159,6 +160,14 @@ export default function ReportsPage() {
             setReportActions(buttonCode);
         }
 
+        if (populationType == "CHILDREN-BY-VISITS-FULL") {
+            setReportHeading("Children in Population by Food Services in " + days + " Days Between " + minVisits + "-" + maxVisits + " Visits");
+            setReportOpen(true);
+            setReportBody(<PopulationChildrenByAgeReportClientInfo days={ days } minVisits={ minVisits } maxVisits={ maxVisits }/>);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+
         // if (populationType == "ALL-CHILDREN-BY-VISITS") {
         //     setReportHeading("All Children in Population - Visits");
         //     setReportOpen(true);
@@ -296,7 +305,8 @@ export default function ReportsPage() {
                        
                         <Box display='flex'>
                             <Select value={populationType} onChange={(event) => handlePopulationType(event.target.value)} width={ 240 } name="report" label="Report">
-                                <MenuItem default={ true } value="CHILDREN-BY-VISITS">Children by Food Services</MenuItem>
+                                <MenuItem default={ true } value="CHILDREN-BY-VISITS">Children by Food Services (Counts)</MenuItem>
+                                <MenuItem default={ true } value="CHILDREN-BY-VISITS-FULL">Children by Food Services (Full)</MenuItem>
                             </Select>
                             <TextField style={{ width: "60px", height:"28px", marginTop: "0", marginLeft: "16px", marginRight: "4px" }} 
                                 value={ days } size="small" name="days" label="Days"
