@@ -78,6 +78,7 @@ export function utilCalcAgeGroupingAllDeps(dependents){
     const ranges = { "0-1": 0, "2-3": 1, "4-6": 2, "7-8": 3, "9-10": 4, "11-12": 5, "13-17": 6}
     dependents.forEach((dep) => {
         const index = ranges[utilCalcAgeGrouping(dep)]
+		console.log(index)
         if (index >= 0 && index <= 6)
             results[index] = results[index] + 1
     })

@@ -21,6 +21,8 @@ import { PatchSeniorCountInServiceDay } from '../../System/js/Patch';
 import EthnicityReport from './Reports/EthnicityReport.jsx';
 import DailyFoodBankReportNonUSDA from './Reports/DailyFoodBankReportNonUSDA.jsx';
 import ThanksgivingTurkeyReport from './Reports/ThanksgivingTurkeyReport.jsx';
+import ChristmasGiftCardReport from './Reports/ChristmasGiftCardReport.jsx';
+import ChristmasToyReport from './Reports/ChristmasToyReport.jsx';
 
 export default function ReportsPage() {
     const [ dayType, handleDayType ] = useState("FOOD")
@@ -105,6 +107,20 @@ export default function ReportsPage() {
             setReportHeading("Thanksgiving Turkey - Annual Report - " + moment(reportVoucherYear).format('YYYY'));
             setReportOpen(true);
             setReportBody(<ThanksgivingTurkeyReport year={reportVoucherYear} />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+        if (voucherType == "GIFTCARD") {
+            setReportHeading("Christmas Gift Card - Annual Report - " + moment(reportVoucherYear).format('YYYY'));
+            setReportOpen(true);
+            setReportBody(<ChristmasGiftCardReport year={reportVoucherYear} />);
+            const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
+            setReportActions(buttonCode);
+        }
+        if (voucherType == "TOY") {
+            setReportHeading("Christmas Toy Card - Annual Report - " + moment(reportVoucherYear).format('YYYY'));
+            setReportOpen(true);
+            setReportBody(<ChristmasToyReport year={reportVoucherYear} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
@@ -259,6 +275,8 @@ export default function ReportsPage() {
                         <InputLabel>Report</InputLabel>
                         <Select value={voucherType} onChange={(event) => handleVoucherType(event.target.value)} width={ 240 } name="report" label="Report">
                                 <MenuItem value="TURKEY">Thanksgiving Turkey</MenuItem>
+                                <MenuItem value="GIFTCARD">Christmas Gift Card</MenuItem>
+                                <MenuItem value="TOY">Christmas Toy</MenuItem>
                         </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterMoment } >
