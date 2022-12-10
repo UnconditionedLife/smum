@@ -94,7 +94,7 @@ export default function PopulationChildrenByAgeReportClientInfo(props) {
                 const clientSvcs = services.filter(s => {
                     return s.cId === c.clientId
                 })
-                return clientSvcs.length > minVisits && clientSvcs.length < maxVisits
+                return clientSvcs.length >= minVisits && clientSvcs.length <= maxVisits
             })
 
             console.log(clientsWithChildrenFiltered)
