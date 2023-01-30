@@ -4,8 +4,8 @@ import { Box, Popper, Table, TableBody, TableCell, TableContainer,
             TableHead, TableRow } from '@mui/material';
 import DoNotDisturbOnIcon from '@mui/icons-material/DoNotDisturbOn';
 import { Card } from '../../System';
-import { HistoryFormDialog, HistoryPopupMenu } from '..';
-import { isEmpty } from '../../System/js/GlobalUtils';
+import { HistoryFormDialog, HistoryPopupMenu, HistoryBodyRow, HistoryBodyCard } from '..';
+import { isEmpty, isMobile } from '../../System/js/GlobalUtils';
 import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc, isAdmin } from '../../System/js/Database';
 import moment from 'moment';
@@ -22,6 +22,19 @@ export default function HistoryDisplay(props) {
     const [ anchorEl, setAnchorEl ] = useState(null);
     const [ editRecord, setEditRecord ] = useState(null);
     const [ svcHistory, setSvcHistory ] = useState([])
+    const [width, setWidth] = useState(window.innerWidth);
+
+    function handleWindowSizeChange() {
+        setWidth(window.innerWidth);
+    }
+    useEffect(() => {
+        window.addEventListener('resize', handleWindowSizeChange);
+        return () => {
+            window.removeEventListener('resize', handleWindowSizeChange);
+        }
+    }, []);
+
+    const displayMobile = isMobile(width);
 
     useEffect(() => {
         // build svcHistory array by combining and sorting valid & invalid services
@@ -113,7 +126,7 @@ export default function HistoryDisplay(props) {
             </Popper>
         <TableContainer > 
             <Table >
-            <TableHead>
+            {!displayMobile ? <TableHead>
                 <TableRow>
                     <TableCell align="center">Updated <br/> Served</TableCell>
                     <TableCell align="center">Service</TableCell>
@@ -126,86 +139,15 @@ export default function HistoryDisplay(props) {
                     <TableCell align="center"># Seniors</TableCell>
                     <TableCell align="center">Serviced By</TableCell>
                 </TableRow>
-            </TableHead>
-            <TableBody>
-                <Fragment>
-                    { svcHistory.map((svc) => (
-                        <Fragment key={svc.svcId} >
-                            <TableRow 
-                                key={ svc.svcId }
-                                onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
-                                selected= { svc.svcId == selectedService }>
-                                <TableCell align="center" 
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { (svc.svcValid) ? 
-                                            <span style={{ fontSize: '85%'}}>
-                                                { (moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
-                                                    moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
-                                                <br/>
-                                                { moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
-                                            </span> : 
-                                            <Box display="flex">
-                                                <Box mr={ .25 } mt={ 1.4 }>
-                                                    { (svc.svcValid) ? "" : <DoNotDisturbOnIcon fontSize="small" /> }
-                                                </Box>
-                                                <Box>
-                                                    <span style={{ fontSize: '69%'}}>
-                                                        { (moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
-                                                            moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
-                                                        <br/>
-                                                        { moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
-                                                    </span>
-                                                </Box>
-                                            </Box>
-                                        }
-                                </TableCell>
-                                <TableCell align="center" 
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.svcName }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.cStatus }
-                                </TableCell>
-                                <TableCell align="center" 
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { (svc.homeless) ? "YES" : "NO" }
-                                </TableCell>
-                                <TableCell align="center" 
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.svcItems }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.adults }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.children }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.individuals }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.seniors }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.svcBy }
-                                </TableCell>
-                            </TableRow>
-                        </Fragment>
-                    ))}
-                    { editMode === 'edit' &&
-                        <HistoryFormDialog client = { client } editMode={ editMode } updateClient = {props.updateClient}
-                        handleEditMode={ handleEditMode } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
-                    }
-                </Fragment>
-            </TableBody>
+            </TableHead> : null}
+            {!displayMobile ? <HistoryBodyRow svcHistory = { svcHistory } selectedService = { selectedService } handleSelectedService = { handleSelectedService } /> : 
+                <HistoryBodyCard svcHistory = { svcHistory } selectedService = { selectedService } handleSelectedService = { handleSelectedService } />}
             </Table>
         </TableContainer>
+        { editMode === 'edit' &&
+                <HistoryFormDialog client = { client } editMode={ editMode } updateClient = {props.updateClient}
+                handleEditMode={ handleEditMode } editRecord={ editRecord } handleEditRecord={ handleEditRecord } />
+            }
         </Fragment>
     )
 }

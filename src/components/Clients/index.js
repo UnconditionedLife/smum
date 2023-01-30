@@ -14,6 +14,8 @@ import HistoryDisplay from '../Clients/HistoryPage/HistoryDisplay.jsx';
 import HistoryFormDialog from './HistoryPage/HistoryFormDialog.jsx';
 import HistoryHeader from '../Clients/HistoryPage/HistoryHeader.jsx';
 import HistoryPage from '../Clients/HistoryPage/HistoryPage.jsx';
+import HistoryBodyRow from '../Clients/HistoryPage/HistoryBodyRow.jsx';
+import HistoryBodyCard from '../Clients/HistoryPage/HistoryBodyCard.jsx';
 // import LastServed from './ServicesPage/OLD-LastServed.jsx';
 import NoteForm from '../Clients/ServicesPage/NoteForm.jsx';
 import NotesDisplay from '../Clients/ServicesPage/NotesDisplay.jsx';
@@ -31,5 +33,5 @@ export  {
             DependentsDisplay, DependentsFormDialog, FamilyTotalsForm, FinancialInfoForm, FoundPage, 
             HeaderDateTime, HeaderTitle, HistoryDisplay, HistoryFormDialog, HistoryHeader, HistoryPage, 
             HistoryPopupMenu, NoteForm, NotesDisplay, PrimaryButtons, PrintClientInfo, SecondaryButtons, 
-            SelectTestForm, ServiceNotes, ServicesPage 
+            SelectTestForm, ServiceNotes, ServicesPage, HistoryBodyRow, HistoryBodyCard
         }

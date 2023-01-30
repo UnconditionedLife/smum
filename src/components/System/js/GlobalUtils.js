@@ -89,6 +89,10 @@ export function utilOrdinal(n) {
     return n + (s[(v-20)%10] || s[v] || s[0]);
 }
 
+export function isMobile(width) {
+	return width  <= 820;
+}
+
 export function utilCleanUpDate(d) {
 	d = d.replaceAll("-", "/")
 	d = d.replaceAll(".", "/")
