@@ -90,7 +90,7 @@ export function utilOrdinal(n) {
 }
 
 export function isMobile(width) {
-	return width  <= 820;
+	return width  <= 1000;
 }
 
 export function utilCleanUpDate(d) {
