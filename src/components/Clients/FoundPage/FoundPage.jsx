@@ -1,8 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { isEmpty } from '../../System/js/GlobalUtils.js';
+import { Box, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { isEmpty, isMobile } from '../../System/js/GlobalUtils.js';
 import moment from 'moment'
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { Card } from '../../System/index.js';
 
 FoundPage.propTypes = {
     clientsFound: PropTypes.array.isRequired,
@@ -13,6 +16,19 @@ FoundPage.propTypes = {
 export default function FoundPage(props) {
     const { clientsFound, client, updateClientsURL, changeClient } = props
     let clientId = isEmpty(client) ? null : client.clientId
+    const [width, setWidth] = useState(window.innerWidth);
+
+    function handleWindowSizeChange() {
+        setWidth(window.innerWidth);
+    }
+    useEffect(() => {
+        window.addEventListener('resize', handleWindowSizeChange);
+        return () => {
+            window.removeEventListener('resize', handleWindowSizeChange);
+        }
+    }, []);
+
+    const displayMobile = isMobile(width);
 
     function handleSelectedClient(event, newClientId) {
         if (clientId !== newClientId) {
@@ -20,36 +36,57 @@ export default function FoundPage(props) {
             changeClient(newClient[0], 1)
         }
     }
-  
+    const validRow = {color: 'black' }
+    const invalidRow = { color: 'red' }
+
     return (
         <Box mt={ 7 }>
             <TableContainer > 
-                <Table >
-                <TableHead>
-                    <TableRow>
-                    <TableCell>ID #</TableCell>
-                    <TableCell align="center">Given Name</TableCell>
-                    <TableCell align="center">Family Name</TableCell>
-                    <TableCell align="center">DOB</TableCell>
-                    <TableCell align="center">Street Address</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    { clientsFound.map((row) => (
-                        <TableRow 
-                            key={row.clientId} 
-                            onClick= { (event) => handleSelectedClient(event, row.clientId)}
-                            selected= { row.clientId == clientId }
-                            >
-                            <TableCell component="th" scope="row">{row.clientId}</TableCell>
-                            <TableCell align="center">{row.givenName}</TableCell>
-                            <TableCell align="center">{row.familyName}</TableCell>
-                            <TableCell align="center">{moment(row.dob).format("MMM DD, YYYY")}</TableCell>
-                            <TableCell align="center">{row.street}</TableCell>
+                {!displayMobile ?
+                    <Table >
+                    <TableHead>
+                        <TableRow>
+                        <TableCell>ID #</TableCell>
+                        <TableCell align="center">Given Name</TableCell>
+                        <TableCell align="center">Family Name</TableCell>
+                        <TableCell align="center">DOB</TableCell>
+                        <TableCell align="center">Street Address</TableCell>
                         </TableRow>
-                        ))}
-                </TableBody>
-                </Table>
+                    </TableHead>
+                    <TableBody>
+                        { clientsFound.map((row) => (
+                            <TableRow 
+                                key={row.clientId} 
+                                onClick= { (event) => handleSelectedClient(event, row.clientId)}
+                                selected= { row.clientId == clientId }
+                                >
+                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} component="th" scope="row">{row.clientId}</TableCell>
+                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.givenName}</TableCell>
+                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.familyName}</TableCell>
+                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{moment(row.dob).format("MMM DD, YYYY")}</TableCell>
+                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.street}</TableCell>
+                            </TableRow>
+                            ))}
+                    </TableBody> 
+                    </Table> :
+                    <Box display="flex" flexWrap="wrap" justifyContent="center"
+                    alignItems="center">
+                        { clientsFound.map((row) => (
+                                <Card 
+                                key={ row.clientId }
+                                width={320}
+                                onClick= { (event) => handleSelectedClient(event, row.clientId)}
+                                selected= { row.clientId == clientId } 
+                                >
+                                <CardContent style={row.isActive == "Inactive" ?  invalidRow : validRow}>
+                                <strong style={{fontSize: "120%"}}>{row.givenName} {row.familyName}</strong><br /><br />
+                                <strong>ID:</strong>{row.clientId} | <strong>DOB:</strong> {moment(row.dob).format("MMM DD, YYYY")} <br /> 
+                                <strong>Street:</strong>{row.street}
+                                </CardContent>  
+                                </Card>                                  
+                            ))}
+                    </Box>
+                }
             </TableContainer>
         </Box>
     );
