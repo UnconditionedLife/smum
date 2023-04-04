@@ -28,6 +28,9 @@ export default function SearchNavBarContainer() {
         else if (matchPath(url, { path: "/user", exact: true, strict: false })) {
             return 3;
         }
+        else if (matchPath(url, { path: "/nextvisit", exact: true, strict: false })) {
+            return 4;
+        }
         else {
             // if path does not match a valid path default to /clients
             updateRoute(0)
@@ -50,6 +53,9 @@ export default function SearchNavBarContainer() {
             break;
           case 3:
             history.push("/user");
+            break;
+          case 4:
+            history.push("/nextvisit");
             break;
         }
     }

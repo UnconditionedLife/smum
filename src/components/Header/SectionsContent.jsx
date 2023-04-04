@@ -7,6 +7,7 @@ import { AdminRouter } from '../Admin';
 import UserMain from '../User/UserMain.jsx';
 import PageToday from './PageToday.jsx';
 import { getUserName } from '../System/js/Database';
+import NextVisit from '../NextVisit/NextVisit.jsx';
 
 SectionsContent.propTypes = {
     searchTerm: PropTypes.string.isRequired,
@@ -37,6 +38,9 @@ export default function SectionsContent(props) {
             </Route>
             <Route path="/today">
                 <PageToday />
+            </Route>
+            <Route path="/nextvisit">
+                <NextVisit />
             </Route>
         </Container>
     );
