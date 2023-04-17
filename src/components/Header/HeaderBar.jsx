@@ -306,9 +306,9 @@ export default function HeaderBar(props) {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
-                <Dialog open={ !(userName) }>
+                {!(userName) && <Dialog open={true}>
                     <LoginForm onLogin={ (x) => setSession(x, true) } />
-                </Dialog>
+                </Dialog>}
                 <Box flexGrow={1} >
                     <AppBar position="fixed">
                         <Toolbar>
