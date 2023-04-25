@@ -76,38 +76,16 @@ const ClientInfoSheet = React.forwardRef((props, ref) => {
                 <b>Other Dependents:</b> {client?.family?.totalOtherDependents}
             </Typography>
 
-            <Typography><b>Financial Information</b></Typography>
-            
-            <table>
-                <tbody>
-                    <tr>
-                        <td><Typography><b>Income:</b></Typography></td>
-                        <td><Typography>${client?.financials?.income} / month</Typography></td>
-                    </tr>
-                    <tr>
-                        <td><Typography><b>Rent:</b></Typography></td>
-                        <td><Typography>${client?.financials?.rent} / month</Typography></td>
-                    </tr>
-                    <tr>
-                        <td><Typography><b>Food Stamps:</b></Typography></td>
-                        <td><Typography>${client?.financials?.foodStamps} / month</Typography></td>
-                    </tr>
-                    <tr>
-                        <td><Typography><b>Other Assistance:</b></Typography></td>
-                        <td><Typography>${client?.financials?.govtAssistance} / month</Typography></td>
-                    </tr>
-                </tbody>
-            </table>
-
             <Typography>
                 I certify that the information provided above is accurate and true, and I agree to provide
-                additional information upon request. Further, I agree to the policies of the Food Pantry Program of 
-                Santa Maria Urban Ministry.
+                additional information upon request. Further, I agree to the policies of 
+                Santa Maria Urban Ministry. Signing this is not necessary to receive USDA food distribution.
             </Typography>
             <Typography>
                 <i>Yo certifico que toda la información escrita anteriormente es correcta y verdadera y estoy de
                 acuerdo de proveer información adicional cuando sea pedido. Además, estoy de acuerdo con las
-                polizas del Ministerio Urbano de Santa Maria.</i>
+                polizas del Ministerio Urbano de Santa Maria. Firmar esto no es necesario para recibir la distribución de 
+                alimentos del USDA.</i>
                 <br/><br/><br/>     
             </Typography>       
                 <table width="100%">

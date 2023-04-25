@@ -97,7 +97,7 @@ export default function ClientPage(props) {
                     </AccordionDetails>
                 </Accordion>
 
-                <Accordion key="FinancialInfo" expanded={expanded === 'panel4'} onChange={ handleChange('panel4') }>
+                {/* <Accordion key="FinancialInfo" expanded={expanded === 'panel4'} onChange={ handleChange('panel4') }>
                     <AccordionSummary expandIcon={ <ExpandMore /> } id="panel4bh-header">
                         <Typography variant='button' ><b>Financial Information</b></Typography>
                     </AccordionSummary>
@@ -105,7 +105,7 @@ export default function ClientPage(props) {
                             <FinancialInfoForm client = { client } saveAndUpdateClient={ saveAndUpdateClient } 
                             saveMessage={ saveMessage }/>
                         </Box>
-                </Accordion>
+                </Accordion> */}
             </Box>
         </Fragment>
     );

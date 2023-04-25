@@ -53,7 +53,7 @@ export default function DependentsDisplay(props) {
 
     return (
         <Box display="flex" flexDirection="column" alignItems="flex-end">
-            <Box display="flex" flexDirection="column" alignItems="flex-end" style={{ overflow: "hidden auto" }}>
+            <Box display="flex" flexDirection="column" alignItems="flex-end" style={{ overflow: "hidden auto", width: "100%" }}>
                     <TableContainer align="center"> 
                         <Table align="center">
                         <TableHead>
