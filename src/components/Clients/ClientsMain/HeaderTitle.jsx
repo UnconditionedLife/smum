@@ -55,7 +55,7 @@ export default function HeaderTitle(props) {
             { titleType === 'client' && 
                 <Box mt={ .75 } display='flex' flexDirection='row' height='44px' justifyContent='center' alignContent='center' flexWrap="wrap">
                     <Chip icon={ <House /> } label={ client.clientId } color="primary"
-                        style={{ width:'108px', fontSize:'x-large', justifyContent:'left', marginRight: '12px' }} /> 
+                        style={{ width:'118px', fontSize:'x-large', justifyContent:'left', marginRight: '12px' }} /> 
                     <Box mt={ 0 }>
                         <Typography color='primary' variant='h6' noWrap>
                            <b>{ client.givenName } { client.familyName }</b>

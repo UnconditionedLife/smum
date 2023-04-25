@@ -19,7 +19,7 @@ let cachedSession = null;
 let cachedSettings = null;
 let cachedSvcTypes = []
 let cachedAppVersion = "";
-const MAX_ID_DIGITS = 5
+const MAX_ID_DIGITS = 5;
 
 export let globalMsgFunc = null;
 
@@ -265,7 +265,7 @@ async function dbGetClientsAsync(searchTerm, isDate){
 		searchTerm = utilCleanUpDate(searchTerm)
 		// searchTerm = moment(searchTerm, 'MM-DD-YYYY').format('YYYY-MM-DD') // moved to utilCleanUpDate
 		return await dbGetDataAsync("clients", "/clients/dob/" + searchTerm)
-	} else if (!isNaN(searchTerm) && searchTerm.length < MAX_ID_DIGITS){
+	} else if (!isNaN(searchTerm) && searchTerm.length <= MAX_ID_DIGITS){
 		return await dbGetDataAsync("clients", "/clients/" + searchTerm)
 	} else if (searchTerm.includes(" ")){
 		searchTerm = utilChangeWordCase(searchTerm)
