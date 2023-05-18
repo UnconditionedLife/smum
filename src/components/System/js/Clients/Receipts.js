@@ -1,164 +1,159 @@
 //******************************************************************
-//****** CLIENTS Receipt Printer SECTION JAVASCRIPT FUNCTIONS ******
+//****** CLIENTS Receipt eposPrinter SECTION JAVASCRIPT FUNCTIONS ******
 //******************************************************************
 import moment from  'moment';
 import { utilSortDependentsByGrade, utilCalcGradeGrouping, utilSortDependentsByAge,
     utilCalcAgeGrouping, utilPadTrimString } from './ClientUtils'
 import { getSvcTypes } from '../Database';
 
-let ePosDev = new window.epson.ePOSDevice();
-let printer = null;
+let eposDev;
+let eposPrinter = null;
+let printSocketURL = null;
 let curr_align = '';
 let logo;
 
-//**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
+// Printer discovery and initialization
 
-export function prnConnect(settings) {
-    logo = prnGetLogo();
-    // const port = '8008'; // NO TLS
-    const port = '8043'; // use TLS
+export function prnConnect(settings) {   
+    eposPrinter = null;
+    printSocketURL = null;
+    const url = 'ws://' + settings.printerIP + ':8765';
+    let printSocket = new WebSocket(url);
+    printSocket.addEventListener('open', function (event) {
+        console.log('Print server connected', url);
+        printSocketURL = url;
+        printSocket.close();
+    });
+    printSocket.addEventListener('error', function () {
+        console.log('Print server connection failed');
+        printSocket.close();
+        logo = prnGetLogo();
+        eposDev = new window.epson.ePOSDevice();
+        eposDev.connect(settings.printerIP, 8043, eposConnect);
+    });
+}
 
-    console.log('Printer IP', settings.printerIP, port);
-    ePosDev.connect(settings.printerIP, port, prnCallback_connect);
+function eposConnect(result) {
+    const deviceId = 'local_printer';
+    const options = {'crypto' : false, 'buffer' : false};
+    if ((result == 'OK') || (result == 'SSL_CONNECT_OK')) {
+        // Retrieves the Printer object
+        eposDev.createDevice(deviceId, eposDev.DEVICE_TYPE_PRINTER, options, eposCreateDevice);
+    } else {
+        // Displays error messages
+        // TODO ADD UI ALERT
+        console.log('Epson connect error', result);
+    }
+}
+
+function eposCreateDevice(deviceObj, result) {
+    if (deviceObj === null) {
+        console.log('Epson create device error', result);
+        return;
+    }
+    eposPrinter = deviceObj;
 }
 
 export function prnPrintFoodReceipt(client, svcUSDA) {
-	prnStartReceipt();
-	prnServiceHeader(client, 'EMERGENCY FOOD PANTRY PROGRAM');
-	prnTextLine('(' + client.zipcode +	')');
-	prnFeed(1);
-	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
-	prnTextLine('ADULTS | ADULTOS\t\t' +
+	let rcpt = prnStartReceipt();
+	prnServiceHeader(rcpt, client, 'EMERGENCY FOOD PANTRY PROGRAM');
+	prnTextLine(rcpt, '(' + client.zipcode +	')');
+	prnFeed(rcpt, 1);
+	prnTextLine(rcpt, 'CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
+	prnTextLine(rcpt, 'ADULTS | ADULTOS\t\t' +
 		(client.family.totalAdults + client.family.totalSeniors));
-	prnTextLine('FAMILY | FAMILIA:\t\t' + client.family.totalSize);
-	prnFeed(1);
-	prnTextLine('**************************************')
-	prnTextLine(' ' + svcUSDA + ' ', 2, 2, true);
-	prnTextLine('**************************************');
-	prnEndReceipt();
+	prnTextLine(rcpt, 'FAMILY | FAMILIA:\t\t' + client.family.totalSize);
+	prnFeed(rcpt, 1);
+	prnTextLine(rcpt, '**************************************')
+	prnTextLine(rcpt, ' ' + svcUSDA + ' ', 2, 2, true);
+	prnTextLine(rcpt, '**************************************');
+	prnEndReceipt(rcpt);
 }
 
 export function prnPrintVoucherReceipt(props) {
     const {client, svcType, dependents, grouping} = props
 	let svcName = svcType.svcName;
-	prnStartReceipt();
-	prnServiceHeader(client, svcName.toUpperCase());
-	prnFeed(1);
+	let rcpt = prnStartReceipt();
+	prnServiceHeader(rcpt, client, svcName.toUpperCase());
+	prnFeed(rcpt, 1);
 	if (dependents) {
 		let sortingFn, groupingFn;
         if (grouping == 'age') {
 			sortingFn = utilSortDependentsByAge;
 			groupingFn = utilCalcAgeGrouping;
-			prnTextLine('CHILDREN / NIÑOS        GENDER   AGE', 1, 1, false, 'left');
+			prnTextLine(rcpt, 'CHILDREN / NIÑOS        GENDER   AGE', 1, 1, false, 'left');
 		} else if (grouping == 'grade') {
 			sortingFn = utilSortDependentsByGrade;
 			groupingFn = utilCalcGradeGrouping;
-			prnTextLine('CHILDREN / NIÑOS        GENDER   GRADE', 1, 1, false, 'left');
+			prnTextLine(rcpt, 'CHILDREN / NIÑOS        GENDER   GRADE', 1, 1, false, 'left');
 		}
-		prnFeed(1);
+		prnFeed(rcpt, 1);
 		for (let dep of sortingFn(dependents)) {
 			let childName = utilPadTrimString(dep.givenName.toUpperCase() +
 				' ' + dep.familyName.toUpperCase(), 24);
 			let gender =  utilPadTrimString(dep.gender.toUpperCase(), 9);
 			let group = utilPadTrimString(groupingFn(dep), 5);
-			prnTextLine(childName + gender + group, 1, 1, false, 'left');
+			prnTextLine(rcpt, childName + gender + group, 1, 1, false, 'left');
 		}
-		prnFeed(1);
+		prnFeed(rcpt, 1);
 	}
-	prnPickupTimes(svcType.fulfillment.fromDateTime,
+	prnPickupTimes(rcpt, svcType.fulfillment.fromDateTime,
 		svcType.fulfillment.toDateTime);
-  prnEndReceipt();
+    prnEndReceipt(rcpt);
 }
 
 export function prnPrintClothesReceipt(client, serviceType) {
 	const numArticles = client.family.totalSize * serviceType.numberItems;
 	const timeLimit = 10; // TODO get from service properties
 
-	prnStartReceipt();
-	prnServiceHeader(client, 'CLOTHES CLOSET PROGRAM');
-	prnFeed(1);
-	prnTextLine('CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
-	prnTextLine('ADULTS | ADULTOS\t\t' +
+	let rcpt = prnStartReceipt();
+	prnServiceHeader(rcpt, client, 'CLOTHES CLOSET PROGRAM');
+	prnFeed(rcpt, 1);
+	prnTextLine(rcpt, 'CHILDREN | NIÑOS\t\t' + client.family.totalChildren);
+	prnTextLine(rcpt, 'ADULTS | ADULTOS\t\t' +
 		(client.family.totalAdults + client.family.totalSeniors));
-	prnFeed(1);
-	prnTextLine('LIMIT OF ' + serviceType.numberItems + ' ITEMS PER PERSON');
-	prnTextLine('LIMITE ' + serviceType.numberItems + ' ARTÍCULOS POR PERSONA');
-	prnFeed(1);
-	prnTextLine('TOTAL ITEMS | ARTÍCULOS');
-	prnTextLine('**************************************')
-	prnTextLine(' ' + numArticles + ' ', 2, 2, true);
-	prnTextLine('**************************************');
-    prnFeed(1);
-	prnTextLine('MAXIMUM TIME ' + timeLimit + ' MINUTES');
-	prnTextLine('TIEMPO MÁXIMO ' + timeLimit + ' MINUTOS');
-    prnFeed(2);
-	prnTextLine('TIME IN___________   TIME OUT___________');
-	prnEndReceipt();
+	prnFeed(rcpt, 1);
+	prnTextLine(rcpt, 'LIMIT OF ' + serviceType.numberItems + ' ITEMS PER PERSON');
+	prnTextLine(rcpt, 'LIMITE ' + serviceType.numberItems + ' ARTÍCULOS POR PERSONA');
+	prnFeed(rcpt, 1);
+	prnTextLine(rcpt, 'TOTAL ITEMS | ARTÍCULOS');
+	prnTextLine(rcpt, '**************************************')
+	prnTextLine(rcpt, ' ' + numArticles + ' ', 2, 2, true);
+	prnTextLine(rcpt, '**************************************');
+    prnFeed(rcpt, 1);
+	prnTextLine(rcpt, 'MAXIMUM TIME ' + timeLimit + ' MINUTES');
+	prnTextLine(rcpt, 'TIEMPO MÁXIMO ' + timeLimit + ' MINUTOS');
+    prnFeed(rcpt, 2);
+	prnTextLine(rcpt, 'TIME IN___________   TIME OUT___________');
+	prnEndReceipt(rcpt);
 }
 
 export function prnPrintReminderReceipt(client, nextVisit) {
-	prnStartReceipt();
-	prnServiceHeader(client, 'NEXT VISIT REMINDER');
-	prnFeed(1);
-    prnTextLine('NEXT VISIT | PRÓXIMA VISITA');
-    prnTextLine('**************************************')
-    prnTextLine(' ' + moment(nextVisit).format("MMMM Do, YYYY") + ' ', 1, 2, true);
-    prnTextLine('**************************************');
-    prnEndReceipt();
+	let rcpt = prnStartReceipt();
+	prnServiceHeader(rcpt, client, 'NEXT VISIT REMINDER');
+	prnFeed(rcpt, 1);
+    prnTextLine(rcpt, 'NEXT VISIT | PRÓXIMA VISITA');
+    prnTextLine(rcpt, '**************************************')
+    prnTextLine(rcpt, ' ' + moment(nextVisit).format("MMMM Do, YYYY") + ' ', 1, 2, true);
+    prnTextLine(rcpt, '**************************************');
+    prnEndReceipt(rcpt);
 }
-
-export function prnFlush() {
-	if (printer)
-		printer.send();
-}
-
-export function prnTest(type) {
-    if (type == 'minimal') {
-        prnStartReceipt();
-        prnFeed(2);
-        prnTextLine('* Test Receipt *', 1, 2, false);
-        prnEndReceipt();
-    }
-    if (type == 'full') {
-        for (let i=0; i < 6; i++)
-            prnTestReceipt(i);
-    }
-	prnFlush();
-}
-
-//**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 
 function prnStartReceipt() {
-    prnAlign('center', true);
-	if (printer) {
-		printer.addTextSmooth(true);
-		printer.addImage(logo.getContext('2d'), 0, 0, logo.width, logo.height,
-			printer.COLOR_1, printer.MODE_GRAY16);
-	} else {
-		let prnWindow = prnGetWindow();
-		let logo_id = 'logo' + Math.floor(Math.random() * 10000);
-		let w = Math.floor(logo.width * 2 / 3);
-		let h = Math.floor(logo.height * 2 / 3);
-		prnWindow.document.writeln('<canvas id="' + logo_id + '" width="' + w +
-			'" height="' + h + '"></canvas>');
-		let ctx = prnWindow.document.getElementById(logo_id).getContext('2d');
-		ctx.drawImage(logo, 0, 0, w, h);
-	}
-	prnFeed(1);
-	prnTextLine('778 S. Almaden Avenue');
-	prnTextLine('San Jose, CA 95110');
-	prnTextLine('(408) 292-3314');
+    return [];
 }
 
 function prnAlign(align, force=false) {
     if (force || align != curr_align) {
-        if (printer) {
+        if (printSocketURL) {
+            // do nothing
+        } else if (eposPrinter) {
             if (align == 'center')
-                printer.addTextAlign(printer.ALIGN_CENTER);
+                eposPrinter.addTextAlign(eposPrinter.ALIGN_CENTER);
             else if (align == 'left')
-                printer.addTextAlign(printer.ALIGN_LEFT);
+                eposPrinter.addTextAlign(eposPrinter.ALIGN_LEFT);
             else if (align == 'right')
-                printer.addTextAlign(printer.ALIGN_RIGHT);
+                eposPrinter.addTextAlign(eposPrinter.ALIGN_RIGHT);
         }
         else {
             let prnWindow = prnGetWindow();
@@ -168,68 +163,117 @@ function prnAlign(align, force=false) {
     curr_align = align;
 }
 
-function prnTextLine(str, width=1, height=1, inverse=false, align='center') {
-    prnAlign(align);
-	if (printer) {
-		printer.addTextSize(width, height);
-		if (inverse)
-			printer.addTextStyle(true,false,false,printer.COLOR_1);
-		printer.addText(str + '\n');
-		if (inverse)
-			printer.addTextStyle(false,false,false,printer.COLOR_1);
-	} else {
-		let prnWindow = prnGetWindow();
-		let style = "font-family:monospace;";
-		if (height > 1)
-			style += 'font-size:' + height*100 + '%;';
-		if (inverse)
-			style += 'color:white;background-color:black;';
-        prnWindow.document.writeln('<span style="' + style + '">' +
-			str.replace(/ /g, '&nbsp;') + '<br/></span>');
-	}
+function prnTextLine(rcpt, str, width=1, height=1, inverse=false, align='center') {
+    rcpt.push({op: 'text', text: str, width: width, height: height, invert: inverse, align: align});
 }
 
-function prnFeed(n) {
-	if (printer) {
-		printer.addTextSize(1, 1);
-        printer.addFeedLine(n);
-	} else {
-		let prnWindow = prnGetWindow();
-		for (let i = 0; i < n; i++) {
-			prnWindow.document.writeln('<br/>');
-		}
-	}
+function prnFeed(rcpt, n) {
+    rcpt.push({op: 'feed', n: n});
 }
 
-function prnEndReceipt() {
-	if (printer) {
-		printer.addFeedLine(2);
-		printer.addCut(printer.CUT_FEED);
-	} else {
-		let prnWindow = prnGetWindow();
-		prnWindow.document.writeln('</p><br/><br/><hr/>');
-	}
+function prnEndReceipt(rcpt) {
+        prnAlign('center', true);
+        if (printSocketURL) {
+            let printSocket = new WebSocket(printSocketURL);
+
+            printSocket.addEventListener('message', function (event) {
+                if (event.data != 'OK')
+                    console.log('Print server response:', event.data);
+                printSocket.close();
+            });
+            printSocket.addEventListener('open', function (event) {
+                printSocket.send(JSON.stringify(rcpt));
+            });
+            printSocket.addEventListener('error', function () {
+                console.log('Print server connection failed');
+                printSocket.close();
+            });
+        } else if (eposPrinter) {
+            // start
+            eposPrinter.addTextSmooth(true);
+            eposPrinter.addImage(logo.getContext('2d'), 0, 0, logo.width, logo.height,
+                eposPrinter.COLOR_1, eposPrinter.MODE_GRAY16);
+            eposPrinter.addTextSize(1, 1);
+            eposPrinter.addFeedLine(1);
+            eposPrinter.addText('778 S. Almaden Avenue\n');
+            eposPrinter.addText('San Jose, CA 95110\n');
+            eposPrinter.addText('(408) 292-3314\n');
+            // middle
+            rcpt.forEach(cmd => {
+                if (cmd.op == 'text') {
+                    prnAlign(cmd.align);
+                    eposPrinter.addTextSize(cmd.width, cmd.height);
+                    if (cmd.invert)
+                        eposPrinter.addTextStyle(true,false,false,eposPrinter.COLOR_1);
+                    eposPrinter.addText(cmd.text + '\n');
+                    if (cmd.invert)
+                        eposPrinter.addTextStyle(false,false,false,eposPrinter.COLOR_1);
+                } else if (cmd.op == 'feed') {
+                    eposPrinter.addTextSize(1, 1);
+                    eposPrinter.addFeedLine(cmd.n);            
+                }
+            });
+            // end
+            eposPrinter.addFeedLine(2);
+            eposPrinter.addCut(eposPrinter.CUT_FEED);
+            eposPrinter.send();
+        } else {
+            // start
+            let prnWindow = prnGetWindow();
+            let logo_id = 'logo' + Math.floor(Math.random() * 10000);
+            let w = Math.floor(logo.width * 2 / 3);
+            let h = Math.floor(logo.height * 2 / 3);
+            prnWindow.document.writeln('<canvas id="' + logo_id + '" width="' + w +
+                '" height="' + h + '"></canvas>');
+            let ctx = prnWindow.document.getElementById(logo_id).getContext('2d');
+            ctx.drawImage(logo, 0, 0, w, h);
+            prnWindow.document.writeln('<br/>');
+            prnWindow.document.writeln('<span style="font-family:monospace;">' +
+                '778 S. Almaden Avenue' + '<br/></span>');
+            prnWindow.document.writeln('<span style="font-family:monospace;">' +
+                'San Jose, CA 95110' + '<br/></span>');
+            prnWindow.document.writeln('<span style="font-family:monospace;">' +
+                '(408) 292-3314' + '<br/></span>');
+            // middle
+            rcpt.forEach(cmd => {
+                if (cmd.op == 'text') {
+                    prnAlign(cmd.align);
+                    let style = "font-family:monospace;";
+                    if (cmd.height > 1)
+                        style += 'font-size:' + cmd.height*100 + '%;';
+                    if (cmd.invert)
+                        style += 'color:white;background-color:black;';
+                    prnWindow.document.writeln('<span style="' + style + '">' +
+                        cmd.text.replace(/ /g, '&nbsp;') + '<br/></span>');
+                } else if (cmd.op == 'feed') {
+                    for (let i = 0; i < cmd.n; i++)
+                        prnWindow.document.writeln('<br/>');          
+                }
+            });
+            // end
+            prnWindow.document.writeln('</p><br/><br/><hr/>');
+        }
 }
 
-function prnServiceHeader(client, title) {
-	prnFeed(2);
-	prnTextLine('* ' + title + ' *', 1, 2);
-	prnTextLine(moment().format("MMMM Do, YYYY LT"));
-	prnFeed(1);
-	prnTextLine(client.givenName + ' ' + client.familyName, 2, 2);
-	prnFeed(1);
-	prnTextLine(' ' + client.clientId + ' ', 2, 1, true);
+function prnServiceHeader(rcpt, client, title) {
+	prnFeed(rcpt, 2);
+	prnTextLine(rcpt, '* ' + title + ' *', 1, 2);
+	prnTextLine(rcpt, moment().format("MMMM Do, YYYY LT"));
+	prnFeed(rcpt, 1);
+	prnTextLine(rcpt, client.givenName + ' ' + client.familyName, 2, 2);
+	prnFeed(rcpt, 1);
+	prnTextLine(rcpt, ' ' + client.clientId + ' ', 2, 1, true);
 }
 
-function prnPickupTimes(fromDateTime, toDateTime) {
-	prnTextLine('**************************************')
-	prnTextLine('PRESENT THIS FOR PICKUP')
-	prnTextLine('HAY QUE PRESENTAR PARA RECLAMAR')
-	prnTextLine(' ' + moment(fromDateTime).format("MMMM Do, YYYY")+ ' ', 2, 2, true);
-	prnFeed(1);
-	prnTextLine(' ' + moment(fromDateTime).format("h:mm a") + ' - ' +
+function prnPickupTimes(rcpt, fromDateTime, toDateTime) {
+	prnTextLine(rcpt, '**************************************')
+	prnTextLine(rcpt, 'PRESENT THIS FOR PICKUP')
+	prnTextLine(rcpt, 'HAY QUE PRESENTAR PARA RECLAMAR')
+	prnTextLine(rcpt, ' ' + moment(fromDateTime).format("MMMM Do, YYYY")+ ' ', 2, 2, true);
+	prnFeed(rcpt, 1);
+	prnTextLine(rcpt, ' ' + moment(fromDateTime).format("h:mm a") + ' - ' +
 		moment(toDateTime).format("h:mm a") + ' ', 1, 1, true);
-	prnTextLine('**************************************');
+	prnTextLine(rcpt, '**************************************');
 }
 
 // PRINTER FUNCTIONS
@@ -238,35 +282,6 @@ function prnGetWindow() {
 	let win = window.open('', 'Receipt Printer', 'width=550,height=1000');
 	win.document.title = 'Receipt Printer';
 	return win;
-}
-
-function prnCallback_connect(result) {
-    var deviceId = 'local_printer';
-    var options = {'crypto' : false, 'buffer' : false};
-    if ((result == 'OK') || (result == 'SSL_CONNECT_OK')) {
-        // Retrieves the Printer object
-        ePosDev.createDevice(deviceId, ePosDev.DEVICE_TYPE_PRINTER, options, prnCallback_createDevice);
-    } else {
-        // Displays error messages
-        // TODO ADD UI ALERT
-        console.log('Printer connect error', result);
-    }
-}
-
-function prnCallback_createDevice(deviceObj, result) {
-    if (deviceObj === null) {
-        console.log('Printer create device error', result);
-        return;
-    }
-    printer = deviceObj;
-    //Registers the print complete event
-    // printer.onreceive = function(response){
-    //     if (response.success) {
-    //         console.log("success in callback_createDevice");
-    //     } else {
-    //        console.log("error in callback_createDevice 1");
-    //     }
-    // }
 }
 
 function prnGetLogo() {
@@ -283,6 +298,7 @@ function prnGetLogo() {
     logo.getContext('2d').drawImage(img, 0, 0, logo.width, logo.height);
     return logo;
 }
+
 
 // Printer testing
 
@@ -334,19 +350,29 @@ const testClient = {
     family: {totalAdults: 2, totalChildren: 4, totalOtherDependents: 1, totalSeniors: 1, totalSize: 7},
 }
 
+export function prnTest(type) {
+    if (type == 'minimal') {
+        prnTestReceipt(0);
+    }
+    if (type == 'full') {
+        for (let i=0; i < 6; i++)
+            prnTestReceipt(i);
+    }
+}
+
 function prnTestReceipt(receiptType) {
 	let service;
     const children = testClient.dependents.filter(d => d.age < 18);
 	switch(receiptType) {
 		case 0:
+			prnPrintReminderReceipt(testClient, new Date());
+			break;
+        case 1:
+            prnPrintFoodReceipt(testClient, 'USDA');
+            break;		
+        case 2:
 			service = getSvcTypes().filter(obj => obj.svcName == 'Clothes')[0];
 			prnPrintClothesReceipt(testClient, service);
-			break;
-		case 1:
-			prnPrintFoodReceipt(testClient, 'USDA');
-			break;
-		case 2:
-			prnPrintReminderReceipt(testClient, new Date());
 			break;
 		case 3:
 			service = getSvcTypes().filter(obj => obj.svcName == 'Thanksgiving Turkey')[0];
