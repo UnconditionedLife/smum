@@ -8,63 +8,6 @@ import time
 
 # TODO Embed logo in server code
 
-## HTTP server
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import ssl
-from io import BytesIO
-
-# Generate key/cert pair with
-# openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365
-# Passphrase: smum
-
-class PrintRequestHandler(BaseHTTPRequestHandler):
-    def do_response(self, code, content):
-        self.send_response(code)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, HEAD, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', self.headers['Access-Control-Request-Headers'])
-        self.send_header('Access-Control-Allow-Private-Network', 'true')
-        self.end_headers()
-        self.wfile.write(content.getvalue())
-
-    def do_HEAD(self):
-        print('HEAD', self.headers)
-        self.send_response(200)
-        self.end_headers()
-        
-    def do_GET(self):
-        response = BytesIO()
-        if self.path == '/print':
-            resp_str = 'GET request at ' + self.date_time_string()
-            response.write(bytes(resp_str, 'utf-8'))
-            self.do_response(200, response)
-        else:
-            self.do_response(404, response)
-
-    def do_OPTIONS(self):
-        response = BytesIO()
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, HEAD, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', self.headers['Access-Control-Request-Headers'])
-        self.send_header('Access-Control-Allow-Private-Network', 'true')
-        self.end_headers()
-        self.wfile.write(response.getvalue())
-
-    def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
-        if content_length > 0:
-            body = self.rfile.read(content_length)
-            do_commands(body)
-        response = BytesIO()
-        self.do_response(200, response)
-
-def start_http_server():
-    httpd = HTTPServer(('localhost', 8000), PrintRequestHandler)
-    httpd.socket = ssl.wrap_socket(httpd.socket,
-        keyfile='key.pem', certfile='cert.pem', server_side=True)
-    httpd.serve_forever()
-
 ## Websocket server
 
 import asyncio
