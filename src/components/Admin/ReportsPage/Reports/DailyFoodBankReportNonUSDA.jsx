@@ -215,11 +215,11 @@ export default function DailyFoodBankReportNonUSDA(props) {
                         </TableCell>
                     </TableRow>
                     <TableRow>  
-                        <TableCell colspan={7} style={{ color:"white" }}>|</TableCell>
+                        <TableCell colSpan={7} style={{ color:"white" }}>|</TableCell>
                     </TableRow>
                     {RenderListTotals(totals,'')}
                     <TableRow>  
-                        <TableCell colspan={7} style={{ color:"white" }}>|</TableCell>
+                        <TableCell colSpan={7} style={{ color:"white" }}>|</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>

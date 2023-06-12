@@ -7,7 +7,7 @@ import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes
     getUserName } from '../Database';
 import { calFindOpenDate } from '../Calendar.js';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
-            prnPrintVoucherReceipt, prnFlush } from './Receipts';
+            prnPrintVoucherReceipt } from './Receipts';
 import cuid from 'cuid';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
@@ -720,5 +720,4 @@ function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
     //     prnPrintVoucherReceipt(params)
     // }
     }
-    prnFlush();
 }
