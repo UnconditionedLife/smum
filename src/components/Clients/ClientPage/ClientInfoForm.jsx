@@ -5,7 +5,7 @@ import { Box, MenuItem, Typography } from '@mui/material';
 import { FormTextField, SaveCancel, FormSelect } from '../../System';
 import { useForm } from "react-hook-form";
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../../System/js/Forms.js';
-import { setEditingState  } from '../../System/js/Database';
+import { setEditingState, SettingsZipcodes  } from '../../System/js/Database';
 
 
 ClientInfoForm.propTypes = {
@@ -16,23 +16,47 @@ ClientInfoForm.propTypes = {
 
 export default function ClientInfoForm(props) {
     const { client, saveAndUpdateClient, saveMessage } = props
+    const validZips = SettingsZipcodes()
     let defValues = { ...client };
     defValues.zipcode = packZipcode(defValues.zipcode, defValues.zipSuffix);
-    const { handleSubmit, reset, control, errors, setValue, getValues, formState } = useForm({
+    const { handleSubmit, reset, watch, control, errors, setValue, getValues, formState } = useForm({
         mode: 'onBlur',
         defaultValues: defValues,
     });
-    const [dob, setDob] = useState(defValues.dob)
+    // const [dob, setDob] = useState(defValues.dob)
+
+    const dob = watch("dob")
+    const zip = watch("zipcode")
+
+    React.useEffect(() => {
+        console.log(validZips)
+        if (validZips.includes(zip)) {
+            setValue("isActive", "Client")
+        }
+        else {
+            setValue("isActive", "NonClient")
+        }
+
+      }, [zip, setValue]);
+
 
     // this hack is required because onchange is not working 
     // with the version of react-hook-form we are using
-    useEffect(() => {
-        const newDob = getValues().dob
-        if (dob !== newDob) {
-            setDob(newDob)
-            setValue("age", moment().diff(newDob, "years"))
+    // useEffect(() => {
+    //     const newDob = getValues().dob
+    //     if (dob !== newDob) {
+    //         setDob(newDob)
+    //         setValue("age", moment().diff(newDob, "years"))
+    //     }
+    // }, [getValues().dob, dob])
+
+    React.useEffect(() => {
+        if (dob) {
+            setValue("age", moment().diff(dob, "years"))
         }
-    }, [getValues().dob, dob])
+
+      }, [dob, setValue]);
+
 
     if (formState.isDirty) setEditingState(true)
 

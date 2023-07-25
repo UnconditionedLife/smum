@@ -24,10 +24,20 @@ export default function DependentsFormDialog(props) {
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const dependent = getDependent(selectedDependent)
     const defValues = dependent;
-    const { handleSubmit, reset, control, errors, formState } = useForm({
+    const { handleSubmit, reset, watch, setValue, control, errors, formState } = useForm({
         mode: 'onBlur',
         defaultValues: defValues,
     });
+
+    const dob = watch("dob")
+
+    React.useEffect(() => {
+        if (dob) {
+            setValue("age", moment().diff(dob, "years"))
+        }
+
+      }, [dob, setValue]);
+
 
     if (dialogOpen) setEditingState(true)
 
@@ -61,7 +71,7 @@ export default function DependentsFormDialog(props) {
             
             return {
                 age: "", dob: "", familyName: "", gender: "", givenName: "",
-                grade: "", gradeDateTime: "", isActive: "Active", relationship: ""
+                grade: "None", gradeDateTime: "", isActive: "Active", relationship: ""
             }
         } else {
             const depArr = client.dependents.filter((dep) => {
