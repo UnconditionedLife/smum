@@ -33,11 +33,11 @@ export default function DbSwitch() {
         <Box display="flex" flexDirection="row" justifyContent="flex-end" 
          bgcolor={ switchOn ? 'warning.main' : 'gray' }>
              <Box>
-             <Button key="print1" m={ .5 } variant="outlined" color="primary" size="small" 
+             <Button key="print1" m={ .5 } variant="outlined" color="secondary" size="small" 
             onClick={ () => prnTest('minimal') } >
                     Min Printer Test
             </Button>
-            <Button key="print2" m={ .5 } variant="outlined" color="primary" size="small"
+            <Button key="print2" m={ .5 } variant="outlined" color="secondary" size="small"
             style = {{ marginRight: '100px' }} 
             onClick={ () => prnTest('full') } >
                     Full Printer Test
