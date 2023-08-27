@@ -4,33 +4,23 @@
 import moment from  'moment';
 import { utilSortDependentsByGrade, utilCalcGradeGrouping, utilSortDependentsByAge,
     utilCalcAgeGrouping, utilPadTrimString } from './ClientUtils'
-import { getSvcTypes } from '../Database';
+import { getSvcTypes, dbSendReceipt } from '../Database';
 
+const usePrintQueue = true;
 let eposDev;
 let eposPrinter = null;
-let printSocketURL = null;
 let curr_align = '';
 let logo;
 
 // Printer discovery and initialization
 
-export function prnConnect(settings) {   
-    eposPrinter = null;
-    printSocketURL = null;
-    const url = 'ws://' + settings.printerIP + ':8765';
-    let printSocket = new WebSocket(url);
-    printSocket.addEventListener('open', function (event) {
-        console.log('Print server connected', url);
-        printSocketURL = url;
-        printSocket.close();
-    });
-    printSocket.addEventListener('error', function () {
-        console.log('Print server connection failed');
-        printSocket.close();
+export function prnConnect(settings) {
+    if (usePrintQueue == false) {
+        console.log('Attempt to initialize Epson printer')
         logo = prnGetLogo();
         eposDev = new window.epson.ePOSDevice();
         eposDev.connect(settings.printerIP, 8043, eposConnect);
-    });
+    }
 }
 
 function eposConnect(result) {
@@ -145,9 +135,7 @@ function prnStartReceipt() {
 
 function prnAlign(align, force=false) {
     if (force || align != curr_align) {
-        if (printSocketURL) {
-            // do nothing
-        } else if (eposPrinter) {
+        if (eposPrinter) {
             if (align == 'center')
                 eposPrinter.addTextAlign(eposPrinter.ALIGN_CENTER);
             else if (align == 'left')
@@ -172,87 +160,75 @@ function prnFeed(rcpt, n) {
 }
 
 function prnEndReceipt(rcpt) {
+    if (usePrintQueue) {
+        dbSendReceipt(rcpt);
+    } else if (eposPrinter) {
+        // start
         prnAlign('center', true);
-        if (printSocketURL) {
-            let printSocket = new WebSocket(printSocketURL);
-
-            printSocket.addEventListener('message', function (event) {
-                if (event.data != 'OK')
-                    console.log('Print server response:', event.data);
-                printSocket.close();
-            });
-            printSocket.addEventListener('open', function (event) {
-                printSocket.send(JSON.stringify(rcpt));
-            });
-            printSocket.addEventListener('error', function () {
-                console.log('Print server connection failed');
-                printSocket.close();
-            });
-        } else if (eposPrinter) {
-            // start
-            eposPrinter.addTextSmooth(true);
-            eposPrinter.addImage(logo.getContext('2d'), 0, 0, logo.width, logo.height,
-                eposPrinter.COLOR_1, eposPrinter.MODE_GRAY16);
-            eposPrinter.addTextSize(1, 1);
-            eposPrinter.addFeedLine(1);
-            eposPrinter.addText('778 S. Almaden Avenue\n');
-            eposPrinter.addText('San Jose, CA 95110\n');
-            eposPrinter.addText('(408) 292-3314\n');
-            // middle
-            rcpt.forEach(cmd => {
-                if (cmd.op == 'text') {
-                    prnAlign(cmd.align);
-                    eposPrinter.addTextSize(cmd.width, cmd.height);
-                    if (cmd.invert)
-                        eposPrinter.addTextStyle(true,false,false,eposPrinter.COLOR_1);
-                    eposPrinter.addText(cmd.text + '\n');
-                    if (cmd.invert)
-                        eposPrinter.addTextStyle(false,false,false,eposPrinter.COLOR_1);
-                } else if (cmd.op == 'feed') {
-                    eposPrinter.addTextSize(1, 1);
-                    eposPrinter.addFeedLine(cmd.n);            
-                }
-            });
-            // end
-            eposPrinter.addFeedLine(2);
-            eposPrinter.addCut(eposPrinter.CUT_FEED);
-            eposPrinter.send();
-        } else {
-            // start
-            let prnWindow = prnGetWindow();
-            let logo_id = 'logo' + Math.floor(Math.random() * 10000);
-            let w = Math.floor(logo.width * 2 / 3);
-            let h = Math.floor(logo.height * 2 / 3);
-            prnWindow.document.writeln('<canvas id="' + logo_id + '" width="' + w +
-                '" height="' + h + '"></canvas>');
-            let ctx = prnWindow.document.getElementById(logo_id).getContext('2d');
-            ctx.drawImage(logo, 0, 0, w, h);
-            prnWindow.document.writeln('<br/>');
-            prnWindow.document.writeln('<span style="font-family:monospace;">' +
-                '778 S. Almaden Avenue' + '<br/></span>');
-            prnWindow.document.writeln('<span style="font-family:monospace;">' +
-                'San Jose, CA 95110' + '<br/></span>');
-            prnWindow.document.writeln('<span style="font-family:monospace;">' +
-                '(408) 292-3314' + '<br/></span>');
-            // middle
-            rcpt.forEach(cmd => {
-                if (cmd.op == 'text') {
-                    prnAlign(cmd.align);
-                    let style = "font-family:monospace;";
-                    if (cmd.height > 1)
-                        style += 'font-size:' + cmd.height*100 + '%;';
-                    if (cmd.invert)
-                        style += 'color:white;background-color:black;';
-                    prnWindow.document.writeln('<span style="' + style + '">' +
-                        cmd.text.replace(/ /g, '&nbsp;') + '<br/></span>');
-                } else if (cmd.op == 'feed') {
-                    for (let i = 0; i < cmd.n; i++)
-                        prnWindow.document.writeln('<br/>');          
-                }
-            });
-            // end
-            prnWindow.document.writeln('</p><br/><br/><hr/>');
-        }
+        eposPrinter.addTextSmooth(true);
+        eposPrinter.addImage(logo.getContext('2d'), 0, 0, logo.width, logo.height,
+            eposPrinter.COLOR_1, eposPrinter.MODE_GRAY16);
+        eposPrinter.addTextSize(1, 1);
+        eposPrinter.addFeedLine(1);
+        eposPrinter.addText('778 S. Almaden Avenue\n');
+        eposPrinter.addText('San Jose, CA 95110\n');
+        eposPrinter.addText('(408) 292-3314\n');
+        // middle
+        rcpt.forEach(cmd => {
+            if (cmd.op == 'text') {
+                prnAlign(cmd.align);
+                eposPrinter.addTextSize(cmd.width, cmd.height);
+                if (cmd.invert)
+                    eposPrinter.addTextStyle(true,false,false,eposPrinter.COLOR_1);
+                eposPrinter.addText(cmd.text + '\n');
+                if (cmd.invert)
+                    eposPrinter.addTextStyle(false,false,false,eposPrinter.COLOR_1);
+            } else if (cmd.op == 'feed') {
+                eposPrinter.addTextSize(1, 1);
+                eposPrinter.addFeedLine(cmd.n);            
+            }
+        });
+        // end
+        eposPrinter.addFeedLine(2);
+        eposPrinter.addCut(eposPrinter.CUT_FEED);
+        eposPrinter.send();
+    } else {
+        // start
+        prnAlign('center', true);
+        let prnWindow = prnGetWindow();
+        let logo_id = 'logo' + Math.floor(Math.random() * 10000);
+        let w = Math.floor(logo.width * 2 / 3);
+        let h = Math.floor(logo.height * 2 / 3);
+        prnWindow.document.writeln('<canvas id="' + logo_id + '" width="' + w +
+            '" height="' + h + '"></canvas>');
+        let ctx = prnWindow.document.getElementById(logo_id).getContext('2d');
+        ctx.drawImage(logo, 0, 0, w, h);
+        prnWindow.document.writeln('<br/>');
+        prnWindow.document.writeln('<span style="font-family:monospace;">' +
+            '778 S. Almaden Avenue' + '<br/></span>');
+        prnWindow.document.writeln('<span style="font-family:monospace;">' +
+            'San Jose, CA 95110' + '<br/></span>');
+        prnWindow.document.writeln('<span style="font-family:monospace;">' +
+            '(408) 292-3314' + '<br/></span>');
+        // middle
+        rcpt.forEach(cmd => {
+            if (cmd.op == 'text') {
+                prnAlign(cmd.align);
+                let style = "font-family:monospace;";
+                if (cmd.height > 1)
+                    style += 'font-size:' + cmd.height*100 + '%;';
+                if (cmd.invert)
+                    style += 'color:white;background-color:black;';
+                prnWindow.document.writeln('<span style="' + style + '">' +
+                    cmd.text.replace(/ /g, '&nbsp;') + '<br/></span>');
+            } else if (cmd.op == 'feed') {
+                for (let i = 0; i < cmd.n; i++)
+                    prnWindow.document.writeln('<br/>');          
+            }
+        });
+        // end
+        prnWindow.document.writeln('</p><br/><br/><hr/>');
+    }
 }
 
 function prnServiceHeader(rcpt, client, title) {

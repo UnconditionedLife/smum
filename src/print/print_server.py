@@ -8,33 +8,18 @@ import time
 
 # TODO Embed logo in server code
 
-## Websocket server
-
-import asyncio
-from websockets.server import serve
-
-async def handler(websocket):
-    log_trace(1, 'Connection start ' + str(websocket.remote_address))
-    async for message in websocket:
-        do_commands(message)
-        await websocket.send('OK')
-    log_trace(1, 'Connection end ' + str(websocket.remote_address))
-
-async def server_main():
-    async with serve(handler, '0.0.0.0', 8765):
-        await asyncio.Future()  # run forever
-
-def start_websocket_server():
-    asyncio.run(server_main())
-
 ## Epson printer
 
 def prn_open(printer_ip, filename):
+    if args.interactive:
+        return {'onscreen': True, 'handle': None}
     try:
         if printer_ip:
-            return printer.Network(printer_ip, timeout=15, profile='TM-T88V')
+            h = printer.Network(printer_ip, timeout=15, profile='TM-T88V')
+            return {'onscreen': False, 'handle': h}
         elif filename:
-            return printer.File(filename, profile='TM-T88V')
+            h = printer.File(filename, profile='TM-T88V')
+            return {'onscreen': False, 'handle': h}
         else:
             log_error('No print destination specified')
             return None
@@ -43,30 +28,72 @@ def prn_open(printer_ip, filename):
         return None
 
 def prn_start_receipt():
-    if prn:
-        prn.image(img_source='small-logo.png', center=True)
-    prn_feed(1)  
+    if prn['onscreen']:
+        prn['handle'] = tk.Tk()
+        prn['handle'].title("Receipt")
+        prn['handle'].configure(bg="white")
+
+        render = ImageTk.PhotoImage(Image.open("small-logo.png"))
+        logo = tk.Label(prn['handle'], image=render)
+        logo.image = render
+        logo.pack()
+    else:
+        prn['handle'].image(img_source='small-logo.png', center=True)
+    prn_feed(1)  # XXX not needed?
     prn_text_line('778 S. Almaden Avenue', align='center')
     prn_text_line('San Jose, CA 95110', align='center')
     prn_text_line('(408) 292-3314', align='center')
 
 def prn_text_line(text, width=1, height=1, invert=False, align='center'):
-	if prn:
-		prn.set(custom_size=True, width=width, height=height, invert=invert,
-            align=align)
-		prn.textln(text)
+    if prn['onscreen']:
+        # XXX align arg is ignored; all lines are centered
+        if width > 1 or height > 1:
+            font = ("Courier", "24", "")
+        else:
+            font = ("Courier", "12", "")
+        if invert:
+            fg = 'white'
+            bg = 'black'
+        else:
+            fg = 'black'
+            bg = 'white'
+        line = tk.Label(prn['handle'], text=text, bg=bg, fg=fg, font=font)
+        line.pack()
+    else:
+        prn['handle'].set(custom_size=True, width=width, height=height, invert=invert, align=align)
+        prn['handle'].textln(text)
 
 def prn_feed(n):
-    if prn:
-        prn.print_and_feed(n)
+    if prn['onscreen']:
+        feed = tk.Label(prn['handle'], text='\n' * (n-1), bg='white', font=("Courier", "12", ""))
+        feed.pack()
+    else:
+        prn['handle'].print_and_feed(n)
 	
 def prn_end_receipt():
-	if prn:
-		prn.print_and_feed(2)
-		prn.cut()
+    prn_feed(2)
+    if prn['onscreen']:
+        # Create and place a button
+        button = tk.Button(prn['handle'], text="Close", fg="red", command=prn['handle'].destroy)
+        button.pack(side="bottom")
+        # Start the GUI event loop
+        prn['handle'].mainloop()
+    else:
+        prn['handle'].cut()
 
-def do_commands(msg):
-    cmd_list = json.loads(msg)
+## Interactive (on-screen) receipt
+
+import tkinter as tk
+from tkinter import font
+from PIL import Image, ImageTk
+
+def print_receipt(msg):
+    try:
+        cmd_list = json.loads(msg)
+    except Exception as e:
+        log_error(f'Invalid receipt: {e}')
+        log_error(msg)
+        return
     log_trace(2, '--- Start Receipt ---')
     prn_start_receipt()
     for cmd in cmd_list:
@@ -82,15 +109,59 @@ def do_commands(msg):
     log_trace(2, '--- End Receipt ---')
 
 def prn_test_receipt():
-    do_commands("""
-        [
-            {"op": "text", "text": "Left justified", "align": "left"},
-            {"op": "text", "text": "Right justified", "align": "right"},
-            {"op": "text", "text": "CENTER", "width": 2, "height": 2, 
-                "invert": true, "align": "center"},
-            {"op": "text", "text": "Last line", "align": "left"}
-        ]
-    """)
+    rcpt = [
+        {"op": "text", "text": "Left justified", "align": "left"},
+        {"op": "text", "text": "Right justified", "align": "right"},
+        {"op": "text", "text": "CENTER", "width": 2, "height": 2, 
+            "invert": True, "align": "center"},
+        {"op": "text", "text": "Last line", "align": "left"}
+    ]
+    rcpt_str = json.dumps(rcpt)
+    while True:
+        print_receipt(rcpt_str)
+        time.sleep(10)
+
+## Print Queue
+
+import http.client
+printq_base = 'hjfje6icwa.execute-api.us-west-2.amazonaws.com'
+
+def printq_poll(queue):
+    log_trace(1, f'Polling print queue {printq_base}/{queue}/receipts')
+    try:
+        connection = http.client.HTTPSConnection(printq_base)
+        while True:
+            connection.request('GET', f'/{queue}/receipts')
+            response = connection.getresponse()
+            data = response.read().decode('utf-8')
+            if response.status == 200:
+                try:          
+                    payload = json.loads(data)
+                except Exception as e:
+                    log_error(f'Bad payload from print queue: {e}')
+                    log_error(data)
+                    payload = {'receipts': []}
+                if len(payload['receipts']) == 0:
+                    log_trace(2, 'Print queue empty')
+                    time.sleep(10)
+                for msg in payload['receipts']:
+                    id = msg['receiptID']
+                    log_trace(1, f'Receipt ID {id}')
+                    rcpt = msg['content'].replace('%34', '"').replace('%09', '\\t')
+                    print_receipt(rcpt)
+                    printq_delete(queue, id)
+    finally:
+        connection.close()
+
+
+def printq_delete(queue, id):
+    connection = http.client.HTTPSConnection(printq_base)
+    connection.request('DELETE', f'/{queue}/receipts?receiptID={id}')
+    response = connection.getresponse()
+    connection.close()
+    if response.status != 200:
+        log_error(f'DELETE {id} failed: {response.msg}')
+
 
 ## Utility Functions
 
@@ -103,29 +174,37 @@ def log_error(msg):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', help='file to receive printer commands')
-    parser.add_argument('-p', '--printer', help='IP address of Epson printer')
+    parser.add_argument('-f', '--file', 
+        help='file to receive printer commands')
+    parser.add_argument('-i', '--interactive', action='store_true', 
+        help='display receipts on screen instead of printing')
+    parser.add_argument('-p', '--printer', 
+        help='IP address of Epson printer')
+    parser.add_argument('-q', '--queue', 
+        default='prod', help='print queue to poll (dev or prod)')
     parser.add_argument('-t', '--test', action='store_true',
         help='print test receipt and exit')
     parser.add_argument('-v', '--verbosity', type=int,
-        default=0, help='level of debug tracing (0-2)')
+        default=1, help='level of debug tracing (0-2)')
     args = parser.parse_args()
 
     prn = prn_open(printer_ip=args.printer, filename=args.file)
     if not prn:
         sys.exit(1)
 
-    if args.test:
-        prn_test_receipt()
-    else:
-        if 0 < args.verbosity <= 2:
-            sys.stdout = open('printlog_' + 
-                time.strftime('%Y%m%d', time.localtime()) + '.txt', 'a')
-            sys.stderr = sys.stdout
-        log_trace(1, 'Print server start')
-        try:
-            start_websocket_server()
-        except KeyboardInterrupt:
-            pass
-        log_trace(1, 'Print server exit')
+    if not args.interactive:
+        # Redirect output to log file
+        sys.stdout = open('printlog_' + 
+            time.strftime('%Y%m%d', time.localtime()) + '.txt', 'a')
+        sys.stderr = sys.stdout
+
+    log_trace(1, 'Print server start')
+    try:
+        if args.test:
+            prn_test_receipt()
+        else:
+            printq_poll(args.queue)
+    except KeyboardInterrupt:
+        pass
+    log_trace(1, 'Print server exit')
     sys.exit(0)

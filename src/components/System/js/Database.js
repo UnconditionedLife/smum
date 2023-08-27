@@ -3,6 +3,7 @@
 //************************************************
 
 import moment from 'moment';
+import cuid from 'cuid';
 import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
 import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
@@ -188,8 +189,23 @@ export function SettingsSchedule() {
     };
 }
 
+//****************** RECEIPTS ********************
+//************************************************
 
+export async function dbSendReceipt(rcpt) {
+    // The structure representing the receipt (as a JSON-encoded string) is sent
+    // as a single blob in the 'content' field of the strucutre below. That 
+    // structure will also be JSON-encoded as part of the POST request to the
+    // print queue. Therefore, we have to be careful about backslash escapes
+    // within the inner JSON string. The line below substitutes URL encoding
+    // for these special characters, which are later decoded when the receipt
+    // is printed.
+    // URL encode double quote and tab characters.
+    const rcpt_str = JSON.stringify(rcpt).replaceAll('"', "%34").replaceAll("\\t", "%09");
+    let data = { "receiptID": cuid(), "content": rcpt_str };
 
+    return await dbPostDataAsync('/receipts', data);
+}
 
 //******************* SVCTYPES *******************
 //************************************************
