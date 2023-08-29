@@ -102,9 +102,9 @@ export default function DependentsDisplay(props) {
                         <DependentsFormDialog { ...dialogProps } />
                     }
             </Box>
-            <Box display="flex" alignItems="flex-end" mt={ 2 }>
+            <Box display="flex" justifyContent="flex-end" style={{ width: "100%" }} p={ 2 }>
                 <Tooltip title= 'Add Dependent' placement="left-end">
-                    <Fab  float='right' onClick={() => handleNewDependent()} size='small' color='default' ><Add /></Fab> 
+                    <Fab onClick={() => handleNewDependent()} size='small' color='default' ><Add /></Fab> 
                 </Tooltip>
             </Box>
         </Box>
