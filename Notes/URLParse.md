@@ -1,5 +1,6 @@
 # URL Parsing
-Forms are implemented using the [react-router](https://reactrouter.com/web/guides/quick-start) component. This component allows for different pages to be rendered based
+Navigation through the application is based on the current URL, which is parsed using the [react-router](https://reactrouter.com/web/guides/quick-start) 
+component. This component allows for different pages to be rendered based
 on the URL, along with providing the ability to change the URL.
 
 The most important hook in this package is the `useHistory()` hook, which allows one to dynamically update the route the user sees. This hook has a `push` method which allows for one to update the URL that the user sees.
