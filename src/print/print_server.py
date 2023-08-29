@@ -30,6 +30,7 @@ def prn_open(printer_ip, filename):
 def prn_start_receipt():
     if prn['onscreen']:
         prn['handle'] = tk.Tk()
+        prn['handle'].geometry('+100+100')
         prn['handle'].title("Receipt")
         prn['handle'].configure(bg="white")
 
@@ -143,8 +144,8 @@ def printq_poll(queue):
                     payload = {'receipts': []}
                 if len(payload['receipts']) == 0:
                     log_trace(2, 'Print queue empty')
-                    time.sleep(10)
-                for msg in payload['receipts']:
+                    time.sleep(poll_interval())
+                for msg in sorted(payload['receipts'], key=lambda x: x['receiptID']):
                     id = msg['receiptID']
                     log_trace(1, f'Receipt ID {id}')
                     rcpt = msg['content'].replace('%34', '"').replace('%09', '\\t')
@@ -162,15 +163,23 @@ def printq_delete(queue, id):
     if response.status != 200:
         log_error(f'DELETE {id} failed: {response.msg}')
 
+def poll_interval():
+    time_struct = time.localtime()
+    # Mon-Sat 9am-1pm
+    if args.interactive or time_struct[6] != 6 and 9 <= time_struct[3] <= 13:
+        return 1
+    else:
+        return 20
+
 
 ## Utility Functions
 
 def log_trace(level, msg):
     if args.verbosity >= level:
-        print(time.ctime(), 'TRACE', msg)
+        print(time.ctime(), 'TRACE', msg, flush=True)
 
 def log_error(msg):
-    print(time.ctime(), 'ERROR', msg)
+    print(time.ctime(), 'ERROR', msg, flush=True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -181,11 +190,11 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--printer', 
         help='IP address of Epson printer')
     parser.add_argument('-q', '--queue', 
-        default='prod', help='print queue to poll (dev or prod)')
+        default='prod', choices=('prod', 'dev'), help='print queue to poll (dev or prod)')
     parser.add_argument('-t', '--test', action='store_true',
         help='print test receipt and exit')
     parser.add_argument('-v', '--verbosity', type=int,
-        default=1, help='level of debug tracing (0-2)')
+        default=1, choices=range(0, 3), help='level of debug tracing')
     args = parser.parse_args()
 
     prn = prn_open(printer_ip=args.printer, filename=args.file)
