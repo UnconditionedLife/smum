@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from escpos import printer
 import json
 import argparse
 import sys
@@ -8,7 +7,12 @@ import time
 
 # TODO Embed logo in server code
 
-## Epson printer
+## Receipt printing (on-screen and Epson printer)
+
+from escpos import printer
+import tkinter as tk
+from tkinter import font
+from PIL import Image, ImageTk
 
 def prn_open(printer_ip, filename):
     if args.interactive:
@@ -75,18 +79,16 @@ def prn_end_receipt():
     prn_feed(2)
     if prn['onscreen']:
         # Create and place a button
-        button = tk.Button(prn['handle'], text="Close", fg="red", command=prn['handle'].destroy)
-        button.pack(side="bottom")
+        button = tk.Button(prn['handle'], text='Close', fg='red', command=prn_close_window)
+        button.pack(side='bottom')
         # Start the GUI event loop
         prn['handle'].mainloop()
     else:
         prn['handle'].cut()
 
-## Interactive (on-screen) receipt
-
-import tkinter as tk
-from tkinter import font
-from PIL import Image, ImageTk
+def prn_close_window():
+    prn['handle'].destroy()
+    prn['handle'].update()
 
 def print_receipt(msg):
     try:
