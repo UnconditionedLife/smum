@@ -51,7 +51,6 @@ def prn_start_receipt():
 
 def prn_text_line(text, width=1, height=1, invert=False, align='center'):
     if prn['onscreen']:
-        # XXX align arg is ignored; all lines are centered
         if width > 1 or height > 1:
             font = ("Courier", "24", "")
         else:
@@ -63,7 +62,12 @@ def prn_text_line(text, width=1, height=1, invert=False, align='center'):
             fg = 'black'
             bg = 'white'
         line = tk.Label(prn['handle'], text=text, bg=bg, fg=fg, font=font)
-        line.pack()
+        if align == 'left':
+            line.pack(anchor='nw')
+        elif align == 'right':
+            line.pack(anchor='ne')
+        else:
+            line.pack()
     else:
         prn['handle'].set(custom_size=True, width=width, height=height, invert=invert, align=align)
         prn['handle'].textln(text)
@@ -135,7 +139,14 @@ def printq_poll(queue):
         connection = http.client.HTTPSConnection(printq_base)
         while True:
             connection.request('GET', f'/{queue}/receipts')
-            response = connection.getresponse()
+            try:
+                response = connection.getresponse()
+            except http.client.RemoteDisconnected:
+                connection.close()
+                connection = http.client.HTTPSConnection(printq_base)
+                connection.request('GET', f'/{queue}/receipts')
+                response = connection.getresponse()
+                log_trace(1, 'Reconnected')
             data = response.read().decode('utf-8')
             if response.status == 200:
                 try:          
