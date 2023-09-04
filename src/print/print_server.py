@@ -133,20 +133,16 @@ def prn_test_receipt():
 import http.client
 printq_base = 'hjfje6icwa.execute-api.us-west-2.amazonaws.com'
 
+# A less efficient but more robust polling implementation that opens a new connection
+# for every poll request
+
 def printq_poll(queue):
     log_trace(1, f'Polling print queue {printq_base}/{queue}/receipts')
-    try:
-        connection = http.client.HTTPSConnection(printq_base)
-        while True:
+    while True:
+        try:
+            connection = http.client.HTTPSConnection(printq_base)
             connection.request('GET', f'/{queue}/receipts')
-            try:
-                response = connection.getresponse()
-            except http.client.RemoteDisconnected:
-                connection.close()
-                connection = http.client.HTTPSConnection(printq_base)
-                connection.request('GET', f'/{queue}/receipts')
-                response = connection.getresponse()
-                log_trace(1, 'Reconnected')
+            response = connection.getresponse()
             data = response.read().decode('utf-8')
             if response.status == 200:
                 try:          
@@ -164,17 +160,21 @@ def printq_poll(queue):
                     rcpt = msg['content'].replace('%34', '"').replace('%09', '\\t')
                     print_receipt(rcpt)
                     printq_delete(queue, id)
-    finally:
-        connection.close()
+            connection.close()
+        except Exception as e:
+            log_error(f'Exception while polling print queue: {e}')
 
 
 def printq_delete(queue, id):
-    connection = http.client.HTTPSConnection(printq_base)
-    connection.request('DELETE', f'/{queue}/receipts?receiptID={id}')
-    response = connection.getresponse()
-    connection.close()
-    if response.status != 200:
-        log_error(f'DELETE {id} failed: {response.msg}')
+    try:
+        connection = http.client.HTTPSConnection(printq_base)
+        connection.request('DELETE', f'/{queue}/receipts?receiptID={id}')
+        response = connection.getresponse()
+        connection.close()
+        if response.status != 200:
+            log_error(f'DELETE {id} failed: {response.msg}')
+    except Exception as e:
+        log_error(f'Exception during deletion from queue: {e}')
 
 def poll_interval():
     time_struct = time.localtime()
