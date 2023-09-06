@@ -75,6 +75,11 @@ $ cd /Applications/Python\ 3.11
 $ ./Install\ Certificates.command
 ```
 
+## Santa Maria Installation
+- The Epson printer IP address is 192.168.1.3.
+- The print server is installed on the main PC in `/User/owner/PrintServer`. The server
+starts automatically upon boot and log files are created in the same directory.
+
 ## Epson Printer Details
 
 - Printer model: Epson TM-T88V
