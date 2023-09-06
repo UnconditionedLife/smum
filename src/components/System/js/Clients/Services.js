@@ -675,12 +675,12 @@ function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
 function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
     if (svcCat === 'Food_Pantry') {
         prnPrintFoodReceipt(client, svcType.svcUSDA )
-        if (client.isActive === 'Client') {
+        // if (client.isActive === 'Client') { // disabled for now should be in service definition
             // Determine next visit date
             let targetDate = moment().add(14, 'days');
             let nextVisit = calFindOpenDate(targetDate, 7);
             prnPrintReminderReceipt(client, nextVisit);
-        }
+        // }
     } else if (svcCat == 'Clothes_Closet') {
         prnPrintClothesReceipt( client, svcType )
     } else if (svcType.fulfillment.type == 'Voucher') {
