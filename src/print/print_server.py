@@ -31,6 +31,10 @@ def prn_open(printer_ip, filename):
         log_error('Failed to open printer: ' + e)
         return None
 
+def prn_close():
+    if not prn['onscreen']:
+        prn['handle'].close()
+
 def prn_start_receipt():
     if prn['onscreen']:
         prn['handle'] = tk.Tk()
@@ -44,7 +48,6 @@ def prn_start_receipt():
         logo.pack()
     else:
         prn['handle'].image(img_source='small-logo.png', center=True)
-    prn_feed(1)  # XXX not needed?
     prn_text_line('778 S. Almaden Avenue', align='center')
     prn_text_line('San Jose, CA 95110', align='center')
     prn_text_line('(408) 292-3314', align='center')
@@ -95,6 +98,10 @@ def prn_close_window():
     prn['handle'].update()
 
 def print_receipt(msg):
+    global prn
+    prn = prn_open(printer_ip=args.printer, filename=args.file)
+    if not prn:
+        return
     try:
         cmd_list = json.loads(msg)
     except Exception as e:
@@ -102,18 +109,22 @@ def print_receipt(msg):
         log_error(msg)
         return
     log_trace(2, '--- Start Receipt ---')
-    prn_start_receipt()
-    for cmd in cmd_list:
-        log_trace(2, '\t' + str(cmd))
-        op = cmd.pop('op', None)
-        if op == 'text':
-            prn_text_line(**cmd)
-        elif op == 'feed':
-            prn_feed(**cmd)
-        else:
-            log_error('Invalid op:' + str(op))
-    prn_end_receipt()
+    try:
+        prn_start_receipt()
+        for cmd in cmd_list:
+            log_trace(2, '\t' + str(cmd))
+            op = cmd.pop('op', None)
+            if op == 'text':
+                prn_text_line(**cmd)
+            elif op == 'feed':
+                prn_feed(**cmd)
+            else:
+                log_error('Invalid op:' + str(op))
+        prn_end_receipt()
+    except Exception as e:
+        log_error(f'Exception while printing: {e}')
     log_trace(2, '--- End Receipt ---')
+    prn_close()
 
 def prn_test_receipt():
     rcpt = [
@@ -179,7 +190,7 @@ def printq_delete(queue, id):
 def poll_interval():
     time_struct = time.localtime()
     # Mon-Sat 9am-1pm
-    if args.interactive or time_struct[6] != 6 and 9 <= time_struct[3] <= 13:
+    if args.interactive or time_struct[6] != 6 and 9 <= time_struct[3] <= 12:
         return 1
     else:
         return 20
@@ -209,10 +220,6 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbosity', type=int,
         default=1, choices=range(0, 3), help='level of debug tracing')
     args = parser.parse_args()
-
-    prn = prn_open(printer_ip=args.printer, filename=args.file)
-    if not prn:
-        sys.exit(1)
 
     if not args.interactive:
         # Redirect output to log file
