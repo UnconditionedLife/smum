@@ -100,7 +100,8 @@ const useStyles = makeStyles((theme) => ({
 
 HeaderBar.propTypes = {
     checkSectionURL: PropTypes.func.isRequired,
-    updateRoute: PropTypes.func.isRequired
+    updateRoute: PropTypes.func.isRequired,
+    handleLogoutRoute: PropTypes.func.isRequired,
 }
 
 function tokenTimeRemaining(token) {
@@ -114,7 +115,7 @@ export default function HeaderBar(props) {
     const [selectedSection, setSelectedSection] = useState(-1);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const { checkSectionURL , updateRoute } = props;
+    const { checkSectionURL , updateRoute, handleLogoutRoute } = props;
 
     const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']); // XXX combine in single cookie
     const [ appVersion ] = useState(getAppVersion())
@@ -210,6 +211,13 @@ export default function HeaderBar(props) {
         }
     }
 
+    function handleSectionChangeLogout() {
+        if (navigationAllowed()) {
+            setSelectedSection(0);
+            handleLogoutRoute();
+        }
+    }
+
     function handleUserMenuOpen(event) {
         setUserMenuAnchor(event.currentTarget);
     }
@@ -221,7 +229,7 @@ export default function HeaderBar(props) {
     function handleLogout() {
         let myCogUser = cogSetupUser(getUserName());
         setEditingState(false);
-        handleSectionChange(0);
+        handleSectionChangeLogout();
         handleSearchTermChange('');
         myCogUser.signOut();
         setSession(null, false);

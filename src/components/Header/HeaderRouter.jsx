@@ -20,6 +20,7 @@ export default function SearchNavBarContainer() {
                 return 1;
             } else {
                 history.push("/clients");
+                return 0;
             }
         }
         else if (matchPath(url, { path: "/today", exact: true, strict: false })) {
@@ -34,7 +35,12 @@ export default function SearchNavBarContainer() {
         else {
             // if path does not match a valid path default to /clients
             updateRoute(0)
+            return 0;
         }
+    }
+
+    const handleLogout = () => {
+        history.push("/clients")
     }
 
     const updateRoute = (newValue) => {
@@ -61,6 +67,6 @@ export default function SearchNavBarContainer() {
     }
 
     return (
-        <HeaderBar updateRoute={ updateRoute } checkSectionURL={ checkSectionURL } />
+        <HeaderBar updateRoute={ updateRoute } checkSectionURL={ checkSectionURL } handleLogoutRoute={ handleLogout } />
     );
 }

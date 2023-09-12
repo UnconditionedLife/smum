@@ -5,6 +5,7 @@ import { House } from '@mui/icons-material';
 // import { HeaderDateTime } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import moment from 'moment';
+import { calcFamilyCounts } from '../../System/js/Clients/ClientUtils';
 
 HeaderTitle.propTypes = {
     client: PropTypes.object.isRequired,
@@ -17,6 +18,7 @@ export default function HeaderTitle(props) {
     const todaysDate = moment().format("dddd, MMM DD YYYY")
     const [ headerMessage, setHeaderMessage ] = useState(todaysDate)
     let titleType = 'nonclient';
+    const familyCounts = calcFamilyCounts(client)
 
     if (!isEmpty(client)) {
         titleType = 'client'
@@ -56,9 +58,12 @@ export default function HeaderTitle(props) {
                 <Box mt={ .75 } display='flex' flexDirection='row' height='44px' justifyContent='center' alignContent='center' flexWrap="wrap">
                     <Chip icon={ <House /> } label={ client.clientId } color="primary"
                         style={{ width:'118px', fontSize:'x-large', justifyContent:'left', marginRight: '12px' }} /> 
-                    <Box mt={ 0 }>
+                    <Box sx={{ display: 'flex', justifyContent: 'left', alignItems: 'center' }} mt={ 0 }>
                         <Typography color='primary' variant='h6' noWrap>
                            <b>{ client.givenName } { client.familyName }</b>
+                        </Typography>
+                        <Typography color='primary' variant='p' noWrap>
+                        &nbsp;&nbsp;(Fam: {familyCounts.totalSize}, Kids: {familyCounts.totalChildren})
                         </Typography>
                     </Box>
                 </Box> 
