@@ -231,6 +231,21 @@ export default function DailyDistributionReport(props) {
             {RenderSvcList(services)}
             {/* {RenderListTotals(totalsUSDA, "USDA Totals")} */}
             {RenderListTotals(totalsDay, 'Total the responses from the last three columns into the last row. i.e. total family size, how many "Yes", how many "No"' )}
+            
+            <TableRow>
+                <TableCell className='centerText' align="center" colSpan={9}>
+                    <style>
+                        {`@media print { 
+                                .centerText { 
+                                    font-size: 15px;
+                                    line-height: 26px;
+                                    }
+                                }`
+                            }
+                    </style>
+                    <Box my={2} ><i>This institution is an equal opportunity provider.</i></Box>
+                </TableCell>
+            </TableRow>
             </TableBody>
             </Table>
         </TableContainer>

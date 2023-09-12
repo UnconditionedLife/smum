@@ -48,11 +48,27 @@ export default function ReportsHeader(props) {
                         </Box>
                     </Box>
                     { showEfa7Header ?
-                        <Box style={{fontWeight: 'normal',
+                        <Box classname="usdadisclaimers" style={{fontWeight: 'normal',
                         justifyContent: 'left',
                         alignItems: 'left',
-                        textAlign: 'left'}}>
-                           <strong>You self-declare that:</strong>
+                        textAlign: 'left',
+                        fontSize: '12px', 
+                        lineHeight: '15px'}}>
+                            <style>
+                            {`@media print { 
+                                .usdadisclaimers { 
+                                    font-size: 9px;
+                                    line-height: 12px;
+                                    }
+                                }`
+                            }
+                        </style>
+                            <Box my={2}>
+                                <strong>In accordance with Federal law and U.S. Department of Agriculture (USDA) civil rights regulations and policies, this institution is prohibited from discriminating on the basis of race, color, national origin, sex, age, disability, and reprisal or retaliation for prior civil rights activity. (Not all prohibited bases apply to all programs.)</strong>
+                            </Box>
+                            <Box my={2} style={{lineHeight: '24px'}}>
+                                <strong>You self-declare that:</strong>
+                           </Box>
                            <Box ml={4}>
                             <ol>
                                     <li>Your name and address listed is correct; if homeless, you can put homeless as the address.</li>
@@ -62,9 +78,11 @@ export default function ReportsHeader(props) {
                                     <li>You have been shown and have read the full USDA Nondiscrimination Statement.</li>
                             </ol>
                            </Box>
+                           
                            <Box style={{border:"solid 2px black", padding:"8px", marginTop:"16px", marginBottom:"16px"}}>
                                 <strong>You will not be denied TEFAP food if you refuse to disclose any information that is not a requirement of TEFAP.</strong> You will <strong><i>never</i></strong> need to provide your social security number or proof of income.
                            </Box>
+
                         </Box> : null
                     }
                 </TableCell>
