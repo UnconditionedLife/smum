@@ -212,10 +212,8 @@ export default function HeaderBar(props) {
     }
 
     function handleSectionChangeLogout() {
-        if (navigationAllowed()) {
-            setSelectedSection(0);
-            handleLogoutRoute();
-        }
+        setSelectedSection(0);
+        handleLogoutRoute();
     }
 
     function handleUserMenuOpen(event) {

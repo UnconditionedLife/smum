@@ -62,7 +62,7 @@ export default function HeaderTitle(props) {
                         <Typography color='primary' variant='h6' noWrap>
                            <b>{ client.givenName } { client.familyName }</b>
                         </Typography>
-                        <Typography color='primary' variant='p' noWrap>
+                        <Typography color='primary' sx={{fontFamily: 'Helvetica, sans-serif'}} variant='p' noWrap>
                         &nbsp;&nbsp;(Fam: {familyCounts.totalSize}, Kids: {familyCounts.totalChildren})
                         </Typography>
                     </Box>
