@@ -58,7 +58,8 @@ The print server is implemented as a Python program, which can run anywhere on t
 the print server on the same PC that runs the browser primarily used to access the Web application. However, the single print server can
 support print requests from any number of additional browsers running the application simultaneously.
 
-The only dependency of the print server not found in a standard Python installation is the `escpos` module. This module can be installed by the 
+The only dependency of the print server not found in a standard Python installation is the 
+[`escpos`](https://python-escpos.readthedocs.io/en/v3.0a8/index.html) module. This module can be installed by the 
 command `pip install escpos`, which will also install several dependencies required by `escpos`.
 
 ### Mac OS Special Requirements

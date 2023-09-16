@@ -91,7 +91,6 @@ export function clearCache() {
     cachedSession = null;
     cachedSettings = null;
     cachedSvcTypes = [];
-    cachedAppVersion = "";
 }
 
 export function getSession() {

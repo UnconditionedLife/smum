@@ -8,7 +8,7 @@ import { Box, Grid, IconButton, InputAdornment, Typography, Link } from '@mui/ma
 import Alert from '@mui/material/Alert';
 import { Button, TextField, useInput } from '../System';
 import SmumLogo from "../Assets/SmumLogo";
-import { cacheSessionVar, dbGetUserAsync } from '../System/js/Database';
+import { cacheSessionVar, dbGetUserAsync, getAppVersion } from '../System/js/Database';
 import { removeErrorPrefix } from '../System/js/GlobalUtils';
 
 LoginForm.propTypes = {
@@ -286,7 +286,6 @@ export default function LoginForm(props) {
                     <Button variant="contained" color="primary" style={{ textTransform: "none" }} onClick={ doSubmit } >
                         { buttonText }
                     </Button>
-                    <Box mt={1}></Box>
                 </Box>
             </Fragment>
         );
@@ -302,7 +301,12 @@ export default function LoginForm(props) {
                 <form noValidate> { displayLoginForms() } </form>
             </Box>
             { displaySubmitButtons() }
-            <Box width='100%' mt={ -1 } mb={ 1.5 }>
+            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
+                <Typography>
+                    Version { getAppVersion() }
+                </Typography>
+            </Box>
+            <Box width='100%' mt={ 1 } mb={ 1.5 }>
                 { message ? <Alert severity="error">{ message }</Alert> : '' }
             </Box>
         </Box>

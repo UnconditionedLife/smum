@@ -118,7 +118,7 @@ export default function HeaderBar(props) {
     const { checkSectionURL , updateRoute, handleLogoutRoute } = props;
 
     const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']); // XXX combine in single cookie
-    const [ appVersion ] = useState(getAppVersion())
+    const appVersion = getAppVersion();
 
    
     function sessionFromCookies(cookies) {
