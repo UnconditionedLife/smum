@@ -206,6 +206,17 @@ export async function dbSendReceipt(rcpt) {
     return await dbPostDataAsync('/receipts', data);
 }
 
+//****************** ERROR LOGGING ********************
+//************************************************
+
+export async function dbLogError(message) {
+    const isoString = new Date().toISOString();
+
+    let data = {"logID": cuid(), "timestamp": isoString, "message": message };
+
+    return await dbPostDataAsync('/logs', data);
+}
+
 //******************* SVCTYPES *******************
 //************************************************
 
