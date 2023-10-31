@@ -600,7 +600,7 @@ async function dbPostDataAsync(subUrl, data) {
         }
     })
     .catch((error) => {
-        dbLogError('dbPostData Error: ' + JSON.stringify(error));
+        console.error('dbPostData Error: ' + JSON.stringify(error));
         globalMsgFunc('error', 'Database Failure') 
         return Promise.reject('Save Failed');
     })
