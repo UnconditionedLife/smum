@@ -210,6 +210,7 @@ export async function dbSendReceipt(rcpt) {
 //************************************************
 
 export async function dbLogError(message) {
+    console.error(message)
     const isoString = new Date().toISOString();
 
     let data = {"logID": cuid(), "timestamp": isoString, "message": message };
@@ -599,7 +600,7 @@ async function dbPostDataAsync(subUrl, data) {
         }
     })
     .catch((error) => {
-        console.error('dbPostData Error: ' + JSON.stringify(error));
+        dbLogError('dbPostData Error: ' + JSON.stringify(error));
         globalMsgFunc('error', 'Database Failure') 
         return Promise.reject('Save Failed');
     })
