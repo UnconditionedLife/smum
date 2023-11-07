@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--end', 
         help='ending timestamp')
     parser.add_argument('-q', '--queue', 
-        default='dev', choices=('prod', 'dev'), help='error queue (dev or prod)') # XXX default to prod
+        default='prod', choices=('prod', 'dev'), help='error queue (dev or prod)')
     parser.add_argument('-d', '--delete', action='store_true',
         help='delete messages')
     parser.add_argument('-m', '--message', 
