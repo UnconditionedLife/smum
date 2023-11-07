@@ -302,7 +302,7 @@ export default function LoginForm(props) {
             </Box>
             { displaySubmitButtons() }
             <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
-                <Typography>
+                <Typography variant="subtitle2">
                     Version { getAppVersion() }
                 </Typography>
             </Box>
