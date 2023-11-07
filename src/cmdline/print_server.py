@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import json
+import uuid
 import argparse
 import sys
 import time
+from datetime import datetime
 
 # TODO Embed logo in server code
 
@@ -141,49 +143,37 @@ def prn_test_receipt():
 
 ## Print Queue
 
-import http.client
-printq_base = 'hjfje6icwa.execute-api.us-west-2.amazonaws.com'
-
-# A less efficient but more robust polling implementation that opens a new connection
-# for every poll request
+import requests
+url_base = 'http://hjfje6icwa.execute-api.us-west-2.amazonaws.com'
 
 def printq_poll(queue):
-    log_trace(1, f'Polling print queue {printq_base}/{queue}/receipts')
+    log_trace(1, f'Polling print queue {url_base}/{queue}/receipts')
     while True:
         try:
-            connection = http.client.HTTPSConnection(printq_base)
-            connection.request('GET', f'/{queue}/receipts')
-            response = connection.getresponse()
-            data = response.read().decode('utf-8')
-            if response.status == 200:
-                try:          
-                    payload = json.loads(data)
-                except Exception as e:
-                    log_error(f'Bad payload from print queue: {e}')
-                    log_error(data)
-                    payload = {'receipts': []}
-                if len(payload['receipts']) == 0:
-                    log_trace(2, 'Print queue empty')
-                    time.sleep(poll_interval())
-                for msg in sorted(payload['receipts'], key=lambda x: x['receiptID']):
-                    id = msg['receiptID']
-                    log_trace(1, f'Receipt ID {id}')
-                    rcpt = msg['content'].replace('%34', '"').replace('%09', '\\t')
-                    print_receipt(rcpt)
-                    printq_delete(queue, id)
-            connection.close()
+            resp = requests.get(f'{url_base}/{queue}/receipts')
+            resp.raise_for_status()
+            try:
+                payload = resp.json()
+            except Exception as e:
+                log_error(f'Bad payload from print queue: {e}')
+                log_error(resp.text)
+                payload = {'receipts': []}
+            if len(payload['receipts']) == 0:
+                log_trace(2, 'Print queue empty')
+                time.sleep(poll_interval())
+            for msg in sorted(payload['receipts'], key=lambda x: x['receiptID']):
+                id = msg['receiptID']
+                log_trace(1, f'Receipt ID {id}')
+                rcpt = msg['content'].replace('%34', '"').replace('%09', '\\t')
+                print_receipt(rcpt)
+                printq_delete(queue, id)
         except Exception as e:
             log_error(f'Exception while polling print queue: {e}')
 
-
 def printq_delete(queue, id):
     try:
-        connection = http.client.HTTPSConnection(printq_base)
-        connection.request('DELETE', f'/{queue}/receipts?receiptID={id}')
-        response = connection.getresponse()
-        connection.close()
-        if response.status != 200:
-            log_error(f'DELETE {id} failed: {response.msg}')
+        resp = requests.delete(f'{url_base}/{queue}/receipts', params={'receiptID': id})
+        resp.raise_for_status()
     except Exception as e:
         log_error(f'Exception during deletion from queue: {e}')
 
@@ -204,6 +194,11 @@ def log_trace(level, msg):
 
 def log_error(msg):
     print(time.ctime(), 'ERROR', msg, flush=True)
+    url = f'{url_base}/{args.queue}/logs'
+    payload = {'message': msg, 'logTimestamp': datetime.utcnow().isoformat(timespec='seconds') + 'Z', 
+        'logID': str(uuid.uuid1()), 'category':'ERROR'}
+    requests.post(url, data=json.dumps(payload))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

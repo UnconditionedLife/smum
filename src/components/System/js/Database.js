@@ -210,12 +210,11 @@ export async function dbSendReceipt(rcpt) {
 //************************************************
 
 export async function dbLogError(message) {
-    console.error(message)
     const isoString = new Date().toISOString();
+    let data = {"logID": cuid(), "timestamp": isoString, "message": message, "category": "ERROR"};
 
-    let data = {"logID": cuid(), "timestamp": isoString, "message": message };
-
-    return await dbPostDataAsync('/logs', data);
+    console.error(message);
+    return await dbPostDataAsync('/logs', data, false);
 }
 
 //******************* SVCTYPES *******************
@@ -575,7 +574,7 @@ function stringToMap(string) {
 }
 
 
-async function dbPostDataAsync(subUrl, data) {
+async function dbPostDataAsync(subUrl, data, logErrors=true) {
     return fetch(dbUrl + subUrl, {
         method: 'POST',
         headers: {
@@ -600,7 +599,8 @@ async function dbPostDataAsync(subUrl, data) {
         }
     })
     .catch((error) => {
-        console.error('dbPostData Error: ' + JSON.stringify(error));
+        if (logErrors)
+            dbLogError('dbPostData Error: ' + JSON.stringify(error));
         globalMsgFunc('error', 'Database Failure') 
         return Promise.reject('Save Failed');
     })
@@ -639,7 +639,7 @@ async function dbGetDataPageAsync(subUrl, paramObj) {
         }
     })
     .catch((error) => {
-        console.error('dbGetData Error:', error);
+        dbLogError('dbGetData Error: ' + JSON.stringify(error));
         globalMsgFunc('error', 'Error while loading - try again!!') 
         Promise.reject(error);
     })
