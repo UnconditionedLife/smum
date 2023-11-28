@@ -134,19 +134,16 @@ export default function HeaderBar(props) {
 
     function setSession(newSession, reInit=false) {
         if (newSession) {
-            console.log("Init session")
-            let refreshTime = tokenTimeRemaining(newSession.auth.idToken);
-            console.log('Lifetime', refreshTime)
-
             // Update Local and Global Session vars
             cacheSessionVar(newSession);
             
-            setCookie("user", JSON.stringify(newSession.user),  { path: '/' })
-            setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' })
-            setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' })
+            setCookie("user", JSON.stringify(newSession.user),  { path: '/' });
+            setCookie("auth", JSON.stringify(newSession.auth),  { path: '/' });
+            setCookie("refresh", JSON.stringify(newSession.refresh),  { path: '/' });
+            // let refreshTime = tokenTimeRemaining(newSession.auth.idToken);
             // setTimeout(refreshUserSession, refreshTime);
-            if (reInit) initCache();
-            console.log("End session init")
+            if (reInit) 
+                initCache();
         } else {
             removeCookie("user", { path: '/' });
             removeCookie("auth", { path: '/' });

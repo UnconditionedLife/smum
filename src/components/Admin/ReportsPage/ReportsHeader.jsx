@@ -48,7 +48,7 @@ export default function ReportsHeader(props) {
                         </Box>
                     </Box>
                     { showEfa7Header ?
-                        <Box classname="usdadisclaimers" style={{fontWeight: 'normal',
+                        <Box className="usdadisclaimers" style={{fontWeight: 'normal',
                         justifyContent: 'left',
                         alignItems: 'left',
                         textAlign: 'left',

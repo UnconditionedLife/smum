@@ -30,7 +30,6 @@ export function showCache() {
     console.log('Settings:', cachedSettings);
     console.log('DB URL:',  dbUrl);
     console.log('Service Types:', cachedSvcTypes);
-    console.log('AppVer:', cachedAppVersion);
 }
 
 //**************** GLOBAL MESSAGE *****************

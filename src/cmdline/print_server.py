@@ -134,12 +134,11 @@ def prn_test_receipt():
         {"op": "text", "text": "Right justified", "align": "right"},
         {"op": "text", "text": "CENTER", "width": 2, "height": 2, 
             "invert": True, "align": "center"},
-        {"op": "text", "text": "Last line", "align": "left"}
+        {"op": "feed", "n": 1},
+        {"op": "text", "text": "Special chars: ÁáÉéÍíÓóÚú Ññ", "align": "left"}
     ]
     rcpt_str = json.dumps(rcpt)
-    while True:
-        print_receipt(rcpt_str)
-        time.sleep(10)
+    print_receipt(rcpt_str)
 
 ## Print Queue
 
