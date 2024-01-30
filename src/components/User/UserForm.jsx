@@ -56,6 +56,8 @@ export default function UserForm(props) {
     }
 
     async function saveCognito(formValues, isNewUser) {
+        console.log("HERE")
+        console.log(isNewUser)
         let digits = formValues.telephone.replace(/[^+\d]/g, '');
         if (isNewUser) {
             // For new users, create a Cognito user
@@ -73,12 +75,14 @@ export default function UserForm(props) {
                 console.error('Error creating new Cognito user:', error);
             }
         } else {
+            console.log("HERE 2")
             // For existing users, update Cognito user attributes if necessary
             let cogUser = cogSetupUser(formValues.username);
             let attributesToUpdate = [];
-            
-            console.log(userData)
-            console.log(formValues)
+            console.log("USER DATA")
+            console.log(userData.email)
+            console.log("FORM VALUES")
+            console.log(formValues.email)
             if (userData.email !== formValues.email) {
                 attributesToUpdate.push({ Name: 'email', Value: formValues.email });
             }
@@ -111,15 +115,15 @@ export default function UserForm(props) {
         setSaveMessage({ result: 'working' });
         dbSaveUserAsync(userData)
             .then( () => {
+                saveCognito(formValues, isNewUser)
+                .catch( error => {
+                    setSaveMessage({ result: 'error', text: error });
+                });
                 setSaveMessage({ result: 'success', time: userData.updatedDateTime });
                 setEditingState(false)
                 reset(formValues);
                 if (props.onClose)
                     props.onClose();
-                saveCognito(formValues, isNewUser)
-                .catch( error => {
-                    setSaveMessage({ result: 'error', text: error });
-                });
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });
