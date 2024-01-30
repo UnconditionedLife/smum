@@ -5,6 +5,7 @@ import { Box, MenuItem, Typography } from '@mui/material';
 import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
 import { dbGetUserAsync, dbSaveUserAsync, dbSetModifiedTime, setEditingState } from '../System/js/Database';
+import { cogCreateUserAsync, cogSetupUser } from '../System/js/Cognito.js';
 
 UserForm.propTypes = {
     user: PropTypes.object,     // null to create new user
@@ -54,6 +55,50 @@ export default function UserForm(props) {
         return true;
     }
 
+    async function saveCognito(formValues, isNewUser) {
+        let digits = formValues.telephone.replace(/[^+\d]/g, '');
+        if (isNewUser) {
+            // For new users, create a Cognito user
+            try {
+                let newUser = await cogCreateUserAsync(
+                    formValues.userName,
+                    "Password123!", // Ensure you have a password field in your form
+                    [
+                        { Name: 'email', Value: formValues.email },
+                        { Name: 'phone_number', Value: digits }
+                    ]
+                );
+                console.log('New Cognito user created:', newUser);
+            } catch (error) {
+                console.error('Error creating new Cognito user:', error);
+            }
+        } else {
+            // For existing users, update Cognito user attributes if necessary
+            let cogUser = cogSetupUser(formValues.username);
+            let attributesToUpdate = [];
+            
+            console.log(userData)
+            console.log(formValues)
+            if (userData.email !== formValues.email) {
+                attributesToUpdate.push({ Name: 'email', Value: formValues.email });
+            }
+
+            if (userData.phone !== formValues.telephone) {
+                attributesToUpdate.push({ Name: 'phone_number', Value: digits });
+            }
+
+            if (attributesToUpdate.length > 0) {
+                cogUser.updateAttributes(attributesToUpdate, (err, result) => {
+                    if (err) {
+                        console.error('Error updating Cognito user:', err);
+                    } else {
+                        console.log('Cognito user updated successfully:', result);
+                    }
+                });
+            }
+        }
+    }
+
     function doSave(formValues) {
         // Convert form values to canonical format
         formValues.state = formValues.state.toUpperCase();
@@ -71,6 +116,10 @@ export default function UserForm(props) {
                 reset(formValues);
                 if (props.onClose)
                     props.onClose();
+                saveCognito(formValues, isNewUser)
+                .catch( error => {
+                    setSaveMessage({ result: 'error', text: error });
+                });
             })
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });

@@ -20,6 +20,23 @@ export function cogSetupUser(username) {
   return new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
 }
 
+export async function cogCreateUserAsync(username, password, userAttributes) {
+  return new Promise((resolve, reject) => {
+      let attributeList = [];
+
+      userAttributes.forEach(attr => {
+          attributeList.push(new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(attr));
+      });
+
+      userPool.signUp(username, password, attributeList, null, (err, result) => {
+          if (err) 
+              reject(removeErrorPrefix(String(err)));
+          else 
+              resolve(result.user);
+      });
+  });
+}
+
 export function cogGetRefreshToken(token) {
   return new AWSCognito.CognitoIdentityServiceProvider.CognitoRefreshToken({ RefreshToken: token })
 }
