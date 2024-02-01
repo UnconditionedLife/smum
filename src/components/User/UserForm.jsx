@@ -6,6 +6,9 @@ import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
 import { dbGetUserAsync, dbSaveUserAsync, dbSetModifiedTime, setEditingState } from '../System/js/Database';
 import { cogCreateUserAsync, cogSetupUser } from '../System/js/Cognito.js';
+import { removeErrorPrefix } from '../System/js/GlobalUtils';
+
+const defaultPassword = "ChangeMe!";
 
 UserForm.propTypes = {
     user: PropTypes.object,     // null to create new user
@@ -55,52 +58,45 @@ export default function UserForm(props) {
         return true;
     }
 
-    async function saveCognito(formValues, isNewUser) {
-        console.log("HERE")
-        console.log(isNewUser)
-        let digits = formValues.telephone.replace(/[^+\d]/g, '');
+    async function saveUser(userData, isNewUser, updateEmail, updatePhone) {
         if (isNewUser) {
-            // For new users, create a Cognito user
+            console.log("Create new Cognito user")
             try {
                 let newUser = await cogCreateUserAsync(
-                    formValues.userName,
-                    "Password123!", // Ensure you have a password field in your form
+                    userData.userName,
+                    userData.userName == "sr" ? "weak" : defaultPassword, // XXX special case to force an error
                     [
-                        { Name: 'email', Value: formValues.email },
-                        { Name: 'phone_number', Value: digits }
+                        { Name: 'email', Value: userData.email },
+                        { Name: 'phone_number', Value: userData.telephone.replace(/[^+\d]/g, '') }
                     ]
                 );
                 console.log('New Cognito user created:', newUser);
             } catch (error) {
-                console.error('Error creating new Cognito user:', error);
+                return Promise.reject(error);
             }
-        } else {
-            console.log("HERE 2")
+        } else if (updateEmail || updatePhone) {
+            console.log("Update Cognito attributes")
             // For existing users, update Cognito user attributes if necessary
-            let cogUser = cogSetupUser(formValues.username);
-            let attributesToUpdate = [];
-            console.log("USER DATA")
-            console.log(userData.email)
-            console.log("FORM VALUES")
-            console.log(formValues.email)
-            if (userData.email !== formValues.email) {
-                attributesToUpdate.push({ Name: 'email', Value: formValues.email });
+            // XXX Always returns 'User is not authenticated' error
+            let cogUser = cogSetupUser(userData.userName);
+            let attrs = [];
+            if (updateEmail) {
+                attrs.push({ Name: 'email', Value: userData.email });
             }
-
-            if (userData.phone !== formValues.telephone) {
-                attributesToUpdate.push({ Name: 'phone_number', Value: digits });
+            if (updatePhone) {
+                attrs.push({ Name: 'phone_number', Value: userData.telephone.replace(/[^+\d]/g, '') });
             }
-
-            if (attributesToUpdate.length > 0) {
-                cogUser.updateAttributes(attributesToUpdate, (err, result) => {
-                    if (err) {
-                        console.error('Error updating Cognito user:', err);
-                    } else {
-                        console.log('Cognito user updated successfully:', result);
-                    }
-                });
-            }
+            await cogUser.updateAttributes(attrs, (err, result) => {
+                if (err) {
+                    console.error('Error updating Cognito user:', err);
+                    return Promise.reject(removeErrorPrefix(String(err)));
+                } else {
+                    console.log('Cognito user updated successfully:', result);
+                }
+            });
         }
+        console.log("Saving in user table")
+        return await dbSaveUserAsync(userData);
     }
 
     function doSave(formValues) {
@@ -113,12 +109,8 @@ export default function UserForm(props) {
         // Save user data and reset form state to new values
         dbSetModifiedTime(userData, isNewUser);
         setSaveMessage({ result: 'working' });
-        dbSaveUserAsync(userData)
+        saveUser(userData, isNewUser, formState.dirtyFields.email, formState.dirtyFields.telephone)
             .then( () => {
-                saveCognito(formValues, isNewUser)
-                .catch( error => {
-                    setSaveMessage({ result: 'error', text: error });
-                });
                 setSaveMessage({ result: 'success', time: userData.updatedDateTime });
                 setEditingState(false)
                 reset(formValues);
@@ -128,7 +120,6 @@ export default function UserForm(props) {
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });
             });
-        // TODO update cognito if phone or email is modified
     }
     const submitForm = handleSubmit(doSave);
 
@@ -186,9 +177,10 @@ export default function UserForm(props) {
                 <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Contact Info</Typography></Box>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
                     <FormTextField name="telephone" label="Telephone" error={ errors.telephone }
-                        control={ control } rules={ {validate: value => validPhone(value) || 'Enter a US phone number with area code'} } />
+                        control={ control } rules={ {required: 'Required',
+                            validate: value => validPhone(value) || 'Enter a US phone number with area code'} } />
                     <FormTextField fieldsize="xl" name="email" label="Email" error={ errors.email }
-                        control={ control } />
+                        control={ control } rules={ {required: 'Required'}}/>
                 </Box>
             </form>
             <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : doCancel() } } 
