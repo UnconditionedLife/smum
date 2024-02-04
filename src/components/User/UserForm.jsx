@@ -5,10 +5,10 @@ import { Box, MenuItem, Typography } from '@mui/material';
 import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
 import { dbGetUserAsync, dbSaveUserAsync, dbSetModifiedTime, setEditingState } from '../System/js/Database';
-import { cogCreateUserAsync, cogSetupUser } from '../System/js/Cognito.js';
+import { cogCreateUserAsync, cogUpdateUserAsync } from '../System/js/Cognito.js';
 import { removeErrorPrefix } from '../System/js/GlobalUtils';
 
-const defaultPassword = "ChangeMe!";
+const defaultPassword = "ChangeMe0!";
 
 UserForm.propTypes = {
     user: PropTypes.object,     // null to create new user
@@ -60,42 +60,35 @@ export default function UserForm(props) {
 
     async function saveUser(userData, isNewUser, updateEmail, updatePhone) {
         if (isNewUser) {
-            console.log("Create new Cognito user")
             try {
                 let newUser = await cogCreateUserAsync(
                     userData.userName,
-                    userData.userName == "sr" ? "weak" : defaultPassword, // XXX special case to force an error
+                    defaultPassword,
                     [
                         { Name: 'email', Value: userData.email },
                         { Name: 'phone_number', Value: userData.telephone.replace(/[^+\d]/g, '') }
                     ]
                 );
-                console.log('New Cognito user created:', newUser);
             } catch (error) {
                 return Promise.reject(error);
             }
         } else if (updateEmail || updatePhone) {
-            console.log("Update Cognito attributes")
-            // For existing users, update Cognito user attributes if necessary
-            // XXX Always returns 'User is not authenticated' error
-            let cogUser = cogSetupUser(userData.userName);
-            let attrs = [];
-            if (updateEmail) {
-                attrs.push({ Name: 'email', Value: userData.email });
-            }
-            if (updatePhone) {
-                attrs.push({ Name: 'phone_number', Value: userData.telephone.replace(/[^+\d]/g, '') });
-            }
-            await cogUser.updateAttributes(attrs, (err, result) => {
-                if (err) {
-                    console.error('Error updating Cognito user:', err);
-                    return Promise.reject(removeErrorPrefix(String(err)));
-                } else {
-                    console.log('Cognito user updated successfully:', result);
+            if (!props.selfEdit) {
+                return Promise.reject('Email or phone must be edited by the logged-in user');
+            } else {
+                let attrs = [];
+                if (updateEmail) {
+                    attrs.push({ Name: 'email', Value: userData.email });
                 }
-            });
+                if (updatePhone) {
+                    attrs.push({ Name: 'phone_number', Value: userData.telephone.replace(/[^+\d]/g, '') });
+                }
+                await cogUpdateUserAsync(attrs)
+                    .catch( err => {
+                        return Promise.reject(removeErrorPrefix(String(err)));
+                    });
+            }
         }
-        console.log("Saving in user table")
         return await dbSaveUserAsync(userData);
     }
 
@@ -176,10 +169,10 @@ export default function UserForm(props) {
 
                 <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Contact Info</Typography></Box>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField name="telephone" label="Telephone" error={ errors.telephone }
+                    <FormTextField name="telephone" label="Telephone" disabled={ !isNewUser && !props.selfEdit } error={ errors.telephone }
                         control={ control } rules={ {required: 'Required',
                             validate: value => validPhone(value) || 'Enter a US phone number with area code'} } />
-                    <FormTextField fieldsize="xl" name="email" label="Email" error={ errors.email }
+                    <FormTextField fieldsize="xl" name="email" label="Email" disabled={ !isNewUser && !props.selfEdit } error={ errors.email }
                         control={ control } rules={ {required: 'Required'}}/>
                 </Box>
             </form>
