@@ -25,14 +25,15 @@ def retrieve(queue, start, end):
 def display(items):
     for msg in items:
         gmt_time = datetime.fromisoformat(msg['logTimestamp'])
-        timestamp = gmt_time.astimezone().replace(tzinfo=None).isoformat(sep=' ')
+        timestamp = gmt_time.astimezone().replace(tzinfo=None).isoformat(sep=' ', timespec='seconds')
         print(f"{timestamp}  {msg['message']}")
 
 def delete(queue, items):
     url = f'{url_base}/{queue}/logs'
     for msg in items:
-        print(f"DELETE {msg['logID']}")
-        req = requests.delete(url, params={'logID': msg['logID']})
+        r = requests.delete(url, params={'logID': msg['logID']})
+        if r.status_code != 200:
+            print(f"Failed to delete {msg['logID']}")
 
 def add(queue, message):
     url = f'{url_base}/{queue}/logs'

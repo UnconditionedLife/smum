@@ -8,7 +8,7 @@ import { Box, Grid, IconButton, InputAdornment, Typography, Link } from '@mui/ma
 import Alert from '@mui/material/Alert';
 import { Button, TextField, useInput } from '../System';
 import SmumLogo from "../Assets/SmumLogo";
-import { cacheSessionVar, dbGetUserAsync, getAppVersion } from '../System/js/Database';
+import { dbLogError, cacheSessionVar, dbGetUserAsync, getAppVersion } from '../System/js/Database';
 import { removeErrorPrefix } from '../System/js/GlobalUtils';
 
 LoginForm.propTypes = {
@@ -42,7 +42,6 @@ export default function LoginForm(props) {
                         },
                         onFailure: (err) => {
                             setMessage(removeErrorPrefix(err));
-                            // console.log('Login error\n', JSON.stringify(err))
                             if (err.code == 'UserNotConfirmedException')
                                 setAppState("code");
                             if (err.code == 'PasswordResetRequiredException')
@@ -128,6 +127,7 @@ export default function LoginForm(props) {
                 } else {
                     // Notify parent of succeessful login
                     props.onLogin({ user: user, auth: authorization, cogUser: cogUser, refresh: refreshToken });
+                    dbLogError('Login by ' + user.userName);
                 }
             })
             .catch(() => {

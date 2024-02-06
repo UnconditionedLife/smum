@@ -30,7 +30,6 @@ export function showCache() {
     console.log('Settings:', cachedSettings);
     console.log('DB URL:',  dbUrl);
     console.log('Service Types:', cachedSvcTypes);
-    console.log('AppVer:', cachedAppVersion);
 }
 
 //**************** GLOBAL MESSAGE *****************
@@ -211,10 +210,13 @@ export async function dbSendReceipt(rcpt) {
 
 export async function dbLogError(message) {
     const isoString = new Date().toISOString();
-    let data = {"logID": cuid(), "timestamp": isoString, "message": message, "category": "ERROR"};
+    let data = {"logID": cuid(), "logTimestamp": isoString, "message": message, "category": "ERROR"};
 
     console.error(message);
-    return await dbPostDataAsync('/logs', data, false);
+    return await dbPostDataAsync('/logs', data, false)
+        .catch(err => {
+            console.error('Failed write to error log', err);
+        });
 }
 
 //******************* SVCTYPES *******************
@@ -592,17 +594,18 @@ async function dbPostDataAsync(subUrl, data, logErrors=true) {
         }
     })
     .then(json => {
-        if ( json.message ) {
+        if (json.message) {
             return Promise.reject(json.message);
         } else {
             return Promise.resolve(json);
         }
     })
     .catch((error) => {
-        if (logErrors)
+        if (logErrors) {
             dbLogError('dbPostData Error: ' + JSON.stringify(error));
-        globalMsgFunc('error', 'Database Failure') 
-        return Promise.reject('Save Failed');
+            globalMsgFunc('error', 'Database Failure');
+        }
+        return Promise.reject(error);
     })
 }
 
