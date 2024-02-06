@@ -18,7 +18,7 @@ export default function SearchNavBarContainer() {
         else if (matchPath(url, { path: "/admin", exact: true, strict: false }) || matchPath(url, { path: "/admin/*", exact: true, strict: false })) {
             if (isAdmin()) {
                 return 1;
-            } else {
+            } else if (isAdmin() != undefined) {
                 history.push("/clients");
                 return 0;
             }

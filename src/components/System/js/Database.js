@@ -82,7 +82,6 @@ export function initCache() {
     dbGetSvcTypesAsync()
         .then( svcTypes => { 
             cachedSvcTypes = svcTypes;
-            console.log("svcTypes", svcTypes)
         });
 }
 
@@ -101,7 +100,9 @@ export function getUserName() {
 }
 
 export function isAdmin() {
-    return ['Admin', 'TechAdmin'].includes(cachedSession?.user?.userRole);
+    return cachedSession 
+        ? ['Admin', 'TechAdmin'].includes(cachedSession?.user?.userRole) 
+        : undefined
 }
 
 export function isTechAdmin() {
