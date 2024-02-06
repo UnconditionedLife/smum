@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
-import { Box, Dialog, DialogContent, DialogTitle, MenuItem, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { Box, Dialog, DialogContent, DialogTitle, Select, MenuItem, Typography } from '@mui/material';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
 import { SettingsServiceCats } from '../../System/js/Database';
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { dbSaveSvcTypeAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
@@ -17,12 +20,36 @@ ServiceTypeFormDialog.propTypes = {
 
 export default function ServiceTypeFormDialog(props) {
     const { serviceTypes, updateSvcTypes, editRecord, handleEditMode, handleEditRecord } = props
+    const [ receiptList, setReceiptList] = useState([]);
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const isNewSvcType = (editRecord == null);
     const initMsg = isNewSvcType ? {} : {result: 'success', time: editRecord.updatedDateTime};
     const [ saveMessage, setSaveMessage ] = useState(initMsg);
     const svcCats = SettingsServiceCats();
+    const theme = useTheme();
+    const receipts = [ "Food", "Reminder", "Clothes", "Voucher"]
     let data;
+
+    const ITEM_HEIGHT = 48;
+    const ITEM_PADDING_TOP = 8;
+    const MenuProps = {
+        PaperProps: {
+          style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+          },
+        },
+      };
+
+    function getStyles(name, personName, theme) {
+        return {
+          fontWeight:
+            personName.indexOf(name) === -1
+              ? theme.typography.fontWeightRegular
+              : theme.typography.fontWeightMedium,
+        };
+    }
+
 
     if (dialogOpen) setEditingState(true)
 
@@ -116,6 +143,17 @@ export default function ServiceTypeFormDialog(props) {
                 setSaveMessage({ result: 'error', text: message });
             });
 }
+    const updateReceipts = (event) => {
+        const {
+          target: { value },
+        } = event;
+        setReceiptList(
+          // On autofill we get a stringified value.
+          typeof value === 'string' ? value.split(',') : value,
+        );
+        console.log("receiptList", receiptList)
+    };
+
 
 
     function doSave(values) {
@@ -150,6 +188,7 @@ export default function ServiceTypeFormDialog(props) {
         data.fulfillment = fullfillment;
         // data.available = available;
         data.target = target;
+        data.receipts = receiptList.toString();
 
         console.log(data)
         saveSvcType(data)
@@ -194,15 +233,15 @@ export default function ServiceTypeFormDialog(props) {
                         <MenuItem value={ false }>Inactive</MenuItem>
                     </FormSelect>
 
-                    <FormTextField name="svcDesc" label="Service Description" fieldsize="xl" error={ errors.svcDesc } 
-                        control={ control } rules={ {required: 'Required'}} />
-
                     <FormSelect name="svcBtns" label="Buttons" control={ control } fieldsize="sm" error={ errors.svcBtns }
                         rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
                         <MenuItem value="Primary">Primary</MenuItem>
                         <MenuItem value="Secondary">Secondary</MenuItem>
                     </FormSelect>
+
+                    <FormTextField name="svcDesc" label="Service Description" fieldsize="xl" error={ errors.svcDesc } 
+                        control={ control } rules={ {required: 'Required'}} />
 
                     <FormTextField name="numberItems" fieldsize="xs" label="# of Items" error={ errors.numberItems } 
                         control={ control } rules={ {required: 'Required'}} />
@@ -351,8 +390,28 @@ export default function ServiceTypeFormDialog(props) {
                                 ))}
                         </FormSelect>}
                     </Box>
-
-
+                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Print</strong></Typography></Box>
+                        <InputLabel id="print-receipts-label">Receipts</InputLabel>
+                        <Select
+                            labelId="print-receipts-label"
+                            id="receipt-list"
+                            multiple
+                            value={ receiptList }
+                            onChange={ updateReceipts }
+                            input={<OutlinedInput label="receipt" />}
+                            MenuProps={ MenuProps }
+                            width= "300px"
+                        >
+                            {receipts.map((receipt) => (
+                                <MenuItem
+                                key={ receipt }
+                                value={ receipt }
+                                style={getStyles(receipt, receiptList, theme)}
+                                >
+                                {receipt}
+                                </MenuItem>
+                            ))}
+                        </Select>
                     </form>
                     <SaveCancel key={saveMessage.text} saveDisabled={ !formState.isDirty } message={ saveMessage } onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
                 </Box>
