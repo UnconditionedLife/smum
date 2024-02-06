@@ -237,12 +237,6 @@ export function getSvcTypes(){
 }
 
 export async function dbSaveSvcTypeAsync(data) {
-    // return await dbPostDataAsync('/svctypes/', MakeNewSvcType(data))
-    return await dbPostDataAsync('/svctypes/', data)
-}
-
-// *********** USED FOR MIGRATION ONLY **************
-export async function dbMigrateSvcTypeAsync(data) {
     return await dbPostDataAsync('/svctypes/', data)
 }
 

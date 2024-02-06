@@ -45,8 +45,6 @@ function ServiceTypeList(props) {
         const record = props.list.filter(function( obj ) {
             return obj.svcTypeId === newServiceId
         })[0]
-        // console.log(record)
-        // setEditMode('none')
         setEditRecord(record)
         setEditMode('edit')
     }

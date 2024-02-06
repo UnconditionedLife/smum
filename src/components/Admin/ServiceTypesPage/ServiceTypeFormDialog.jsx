@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { useTheme } from '@mui/material/styles';
-import { Box, Dialog, DialogContent, DialogTitle, Select, MenuItem, Typography } from '@mui/material';
+import { Box, Dialog, DialogContent, DialogTitle, FormControl,Select, MenuItem, Typography } from '@mui/material';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import { SettingsServiceCats } from '../../System/js/Database';
@@ -20,14 +20,14 @@ ServiceTypeFormDialog.propTypes = {
 
 export default function ServiceTypeFormDialog(props) {
     const { serviceTypes, updateSvcTypes, editRecord, handleEditMode, handleEditRecord } = props
-    const [ receiptList, setReceiptList] = useState([]);
+    const [ receipts, setReceipts] = useState(editRecord.receipts.split(","));
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const isNewSvcType = (editRecord == null);
     const initMsg = isNewSvcType ? {} : {result: 'success', time: editRecord.updatedDateTime};
     const [ saveMessage, setSaveMessage ] = useState(initMsg);
     const svcCats = SettingsServiceCats();
     const theme = useTheme();
-    const receipts = [ "Food", "Reminder", "Clothes", "Voucher"]
+    const receiptList = [ "Food", "Reminder", "Clothes", "Voucher"]
     let data;
 
     const ITEM_HEIGHT = 48;
@@ -41,15 +41,15 @@ export default function ServiceTypeFormDialog(props) {
         },
       };
 
-    function getStyles(name, personName, theme) {
+    function getStyles(receipt, receiptList, theme) {
         return {
-          fontWeight:
-            personName.indexOf(name) === -1
-              ? theme.typography.fontWeightRegular
-              : theme.typography.fontWeightMedium,
+            fontWeight:
+                receiptList.indexOf(receipt) === -1
+                ? theme.typography.fontWeightRegular
+                : theme.typography.fontWeightMedium,
+            width: "200px"
         };
     }
-
 
     if (dialogOpen) setEditingState(true)
 
@@ -57,7 +57,7 @@ export default function ServiceTypeFormDialog(props) {
         data = {available: {dateFromDay: "1", dateToDay: "1", dateFromMonth:"0", dateToMonth: "1"},
         fulfillment: {fromDateTime:"", toDateTime:"", type:""},
         target: {homeless: "", gender:"", family:"", child:"", childMinGrade:"Unselected", childMaxGrade:"Unselected", childMinAge:"0", childMaxAge:"0", service:""},
-        isActive:"", svcUSDA:"", itemsPer:"", numberItems:"",
+        isActive:"", svcUSDA:"", itemsPer:"", numberItems:"", receipts:"",
         svcBtns:"", svcCat:"",svcDesc:"",svcInterval:"",svcName:"", svcPeriod: "", 
         svcFrequency: ""};
         data.fromdate = packFromDate(data)
@@ -97,7 +97,7 @@ export default function ServiceTypeFormDialog(props) {
         }
         return (currYear + 1)+"-"+(toMonth + 1).toString().padStart(2, '0')+"-"+toDay.toString().padStart(2, '0')
     }
-
+    
     let defValues = { ...data };
     
     const { handleSubmit, reset, watch, control, errors, formState } = useForm({
@@ -126,7 +126,6 @@ export default function ServiceTypeFormDialog(props) {
 
     function saveSvcType(data) {
         dbSetModifiedTime(data, isNewSvcType)
-        // console.log(data)
         if (isNewSvcType) {
             const topId = Math.max(...serviceTypes.map(o => o.svcTypeId))
             data.svcTypeId = topId + 1
@@ -144,14 +143,11 @@ export default function ServiceTypeFormDialog(props) {
             });
 }
     const updateReceipts = (event) => {
-        const {
-          target: { value },
-        } = event;
-        setReceiptList(
-          // On autofill we get a stringified value.
-          typeof value === 'string' ? value.split(',') : value,
-        );
-        console.log("receiptList", receiptList)
+        const { target: { value } } = event;
+        setReceipts(value);
+        // On autofill we get a stringified value.
+        // typeof value === 'string' ? value.split(',') : value,
+        formState.isDirty = true
     };
 
 
@@ -186,11 +182,11 @@ export default function ServiceTypeFormDialog(props) {
         Object.assign(data, unpackDates(values.fromdate, values.todate));
         data.numberItems = parseInt(data.numberItems)
         data.fulfillment = fullfillment;
-        // data.available = available;
         data.target = target;
-        data.receipts = receiptList.toString();
-
-        console.log(data)
+        // strips out the leading comma
+        data.receipts = receipts.toString().charAt(0) 
+            ? receipts.toString().slice(1) 
+            : receipts.toString()
         saveSvcType(data)
         reset(values);
     }
@@ -204,8 +200,6 @@ export default function ServiceTypeFormDialog(props) {
     const toTime = watch("fulfillment.toDateTime");
 
     const targetServices = getTargetServices()
-    // console.log(targetServices)
-    // console.log(svcCats)
     return (
         <Dialog maxWidth="md" open={ dialogOpen } aria-labelledby="form-dialog-title"> 
             <DialogTitle id="form-dialog-title">Service Type Record</DialogTitle>
@@ -390,28 +384,34 @@ export default function ServiceTypeFormDialog(props) {
                                 ))}
                         </FormSelect>}
                     </Box>
-                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Print</strong></Typography></Box>
-                        <InputLabel id="print-receipts-label">Receipts</InputLabel>
-                        <Select
+                    <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap">
+                        <Typography><strong>Print Receipts</strong></Typography></Box>
+                        <InputLabel id="print-receipts-label"></InputLabel>
+                        <FormControl size="small">
+                        <Select 
+                            style={{minWidth: "200px"}}
                             labelId="print-receipts-label"
-                            id="receipt-list"
+                            // fullWidth
+                            control={ control }
+                            error={ errors.receipts } 
+                            // id="receipts"
+                            name="receipts"
                             multiple
-                            value={ receiptList }
+                            value={ receipts }
                             onChange={ updateReceipts }
                             input={<OutlinedInput label="receipt" />}
                             MenuProps={ MenuProps }
-                            width= "300px"
+                            label=""
                         >
-                            {receipts.map((receipt) => (
-                                <MenuItem
-                                key={ receipt }
-                                value={ receipt }
-                                style={getStyles(receipt, receiptList, theme)}
+                            {receiptList.map((receipt) => (
+                                <MenuItem key={ receipt } value={ receipt }
+                                    style={getStyles(receipt, receiptList, theme)}
                                 >
-                                {receipt}
+                                    {receipt}
                                 </MenuItem>
                             ))}
                         </Select>
+                        </FormControl>
                     </form>
                     <SaveCancel key={saveMessage.text} saveDisabled={ !formState.isDirty } message={ saveMessage } onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
                 </Box>
