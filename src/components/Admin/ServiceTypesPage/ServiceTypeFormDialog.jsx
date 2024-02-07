@@ -27,7 +27,7 @@ export default function ServiceTypeFormDialog(props) {
     const [ saveMessage, setSaveMessage ] = useState(initMsg);
     const svcCats = SettingsServiceCats();
     const theme = useTheme();
-    const receiptList = [ "Food", "Reminder", "Clothes", "Voucher"]
+    const receiptList = [ "Food", "Reminder", "Clothes", "Voucher" ]
     let data;
 
     const ITEM_HEIGHT = 48;
@@ -184,7 +184,7 @@ export default function ServiceTypeFormDialog(props) {
         data.fulfillment = fullfillment;
         data.target = target;
         // strips out the leading comma
-        data.receipts = receipts.toString().charAt(0) 
+        data.receipts = receipts.toString().charAt(0) == ","
             ? receipts.toString().slice(1) 
             : receipts.toString()
         saveSvcType(data)

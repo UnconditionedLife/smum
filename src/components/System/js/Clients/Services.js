@@ -423,13 +423,7 @@ function validateSvcInterval( props ){
                 return false
             }
 		}
-        // MAY NOT NEED TO CHECK CLOTHES INTERVAL OR CHECK LAST CLOTHES SERVICE ???
-		// if (serviceCategory === "Clothes_Closet") {
 
-        //     console.log("LOWEST DAY CLOTHES", lastServed.lowestDays)
-
-		// 	if (lastServed.lowestDays === 0) return false
-		// }
 		// validate that a voucher was already registered for
 		if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
 			//serviceHistory = dbGetClientActiveServiceHistory(client)
@@ -673,17 +667,25 @@ function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
 }
 
 function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
-    if (svcCat === 'Food_Pantry') {
-        // prnPrintFoodReceipt(client, svcType.svcUSDA ) // disabled for now should be in service definition
-        // if (client.isActive === 'Client') { // disabled for now should be in service definition
-            // Determine next visit date
-            let targetDate = moment().add(14, 'days');
-            let nextVisit = calFindOpenDate(targetDate, 7);
-            prnPrintReminderReceipt(client, nextVisit);
-        // }
-    } else if (svcCat == 'Clothes_Closet') {
+
+    const receipts = svcType.receipts.split(',')
+
+    if (receipts.includes("Food")) {
+        prnPrintFoodReceipt(client, svcType.svcUSDA )
+    }
+    
+    if (receipts.includes("Reminder")) {
+        // Determine next visit date
+        let targetDate = moment().add(14, 'days');
+        let nextVisit = calFindOpenDate(targetDate, 7);
+        prnPrintReminderReceipt(client, nextVisit);
+    }
+    
+    if (receipts.includes("Clothes")) {
         prnPrintClothesReceipt( client, svcType )
-    } else if (svcType.fulfillment.type == 'Voucher') {
+    }
+    
+    if (receipts.includes("Voucher")) {
         let params
         if (svcCat == 'Back_To_School') {
             const targetService = utilCalcTargetServices([svcType])
@@ -703,21 +705,7 @@ function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
                 params = { client: client, svcType: svcType }
             }
         }
-
         prnPrintVoucherReceipt(params);
         prnPrintVoucherReceipt(params);
-    // } else if (svcCat == 'Back_To_School' && svcType.fulfillment.type == 'Voucher') {
-    //     const targetService = utilCalcTargetServices([svcType])
-    //     const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
-    //     // TODO use function here
-    //     //let service = svcTypes.filter(obj => obj.svcTypeId == svcTypeId)[0]
-    //     const params = { client: client, svcType: svcType, dependents: dependents, gradeOrAge: 'grade' }
-    //     prnPrintVoucherReceipt(params);
-    //     prnPrintVoucherReceipt(params);
-    // } else if (svcCat == 'Thanksgiving' && svcType.fulfillment.type == 'Voucher') {
-    //     const params = { client: client, svcType: svcType }
-    //     prnPrintVoucherReceipt(params)
-    //     prnPrintVoucherReceipt(params)
-    // }
     }
 }
