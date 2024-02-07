@@ -100,9 +100,7 @@ export function getUserName() {
 }
 
 export function isAdmin() {
-    return cachedSession 
-        ? ['Admin', 'TechAdmin'].includes(cachedSession?.user?.userRole) 
-        : undefined
+    return ['Admin', 'TechAdmin'].includes(cachedSession?.user?.userRole); 
 }
 
 export function isTechAdmin() {

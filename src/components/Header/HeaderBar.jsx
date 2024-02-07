@@ -172,7 +172,7 @@ export default function HeaderBar(props) {
     // }
     useEffect(() => {
         const newSection = checkSectionURL();
-        if (newSection !== selectedSection) {
+        if (newSection >= 0 && newSection !== selectedSection) {
             setSelectedSection(newSection)
         }
     });

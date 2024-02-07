@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, useLocation, useHistory, matchPath } from "react-router-dom";
 import { HeaderBar } from ".";
-import { isAdmin } from '../System/js/Database';
+import { getSession, isAdmin } from '../System/js/Database';
 
 export default function SearchNavBarContainer() {
     const route = useLocation();
@@ -9,6 +9,11 @@ export default function SearchNavBarContainer() {
     
     const checkSectionURL = () => {
         const url = route.pathname;
+
+        if (!getSession()) {
+            // Make no navigation changes until we have a valid session set up
+            return -1;
+        }
         if (matchPath(url, { path: "/", exact: true, strict: false })) {
             return 0;
         }
@@ -18,7 +23,7 @@ export default function SearchNavBarContainer() {
         else if (matchPath(url, { path: "/admin", exact: true, strict: false }) || matchPath(url, { path: "/admin/*", exact: true, strict: false })) {
             if (isAdmin()) {
                 return 1;
-            } else if (isAdmin() != undefined) {
+            } else {
                 history.push("/clients");
                 return 0;
             }
