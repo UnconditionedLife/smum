@@ -219,6 +219,13 @@ export async function dbLogError(message) {
         });
 }
 
+export async function dbFetchErrorLogs(startDate, endDate) {
+    return await dbGetDataPageAsync("/logs", {"start": startDate, "end": endDate})
+        .catch(err => {
+            console.error("failed to read logs, ", err);
+        })
+}
+
 //******************* SVCTYPES *******************
 //************************************************
 
