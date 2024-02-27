@@ -309,7 +309,7 @@ export default function HeaderBar(props) {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
-                {!(userName) && <Dialog open={true}>
+                {!(userName) && <Dialog open={true} style={{ margin:0, width:'400px' }}>
                     <LoginForm onLogin={ (x) => setSession(x, true) } />
                 </Dialog>}
                 <Box flexGrow={1} >

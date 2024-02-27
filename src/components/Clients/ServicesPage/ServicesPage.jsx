@@ -128,13 +128,13 @@ export default function ServicesPage(props) {
                     style={{ borderRadius: "6px", backgroundColor:"#F3F3F3" }}>
                     <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
                     {/* <LastServed lastServed={ lastServed } nextService={ nextService } /> */}
-                    <Box mt={ .75 } display='flex' flexDirection='column' key={ lastServedText + nextServiceText }>
+                    <Box mt={ .75 } display='flex' flexDirection='row' key={ lastServedText + nextServiceText }>
                         <Box display='flex' justifyContent='right'>
                             <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
                                 <span style={{ color:"#ccc" }}>SERVED:&nbsp;</span>{ lastServedText }
                             </Typography>
                         </Box>
-                        <Box display='flex' justifyContent='right'>
+                        <Box ml={1.5} display='flex' justifyContent='right'>
                             <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
                                 <span style={{ color:"#ccc" }}>NEXT:&nbsp;</span>{ nextServiceText }
                             </Typography>

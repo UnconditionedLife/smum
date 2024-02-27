@@ -220,7 +220,7 @@ export default function ClientsMain(props) {
     // if (getUserName() === null) return null 
 
     return (
-        <Box key={ client.updatedDateTime } width="100%" p={2} >
+        <Box key={ client.updatedDateTime } width="100%" p={2}  >
             <Snackbar open={ openAlert } autoHideDuration={ 15000 } onClose={ handleAlertClose }>
                 <Alert onClose={ handleAlertClose } severity={ alertSeverity }>{ alertMsg }</Alert>
             </Snackbar>

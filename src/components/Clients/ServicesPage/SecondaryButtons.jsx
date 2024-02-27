@@ -41,7 +41,7 @@ export default function SecondaryButtons(props) {
                             <Button key={ svc.svcTypeId } m={ .5 } variant="contained" 
                                 color="primary" size="large" 
                                 onClick={ () => handleAddSvc( svc.svcTypeId ) }
-                                style={{ minWidth:"176px" }} >
+                                style={{ minWidth:"100px" }} >
                                     { svc.svcName }
                             </Button>
                         }
@@ -50,7 +50,7 @@ export default function SecondaryButtons(props) {
                             <Button key={ svc.svcTypeId + "used" } m={ .25 } variant="outlined" 
                                 color="primary" size="large" startIcon={<ReplayIcon />}
                                 onClick={ () => handleUndoSvc(svc) }
-                                style={{ minWidth:"176px" }}>
+                                style={{ minWidth:"100px" }}>
                                     { svc.svcName }
                             </Button>
                         }

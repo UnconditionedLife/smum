@@ -20,7 +20,7 @@ export default function SectionsContent(props) {
     if ( !getUserName() ) return null;
 
     return (
-        <Container ml={ 0 } style={{ overflowY: 'visible', paddingTop: 0 }}>
+        <Container ml={ 0 } style={{ overflowY: 'visible', margin:0, padding:0, maxWidth:'100%' }}>
             <Route exact path="/">
                 <Redirect to="/clients" />
             </Route>
