@@ -5,6 +5,10 @@ import { Box, MenuItem, Typography } from '@mui/material';
 import { FormSelect, FormTextField, SaveCancel } from '../System';
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../System/js/Forms.js';
 import { dbGetUserAsync, dbSaveUserAsync, dbSetModifiedTime, setEditingState } from '../System/js/Database';
+import { cogCreateUserAsync, cogUpdateUserAsync } from '../System/js/Cognito.js';
+import { removeErrorPrefix } from '../System/js/GlobalUtils';
+
+const defaultPassword = "ChangeMe0!";
 
 UserForm.propTypes = {
     user: PropTypes.object,     // null to create new user
@@ -54,6 +58,40 @@ export default function UserForm(props) {
         return true;
     }
 
+    async function saveUser(userData, isNewUser, updateEmail, updatePhone) {
+        if (isNewUser) {
+            try {
+                let newUser = await cogCreateUserAsync(
+                    userData.userName,
+                    defaultPassword,
+                    [
+                        { Name: 'email', Value: userData.email },
+                        { Name: 'phone_number', Value: userData.telephone.replace(/[^+\d]/g, '') }
+                    ]
+                );
+            } catch (error) {
+                return Promise.reject(error);
+            }
+        } else if (updateEmail || updatePhone) {
+            if (!props.selfEdit) {
+                return Promise.reject('Email or phone must be edited by the logged-in user');
+            } else {
+                let attrs = [];
+                if (updateEmail) {
+                    attrs.push({ Name: 'email', Value: userData.email });
+                }
+                if (updatePhone) {
+                    attrs.push({ Name: 'phone_number', Value: userData.telephone.replace(/[^+\d]/g, '') });
+                }
+                await cogUpdateUserAsync(attrs)
+                    .catch( err => {
+                        return Promise.reject(removeErrorPrefix(String(err)));
+                    });
+            }
+        }
+        return await dbSaveUserAsync(userData);
+    }
+
     function doSave(formValues) {
         // Convert form values to canonical format
         formValues.state = formValues.state.toUpperCase();
@@ -64,7 +102,7 @@ export default function UserForm(props) {
         // Save user data and reset form state to new values
         dbSetModifiedTime(userData, isNewUser);
         setSaveMessage({ result: 'working' });
-        dbSaveUserAsync(userData)
+        saveUser(userData, isNewUser, formState.dirtyFields.email, formState.dirtyFields.telephone)
             .then( () => {
                 setSaveMessage({ result: 'success', time: userData.updatedDateTime });
                 setEditingState(false)
@@ -75,7 +113,6 @@ export default function UserForm(props) {
             .catch( message => {
                 setSaveMessage({ result: 'error', text: message });
             });
-        // TODO update cognito if phone or email is modified
     }
     const submitForm = handleSubmit(doSave);
 
@@ -132,10 +169,11 @@ export default function UserForm(props) {
 
                 <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Contact Info</Typography></Box>
                 <Box display="flex" flexDirection="row" flexWrap="wrap">
-                    <FormTextField name="telephone" label="Telephone" error={ errors.telephone }
-                        control={ control } rules={ {validate: value => validPhone(value) || 'Enter a US phone number with area code'} } />
-                    <FormTextField fieldsize="xl" name="email" label="Email" error={ errors.email }
-                        control={ control } />
+                    <FormTextField name="telephone" label="Telephone" disabled={ !isNewUser && !props.selfEdit } error={ errors.telephone }
+                        control={ control } rules={ {required: 'Required',
+                            validate: value => validPhone(value) || 'Enter a US phone number with area code'} } />
+                    <FormTextField fieldsize="xl" name="email" label="Email" disabled={ !isNewUser && !props.selfEdit } error={ errors.email }
+                        control={ control } rules={ {required: 'Required'}}/>
                 </Box>
             </form>
             <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : doCancel() } } 

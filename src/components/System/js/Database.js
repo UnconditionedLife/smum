@@ -82,7 +82,6 @@ export function initCache() {
     dbGetSvcTypesAsync()
         .then( svcTypes => { 
             cachedSvcTypes = svcTypes;
-            console.log("svcTypes", svcTypes)
         });
 }
 
@@ -101,7 +100,7 @@ export function getUserName() {
 }
 
 export function isAdmin() {
-    return ['Admin', 'TechAdmin'].includes(cachedSession?.user?.userRole);
+    return ['Admin', 'TechAdmin'].includes(cachedSession?.user?.userRole); 
 }
 
 export function isTechAdmin() {
@@ -210,6 +209,7 @@ export async function dbSendReceipt(rcpt) {
 
 export async function dbLogError(message) {
     const isoString = new Date().toISOString();
+    message = message.replaceAll('"', "'"); // change double quotes to single quotes for JSON payload
     let data = {"logID": cuid(), "logTimestamp": isoString, "message": message, "category": "ERROR"};
 
     console.error(message);
@@ -243,12 +243,6 @@ export function getSvcTypes(){
 }
 
 export async function dbSaveSvcTypeAsync(data) {
-    // return await dbPostDataAsync('/svctypes/', MakeNewSvcType(data))
-    return await dbPostDataAsync('/svctypes/', data)
-}
-
-// *********** USED FOR MIGRATION ONLY **************
-export async function dbMigrateSvcTypeAsync(data) {
     return await dbPostDataAsync('/svctypes/', data)
 }
 
@@ -323,7 +317,7 @@ async function dbGetClientsAsync(searchTerm, isDate){
 }
 
 export async function dbGetAllClientsAsync(){
-		return await dbGetDataAsync("clients", "/clients/")
+    return await dbGetDataAsync("clients", "/clients/")
 }
 
 export async function dbGetSingleClientAsync(clientId) {
@@ -610,6 +604,8 @@ async function dbPostDataAsync(subUrl, data, logErrors=true) {
     .catch((error) => {
         if (logErrors) {
             dbLogError('dbPostData Error: ' + JSON.stringify(error));
+            dbLogError('URL: ' + subUrl);
+            dbLogError('User: ' + getUserName());
             globalMsgFunc('error', 'Database Failure');
         }
         return Promise.reject(error);
@@ -650,6 +646,8 @@ async function dbGetDataPageAsync(subUrl, paramObj) {
     })
     .catch((error) => {
         dbLogError('dbGetData Error: ' + JSON.stringify(error));
+        dbLogError('URL: ' + subUrl);
+        dbLogError('User: ' + getUserName());
         globalMsgFunc('error', 'Error while loading - try again!!') 
         Promise.reject(error);
     })

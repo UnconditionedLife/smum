@@ -82,7 +82,7 @@ export default function AllUsersPage(props) {
     if (users === null) return null
 
     return (
-        <Box mt={ 2 }>
+        <Box mt={ 2 } mb={ 2 }>
             
             <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
                 <Tooltip title= 'Add User'>

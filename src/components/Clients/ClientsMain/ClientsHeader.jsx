@@ -6,6 +6,7 @@ import { Fab } from '../../System';
 // import { HeaderTitle } from '..';
 import { navigationAllowed } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
+  
 
 ClientsHeader.propTypes = {
     clientsFound: PropTypes.array.isRequired,
@@ -21,7 +22,7 @@ ClientsHeader.propTypes = {
 export default function ClientsHeader(props) {
     const { client, clientsFound, isNewClientChange, selectedTab, 
         updateClientsURL, showFound, showServices, showClient } = props
-
+    
     function handleNewClient() {
         if (navigationAllowed()) {
             isNewClientChange(true)
@@ -41,8 +42,8 @@ export default function ClientsHeader(props) {
             </Snackbar>
 
             <Box mt={ -2 } width={ 1 } display="flex" flexWrap="wrap-reverse">
-                <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
-                    justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>
+              <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
+                    justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>                    
                     {/* <Box display='flex'> */}
                     {/* <Box ml={ 3 } display='flex' >
                             <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />

@@ -26,27 +26,29 @@ export default function AdminMain(props) {
     if (UseWindowSize().width < 450) navLabels = [ '','','','','' ]
 
     return (
-        <Box  width={ 1 } display="flex" flexWrap="wrap" style={{ justifyContent: 'center' }}>
-            <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
-                    justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>
-                <Tabs
-                value={ selectedTab }
-                // onChange={ handleTabChange }
-                onChange={(event, newValue) => { updateAdminURL(newValue) }}
-                indicatorColor="secondary"
-                textColor="primary"
-                centered
-                selectionFollowsFocus
-                style={{ justifyContent: 'space-between' }}
-                >
-                    <Tab icon={<Assessment/>} label={ navLabels[0] } />
-                    <Tab icon={<DateRange/>} label={ navLabels[1] } />
-                    <Tab icon={<RoomService/>} label={ navLabels[2] } />
-                    <Tab icon={<AccountBox/>} label={ navLabels[3] } />
-                    <Tab icon={<SettingsApplications/>} label={ navLabels[4] } />
-                    <Tab icon={<BugReport/>} label={ navLabels[5] } />
-                </Tabs>
-            </AppBar>
+        <Box  width="100%">
+            <Box  width={ 1 } display="flex" flexWrap="wrap-reverse">
+              <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
+                    justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>                    
+                    <Tabs
+                    value={ selectedTab }
+                    // onChange={ handleTabChange }
+                    onChange={(event, newValue) => { updateAdminURL(newValue) }}
+                    indicatorColor="secondary"
+                    textColor="primary"
+                    centered                    
+                    selectionFollowsFocus
+                    style={{ justifyContent: 'space-between' }}
+                    >
+                        <Tab icon={<Assessment/>} label={ navLabels[0] } />
+                        <Tab icon={<DateRange/>} label={ navLabels[1] } />
+                        <Tab icon={<RoomService/>} label={ navLabels[2] } />
+                        <Tab icon={<AccountBox/>} label={ navLabels[3] } />
+                        <Tab icon={<SettingsApplications/>} label={ navLabels[4] } />
+                        <Tab icon={<BugReport/>} label={ navLabels[5] } />
+                    </Tabs>
+                </AppBar>
+            </Box>
             {selectedTab === 0 && <ReportsPage />}
             {selectedTab === 1 && <CalendarPage />}
             {selectedTab === 2 && <ServiceTypePage />}

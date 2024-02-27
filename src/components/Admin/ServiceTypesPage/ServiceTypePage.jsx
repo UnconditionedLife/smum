@@ -45,8 +45,6 @@ function ServiceTypeList(props) {
         const record = props.list.filter(function( obj ) {
             return obj.svcTypeId === newServiceId
         })[0]
-        // console.log(record)
-        // setEditMode('none')
         setEditRecord(record)
         setEditMode('edit')
     }
@@ -109,7 +107,7 @@ export default function ServiceTypePage() {
     }
 
     return (
-        <Box mt={ 2 }>
+        <Box mt={ 2 } mb={ 2 }>
             <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true } >
                 <Tooltip title= 'Add Service Type'>
                     <Fab onClick={()=>handleNewClick()} size="small" color='default' >
