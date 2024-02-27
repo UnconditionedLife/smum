@@ -33,6 +33,9 @@ export default function AdminRouter(props) {
                 case 4:
                     newURL = "/admin/settings";
                     break;
+                case 5:
+                    newURL = "/admin/error";
+                    break;
             }
             if (newURL !== url) history.push(newURL)
             handleTabChange(newTab)
@@ -55,6 +58,9 @@ export default function AdminRouter(props) {
         }
         else if (matchPath(url, { path: "/admin/settings", exact: true, strict: false })) {
             handleTabChange(4);
+        }
+        else if (matchPath(url, { path: "/admin/error", exact: true, strict: false })) {
+            handleTabChange(5);
         }
         else {
             // if path does not match a valid path default to /admin

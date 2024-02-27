@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { AppBar, Box, Tab, Tabs } from '@mui/material';
-import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications } from '@mui/icons-material';
-import { AllUsersPage, CalendarPage, ReportsPage, 
+import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport } from '@mui/icons-material';
+import { AllUsersPage, CalendarPage, ReportsPage, ErrorPage,
             ServiceTypePage, SettingsPage } from '..';
 import { getUserName } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
@@ -22,8 +22,8 @@ export default function AdminMain(props) {
         if (getUserName()) checkAdminURL()
     }, [ getUserName, url ])
 
-    let navLabels = [ 'Reports', 'Calendar', 'Service Types', 'Users', 'Settings' ]
-    if (UseWindowSize().width < 450) navLabels = [ '','','','' ]
+    let navLabels = [ 'Reports', 'Calendar', 'Service Types', 'Users', 'Settings', 'Errors' ];
+    if (UseWindowSize().width < 450) navLabels = [ '','','','','' ]
 
     return (
         <Box  width="100%">
@@ -45,6 +45,7 @@ export default function AdminMain(props) {
                         <Tab icon={<RoomService/>} label={ navLabels[2] } />
                         <Tab icon={<AccountBox/>} label={ navLabels[3] } />
                         <Tab icon={<SettingsApplications/>} label={ navLabels[4] } />
+                        <Tab icon={<BugReport/>} label={ navLabels[5] } />
                     </Tabs>
                 </AppBar>
             </Box>
@@ -53,6 +54,7 @@ export default function AdminMain(props) {
             {selectedTab === 2 && <ServiceTypePage />}
             {selectedTab === 3 && <AllUsersPage />}
             {selectedTab === 4 && <SettingsPage />}
+            {selectedTab === 5 && <ErrorPage />}
         </Box>
     );
 }
