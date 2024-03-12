@@ -226,7 +226,9 @@ export default function ClientsMain(props) {
             </Snackbar>
 
             <ClientsHeader { ...passProps } />
-            <ClientsContent { ...passProps } showAlert={ showAlert } />
+            <Box maxWidth="100%" display="flex" justifyContent="center" mt={0} pt={0}>
+                <ClientsContent { ...passProps } showAlert={ showAlert } />
+            </Box>
         </Box>
     )
 }
