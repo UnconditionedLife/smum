@@ -281,45 +281,72 @@ export default function ReportsPage() {
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Annual Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
-                        <InputLabel>Report</InputLabel>
-                        <Select value={voucherType} onChange={(event) => handleVoucherType(event.target.value)} width={ 240 } name="report" label="Report">
+                        <InputLabel style={{ marginTop:"8px", marginLeft:"4px" }}>Report</InputLabel>
+                        <Box>
+                            <Select value={voucherType} onChange={(event) => handleVoucherType(event.target.value)} 
+                                width={ 240 } name="report" label="Report"
+                                style={{ marginTop:"8px", marginLeft:"4px", marginRight:"0px" }}>
                                 <MenuItem value="TURKEY">Thanksgiving Turkey</MenuItem>
                                 <MenuItem value="GIFTCARD">Christmas Gift Card</MenuItem>
                                 <MenuItem value="TOY">Christmas Toy</MenuItem>
-                        </Select>
+                            </Select>
+                        </Box>
                         </FormControl>
+                        <Box style={{ marginTop:"8px", marginLeft:"0px", marginRight:"4px" }}>
                         <LocalizationProvider dateAdapter={ AdapterMoment } >
-                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportVoucherYear } 
+                            <DatePicker inputProps={{style: { paddingTop: '8px', paddingBottom:'9px'}}}
+                                style={{ marginTop:"8px", marginLeft:"4px", marginRight:"4px" }}
+                                label='Year' name="year" 
+                                views={["year"]} value={ reportVoucherYear } 
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleReportVoucherYearChangeUpdated }
                                 minDate={moment("2017-01-01")}
                                 maxDate={moment()}
                                  />
                         </LocalizationProvider>
-                        <Button onClick={runVoucherReport} variant="contained" color="primary">Run</Button>
+                        </Box>
+                        <Box style={{ marginTop:"8px" }}>
+                            <Button onClick={runVoucherReport} variant="contained" color="primary"
+                                style={{ marginTop:"8px", marginLeft:"8px", marginRight:"8px" }} 
+                            >Run</Button>
+
+                        </Box>
                     </Box>
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Population Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
-                        <InputLabel>Report</InputLabel>
-                       
-                        <Box display='flex'>
-                            <Select value={populationType} onChange={(event) => handlePopulationType(event.target.value)} width={ 240 } name="report" label="Report">
-                                <MenuItem default={ true } value="CHILDREN-BY-VISITS">Children by Food Services (Counts)</MenuItem>
-                                <MenuItem default={ true } value="CHILDREN-BY-VISITS-FULL">Children by Food Services (Full)</MenuItem>
-                            </Select>
-                            <TextField style={{ width: "60px", height:"28px", marginTop: "0", marginLeft: "16px", marginRight: "4px" }} 
-                                value={ days } size="small" name="days" label="Days"
-                                onChange={(event) => handleDays(event.target.value)}/>
-                            <TextField style={{ width: "75px", height:"22px", marginTop: "0", marginLeft: "4px", marginRight: "4px" }} 
-                                value={ minVisits } size="small" name="minVisits" label="Min Visits"
-                                onChange={(event) => handleMinVisits(event.target.value)}/>
-                            <TextField style={{ width: "80px", height:"22px", marginTop: "0", marginLeft: "4px", marginRight: "0px" }} value={ maxVisits } size="small" name="maxVisits" label="Max Visits"
-                                onChange={(event) => handleMaxVisits(event.target.value)}/>
-                        </Box>
+                            <InputLabel style={{ marginTop:"8px", marginLeft:"4px" }}>Report</InputLabel>
+                            <Box display='flex' flexDirection="row" flexWrap="wrap" >
+                                <Box>
+                                    <Select value={populationType} onChange={(event) => handlePopulationType(event.target.value)} 
+                                        width={ 240 } name="report" label="Report" 
+                                        style={{ marginTop:"8px", marginLeft:"4px", marginRight:"4px" }}>
+                                        <MenuItem default={ true } value="CHILDREN-BY-VISITS">Children by Food Services (Counts)</MenuItem>
+                                        <MenuItem default={ true } value="CHILDREN-BY-VISITS-FULL">Children by Food Services (Full)</MenuItem>
+                                    </Select>
+                                </Box>
+                                <Box>
+                                    <TextField style={{ width: "60px", marginTop:"8px", marginLeft:"4px", marginRight:"4px" }} 
+                                        value={ days } size="small" name="days" label="Days"
+                                        onChange={(event) => handleDays(event.target.value)}/>
+                                </Box>
+                                <Box>
+                                    <TextField style={{ width: "75px", marginTop:"8px", marginLeft:"4px", marginRight:"4px" }} 
+                                        value={ minVisits } size="small" name="minVisits" label="Min Visits"
+                                        onChange={(event) => handleMinVisits(event.target.value)}/>
+                                </Box>
+                                <Box >
+                                    <TextField style={{ width: "80px", marginTop:"8px", marginLeft:"4px", marginRight:"4px" }} 
+                                        value={ maxVisits } size="small" name="maxVisits" label="Max Visits"
+                                        onChange={(event) => handleMaxVisits(event.target.value)}/>
+                                </Box>
+                            </Box>
                         </FormControl>
-
-                        <Button onClick={runPopulationReport} variant="contained" color="primary">Run</Button>
+                        <Box style={{ marginTop:"8px" }}>
+                            <Button onClick={runPopulationReport} variant="contained" color="primary"
+                                style={{ marginTop:"8px", marginLeft:"8px", marginRight:"8px" }} 
+                            >Run</Button>
+                        </Box>
                     </Box>
 
                     {/* <Box mt={ 10 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Voucher Distribution Reports</Typography></Box>
