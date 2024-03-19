@@ -24,7 +24,7 @@ export default function SearchNavBarContainer() {
             if (isAdmin()) {
                 return 1;
             } else {
-                history.push("/clients");
+                // history.push("/clients");
                 return 0;
             }
         }
