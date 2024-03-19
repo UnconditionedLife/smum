@@ -2,7 +2,7 @@ import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularPro
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 
@@ -15,7 +15,7 @@ export default function AllServicesByDayReport(props) {
     const [loading, setLoading] = useState(true)
 
     const theme = useTheme()
-    const reportMonth = moment(props.month, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
+    const reportMonth = dayjs(props.month, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
 
     useEffect(()=>{
         RunReport()
@@ -55,7 +55,7 @@ export default function AllServicesByDayReport(props) {
     }
 
     function RunReport() {
-        dbGetValidSvcsByDateAsync(moment(props.month).format('YYYY-MM')) .then(svcs => {
+        dbGetValidSvcsByDateAsync(dayjs(props.month).format('YYYY-MM')) .then(svcs => {
             const svcsGroupBy = svcs.reduce(function (r, a) {
                 const key = a.svcDT.substring(0 ,10)
                 r[key] = r[key] || [];
@@ -131,7 +131,7 @@ export default function AllServicesByDayReport(props) {
                                     }
                                 </style>
                                 <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
-                                <strong>{ moment(day).format('MMM DD YYYY') }</strong>
+                                <strong>{ dayjs(day).format('MMM DD YYYY') }</strong>
                             </TableCell>
                         </TableRow>
                         {Object.keys(aggregatedTotals[day]).map(svcName => {

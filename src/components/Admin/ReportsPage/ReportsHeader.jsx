@@ -1,6 +1,6 @@
 import React  from "react";
 import { Box, TableRow, TableCell, Typography, TableHead } from "@mui/material";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import logo from '/public/images/receipt-logo.png';
 import PropTypes from 'prop-types';
 
@@ -33,7 +33,7 @@ export default function ReportsHeader(props) {
                         </Box>
                         <Box>
                             <Box align="center"><img width='70%' src={ logo } /></Box>
-                            <Typography style={{ fontSize: '13px', fontWeight: 'bold' }} align='center'>Generated:&nbsp;{ moment().format("MMM DD, YYYY | h:mm a") }</Typography>
+                            <Typography style={{ fontSize: '13px', fontWeight: 'bold' }} align='center'>Generated:&nbsp;{ dayjs().format("MMM DD, YYYY | h:mm a") }</Typography>
                         </Box>
                         <Box style={{fontSize: '1.55rem', 
                             lineHeight: '1.58rem',
