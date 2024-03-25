@@ -1,5 +1,4 @@
 import AdminMain from './AdminMain/AdminMain.jsx';
-import AdminRouter from './AdminMain/AdminRouter.jsx';
 import AdminServicesPage from './AdminServicesPage/AdminServicesPage.jsx';
 import AllUsersPage from './AllUsersPage/AllUsersPage.jsx';
 import CalendarPage from './SettingsPage/CalendarPage.jsx';
@@ -11,5 +10,5 @@ import SettingsPage from './SettingsPage/SettingsPage.jsx';
 import UserPage from './UserPage/UserPage.jsx';
 import ReportsHeader from './ReportsPage/ReportsHeader.jsx';
 
-export  { AdminMain, AdminRouter, AdminServicesPage, AllUsersPage, CalendarPage, ErrorPage, ReportsPage, ServiceTypePage, 
+export  { AdminMain, AdminServicesPage, AllUsersPage, CalendarPage, ErrorPage, ReportsPage, ServiceTypePage, 
             ServiceTypeFormDialog, SettingsPage, UserPage, ReportsHeader }

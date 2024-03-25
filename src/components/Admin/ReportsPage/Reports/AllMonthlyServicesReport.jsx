@@ -2,7 +2,7 @@ import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularPro
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 
@@ -15,7 +15,7 @@ export default function AllMonthlyServicesReport(props) {
     const [loading, setLoading] = useState(true)
 
     const theme = useTheme()
-    const reportMonth = moment(props.month, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
+    const reportMonth = dayjs(props.month, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
 
     useEffect(()=>{
         RunReport()
@@ -55,7 +55,7 @@ export default function AllMonthlyServicesReport(props) {
     }
 
     function RunReport() {
-        dbGetValidSvcsByDateAsync(moment(props.month).format('YYYY-MM')) .then(svcs => {
+        dbGetValidSvcsByDateAsync(dayjs(props.month).format('YYYY-MM')) .then(svcs => {
             let svcsCatGrid = {}
 
             svcs.forEach(svc => {

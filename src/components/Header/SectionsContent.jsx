@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Route, Redirect } from "react-router-dom";
 import Container from '@mui/material/Container';
 import { ClientsRouter } from '../Clients';
-import { AdminRouter } from '../Admin';
+import { AdminMain } from '../Admin';
 import UserMain from '../User/UserMain.jsx';
 import PageToday from './PageToday.jsx';
 import { getUserName } from '../System/js/Database';
@@ -31,7 +31,7 @@ export default function SectionsContent(props) {
                 />
             </Route>
             <Route path="/admin">
-                <AdminRouter />
+                <AdminMain />
             </Route>
             <Route path="/user">
                 <UserMain />
