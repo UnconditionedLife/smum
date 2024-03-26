@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, CardContent, CardHeader, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { isEmpty, isMobile } from '../../System/js/GlobalUtils.js';
 import moment from 'moment'
 import { useState } from 'react';
@@ -73,15 +73,33 @@ export default function FoundPage(props) {
                     alignItems="center">
                         { clientsFound.map((row) => (
                                 <Card 
-                                key={ row.clientId }
-                                width={320}
-                                onClick= { (event) => handleSelectedClient(event, row.clientId)}
-                                selected= { row.clientId == clientId } 
+                                    key={ row.clientId }
+                                    width={320}
+                                    onClick= { (event) => handleSelectedClient(event, row.clientId)}
+                                    selected= { row.clientId == clientId } 
+                                    style={{backgroundColor: "#E0F0E2"}}
                                 >
+                                <CardHeader 
+                                    title={row.givenName + " " + row.familyName} 
+                                    style={{backgroundColor: "#7FC187"}}>
+                                </CardHeader>
                                 <CardContent style={row.isActive == "Inactive" ?  invalidRow : validRow}>
-                                <strong style={{fontSize: "120%"}}>{row.givenName} {row.familyName}</strong><br /><br />
-                                <strong>ID:</strong>{row.clientId} | <strong>DOB:</strong> {moment(row.dob).format("MMM DD, YYYY")} <br /> 
-                                <strong>Street:</strong>{row.street}
+                                    <Box display='flex' flexDirection={row}>
+                                        <Box>
+                                            <Typography fontSize='90%'>
+                                                <strong>ID</strong> <br />
+                                                <strong>DOB</strong> <br />
+                                                <strong>Street</strong>
+                                            </Typography>
+                                        </Box>
+                                        <Box ml={ 2 }>
+                                            <Typography fontSize='90%'>
+                                                {row.clientId} <br />
+                                                {moment(row.dob).format("MMM DD, YYYY")} <br />
+                                                {row.street}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
                                 </CardContent>  
                                 </Card>                                  
                             ))}
