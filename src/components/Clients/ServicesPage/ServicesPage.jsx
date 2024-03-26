@@ -122,19 +122,19 @@ export default function ServicesPage(props) {
     )
 
     return (
-        <Box key={ svcHistory } display="flex" justifyContent="space-around" flexWrap="wrap">
+        <Box key={ svcHistory } maxWidth='100%' display="flex" justifyContent="space-around" flexWrap="wrap">
             <Box width='100%' maxWidth="800px" mt={ 4 } pt={ 0 }>
                 <Box p={ 1 } pl={ 2 } pr={ 2 } display='flex' justifyContent="space-between" flexWrap="wrap" 
                     style={{ borderRadius: "6px", backgroundColor:"#F3F3F3" }}>
                     <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
                     {/* <LastServed lastServed={ lastServed } nextService={ nextService } /> */}
-                    <Box mt={ .75 } display='flex' flexDirection='row' key={ lastServedText + nextServiceText }>
-                        <Box display='flex' justifyContent='right'>
+                    <Box mt={ .75 } display='flex' flexDirection='column' key={ lastServedText + nextServiceText }>
+                        <Box display='flex' justifyContent='center'>
                             <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
                                 <span style={{ color:"#ccc" }}>SERVED:&nbsp;</span>{ lastServedText }
                             </Typography>
                         </Box>
-                        <Box ml={1.5} display='flex' justifyContent='right'>
+                        <Box ml={1.5} display='flex' justifyContent='center'>
                             <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
                                 <span style={{ color:"#ccc" }}>NEXT:&nbsp;</span>{ nextServiceText }
                             </Typography>

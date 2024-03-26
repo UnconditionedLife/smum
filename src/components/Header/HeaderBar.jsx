@@ -16,6 +16,7 @@ import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
 import { cacheSessionVar, clearCache, initCache, showCache, getSession, getAppVersion,
     getUserName, isAdmin, navigationAllowed, setEditingState, dbSetUrl  } from '../System/js/Database';
+import UseWindowSize from '../System/Hooks/UseWindowSize.jsx'
 
 const useStyles = makeStyles((theme) => ({
     appName: {
@@ -238,6 +239,8 @@ export default function HeaderBar(props) {
         }
     }
 
+    const notMobile = UseWindowSize().width > 500
+
     const userName = getUserName();
 
     const appbarControls = (
@@ -309,7 +312,7 @@ export default function HeaderBar(props) {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
-                {!(userName) && <Dialog open={true} style={{ margin:0, width:'400px' }}>
+                {!(userName) && <Dialog open={true} style={{ margin:0, width:'100%' }}>
                     <LoginForm onLogin={ (x) => setSession(x, true) } />
                 </Dialog>}
                 <Box flexGrow={1} >
@@ -333,7 +336,8 @@ export default function HeaderBar(props) {
                     </AppBar>
                     { renderMenu }
                     {/* environment variable coming from webpack configuration */}
-                    { (process.env.dbSetUrl === "dev") && <DbSwitch /> } 
+                    {/* removed from screens smaller than 500 px */}
+                    { (process.env.dbSetUrl === "dev" && notMobile ) && <DbSwitch /> } 
                     <SectionsContent searchTerm={ searchTerm } handleSearchTermChange={ handleSearchTermChange } />
                 </Box>
             </ThemeProvider>
