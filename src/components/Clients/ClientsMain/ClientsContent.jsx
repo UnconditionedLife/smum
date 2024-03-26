@@ -26,9 +26,9 @@ export default function ClientsContent(props) {
     const match = useRouteMatch();
 
     const logoBox = (
-        <Box display="flex" width="100%" height="100%" justifyContent="center" mX="0px" pX="0px">
+        <Box display="flex" width="100%" height="100%" justifyContent="center" paddingLeft="0px">
             <SmumLogo width='20vh' display="watermark" 
-                style={{ marginTop: "25vh" }}/>
+                style={{ marginTop: '27vh', paddingLeft:'0px' }}/>
         </Box>
     )
 
