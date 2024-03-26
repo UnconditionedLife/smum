@@ -66,21 +66,25 @@ export default function AdminMain(props) {
                         selectionFollowsFocus
                         style={{ justifyContent: 'space-between' }}
                     >
-                        <Tab icon={<Assessment/>} label={ navLabels[0] } />
-                        <Tab icon={<DateRange/>} label={ navLabels[1] } />
-                        <Tab icon={<RoomService/>} label={ navLabels[2] } />
-                        <Tab icon={<AccountBox/>} label={ navLabels[3] } />
-                        <Tab icon={<SettingsApplications/>} label={ navLabels[4] } />
-                        <Tab icon={<BugReport/>} label={ navLabels[5] } />
+                        <Tab icon={<Assessment/>} label={ navLabels[0] } style={{  minWidth:'62px' }} />
+                        <Tab icon={<DateRange/>} label={ navLabels[1] } style={{  minWidth:'62px' }} />
+                        <Tab icon={<RoomService/>} label={ navLabels[2] } style={{  minWidth:'62px' }} />
+                        <Tab icon={<AccountBox/>} label={ navLabels[3] } style={{  minWidth:'62px' }} />
+                        <Tab icon={<SettingsApplications/>} label={ navLabels[4] } style={{  minWidth:'62px' }} />
+                        <Tab icon={<BugReport/>} label={ navLabels[5] } style={{  minWidth:'62px' }} />
                     </Tabs>
                 </AppBar>
             </Box>
-            {selectedTab === 0 && <ReportsPage />}
-            {selectedTab === 1 && <CalendarPage />}
-            {selectedTab === 2 && <ServiceTypePage />}
-            {selectedTab === 3 && <AllUsersPage />}
-            {selectedTab === 4 && <SettingsPage />}
-            {selectedTab === 5 && <ErrorPage />}
+            <Box maxWidth="100%" display="flex" justifyContent="center" mt={0} pt={0}>
+                <Box maxWidth='lg' mt={0} pt={2}>
+                    {selectedTab === 0 && <ReportsPage />}
+                    {selectedTab === 1 && <CalendarPage />}
+                    {selectedTab === 2 && <ServiceTypePage />}
+                    {selectedTab === 3 && <AllUsersPage />}
+                    {selectedTab === 4 && <SettingsPage />}
+                    {selectedTab === 5 && <ErrorPage />}
+                </Box>
+            </Box>
         </Box>
     );
 }
