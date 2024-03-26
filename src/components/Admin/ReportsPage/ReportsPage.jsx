@@ -209,23 +209,24 @@ export default function ReportsPage() {
 
     return (
         // <MuiPickersUtilsProvider utils={MomentUtils}>
-        <Container maxWidth='md'>
-        <Card>
+        <Container>
+        <Card width='100%'>
             <CardHeader title="Distribution Reports" />
             <CardContent>
                 <Box>
                 <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Daily Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
-                        <InputLabel>Report</InputLabel>
-                        <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
-                                <MenuItem value="FOOD">Food Only</MenuItem>
-                                <MenuItem value="FOODBANK">Food Bank USDA EFA 7</MenuItem>
-                                <MenuItem value="FOODBANKNONUSDA">Food Bank Non USDA</MenuItem>
-                        </Select>
+                            <InputLabel>Report</InputLabel>
+                            <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
+                                    <MenuItem value="FOOD">Food Only</MenuItem>
+                                    <MenuItem value="FOODBANK">Food Bank USDA EFA 7</MenuItem>
+                                    <MenuItem value="FOODBANKNONUSDA">Food Bank Non USDA</MenuItem>
+                            </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterDayjs } >
-                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" 
+                            <DatePicker 
+                                inputProps={{style: { width:'176px', height: '20px', paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" 
                                 InputLabelProps={{ shrink: true }} 
                                 value={ reportDay } 
                                 renderInput={(params) => <TextField {...params} />}
@@ -236,14 +237,14 @@ export default function ReportsPage() {
                                 disableMaskedInput
                                 />
                         </LocalizationProvider>
-                        <Button onClick={runDailyReport} variant="contained" color="primary">Run</Button>
+                        <Button onClick={runDailyReport} style={{ height: '40px' }} variant="contained" color="primary">Run</Button>
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Monthly Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
-                        <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
+                        <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width='240px' name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                                 <MenuItem value="ALLTOTALS">All Services Totals</MenuItem>
                                 <MenuItem value="ALLBYDAY">All Services By Day</MenuItem>
@@ -252,60 +253,64 @@ export default function ReportsPage() {
                         </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterDayjs } >
-                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["month", "year"]} value={ foodYearMonth } 
+                            <DatePicker 
+                                inputProps={{style: { width:'176px', height: '20px', paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' m={ 0 } name="yearMonth" views={["month", "year"]} value={ foodYearMonth } 
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleFoodYearMonthChangeUpdated }
                                 minDate={dayjs("2017-01-01")}
                                 maxDate={dayjs()} />
                         </LocalizationProvider>
-                        <Button onClick={runFoodReport} variant="contained" color="primary">Run</Button>
+                        <Button onClick={runFoodReport} style={{ height: '40px' }} variant="contained" color="primary">Run</Button>
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Annual Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
-                        <Select value={yearType} onChange={(event) => handleYearType(event.target.value)} width={ 240 } name="report" label="Report">
+                        <Select value={yearType} onChange={(event) => handleYearType(event.target.value)} width={ 240 } name="report" label="Report" >
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                         </Select>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterDayjs } >
-                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportYear } 
+                            <DatePicker 
+                                inputProps={{style: { width:'176px', height: '20px', paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportYear } 
+                                size='small'
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleReportYearChangeUpdated }
                                 minDate={dayjs("2017-01-01")}
                                 maxDate={dayjs()}
                                  />
                         </LocalizationProvider>
-                        <Button onClick={runYearReport} variant="contained" color="primary">Run</Button>
+                        <Button onClick={runYearReport} style={{ height: '40px' }} variant="contained" color="primary">Run</Button>
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Annual Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
-                        <InputLabel style={{ marginTop:"8px", marginLeft:"4px" }}>Report</InputLabel>
-                        <Box>
+                        <InputLabel>Report</InputLabel>
                             <Select value={voucherType} onChange={(event) => handleVoucherType(event.target.value)} 
-                                width={ 240 } name="report" label="Report"
-                                style={{ marginTop:"8px", marginLeft:"4px", marginRight:"0px" }}>
+                                width={ 240 } name="report" label="Report">
                                 <MenuItem value="TURKEY">Thanksgiving Turkey</MenuItem>
                                 <MenuItem value="GIFTCARD">Christmas Gift Card</MenuItem>
                                 <MenuItem value="TOY">Christmas Toy</MenuItem>
                             </Select>
-                        </Box>
                         </FormControl>
                         <LocalizationProvider dateAdapter={ AdapterDayjs } >
-                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportVoucherYear } 
+                            <DatePicker style={{ marginTop:'28px'}}
+                                inputProps={{ style: { width:'176px', height: '20px', paddingTop: '10px', paddingBottom:'10px'} }} 
+                                size='small' 
+                                label='Year' name="year" views={["year"]} value={ reportVoucherYear } 
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleReportVoucherYearChangeUpdated }
                                 minDate={dayjs("2017-01-01")}
                                 maxDate={dayjs()}
                                  />
                         </LocalizationProvider>
-                        </Box>
-                        <Box style={{ marginTop:"8px" }}>
+                        
+                        
                             <Button onClick={runVoucherReport} variant="contained" color="primary"
-                                style={{ marginTop:"8px", marginLeft:"8px", marginRight:"8px" }} 
+                                // style={{ marginTop:"8px", marginLeft:"8px", marginRight:"8px" }} 
+                                style={{ height: '40px' }}
                             >Run</Button>
 
                         </Box>
@@ -342,7 +347,8 @@ export default function ReportsPage() {
                         </FormControl>
                         <Box style={{ marginTop:"8px" }}>
                             <Button onClick={runPopulationReport} variant="contained" color="primary"
-                                style={{ marginTop:"8px", marginLeft:"8px", marginRight:"8px" }} 
+                                // style={{ marginTop:"8px", marginLeft:"8px", marginRight:"8px" }} 
+                                style={{ height: '40px' }}
                             >Run</Button>
                         </Box>
                     </Box>
@@ -378,7 +384,7 @@ export default function ReportsPage() {
                         <Button variant="contained" color="primary">Run</Button>
                     </Box> */}
                     <ReportDialog dialogOpen={ reportOpen } heading={ reportHeading } body={ reportBody } actions={ reportActions }  />
-                </Box>
+                {/* </Box> */}
             </CardContent>
         </Card>
         </Container>
