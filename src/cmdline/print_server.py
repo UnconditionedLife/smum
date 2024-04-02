@@ -185,17 +185,29 @@ def poll_interval():
         return 20
 
 
-## Utility Functions
+## Logging
+
+# Error messages are written to the local log file and to the database log table.
+# Trace messages are written to the local log file conditionally up to the
+# verbosity level specified for the server instance. Level 0 trace messages,
+# indicating startup and shutdown, are always written to the local log file
+# and the database log table.
 
 def log_trace(level, msg):
     if args.verbosity >= level:
         print(time.ctime(), 'TRACE', msg, flush=True)
+    if level == 0:
+        log_to_database('TRACE', msg)
 
 def log_error(msg):
     print(time.ctime(), 'ERROR', msg, flush=True)
+    log_to_database('ERROR', msg)
+
+def log_to_database(cat, msg):
     url = f'{url_base}/{args.queue}/logs'
-    payload = {'message': msg, 'logTimestamp': datetime.utcnow().isoformat(timespec='seconds') + 'Z', 
-        'logID': str(uuid.uuid1()), 'category':'ERROR'}
+    payload = {'message': 'Print Server: ' + msg, 
+        'logTimestamp': datetime.utcnow().isoformat(timespec='seconds') + 'Z', 
+        'logID': str(uuid.uuid1()), 'category': cat}
     requests.post(url, data=json.dumps(payload))
 
 
@@ -221,7 +233,7 @@ if __name__ == '__main__':
             time.strftime('%Y%m%d', time.localtime()) + '.txt', 'a')
         sys.stderr = sys.stdout
 
-    log_trace(1, 'Print server start')
+    log_trace(0, 'Print server start')
     try:
         if args.test:
             prn_test_receipt()
@@ -229,5 +241,7 @@ if __name__ == '__main__':
             printq_poll(args.queue)
     except KeyboardInterrupt:
         pass
-    log_trace(1, 'Print server exit')
+    except Exception as e:
+        log_error(f'Unknown exception: {e}')
+    log_trace(0, 'Print server exit')
     sys.exit(0)
