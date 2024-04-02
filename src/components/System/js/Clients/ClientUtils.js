@@ -1,7 +1,7 @@
 //******************************************************************
 //       ****** CLIENTS UTILITIES JAVASCRIPT FUNCTIONS ******
 //******************************************************************
-import moment from  'moment';
+import dayjs from 'dayjs';
 import { SettingsSeniorAge } from '../Database.js';
 import cuid from 'cuid';
 
@@ -45,7 +45,7 @@ export function calcFamilyCounts(client){
 	}
 	// client dependents
 	for (let i = 0; i < client.dependents.length; i++) {
-		client.dependents[i].age = moment().diff(client.dependents[i].dob, "years")
+		client.dependents[i].age = dayjs().diff(client.dependents[i].dob, "years")
 		if (client.dependents[i].isActive == "Active") {
 			if (client.dependents[i].age >= seniorAge) {
 				++fam.totalSeniors
@@ -208,7 +208,7 @@ export function utilSortDependentsByGrade(dependents){
 }
 
 export function utilCalcAge(person){
-    person.age = (person.dob) ? moment().diff(person.dob, "years") : ""
+    person.age = (person.dob) ? dayjs().diff(person.dob, "years") : ""
     return person
 }
 

@@ -1,7 +1,7 @@
 //******************************************************************
 //     ****** CLIENTS HISTORY SECTION JAVASCRIPT FUNCTIONS ******
 //******************************************************************
-import moment from  'moment';
+import dayjs from  'dayjs';
 import cuid from 'cuid';
 import { utilNow } from '../GlobalUtils';
 import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, 
@@ -11,7 +11,7 @@ export async function getServiceHistoryAsync(clientId){
 	return await dbGetClientActiveSvcHistoryAsync(clientId)
         .then(
             clientHistory => {
-                return clientHistory.sort((a, b) => moment.utc(b.svcDT).diff(moment.utc(a.svcDT)))
+                return clientHistory.sort((a, b) => dayjs.utc(b.svcDT).diff(dayjs.utc(a.svcDT)))
         }
     )
 }
@@ -50,7 +50,7 @@ export async function saveHistoryFormAsync(editRecord, formValues, client, userN
     Object.assign(modRecord, {
         svcTypeId: svcType.svcTypeId, svcCat: svcType.svcCategory, svcUSDA: svcType.svcUSDA })
 
-    modRecord.servicedDay = moment(editRecord.svcDT).format("YYYYMMDD")
+    modRecord.servicedDay = dayjs(editRecord.svcDT).format("YYYYMMDD")
     modRecord.svcBy = userName
     modRecord.svcUpdatedDT = utilNow()
     modRecord.svcId = cuid()
@@ -70,7 +70,7 @@ export async function removeSvcAsync(client, svc){
     svc.svcValid = false
     svc.svcUpdatedDT = utilNow()
     // incase it's from the new svc table TODO - remove after migration
-    svc.servicedDay = moment(svc.svcDT).format("YYYYMMDD")
+    svc.servicedDay = dayjs(svc.svcDT).format("YYYYMMDD")
 
     return await dbSaveServiceRecordAsync(svc)
         .then((savedSvc) => {
