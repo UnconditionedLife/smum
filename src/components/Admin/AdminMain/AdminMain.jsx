@@ -68,7 +68,7 @@ export default function AdminMain(props) {
     return (
         <Box width="100%">
             <Box width={ 1 } display="flex" flexWrap="wrap-reverse">
-                <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
+                <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'72px',
                     justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>                    
                     <Tabs
                         value={ selectedTab }
