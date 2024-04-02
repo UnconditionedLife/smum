@@ -208,9 +208,17 @@ export async function dbSendReceipt(rcpt) {
 //************************************************
 
 export async function dbLogError(message) {
+    return await dbLog('ERROR', message);
+}
+
+export async function dbLogTrace(message) {
+    return await dbLog('TRACE', message);
+}
+
+async function dbLog(category, message) {
     const isoString = new Date().toISOString();
     message = message.replaceAll('"', "'"); // change double quotes to single quotes for JSON payload
-    let data = {"logID": cuid(), "logTimestamp": isoString, "message": message, "category": "ERROR"};
+    let data = {"logID": cuid(), "logTimestamp": isoString, "message": message, "category": category};
 
     console.error(message);
     return await dbPostDataAsync('/logs', data, false)

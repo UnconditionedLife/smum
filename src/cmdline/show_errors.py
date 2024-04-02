@@ -9,14 +9,14 @@ import json
 
 url_base = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com'
 
-def retrieve(queue, start, end):
+def retrieve(queue, start, end, level):
     url = f'{url_base}/{queue}/logs'
     # Convert start and end timespecs to UTC
     if start:
         start = datetime.fromisoformat(start).astimezone(timezone.utc).isoformat(timespec='seconds')
     if end:
         end = datetime.fromisoformat(end).astimezone(timezone.utc).isoformat(timespec='seconds')
-    req = requests.get(url, params={'start': start, 'end': end})
+    req = requests.get(url, params={'start': start, 'end': end, 'category': level.upper()})
 
     print(req.url)
     items = req.json()
@@ -35,10 +35,10 @@ def delete(queue, items):
         if r.status_code != 200:
             print(f"Failed to delete {msg['logID']}")
 
-def add(queue, message):
+def add(queue, message, level):
     url = f'{url_base}/{queue}/logs'
     payload = {'message': message, 'logTimestamp': datetime.utcnow().isoformat(timespec='seconds') + 'Z', 
-        'logID': str(uuid.uuid1()), 'category':'ERROR'}
+        'logID': str(uuid.uuid1()), 'category': level.upper()}
     req = requests.post(url, data=json.dumps(payload))
 
 def confirm(prompt):
@@ -57,12 +57,14 @@ if __name__ == '__main__':
         help='delete messages')
     parser.add_argument('-m', '--message', 
         help='add new message to error queue')
+    parser.add_argument('-l', '--level', 
+        default='error', choices=('error', 'trace'), help='message category (trace or error)')
     args = parser.parse_args()
 
     if args.message:
-        add(args.queue, args.message)
+        add(args.queue, args.message, args.level)
     else:
-        msgs = retrieve(args.queue, args.start, args.end)
+        msgs = retrieve(args.queue, args.start, args.end, args.level)
         display(msgs)
         if args.delete and len(msgs) > 0 and confirm(f'Delete {len(msgs)} message(s) (Y/N)?'):
             delete(args.queue, msgs)

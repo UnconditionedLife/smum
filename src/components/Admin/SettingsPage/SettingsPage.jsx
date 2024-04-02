@@ -17,7 +17,7 @@ export default function SettingsPage() {
 
     if (settings)
         return (
-            <Container maxWidth='md'>
+            <Container maxWidth='lg'>
                 <Card>
                     <CardHeader title="Application Settings" />
                     <CardContent>

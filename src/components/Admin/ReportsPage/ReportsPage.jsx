@@ -3,10 +3,12 @@ import { Box, Button, Card, CardContent, CardHeader, Container, FormControl, Inp
 import { Select, TextField, FormTextField } from '../../System'
 import { DatePicker } from '@mui/x-date-pickers' // MuiPickersUtilsProvider
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+// import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { getSvcTypes } from '../../System/js/Database.js';
 // import MomentUtils from '@date-io/moment';
-import moment from 'moment';
+// import moment from 'moment';
+import dayjs from 'dayjs';
 import ReportDialog from './ReportDialog.jsx';
 import NewClientsReport from './Reports/NewClientsReport.jsx';
 import DailyDistributionReport from './Reports/DailyDistributionReport.jsx';
@@ -27,16 +29,16 @@ import ChristmasToyReport from './Reports/ChristmasToyReport.jsx';
 
 export default function ReportsPage() {
     const [ dayType, handleDayType ] = useState("FOOD")
-    const [ reportDay, handleReportDayChange ] = useState(moment().format('YYYYMMDD'))
+    const [ reportDay, handleReportDayChange ] = useState(dayjs().format('YYYYMMDD'))
     
-    const [ foodYearMonth, handleFoodYearMonthChange ] = useState(moment().format('YYYYMM'))
+    const [ foodYearMonth, handleFoodYearMonthChange ] = useState(dayjs().format('YYYYMM'))
     const [ foodType, handleFoodType ] = useState("FOOD")
     
     const [ yearType, handleYearType ] = useState("FOOD")
-    const [ reportYear, handleReportYearChange ] = useState(moment().format('YYYY'))
+    const [ reportYear, handleReportYearChange ] = useState(dayjs().format('YYYY'))
 
     const [ voucherType, handleVoucherType ] = useState("TURKEY")
-    const [ reportVoucherYear, handleReportVoucherYearChange ] = useState(moment().format('YYYY'))
+    const [ reportVoucherYear, handleReportVoucherYearChange ] = useState(dayjs().format('YYYY'))
 
     const [ populationType, handlePopulationType ] = useState("CHILDREN-BY-VISITS")
 
@@ -57,35 +59,35 @@ export default function ReportsPage() {
 
     const runFoodReport = () => {
         if (foodType == "NEWCLIENT") {
-            setReportHeading("New Clients - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY'));
+            setReportHeading("New Clients - Monthly Report - " + dayjs(foodYearMonth).format('MMM YYYY'));
             setReportOpen(true);
             setReportBody(<NewClientsReport yearMonth={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (foodType == "ALLTOTALS") {
-            setReportHeading("ALL Services Totals - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY') );
+            setReportHeading("ALL Services Totals - Monthly Report - " + dayjs(foodYearMonth).format('MMM YYYY') );
             setReportOpen(true);
             setReportBody(<AllMonthlyServicesReport month={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (foodType == "ALLBYDAY") {
-            setReportHeading("ALL Services By Day - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY') );
+            setReportHeading("ALL Services By Day - Monthly Report - " + dayjs(foodYearMonth).format('MMM YYYY') );
             setReportOpen(true);
             setReportBody(<AllServicesByDayReport month={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (foodType == "FOOD") {
-            setReportHeading("Food Pantry - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY'));
+            setReportHeading("Food Pantry - Monthly Report - " + dayjs(foodYearMonth).format('MMM YYYY'));
             setReportOpen(true);
             setReportBody(<MonthlyDistributionReport month={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (foodType == "ETHNICITY") {
-            setReportHeading("Ethnicity - Monthly Report - " + moment(foodYearMonth).format('MMM YYYY'));
+            setReportHeading("Ethnicity - Monthly Report - " + dayjs(foodYearMonth).format('MMM YYYY'));
             setReportOpen(true);
             setReportBody(<EthnicityReport yearMonth={foodYearMonth} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
@@ -95,7 +97,7 @@ export default function ReportsPage() {
 
     const runYearReport = () => {
         if (yearType == "FOOD") {
-            setReportHeading("Food Pantry - Annual Report - " + moment(reportYear).format('YYYY'));
+            setReportHeading("Food Pantry - Annual Report - " + dayjs(reportYear).format('YYYY'));
             setReportOpen(true);
             setReportBody(<AnnualDistributionReport year={reportYear} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
@@ -105,21 +107,21 @@ export default function ReportsPage() {
 
     const runVoucherReport = () => {
         if (voucherType == "TURKEY") {
-            setReportHeading("Thanksgiving Turkey - Annual Report - " + moment(reportVoucherYear).format('YYYY'));
+            setReportHeading("Thanksgiving Turkey - Annual Report - " + dayjs(reportVoucherYear).format('YYYY'));
             setReportOpen(true);
             setReportBody(<ThanksgivingTurkeyReport year={reportVoucherYear} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (voucherType == "GIFTCARD") {
-            setReportHeading("Christmas Gift Card - Annual Report - " + moment(reportVoucherYear).format('YYYY'));
+            setReportHeading("Christmas Gift Card - Annual Report - " + dayjs(reportVoucherYear).format('YYYY'));
             setReportOpen(true);
             setReportBody(<ChristmasGiftCardReport year={reportVoucherYear} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (voucherType == "TOY") {
-            setReportHeading("Christmas Toy Card - Annual Report - " + moment(reportVoucherYear).format('YYYY'));
+            setReportHeading("Christmas Toy Card - Annual Report - " + dayjs(reportVoucherYear).format('YYYY'));
             setReportOpen(true);
             setReportBody(<ChristmasToyReport year={reportVoucherYear} />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
@@ -129,21 +131,21 @@ export default function ReportsPage() {
 
     const runDailyReport = () => {
         if (dayType == "FOOD") {
-            setReportHeading("Food Pantry - Daily Report - " + moment(reportDay).format('MMM DD YYYY'));
+            setReportHeading("Food Pantry - Daily Report - " + dayjs(reportDay).format('MMM DD YYYY'));
             setReportOpen(true);
             setReportBody(<DailyDistributionReport day={ reportDay } />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (dayType == "FOODBANK") {
-            setReportHeading("Food Bank EFA 7 - Daily Report - " + moment(reportDay).format('MMM DD YYYY'));
+            setReportHeading("Food Bank EFA 7 - Daily Report - " + dayjs(reportDay).format('MMM DD YYYY'));
             setReportOpen(true);
             setReportBody(<DailyFoodBankReport day={ reportDay } />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
             setReportActions(buttonCode);
         }
         if (dayType == "FOODBANKNONUSDA") {
-            setReportHeading("Food Bank Non USDA - Daily Report - " + moment(reportDay).format('MMM DD YYYY'));
+            setReportHeading("Food Bank Non USDA - Daily Report - " + dayjs(reportDay).format('MMM DD YYYY'));
             setReportOpen(true);
             setReportBody(<DailyFoodBankReportNonUSDA day={ reportDay } />);
             const buttonCode = (<Button variant="outlined" color="secondary" onClick={ () => setReportOpen(false) }>Close Report</Button>)
@@ -178,19 +180,19 @@ export default function ReportsPage() {
     }
 
     const handleReportDayChangeUpdated = (event) => {
-        handleReportDayChange(moment(event._d).format('YYYYMMDD'))
+        handleReportDayChange(dayjs(event.$d).format('YYYYMMDD'))
     }
 
     const handleFoodYearMonthChangeUpdated = (event) => {
-        handleFoodYearMonthChange(moment(event._d).format("YYYYMM"))
+        handleFoodYearMonthChange(dayjs(event.$d).format("YYYYMM"))
     }
 
     const handleReportYearChangeUpdated = (event) => {
-        handleReportYearChange(moment(event._d).format("YYYY"))
+        handleReportYearChange(dayjs(event.$d).format("YYYY"))
     }
 
     const handleReportVoucherYearChangeUpdated = (event) => {
-        handleReportVoucherYearChange(moment(event._d).format("YYYY"))
+        handleReportVoucherYearChange(dayjs(event.$d).format("YYYY"))
     }
 
     const handleDays = (value) => {
@@ -207,41 +209,42 @@ export default function ReportsPage() {
 
     return (
         // <MuiPickersUtilsProvider utils={MomentUtils}>
-        <Container maxWidth='md'>
-        <Card>
+        <Container>
+        <Card width='100%'>
             <CardHeader title="Distribution Reports" />
             <CardContent>
                 <Box>
                 <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Daily Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
-                        <InputLabel>Report</InputLabel>
-                        <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
-                                <MenuItem value="FOOD">Food Only</MenuItem>
-                                <MenuItem value="FOODBANK">Food Bank USDA EFA 7</MenuItem>
-                                <MenuItem value="FOODBANKNONUSDA">Food Bank Non USDA</MenuItem>
-                        </Select>
+                            <InputLabel>Report</InputLabel>
+                            <Select value={dayType} onChange={(event) => handleDayType(event.target.value)} width={ 240 } name="report" label="Report">
+                                    <MenuItem value="FOOD">Food Only</MenuItem>
+                                    <MenuItem value="FOODBANK">Food Bank USDA EFA 7</MenuItem>
+                                    <MenuItem value="FOODBANKNONUSDA">Food Bank Non USDA</MenuItem>
+                            </Select>
                         </FormControl>
-                        <LocalizationProvider dateAdapter={ AdapterMoment } >
-                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" 
+                        <LocalizationProvider dateAdapter={ AdapterDayjs } >
+                            <DatePicker 
+                                inputProps={{style: { width:'176px', height: '20px', paddingTop: '10px', paddingBottom:'10px'}}}  width={ 240 } m={ 0 } size='small' label="Day" 
                                 InputLabelProps={{ shrink: true }} 
                                 value={ reportDay } 
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleReportDayChangeUpdated }
-                                minDate={moment("2017-01-01")}
-                                maxDate={moment()}
+                                minDate={dayjs("2017-01-01")}
+                                maxDate={dayjs()}
                                 inputFormat="MMM DD YYYY"
                                 disableMaskedInput
                                 />
                         </LocalizationProvider>
-                        <Button onClick={runDailyReport} variant="contained" color="primary">Run</Button>
+                        <Button onClick={runDailyReport} style={{ height: '40px' }} variant="contained" color="primary">Run</Button>
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Monthly Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
-                        <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width={ 240 } name="report" label="Report">
+                        <Select value={foodType} onChange={(event) => handleFoodType(event.target.value)} width='240px' name="report" label="Report">
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                                 <MenuItem value="ALLTOTALS">All Services Totals</MenuItem>
                                 <MenuItem value="ALLBYDAY">All Services By Day</MenuItem>
@@ -249,77 +252,105 @@ export default function ReportsPage() {
                                 <MenuItem value="ETHNICITY">Clients By Ethnicity</MenuItem>
                         </Select>
                         </FormControl>
-                        <LocalizationProvider dateAdapter={ AdapterMoment } >
-                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' name="yearMonth" views={["month", "year"]} value={ foodYearMonth } 
+                        <LocalizationProvider dateAdapter={ AdapterDayjs } >
+                            <DatePicker 
+                                inputProps={{style: { width:'176px', height: '20px', paddingTop: '10px', paddingBottom:'10px'}}} label='Year and Month' m={ 0 } name="yearMonth" views={["month", "year"]} value={ foodYearMonth } 
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleFoodYearMonthChangeUpdated }
-                                minDate={moment("2017-01-01")}
-                                maxDate={moment()} />
+                                minDate={dayjs("2017-01-01")}
+                                maxDate={dayjs()} />
                         </LocalizationProvider>
-                        <Button onClick={runFoodReport} variant="contained" color="primary">Run</Button>
+                        <Button onClick={runFoodReport} style={{ height: '40px' }} variant="contained" color="primary">Run</Button>
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Annual Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
-                        <Select value={yearType} onChange={(event) => handleYearType(event.target.value)} width={ 240 } name="report" label="Report">
+                        <Select value={yearType} onChange={(event) => handleYearType(event.target.value)} width={ 240 } name="report" label="Report" >
                                 <MenuItem value="FOOD">Food Only</MenuItem>
                         </Select>
                         </FormControl>
-                        <LocalizationProvider dateAdapter={ AdapterMoment } >
-                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportYear } 
+                        <LocalizationProvider dateAdapter={ AdapterDayjs } >
+                            <DatePicker 
+                                inputProps={{style: { width:'176px', height: '20px', paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportYear } 
+                                size='small'
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleReportYearChangeUpdated }
-                                minDate={moment("2017-01-01")}
-                                maxDate={moment()}
+                                minDate={dayjs("2017-01-01")}
+                                maxDate={dayjs()}
                                  />
                         </LocalizationProvider>
-                        <Button onClick={runYearReport} variant="contained" color="primary">Run</Button>
+                        <Button onClick={runYearReport} style={{ height: '40px' }} variant="contained" color="primary">Run</Button>
                     </Box>
 
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Annual Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
                         <InputLabel>Report</InputLabel>
-                        <Select value={voucherType} onChange={(event) => handleVoucherType(event.target.value)} width={ 240 } name="report" label="Report">
+                            <Select value={voucherType} onChange={(event) => handleVoucherType(event.target.value)} 
+                                width={ 240 } name="report" label="Report">
                                 <MenuItem value="TURKEY">Thanksgiving Turkey</MenuItem>
                                 <MenuItem value="GIFTCARD">Christmas Gift Card</MenuItem>
                                 <MenuItem value="TOY">Christmas Toy</MenuItem>
-                        </Select>
+                            </Select>
                         </FormControl>
-                        <LocalizationProvider dateAdapter={ AdapterMoment } >
-                            <DatePicker inputProps={{style: { paddingTop: '10px', paddingBottom:'10px'}}} label='Year' name="year" views={["year"]} value={ reportVoucherYear } 
+                        <LocalizationProvider dateAdapter={ AdapterDayjs } >
+                            <DatePicker style={{ marginTop:'28px'}}
+                                inputProps={{ style: { width:'176px', height: '20px', paddingTop: '10px', paddingBottom:'10px'} }} 
+                                size='small' 
+                                label='Year' name="year" views={["year"]} value={ reportVoucherYear } 
                                 renderInput={(params) => <TextField {...params} />}
                                 onChange={ handleReportVoucherYearChangeUpdated }
-                                minDate={moment("2017-01-01")}
-                                maxDate={moment()}
+                                minDate={dayjs("2017-01-01")}
+                                maxDate={dayjs()}
                                  />
                         </LocalizationProvider>
-                        <Button onClick={runVoucherReport} variant="contained" color="primary">Run</Button>
+                        
+                        
+                            <Button onClick={runVoucherReport} variant="contained" color="primary"
+                                // style={{ marginTop:"8px", marginLeft:"8px", marginRight:"8px" }} 
+                                style={{ height: '40px' }}
+                            >Run</Button>
+
+                        </Box>
                     </Box>
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Population Reports</Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
                         <FormControl variant='outlined' size='small'>
-                        <InputLabel>Report</InputLabel>
-                       
-                        <Box display='flex'>
-                            <Select value={populationType} onChange={(event) => handlePopulationType(event.target.value)} width={ 240 } name="report" label="Report">
-                                <MenuItem default={ true } value="CHILDREN-BY-VISITS">Children by Food Services (Counts)</MenuItem>
-                                <MenuItem default={ true } value="CHILDREN-BY-VISITS-FULL">Children by Food Services (Full)</MenuItem>
-                            </Select>
-                            <TextField style={{ width: "60px", height:"28px", marginTop: "0", marginLeft: "16px", marginRight: "4px" }} 
-                                value={ days } size="small" name="days" label="Days"
-                                onChange={(event) => handleDays(event.target.value)}/>
-                            <TextField style={{ width: "75px", height:"22px", marginTop: "0", marginLeft: "4px", marginRight: "4px" }} 
-                                value={ minVisits } size="small" name="minVisits" label="Min Visits"
-                                onChange={(event) => handleMinVisits(event.target.value)}/>
-                            <TextField style={{ width: "80px", height:"22px", marginTop: "0", marginLeft: "4px", marginRight: "0px" }} value={ maxVisits } size="small" name="maxVisits" label="Max Visits"
-                                onChange={(event) => handleMaxVisits(event.target.value)}/>
-                        </Box>
+                            <InputLabel style={{ marginTop:"8px", marginLeft:"4px" }}>Report</InputLabel>
+                            <Box display='flex' flexDirection="row" flexWrap="wrap" >
+                                <Box>
+                                    <Select value={populationType} onChange={(event) => handlePopulationType(event.target.value)} 
+                                        width={ 240 } name="report" label="Report" 
+                                        style={{ marginTop:"8px", marginLeft:"4px", marginRight:"4px" }}>
+                                        <MenuItem default={ true } value="CHILDREN-BY-VISITS">Children by Food Services (Counts)</MenuItem>
+                                        <MenuItem default={ true } value="CHILDREN-BY-VISITS-FULL">Children by Food Services (Full)</MenuItem>
+                                    </Select>
+                                </Box>
+                                <Box>
+                                    <TextField style={{ width: "60px", marginTop:"8px", marginLeft:"4px", marginRight:"4px" }} 
+                                        value={ days } size="small" name="days" label="Days"
+                                        onChange={(event) => handleDays(event.target.value)}/>
+                                </Box>
+                                <Box>
+                                    <TextField style={{ width: "75px", marginTop:"8px", marginLeft:"4px", marginRight:"4px" }} 
+                                        value={ minVisits } size="small" name="minVisits" label="Min Visits"
+                                        onChange={(event) => handleMinVisits(event.target.value)}/>
+                                </Box>
+                                <Box >
+                                    <TextField style={{ width: "80px", marginTop:"8px", marginLeft:"4px", marginRight:"4px" }} 
+                                        value={ maxVisits } size="small" name="maxVisits" label="Max Visits"
+                                        onChange={(event) => handleMaxVisits(event.target.value)}/>
+                                </Box>
+                            </Box>
                         </FormControl>
-
-                        <Button onClick={runPopulationReport} variant="contained" color="primary">Run</Button>
+                        <Box style={{ marginTop:"8px" }}>
+                            <Button onClick={runPopulationReport} variant="contained" color="primary"
+                                // style={{ marginTop:"8px", marginLeft:"8px", marginRight:"8px" }} 
+                                style={{ height: '40px' }}
+                            >Run</Button>
+                        </Box>
                     </Box>
 
                     {/* <Box mt={ 10 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Voucher Distribution Reports</Typography></Box>
@@ -353,7 +384,7 @@ export default function ReportsPage() {
                         <Button variant="contained" color="primary">Run</Button>
                     </Box> */}
                     <ReportDialog dialogOpen={ reportOpen } heading={ reportHeading } body={ reportBody } actions={ reportActions }  />
-                </Box>
+                {/* </Box> */}
             </CardContent>
         </Card>
         </Container>
