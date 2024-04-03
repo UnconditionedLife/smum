@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { alpha, ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -10,7 +10,7 @@ import { LoginForm, SectionsContent }  from '.';
 import theme from '../Theme.jsx';
 import DbSwitch from './DbSwitch.jsx';
 import { useCookies } from 'react-cookie';
-import { cogSetupUser, cogGetRefreshToken } from '../System/js/Cognito.js';
+import { cogSetupUser } from '../System/js/Cognito.js';
 import jwt_decode from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
@@ -21,8 +21,6 @@ import UseWindowSize from '../System/Hooks/UseWindowSize.jsx'
 const useStyles = makeStyles((theme) => ({
     appName: {
         display: 'none',
-        // [theme.breakpoints.up('sm')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
-        // [theme.breakpoints.up('md')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
         [theme.breakpoints.up('lg')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
     },
   
@@ -32,15 +30,6 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('md')]: { display: 'block', fontSize: '15px' },
     [theme.breakpoints.up('lg')]: { display: 'block', fontSize: '20px' },
   },
-//   bar: {
-//     position: 'relative',
-//     flexShrink: 3,
-//     width: '100%',
-//     [theme.breakpoints.up('lg')]: {
-//       marginLeft: theme.spacing(3),
-//       width: 'auto',
-//     },
-//   },
   search: {
     borderRadius: theme.shape.borderRadius,
     backgroundColor: alpha(theme.palette.common.white, 0.15),
@@ -80,11 +69,6 @@ const useStyles = makeStyles((theme) => ({
     }
   },
   sectionDesktop: {
-    // display: 'none',
-    // [theme.breakpoints.up('lg')]: {
-    //   display: 'flex',
-    //   justifyContent: 'flex-end',
-    // },
   },
   buttonContainer: {
     [theme.breakpoints.down('sm')]: {
@@ -121,7 +105,28 @@ export default function HeaderBar(props) {
     const [cookies, setCookie, removeCookie] = useCookies(['user','auth','refresh']); // XXX combine in single cookie
     const appVersion = getAppVersion();
 
-   
+    const inputRef = useRef(null)
+
+    // used to make the "/" key move focus to the search field
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (inputRef.current !== document.activeElement) { //ignore event if already in search field
+                if (event.key === '/') {
+                    event.preventDefault(); 
+                    inputRef.current.focus();
+                }
+            }
+        }
+    
+        // Add event listener to window
+        window.addEventListener('keydown', handleKeyDown);
+        
+        // Remove event listener on cleanup
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [])
+    
     function sessionFromCookies(cookies) {
         if (cookies && cookies.user && cookies.auth && cookies.refresh) {
             console.log('Creating session from cookies')
@@ -153,31 +158,12 @@ export default function HeaderBar(props) {
         }
     }
 
-    // *** FUNCTION BELOW IS NO LONGER BEING CALLED *** JOSE
-    // function refreshUserSession() {
-    //     console.log('Refreshing', getUserName(), getSession())
-    //     let session = getSession();
-    //     if (session) {
-    //         console.log('Before refresh', tokenTimeRemaining(session.auth.idToken))
-    //         let token = cogGetRefreshToken(session.refresh);
-    //         let tempUser = cogSetupUser(getUserName());
-    //         tempUser.refreshSession(token, function (err, result) {
-    //             let auth = {};
-    //             auth.accessToken = result.getAccessToken().getJwtToken();
-    //             // let uRefreshToken = result.refreshToken.token;
-    //             auth.idToken = result.idToken.jwtToken;
-    //             session.auth = auth;
-    //             setSession(session, false);
-    //         });
-    //     }
-    // }
     useEffect(() => {
         const newSection = checkSectionURL();
         if (newSection >= 0 && newSection !== selectedSection) {
             setSelectedSection(newSection)
         }
     });
-
 
     useEffect(() => {
         console.log("App Start:" )
@@ -195,7 +181,6 @@ export default function HeaderBar(props) {
             }
         }
     }, []);
-
 
     useEffect(() => {
         console.log('Hot Reload');
@@ -231,6 +216,10 @@ export default function HeaderBar(props) {
         setSession(null, false);
     }
 
+    const handleFocus = (event) => {
+        event.target.select();
+    }
+
     function handleSearchTermChange(newValue) {
         if (navigationAllowed()) {
             if (searchTerm !== newValue) {
@@ -254,8 +243,12 @@ export default function HeaderBar(props) {
                         root: classes.inputRoot,
                         input: classes.inputInput,
                     }}
+                    inputRef={ inputRef }
+                    type="text"
                     inputProps={{ 'aria-label': 'search' }}
-                    onKeyPress={event => {
+                    onFocus={handleFocus}
+                    autoComplete="off"
+                    onKeyDown={event => {
                         if (event.key == "Enter") {
                             if (selectedSection !== 0) handleSectionChange(0)
                             handleSearchTermChange(event.target.value)
