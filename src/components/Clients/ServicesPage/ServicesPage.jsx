@@ -3,8 +3,10 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Box, Typography } from '@mui/material';
+import PrintIcon from '@mui/icons-material/Print';
 import { addServiceAsync, getLastServedDays, getActiveSvcTypes, getTargetServices } from '../../System/js/Clients/Services'
 import { PrimaryButtons, SecondaryButtons, ServiceNotes } from '..';
+import { prnPrintReminderReceipt } from '../../System/js/Clients/Receipts';
 import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc } from '../../System/js/Database';
 import { HeaderTitle } from '..';
@@ -29,11 +31,12 @@ export default function ServicesPage(props) {
     // const [ lastServedDays, setLastServedDays ] = useState(null)
     // const [ lastServedFoodDate, setLastServedFoodDate ] = useState(null)
     const [ lastServedText, setLastServedText ] = useState(null)
-    // const [ nextServiceDate, setNextServiceDate ] = useState(null)
+    const [ nextServiceDate, setNextServiceDate ] = useState(null)
     const [ nextServiceText, setNextServiceText ] = useState(null)
     const [ activeServiceTypes, setActiveServiceTypes ] = useState(null)
     const [ targetServices, setTargetServices ] = useState(null)
     const [ svcHistory, setSvcHistory ] = useState(null)
+    const [ isAfter, setIsAfter ] = useState(null)
 
     useEffect(() => {
         if (!isEmpty(client)) {
@@ -49,12 +52,13 @@ export default function ServicesPage(props) {
             if (nextServiceText !== "Today") setNextServiceText("Today")
         } else {
             const lastSvcDate = moment(lastServedFoodDate).endOf('day'); // removes time of day so calculation is from end of service day
-            // if (lastServedFoodDate !== lastSvcDate) setLastServedFoodDate(lastSvcDate)
             updateLastServedText(moment(lastServedFoodDate).fromNow().toUpperCase()) // used date/time to display FROM NOW
             const targetDate = moment(lastSvcDate).add(14, 'days')
             const nextSvcDate = calFindOpenDate(targetDate, 7);
+            setNextServiceDate(nextSvcDate)
             const daysFromNow = moment().diff(nextSvcDate, 'days')
             const isAfter = moment().isAfter(nextSvcDate, 'day')
+            setIsAfter(isAfter)
             if ( isAfter ) {
                 if (daysFromNow === 0) updateNextServiceText("TODAY")
                 if (daysFromNow === 1) updateNextServiceText(daysFromNow + " DAY OVERDUE")
@@ -110,6 +114,10 @@ export default function ServicesPage(props) {
             })
     }
 
+    function printReminder(){
+        prnPrintReminderReceipt(client, nextServiceDate);
+    }
+
     // prevent rendering before activeServiceTypes are loaded
     if (activeServiceTypes === null) return null
 
@@ -134,11 +142,22 @@ export default function ServicesPage(props) {
                                 <span style={{ color:"#ccc" }}>SERVED:&nbsp;</span>{ lastServedText }
                             </Typography>
                         </Box>
+                        { !isAfter && 
+                            <Box ml={1.5} px={1} display='flex' border='1px solid #1976d2' borderRadius='4px'
+                                backgroundColor= '#ddd'
+                                justifyContent='center' style={{ cursor:'pointer'}} onClick={ printReminder }>
+                                <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
+                                    <span style={{ color:"#555" }}>NEXT:&nbsp;</span><span style={{ color:"#CC0000" }}>{ nextServiceText } &nbsp; </span> 
+                                </Typography><PrintIcon color='error' mt={1}/>
+                            </Box>
+                        }
+                        { isAfter &&
                         <Box ml={1.5} display='flex' justifyContent='center'>
                             <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
                                 <span style={{ color:"#ccc" }}>NEXT:&nbsp;</span>{ nextServiceText }
                             </Typography>
                         </Box>
+                        }
                     </Box>
                 </Box>
                 <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
