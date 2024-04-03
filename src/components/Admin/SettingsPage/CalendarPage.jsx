@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Card, CardContent, CardHeader, Container, Popper, Dialog, DialogTitle } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, Container, Dialog, DialogTitle } from '@mui/material';
 import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
 import moment from 'moment-timezone';
 import FullCalendar from '@fullcalendar/react';
@@ -23,7 +23,7 @@ export default function CalendarPage() {
 
     if (settings)
         return (
-            <Container maxWidth='md'>
+            <Container maxWidth='lg'>
                 <Card>
                     <CardHeader title="Calendar" />
                     <CardContent>
@@ -241,7 +241,7 @@ function SettingsSched(props) {
     }
 
     return (
-        <>
+        <Box width={'100%'} maxWidth={'1200px'}>
             {/* <Popper open={true} anchorEl={foo}>
                 <Card>
                     <pre>{JSON.stringify(hover.event, 4, undefined)}</pre>
@@ -264,6 +264,6 @@ function SettingsSched(props) {
             <EventEdit event={ editEvent } />
             <SaveCancel disabled={ !(fieldsDirty) } message={ saveMessage }
                 onClick={ (isSave) => { isSave ? doSave() : doCancel() } } />
-        </>
+        </Box>
     );
 }
