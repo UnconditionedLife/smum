@@ -124,7 +124,7 @@ export function prnPrintReminderReceipt(client, nextVisit) {
 	prnFeed(rcpt, 1);
     prnTextLine(rcpt, 'NEXT VISIT | PRÓXIMA VISITA');
     prnTextLine(rcpt, '**************************************')
-    prnTextLine(rcpt, ' ' + dayjs(nextVisit).format("MMMM Do, YYYY") + ' ', 1, 2, true);
+    prnTextLine(rcpt, ' ' + dayjs(nextVisit).format("MMMM D, YYYY") + ' ', 1, 2, true);
     prnTextLine(rcpt, '**************************************');
     prnEndReceipt(rcpt);
 }
@@ -234,7 +234,7 @@ function prnEndReceipt(rcpt) {
 function prnServiceHeader(rcpt, client, title) {
 	prnFeed(rcpt, 2);
 	prnTextLine(rcpt, '* ' + title + ' *', 1, 2);
-	prnTextLine(rcpt, dayjs().format("MMMM Do, YYYY LT"));
+	prnTextLine(rcpt, dayjs().format("MMMM D, YYYY LT"));
 	prnFeed(rcpt, 1);
 	prnTextLine(rcpt, client.givenName + ' ' + client.familyName, 2, 2);
 	prnFeed(rcpt, 1);
@@ -245,7 +245,7 @@ function prnPickupTimes(rcpt, fromDateTime, toDateTime) {
 	prnTextLine(rcpt, '**************************************')
 	prnTextLine(rcpt, 'PRESENT THIS FOR PICKUP')
 	prnTextLine(rcpt, 'HAY QUE PRESENTAR PARA RECLAMAR')
-	prnTextLine(rcpt, ' ' + dayjs(fromDateTime).format("MMMM Do, YYYY")+ ' ', 2, 2, true);
+	prnTextLine(rcpt, ' ' + dayjs(fromDateTime).format("MMMM D, YYYY")+ ' ', 2, 2, true);
 	prnFeed(rcpt, 1);
 	prnTextLine(rcpt, ' ' + dayjs(fromDateTime).format("h:mm a") + ' - ' +
 		dayjs(toDateTime).format("h:mm a") + ' ', 1, 1, true);

@@ -106,7 +106,7 @@ function SettingsSched(props) {
             let freq = props.event.extendedProps.type;
             let title;
             const m = moment(date).tz('UTC');
-            const fullDate = m.format('MMMM Do');
+            const fullDate = m.format('MMMM D');
             const weekdayName = m.format('dddd');
             const weekNum = Math.floor((m.date()+6)/7);
             const weekOrdinal = utilOrdinal(weekNum);
@@ -171,7 +171,7 @@ function SettingsSched(props) {
     
         if (open) {
             const m = moment(props.date).tz('UTC');
-            const fullDate = m.format('MMMM Do');
+            const fullDate = m.format('MMMM D');
             const weekday = calConvertWeekday(m.day());
             const weekdayName = m.format('dddd');
             const weekNum = Math.floor((m.date()+6)/7);
