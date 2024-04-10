@@ -83,7 +83,7 @@ export default function ErrorPage(props) {
                     {props.errorMessages.map((row) => (
                     <TableRow key={ row.logID }>
                         <TableCell component="th" scope="row">
-                            {moment(row.logTimestamp).local().format("dddd, MMMM Do YYYY, h:mm:ss a")}
+                            {moment(row.logTimestamp).local().format("dddd, MMMM D, YYYY, h:mm:ss a")}
                         </TableCell>
                         <TableCell component="th" scope="row">{row.message}</TableCell>
                     </TableRow>

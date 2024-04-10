@@ -64,7 +64,7 @@ export default function ServicesPage(props) {
                 if (daysFromNow === 1) updateNextServiceText(daysFromNow + " DAY OVERDUE")
                 if (daysFromNow > 1) updateNextServiceText(daysFromNow + " DAYS OVERDUE")
             } else {
-                updateNextServiceText(moment(nextSvcDate).format("MMMM Do").toUpperCase())
+                updateNextServiceText(moment(nextSvcDate).format("MMMM D").toUpperCase())
             }
         }
 
