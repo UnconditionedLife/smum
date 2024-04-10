@@ -204,11 +204,14 @@ def log_error(msg):
     log_to_database('ERROR', msg)
 
 def log_to_database(cat, msg):
-    url = f'{url_base}/{args.queue}/logs'
-    payload = {'message': 'Print Server: ' + msg, 
-        'logTimestamp': datetime.utcnow().isoformat(timespec='seconds') + 'Z', 
-        'logID': str(uuid.uuid1()), 'category': cat}
-    requests.post(url, data=json.dumps(payload))
+    try:
+        url = f'{url_base}/{args.queue}/logs'
+        payload = {'message': 'Print Server: ' + msg, 
+            'logTimestamp': datetime.utcnow().isoformat(timespec='seconds') + 'Z', 
+            'logID': str(uuid.uuid1()), 'category': cat}
+        requests.post(url, data=json.dumps(payload))
+    except Exception as e:
+        print(time.ctime(), 'ERROR', 'Failed to write to error log', flush=True)
 
 
 if __name__ == '__main__':
