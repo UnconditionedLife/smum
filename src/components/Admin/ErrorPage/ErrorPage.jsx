@@ -27,9 +27,24 @@ export default function ErrorPage(props) {
     // error messages stores the dates in utc time
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
+    const [isValidRange, setIsValidRange] = useState(true);
     // const base_url = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/";
 
+    useEffect(() => {
+        const invalidStart = startDate && !startDate.isValid();
+        const invalidEnd = endDate && !endDate.isValid();
+        const outOfOrder = startDate?.isValid() && endDate?.isValid() && !startDate.isBefore(endDate);
+        if(invalidStart || invalidEnd || outOfOrder){
+            setIsValidRange(false);
+        } else {
+            setIsValidRange(true);
+        }
+    }, [startDate, endDate]);
+
     const updateErrorRange = () => {
+        if (!isValidRange){
+            return;
+        }
         let start = "";
         let end = "";
         if (startDate?.isValid() && endDate?.isValid()) {
@@ -87,13 +102,9 @@ export default function ErrorPage(props) {
                         disableMaskedInput
                     />
                 </LocalizationProvider>
-                <Button onClick={updateErrorRange} variant="contained" color="primary" >Apply</Button>
+                <Button onClick={updateErrorRange} variant="contained" color="primary" disabled={!isValidRange}>Apply</Button>
             </Box>
-            {/* <p>start datetime: {startDate?.utc().format()}</p>
-            <p>
-                end datetime:{" "}
-                {endDate?.add(23, "h").add(59, "m").utc().format()}
-            </p> */}
+            {!isValidRange && <Alert severity="warning">Dates must be valid and sequential</Alert>}
             <TableContainer>
                 <Table>
                     <TableHead>
