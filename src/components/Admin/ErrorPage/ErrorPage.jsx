@@ -24,11 +24,10 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 
 export default function ErrorPage(props) {
-    // error messages stores the dates in utc time
+    // error messages list stores the dates in utc time
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [isValidRange, setIsValidRange] = useState(true);
-    // const base_url = "https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/";
 
     useEffect(() => {
         const invalidStart = startDate && !startDate.isValid();
