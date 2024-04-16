@@ -303,9 +303,8 @@ async function dbGetClientsAsync(searchTerm){
     console.log("SEARCHTERM:", searchTerm)
 
     const isAlphaNum = /^[a-zA-Z0-9 ]+$/.test(searchTerm);
-    const tempTerm = (isAlphaNum) ? searchTerm : utilCleanDate(searchTerm)
-    const isDate = dayjs(tempTerm, 'YYYY-MM-DD', true).isValid()
-    const names = []
+    const dateTerm = (isAlphaNum) ? searchTerm : utilCleanDate(searchTerm)
+    const isDate = dayjs(dateTerm, 'YYYY-MM-DD', true).isValid()
 
     if (!isAlphaNum && !isDate) {
         console.log("ERROR")
@@ -314,7 +313,7 @@ async function dbGetClientsAsync(searchTerm){
     }
 
 	if (isDate){
-		return await dbGetDataAsync("clients", "/clients/dob/" + searchTerm)    // expected date
+		return await dbGetDataAsync("clients", "/clients/dob/" + dateTerm)    // expected date
 
     } else if (!isNaN(searchTerm)){
         return await dbGetDataAsync("clients", "/clients/" + searchTerm)        // expected Client ID
