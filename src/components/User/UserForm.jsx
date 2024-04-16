@@ -120,7 +120,7 @@ export default function UserForm(props) {
         setEditingState(false)
         reset();
         if (props.onClose)
-            props.onClose();      
+            props.onClose();
     }
 
     return (
