@@ -4,12 +4,14 @@
 
 import moment from 'moment';
 import cuid from 'cuid';
-import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
+import { utilArrayToObject, utilCleanDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
 import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
 import { prnConnect } from './Clients/Receipts';
 import jwt_decode from 'jwt-decode';
+import { forEach } from 'lodash';
+import dayjs from 'dayjs';
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 
@@ -279,9 +281,9 @@ export async function dbSaveUserAsync(data) {
 //******************** CLIENTS ********************
 //*************************************************
 
-export async function dbSearchClientsAsync(searchTerm) {
-    const dateRegex = /^\d+[./-]\d+[./-]\d+/g
-    const isDate = dateRegex.test(searchTerm) //checks to see if search term is a date
+export async function dbSearchClientsAsync(searchTerm, isDate) {
+    // const dateRegex = /^\d+[./-]\d+[./-]\d+/g
+    // const isDate = dateRegex.test(searchTerm) //checks to see if search term is a date
     // const regex = /[/.]/g was used to do dash count
     // const slashCount = (searchTerm.match(regex) || []).length
 
@@ -295,33 +297,47 @@ export async function dbSearchClientsAsync(searchTerm) {
     )
 }
 
-async function dbGetClientsAsync(searchTerm, isDate){
-	let clientData = []
+async function dbGetClientsAsync(searchTerm){
+	// let clientData = []
+
+    console.log("SEARCHTERM:", searchTerm)
+
+    const isAlphaNum = /^[a-zA-Z0-9 ]+$/.test(searchTerm);
+    const tempTerm = (isAlphaNum) ? searchTerm : utilCleanDate(searchTerm)
+    const isDate = dayjs(tempTerm, 'YYYY-MM-DD', true).isValid()
+    const names = []
+
+    if (!isAlphaNum && !isDate) {
+        console.log("ERROR")
+        globalMsgFunc('error', "'"+ searchTerm + "' is not a valid date or name.")
+        return null
+    }
+
 	if (isDate){
-		searchTerm = utilCleanUpDate(searchTerm)
-		// searchTerm = moment(searchTerm, 'MM-DD-YYYY').format('YYYY-MM-DD') // moved to utilCleanUpDate
-		return await dbGetDataAsync("clients", "/clients/dob/" + searchTerm)
-	} else if (!isNaN(searchTerm)){
-		return await dbGetDataAsync("clients", "/clients/" + searchTerm)
-	} else if (searchTerm.includes(" ")){
+		return await dbGetDataAsync("clients", "/clients/dob/" + searchTerm)    // expected date
+
+    } else if (!isNaN(searchTerm)){
+        return await dbGetDataAsync("clients", "/clients/" + searchTerm)        // expected Client ID
+        
+	} else {
 		searchTerm = utilChangeWordCase(searchTerm)
-		let split = searchTerm.split(" ")
-//*** TODO deal with more than two words ***
+		const split = searchTerm.split(" ")
+
+console.log("Split", split)
+
+        let d3 = [], d4 = [], d5 = [], d6 = []  
 		const d1 = await dbGetDataAsync("clients", "/clients/givenname/" + split[0])
 		const d2 = await dbGetDataAsync("clients", "/clients/familyname/" + split[0])
-		const d3 = await dbGetDataAsync("clients", "/clients/givenname/" + split[1])
-		const d4 = await dbGetDataAsync("clients", "/clients/familyname/" + split[1])
-		return utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4))
-	} else if (clientData==null||clientData.length==0){
-		searchTerm = utilChangeWordCase(searchTerm)
-		const d2 = await dbGetDataAsync("clients", "/clients/givenname/" + searchTerm)
-		const d1 = await dbGetDataAsync("clients", "/clients/familyname/" + searchTerm)
-		if (d1.length > 0 && d2.length < 1){
-			return utilRemoveDupClients(d1.concat(d2))
-		}	else if (d2.length > 0){
-			return utilRemoveDupClients(d2.concat(d1))
-		}
-	}
+        if (split.length > 1) {
+		    d3 = await dbGetDataAsync("clients", "/clients/givenname/" + split[1])
+		    d4 = await dbGetDataAsync("clients", "/clients/familyname/" + split[1])
+        }
+        if (split.length > 2) {
+		    d5 = await dbGetDataAsync("clients", "/clients/givenname/" + split[2])
+		    d6 = await dbGetDataAsync("clients", "/clients/familyname/" + split[2])
+        }
+   		return utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4).concat(d5).concat(d6))
+    }
 }
 
 export async function dbGetAllClientsAsync(){
