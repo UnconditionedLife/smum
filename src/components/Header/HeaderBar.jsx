@@ -110,11 +110,12 @@ export default function HeaderBar(props) {
     // used to make the "/" key move focus to the search field
     useEffect(() => {
         const handleKeyDown = (event) => {
-            if (inputRef.current !== document.activeElement) { //ignore event if already in search field
-                if (event.key === '/') {
-                    event.preventDefault(); 
-                    inputRef.current.focus();
-                }
+            if (document.activeElement.tagName !== 'INPUT' 
+                && document.activeElement.tagName !== 'TEXTAREA'
+                && event.key === '/') { //ignore event if in text field and non "/"
+                
+                event.preventDefault();
+                inputRef.current.focus();
             }
         }
     

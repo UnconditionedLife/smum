@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { AppBar, Box, Tab, Tabs, Tooltip, Snackbar } from '@mui/material';
 import { Add, Pageview, RoomService, House, History } from '@mui/icons-material';
 import { Fab } from '../../System';
-// import { HeaderTitle } from '..';
 import { navigationAllowed } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 
@@ -19,7 +18,7 @@ ClientsHeader.propTypes = {
 }
 
 export default function ClientsHeader(props) {
-    const { client, clientsFound, isNewClientChange, selectedTab, 
+    const { client, isNewClientChange, selectedTab, 
         updateClientsURL, showFound, showServices, showClient } = props
 
     function handleNewClient() {
@@ -43,10 +42,6 @@ export default function ClientsHeader(props) {
             <Box mt={ -2 } width={ 1 } display="flex" flexWrap="wrap-reverse">
                 <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
                     justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>
-                    {/* <Box display='flex'> */}
-                    {/* <Box ml={ 3 } display='flex' >
-                            <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
-                    </Box> */}
                     <Tabs
                         value={ selectedTab }
                         onChange={(event, newValue) => { updateClientsURL(client.clientId, newValue) }}
