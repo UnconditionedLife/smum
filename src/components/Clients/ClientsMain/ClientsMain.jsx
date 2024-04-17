@@ -55,7 +55,7 @@ export default function ClientsMain(props) {
             dbSearchClientsAsync(searchTerm).then(clients => { 
                 changeClientsFound(clients, searchTerm)
                 if (clients.length === 0) {
-                    globalMsgFunc('error', "No clients found matching: '"+ searchTerm + "'")
+                    globalMsgFunc('error', "No matching clients were found. Make sure the search term is an ID, date, or name(s).")
                 }
             })
         }
