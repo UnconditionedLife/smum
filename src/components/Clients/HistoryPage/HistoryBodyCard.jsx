@@ -4,7 +4,10 @@ import { Box, CardContent, Typography } from '@mui/material';
 import { Card } from '../../System';
 import { isEmpty} from '../../System/js/GlobalUtils';
 import { isAdmin } from '../../System/js/Database';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat)
 
 HistoryBodyCard.propTypes = {
     svcHistory: PropTypes.array.isRequired,
@@ -83,7 +86,7 @@ export default function HistoryBodyCard(props) {
                                                         {svc.individuals} <br />
                                                         {svc.seniors} <br />
                                                         {svc.svcBy} <br />
-                                                        {(moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : moment(svc.svcDT).format("MMM DD, YYYY - h:mma")}
+                                                        {(dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma")}
                                                     </Typography>
                                                 </Box>
                                             </Box>

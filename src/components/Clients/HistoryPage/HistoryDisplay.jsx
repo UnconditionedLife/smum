@@ -8,7 +8,7 @@ import { HistoryFormDialog, HistoryPopupMenu, HistoryBodyRow, HistoryBodyCard } 
 import { isEmpty, isMobile } from '../../System/js/GlobalUtils';
 import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc, isAdmin } from '../../System/js/Database';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useEffect } from 'react';
 
 HistoryDisplay.propTypes = {
@@ -41,8 +41,8 @@ export default function HistoryDisplay(props) {
         let tempHistory = client.svcHistory.concat(client.invalidSvcs)
         // descending sort by updated date/time if avialable or created date/time
         const svcHistoryTemp = tempHistory.sort((a, b) => {
-            const x = (a.svcUpdatedDT) ? moment(a.svcUpdatedDT) : moment(a.svcDT)
-            const y = (b.svcUpdatedDT) ? moment(b.svcUpdatedDT) : moment(b.svcDT)
+            const x = (a.svcUpdatedDT) ? dayjs(a.svcUpdatedDT) : dayjs(a.svcDT)
+            const y = (b.svcUpdatedDT) ? dayjs(b.svcUpdatedDT) : dayjs(b.svcDT)
             return y.diff(x)
         })
         setSvcHistory(svcHistoryTemp)

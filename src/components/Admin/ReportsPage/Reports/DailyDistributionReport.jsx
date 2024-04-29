@@ -2,7 +2,7 @@ import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularPro
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { dbGetAllSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 
@@ -25,7 +25,7 @@ export default function DailyDistributionReport(props) {
     const theme = useTheme()
     const greenBackground = { backgroundColor: theme.palette.primary.light }
     const redBackground = { backgroundColor: theme.palette.error.light }
-    const reportDay = moment( props.day ).format("MMM DD, YYYY").toLocaleUpperCase()
+    const reportDay = dayjs( props.day ).format("MMM DD, YYYY").toLocaleUpperCase()
 
     useEffect(()=>{
         RunReport()
@@ -94,7 +94,7 @@ export default function DailyDistributionReport(props) {
     }
 
     function RunReport() {
-        dbGetAllSvcsByDateAsync(moment(props.day).format('YYYY-MM'), "Food_Pantry", moment(props.day).format('YYYY-MM-DD'))
+        dbGetAllSvcsByDateAsync(dayjs(props.day).format('YYYY-MM'), "Food_Pantry", dayjs(props.day).format('YYYY-MM-DD'))
             .then(svcs => {
                 // const servicesFood = svcs
                 const activeFood = svcs.filter(item => item.svcValid == true)

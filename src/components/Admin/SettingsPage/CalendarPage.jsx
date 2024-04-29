@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Card, CardContent, CardHeader, Container, Dialog, DialogTitle } from '@mui/material';
 import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
-import moment from 'moment-timezone';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import rrulePlugin from '@fullcalendar/rrule';
@@ -14,7 +17,11 @@ import { calAddSingleRule, calAddMonthlyRule, calAddWeeklyRule, calConvertWeekda
 import { Button, SaveCancel } from '../../System';
 import { calClone } from '../../System/js/Calendar';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 export default function CalendarPage() {
+
     const [settings, setSettings] = useState(null);
 
     useEffect(() => { 
@@ -105,7 +112,7 @@ function SettingsSched(props) {
             const date = new Date(props.event.start);
             let freq = props.event.extendedProps.type;
             let title;
-            const m = moment(date).tz('UTC');
+            const m = dayjs(date).tz('UTC');
             const fullDate = m.format('MMMM D');
             const weekdayName = m.format('dddd');
             const weekNum = Math.floor((m.date()+6)/7);
@@ -170,7 +177,7 @@ function SettingsSched(props) {
         }
     
         if (open) {
-            const m = moment(props.date).tz('UTC');
+            const m = dayjs(props.date).tz('UTC');
             const fullDate = m.format('MMMM D');
             const weekday = calConvertWeekday(m.day());
             const weekdayName = m.format('dddd');
@@ -235,7 +242,7 @@ function SettingsSched(props) {
         console.log('Closed dates:');
         for (let i = 1; i <= 31; i++) {
             let d = new Date(year, month, i);
-            if (calIsClosed(calRules, moment(d)))
+            if (calIsClosed(calRules, dayjs(d)))
                 console.log('Closed', d);
         }
     }

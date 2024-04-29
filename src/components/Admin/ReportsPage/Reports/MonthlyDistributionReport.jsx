@@ -2,7 +2,7 @@ import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularPro
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 
@@ -27,7 +27,7 @@ export default function MonthlyDistributionReport(props) {
     const [loading, setLoading] = useState(true)
 
     const theme = useTheme()
-    const reportMonth = moment(props.month, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
+    const reportMonth = dayjs(props.month, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
 
     useEffect(()=>{
         RunReport()
@@ -118,7 +118,7 @@ export default function MonthlyDistributionReport(props) {
     }
 
     function RunReport() {
-        dbGetValidSvcsByDateAsync(moment(props.month).format('YYYY-MM'), "Food_Pantry") .then(svcs => {
+        dbGetValidSvcsByDateAsync(dayjs(props.month).format('YYYY-MM'), "Food_Pantry") .then(svcs => {
             const svcsGroupBy = svcs.reduce(function (r, a) {
                 const key = a.svcDT.substring(0 ,10)
                 r[key] = r[key] || [];
@@ -128,7 +128,7 @@ export default function MonthlyDistributionReport(props) {
               
             const newDaysGrid = []
             for (const [servicedDay, svcs] of Object.entries(svcsGroupBy)) {
-                const servicedDate = moment(servicedDay).format('MMM DD YYYY')
+                const servicedDate = dayjs(servicedDay).format('MMM DD YYYY')
                 const servicesFood = svcs
                     .filter(item => item.svcValid == true)
                     .filter(item => item.svcCat == "Food_Pantry")

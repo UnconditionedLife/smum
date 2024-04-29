@@ -1,11 +1,12 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils.js';
 import { dbGetAllClientSvcsAsync, dbGetClientActiveServiceHistoryAsync, 
         dbSaveSvcAsync, dbMigrateSvcTypeAsync, dbGetOldSvcTypesAsync, getSvcTypes,
         dbGetSingleClientAsync } from '../../System/js/Database.js';
 import { beepError } from './GlobalUtils.js';
 
-
+dayjs.extend(utc)
 
 function getNewSvcId(svcOldTypeId){
 
@@ -187,7 +188,7 @@ console.log("SVCS", svcs)
 
 
                 // Sort assending to check for first food service
-                const svcRecsAss = svcs.sort((a, b) => moment.utc(a.svcDT).diff(moment.utc(b.svcDT)))
+                const svcRecsAss = svcs.sort((a, b) => dayjs.utc(a.svcDT).diff(dayjs.utc(b.svcDT)))
 
                 let foundFirstFood = false
             

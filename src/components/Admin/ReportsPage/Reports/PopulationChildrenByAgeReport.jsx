@@ -2,7 +2,9 @@ import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularPro
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
 import { dbGetValidSvcsByDateAsync, dbGetAllClientsAsync, globalMsgFunc } from '../../../System/js/Database';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge, utilCalcAgeGroupingAllDeps } from '../../../System/js/Clients/ClientUtils';
 import { useTheme } from '@mui/material/styles';
@@ -13,8 +15,12 @@ PopulationChildrenAgeReport.propTypes = {
     maxVisits: PropTypes.number
 }
 
+dayjs.extend(utc)
+
+
 export default function PopulationChildrenAgeReport(props) {
     const { days, minVisits, maxVisits } = props
+
 
     if (minVisits < 1) {
         globalMsgFunc('error', "Min Visits must be at least 1.")
@@ -42,8 +48,8 @@ export default function PopulationChildrenAgeReport(props) {
     const theme = useTheme()
     const greenBackground = { backgroundColor: theme.palette.primary.light }
 
-    const oldestMonth = moment().subtract(days, "days")
-    const currentMonth = moment()
+    const oldestMonth = dayjs().subtract(days, "days")
+    const currentMonth = dayjs()
     const months = []
     while (currentMonth > oldestMonth || oldestMonth.format('M') === currentMonth.format('M')) {
         months.push(oldestMonth.format('YYYY-MM'))
@@ -118,7 +124,7 @@ export default function PopulationChildrenAgeReport(props) {
                 getMonthsSvcs(i+1)
             } else {
                 services = services.filter(svcDays => {
-                    return moment().diff(svcDays.svcDT, "days") <= days
+                    return dayjs().diff(svcDays.svcDT, "days") <= days
                 })
                 // get all the clients
                 getClients()
@@ -135,7 +141,7 @@ export default function PopulationChildrenAgeReport(props) {
                 let newC = utilCalcAge(c)
                 newC.dependents = calcDependentsAges(newC)
                 newC.family = calcFamilyCounts(newC)
-                newC.dependents.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
+                newC.dependents.sort((a, b) => dayjs.utc(b.createdDateTime).diff(dayjs.utc(a.createdDateTime)))
                 newC.dependents = arrayAddIds(newC.dependents, 'depId')
                 const familyCounts = utilCalcAgeGroupingAllDeps(newC.dependents)
                 familyCounts.forEach((c, i) => {

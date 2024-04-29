@@ -8,7 +8,8 @@ import { HistoryFormDialog, HistoryPopupMenu } from '..';
 import { isEmpty, isMobile } from '../../System/js/GlobalUtils';
 import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc, isAdmin } from '../../System/js/Database';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect } from 'react';
 
 HistoryBodyRow.propTypes = {
@@ -18,6 +19,7 @@ HistoryBodyRow.propTypes = {
 }
 
 export default function HistoryBodyRow(props) {
+    dayjs.extend(customParseFormat)
     const { svcHistory, selectedService, handleSelectedService } = props
     
     if (isEmpty(svcHistory)) return null
@@ -38,10 +40,10 @@ export default function HistoryBodyRow(props) {
                                     style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { (svc.svcValid) ? 
                                             <span style={{ fontSize: '85%'}}>
-                                                { (moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
-                                                    moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                                { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
+                                                    dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
                                                 <br/>
-                                                { moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                                { dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
                                             </span> : 
                                             <Box display="flex">
                                                 <Box mr={ .25 } mt={ 1.4 }>
@@ -49,10 +51,10 @@ export default function HistoryBodyRow(props) {
                                                 </Box>
                                                 <Box>
                                                     <span style={{ fontSize: '69%'}}>
-                                                        { (moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
-                                                            moment(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                                        { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
+                                                            dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
                                                         <br/>
-                                                        { moment(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                                        { dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
                                                     </span>
                                                 </Box>
                                             </Box>

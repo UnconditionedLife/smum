@@ -1,7 +1,9 @@
 //******************************************************************
 //****** CLIENTS ServiceInstance SECTION JAVASCRIPT FUNCTIONS ******
 //******************************************************************
-import moment from  'moment';
+import dayjs from  'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { utilGradeToNumber, utilCalcTargetServices } from './ClientUtils'
 import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
     getUserName } from '../Database';
@@ -11,6 +13,9 @@ import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
 import cuid from 'cuid';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
+
+dayjs.extend(customParseFormat)
+dayjs.extend(isSameOrAfter)
 
 export async function addServiceAsync( client, svcTypeId ){
     // const { client, svcTypeId, svcCat } = props
@@ -100,7 +105,7 @@ export function getFoodInterval(aSvcTypes){
 export function getSvcsRendered(svcHistory){
     let svcsRendered = []
     svcHistory.forEach((svc) => {
-        if (moment().isSame(svc.svcDT, "day")) {
+        if (dayjs().isSame(svc.svcDT, "day")) {
             svcsRendered.push(svc)
 		}
     })
@@ -147,16 +152,16 @@ export function getLastServedDays(client) {
 		
 	foodSvcs.forEach((foodSvc) => {
 		if (foodSvc.svcUSDA != "Emergency") {
-            let tempLastServedFoodDate = moment(foodSvc.svcDT)
-            let tempLastServedFoodDateSTART = moment(foodSvc.svcDT).startOf('day')
+            let tempLastServedFoodDate = dayjs(foodSvc.svcDT)
+            let tempLastServedFoodDateSTART = dayjs(foodSvc.svcDT).startOf('day')
 			if (foodSvc.svcUSDA == "USDA") {
-                let diffUSDA = moment().diff(tempLastServedFoodDateSTART, 'days')
+                let diffUSDA = dayjs().diff(tempLastServedFoodDateSTART, 'days')
                 if ( diffUSDA < lsDays.daysUSDA) {
                     lsDays.daysUSDA = diffUSDA
                     tempUSDADate = tempLastServedFoodDate
                 }
 			} else {
-                let diffNonUSDA = moment().diff(tempLastServedFoodDateSTART, 'days')
+                let diffNonUSDA = dayjs().diff(tempLastServedFoodDateSTART, 'days')
                 if ( diffNonUSDA < lsDays.daysNonUSDA) {
                     lsDays.daysNonUSDA = diffNonUSDA
                     tempNonUSDADate = tempLastServedFoodDate
@@ -172,7 +177,7 @@ export function getLastServedDays(client) {
     }
 	let backToSchoolSvcs = client.lastServed.filter(obj => obj.svcCat == "Back_To_School")
 	if (backToSchoolSvcs.length > 0) {
-		lsDays.backToSchool = moment(backToSchoolSvcs[0].serviceDateTime).startOf('day')
+		lsDays.backToSchool = dayjs(backToSchoolSvcs[0].serviceDateTime).startOf('day')
     }
 	return lsDays
 }
@@ -188,7 +193,7 @@ export function getLastServedFood(client){
 	})
 	lastServedFoodSvcs.forEach((svc) => {
 		if (svc.svcUSDA !== "Emergency") {
-			if (moment(svc.svcDT).isAfter(lastServedFood)){
+			if (dayjs(svc.svcDT).isAfter(lastServedFood)){
 				lastServedFood = svc.svcDT
 			}
 		}
@@ -208,27 +213,27 @@ export function getActiveSvcTypes(){
         if (svcType.isActive){
             // FROM
             let fromDateString = [
-                moment().year(), 
+                dayjs().year(), 
                 Number(svcType.available.dateFromMonth),  
                 Number(svcType.available.dateFromDay)
             ]
-            let fromDate = moment(fromDateString).startOf('day')
+            let fromDate = dayjs(fromDateString).startOf('day')
             // TO
             let toDateString = [
-                moment().year(),
+                dayjs().year(),
                 Number(svcType.available.dateToMonth),
                 Number(svcType.available.dateToDay)
             ]
-            let toDate = moment(toDateString).endOf('day')
+            let toDate = dayjs(toDateString).endOf('day')
             // Adjust year dependent on months of TO and FROM
-            if (moment(fromDate).isAfter(toDate)) toDate = moment(toDate).add(1, 'y');
+            if (dayjs(fromDate).isAfter(toDate)) toDate = dayjs(toDate).add(1, 'y');
             // Adjust year if FROM is after TODAY
-            if (moment(fromDate).isAfter()) {
-                fromDate = moment(fromDate).subtract(1, 'y');
-                toDate = moment(toDate).subtract(1, 'y');
+            if (dayjs(fromDate).isAfter()) {
+                fromDate = dayjs(fromDate).subtract(1, 'y');
+                toDate = dayjs(toDate).subtract(1, 'y');
             }
             // IN date range = ACTIVE
-            if (moment().isBetween(fromDate, toDate, null, '[]')) activeSvcTypes.push(svcType)
+            if (dayjs().isBetween(fromDate, toDate, null, '[]')) activeSvcTypes.push(svcType)
         }
     })
     return activeSvcTypes
@@ -356,7 +361,7 @@ function getUsedServicesButtons( client, buttons, buttonData ) {
         if (buttons == "primary") {
             svcHist.forEach((histItem) => {
                 // if record is from today
-                if ((moment(histItem.svcDT).isSame(moment(), "day")) && (histItem.svcBtns == "Primary")) {
+                if ((dayjs(histItem.svcDT).isSame(dayjs(), "day")) && (histItem.svcBtns == "Primary")) {
                     let index = null
                     buttonData.primary.forEach((btnSvc, i) => {
                         if (histItem.svcTypeId === btnSvc.svcTypeId) index = i
@@ -373,7 +378,7 @@ function getUsedServicesButtons( client, buttons, buttonData ) {
         } else {
             // Secondary buttons
             svcHist.forEach((histItem) => {
-                if (moment(histItem.svcDT).isSame(new Date(), "day")) {
+                if (dayjs(histItem.svcDT).isSame(new Date(), "day")) {
                     if (histItem.svcBtns == "Secondary") {
                         buttonData[buttons].forEach((btnSvc, i) => {
                             if (histItem.svcTypeId === btnSvc.svcTypeId) {
@@ -392,10 +397,10 @@ function getUsedServicesButtons( client, buttons, buttonData ) {
 
 function validateSvcInterval( props ){
     const { client, activeServiceType, lastServedDays, intervals } = props
-    const lastSvcDate = moment().subtract(lastServedDays.lowestDays, 'days')
-    const targetDate = moment(lastSvcDate).add(14, 'days').endOf('day'); // removes time of day so calculation is from end of service day
+    const lastSvcDate = dayjs().subtract(lastServedDays.lowestDays, 'days')
+    const targetDate = dayjs(lastSvcDate).add(14, 'days').endOf('day'); // removes time of day so calculation is from end of service day
     const nextSvcDate = calFindOpenDate(targetDate, 7);
-    const isSameOrAfter = moment().isSameOrAfter(nextSvcDate, 'day')
+    const isSameOrAfter = dayjs().isSameOrAfter(nextSvcDate, 'day')
     
 	if (activeServiceType.svcBtns == "Primary") {
 		const svcCat = activeServiceType.svcCat
@@ -418,7 +423,7 @@ function validateSvcInterval( props ){
             } else {
                 // Emergency only if not day of service
                 if (activeServiceType.svcUSDA === "Emergency") {
-                    if (!lastSvcDate.isSame(moment(), 'day')) return true
+                    if (!lastSvcDate.isSame(dayjs(), 'day')) return true
                 }
                 return false
             }
@@ -431,7 +436,7 @@ function validateSvcInterval( props ){
 			const voucherHistory = utilGetVoucherTargetService({ svcHistory: client.svcHistory, serviceType: activeServiceType })
 			let voucherDays = 10000
 			if (voucherHistory.length == 1) {
-				voucherDays = moment().diff(voucherHistory[0].svcDT, 'days')
+				voucherDays = dayjs().diff(voucherHistory[0].svcDT, 'days')
 			}
 			if (activeServiceType.target.service == "Unselected") {
 				if (voucherDays < activeServiceType.svcInterval) return false
@@ -447,7 +452,7 @@ function validateSvcInterval( props ){
             let found = false
             voucherSvcs.forEach(vSvc => {
                 // Check that the service is within the service period - i.e. not from another year
-                if (moment().diff(vSvc.svcDT, 'days') <= activeServiceType.svcInterval ) {
+                if (dayjs().diff(vSvc.svcDT, 'days') <= activeServiceType.svcInterval ) {
                     found = true
                 }
             })
@@ -468,7 +473,7 @@ function validateSvcInterval( props ){
                 let found = true
                 voucherSvcs.forEach(vSvc => {
                     // Check that the service is within the service period - i.e. not from another year
-                    if (moment().diff(vSvc.svcDT, 'days') < activeServiceType.svcInterval ) {
+                    if (dayjs().diff(vSvc.svcDT, 'days') < activeServiceType.svcInterval ) {
                         found = true
                     }
                 })
@@ -492,7 +497,7 @@ function validateSvcInterval( props ){
 	} else {
 		// secondary buttons
         // Greater than 0 lowest day is used to provide same day buffer for secondary buttons
-        if ( (isSameOrAfter === false) && (moment().diff(lastSvcDate) > 1)) {
+        if ( (isSameOrAfter === false) && (dayjs().diff(lastSvcDate) > 1)) {
             // if (lastServed.lowestDays < activeServiceType.svcInterval) 
             return false
         }
@@ -511,7 +516,7 @@ function usageQualified( props ){
     let periodSvcs = []
     if ( svcPeriod > 0 ) {
         periodSvcs = client.svcHistory.filter(svc => {
-            return (moment().diff(svc.svcDT, 'days') <= svcPeriod && svc.svcCat === "Food_Pantry")
+            return (dayjs().diff(svc.svcDT, 'days') <= svcPeriod && svc.svcCat === "Food_Pantry")
          }) 
     } else {
         periodSvcs = client.svcHistory.filter(svc => {
@@ -552,7 +557,7 @@ function calcValidAgeGrade(props){
 async function utilCalcVoucherServiceSignupAsync(client, serviceType){
 	return await dbGetClientActiveSvcHistoryAsync(client.clientId).then(
         clientHistory => {
-            return clientHistory.filter(item => moment(item.svcDT).year() == moment().year()) // current year service
+            return clientHistory.filter(item => dayjs(item.svcDT).year() == dayjs().year()) // current year service
                 .filter(item => item.svcTypeId == serviceType.target.service)
         }
     )
@@ -561,13 +566,13 @@ async function utilCalcVoucherServiceSignupAsync(client, serviceType){
 function utilGetVoucherTargetService(props){
     const { svcHistory, serviceType } = props
     return svcHistory
-        .filter(item => moment(item.svcDT).year() == moment().year())
+        .filter(item => dayjs(item.svcDT).year() == dayjs().year())
         .filter(item => item.svcTypeId == serviceType.target.service)
 }
 
 function getHistoryLastService( props ){
     const { svcHistory, serviceType } = props
-	return svcHistory.filter(item => moment(item.svcDT).year() == moment().year()) // current year service
+	return svcHistory.filter(item => dayjs(item.svcDT).year() == dayjs().year()) // current year service
 	.filter(item => item.svcTypeId == serviceType.svcTypeId)
 }
 
@@ -633,7 +638,7 @@ function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
 	let serviceRecord = {
 		svcId: (svcId == "") ? cuid() : svcId,
 		svcValid: svcValid,
-		svcDT: moment().format('YYYY-MM-DDTHH:mm'),
+		svcDT: dayjs().format('YYYY-MM-DDTHH:mm'),
 		cId: client.clientId,
 		cStatus: client.isActive,
 		cGivName: client.givenName,
@@ -647,7 +652,7 @@ function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
 		svcCat: svcType.svcCat,
 		svcBtns: svcType.svcBtns,
         svcFirst: firstFood,
-        svcMonth: moment().format("YYYY-MM"),
+        svcMonth: dayjs().format("YYYY-MM"),
         svcUpdatedDT: "",
 		svcUSDA: svcType.svcUSDA,
 		svcItems: servedCounts.svcItems,
@@ -676,7 +681,7 @@ function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
     
     if (receipts.includes("Reminder")) {
         // Determine next visit date
-        let targetDate = moment().add(14, 'days');
+        let targetDate = dayjs().add(14, 'days');
         let nextVisit = calFindOpenDate(targetDate, 7);
         prnPrintReminderReceipt(client, nextVisit);
     }

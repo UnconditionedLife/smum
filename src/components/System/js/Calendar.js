@@ -1,5 +1,5 @@
 import { RRule } from 'rrule';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import _ from 'lodash';
 import { SettingsSchedule } from './Database';
 import theme from '../../Theme.jsx';
@@ -104,7 +104,7 @@ export function calDecodeRules(settings) {
 }
 
 // Convert a day-of-week index (0 through 6) from the
-// Moment convention (0=Sunday) to the RRules
+// dayjs convention (0=Sunday) to the RRules
 // convention (0=Monday).
 export function calConvertWeekday(index) {
     let n = index - 1;
@@ -147,7 +147,7 @@ export function calFindRule(schedule, date, freq) {
 // Find the open date nearest to targetDate
 export function calFindOpenDate(targetDate, maxDaysBefore) {
     const schedule = SettingsSchedule();
-    let proposed = moment(targetDate);
+    let proposed = dayjs(targetDate);
 
 	// Start with target date and work backward to earliest
 	for (let i = 0; i < maxDaysBefore; i++) {
@@ -158,7 +158,7 @@ export function calFindOpenDate(targetDate, maxDaysBefore) {
 		}
 	}
 	// Select the first open date after target
-	proposed = moment(targetDate).add(1, 'days');
+	proposed = dayjs(targetDate).add(1, 'days');
 	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		if (calIsClosed(schedule, proposed)) {
@@ -184,10 +184,10 @@ function coerceDateToUTC(date) {
 // XXX Date functions using previous calendar implementation
 
 function dateParse(dateString) {
-	let momentDay = moment(dateString)
-	let dayOfWeek = momentDay.day();
-	let weekInMonth = momentDay.isoWeek() -
-		momentDay.subtract(momentDay.date()-1, 'days').isoWeek() + 1;
+	let dayjsDay = dayjs(dateString)
+	let dayOfWeek = dayjsDay.day();
+	let weekInMonth = dayjsDay.isoWeek() -
+        dayjsDay.subtract(dayjsDay.date()-1, 'days').isoWeek() + 1;
 	return {
 		"dayOfWeek": dayOfWeek,
 		"weekInMonth": weekInMonth,

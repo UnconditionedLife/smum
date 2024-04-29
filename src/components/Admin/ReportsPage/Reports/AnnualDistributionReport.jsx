@@ -2,7 +2,7 @@ import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularPro
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 
@@ -115,23 +115,23 @@ export default function AnnualDistributionReport(props) {
     }
 
     function RunReport() {
-        let start = moment(props.year+"/01/01", "YYYY/MM/DD")
-        let end = moment(props.year+"/12/31", "YYYY/MM/DD")
+        let start = dayjs(props.year+"/01/01", "YYYY/MM/DD")
+        let end = dayjs(props.year+"/12/31", "YYYY/MM/DD")
         
-        if (moment().isBefore(end)) {
-            end = moment().endOf("day")
+        if (dayjs().isBefore(end)) {
+            end = dayjs().endOf("day")
         }
 
         let promises = []
         let monthsSvc = []
-        for (let m = moment(start); m.isBefore(end); m.add(1, 'months')) {
+        for (let m = dayjs(start); m.isBefore(end); m.add(1, 'months')) {
             promises.push(dbGetValidSvcsByDateAsync(m.format('YYYY-MM'), "Food_Pantry"))
             monthsSvc.push(m.format('YYYYMM'))
         }
         Promise.all(promises).then(data => {
             let monthGrid = {}
             for (let i = 0; i < data.length; i++) {
-                let servicedMonth = moment(monthsSvc[i], "YYYYMM").format('MMMM')
+                let servicedMonth = dayjs(monthsSvc[i], "YYYYMM").format('MMMM')
                 let svcs = data[i]
                 const servicesUSDA = svcs.filter(item => item.svcUSDA == "USDA" || item.svcUSDA == "Emergency")
                 const servicesNonUSDA = svcs.filter(item => item.svcUSDA == "NonUSDA")

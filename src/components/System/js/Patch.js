@@ -6,16 +6,19 @@
 // Updates service record with new senior count
 // UI for patch is in ReportsPage.jsx "Patch Senior Count" button
 
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils.js';
 import { dbGetValidSvcsByDateAsync, dbGetSingleClientAsync, utilEmptyPlaceholders , dbSaveServicePatchAsync } from '../../System/js/Database.js';
+
+dayjs.extend(utc)
 
 export function PatchSeniorCountInServiceDay(day) {
     dbGetValidSvcsByDateAsync(day) //YYYYMMDD
         .then(svcs => {
             const servicesFood = svcs
                 .filter(item => item.serviceValid == 'true')
-                .sort((a, b) => moment.utc(a.servicedDateTime).diff(moment.utc(b.servicedDateTime)))
+                .sort((a, b) => dayjs.utc(a.servicedDateTime).diff(dayjs.utc(b.servicedDateTime)))
 
             console.log("SERVICES", servicesFood)
 

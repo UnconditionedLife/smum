@@ -5,7 +5,8 @@ import { Box, CardContent, Fab, Fade, Tooltip, Typography } from '@mui/material'
 import { Card, IconButton } from '../../System';
 import { NoteForm } from '..';
 import { dbSaveClientAsync, getUserName, setEditingState } from '../../System/js/Database.js';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 NotesDisplay.propTypes = {
     client: PropTypes.object.isRequired, 
@@ -22,7 +23,10 @@ NotesDisplay.propTypes = {
     handleNoteImportantChange: PropTypes.func.isRequired,
 }
 
+dayjs.extend(relativeTime)
+
 export default function NotesDisplay(props) {
+
     const client = props.client;
     const updateClient = props.updateClient;
     const handleNoteCountChange = props.handleNoteCountChange;
@@ -80,10 +84,10 @@ export default function NotesDisplay(props) {
                                 }        
                                 <Box>
                                     <Typography variant="caption" color="textSecondary" gutterBottom>
-                                        Added { moment(row.createdDateTime).fromNow() }
+                                        Added { dayjs(row.createdDateTime).fromNow() }
                                         <br/><b>{row.noteByUserName}</b>
                                         { row.createdDateTime !== row.updatedDateTime &&
-                                            <Tooltip title= { moment(row.updatedDateTime).fromNow() } >
+                                            <Tooltip title= { dayjs(row.updatedDateTime).fromNow() } >
                                                 <span> (Edited)</span>
                                             </Tooltip>   
                                         }

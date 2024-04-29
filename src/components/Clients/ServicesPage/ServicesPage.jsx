@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Box, Typography } from '@mui/material';
 import PrintIcon from '@mui/icons-material/Print';
@@ -24,6 +25,8 @@ ServicesPage.propTypes = {
     lastServedFoodDate: PropTypes.object,
     clientInactive: PropTypes.bool.isRequired,
 }
+
+dayjs.extend(relativeTime)
 
 export default function ServicesPage(props) {
     const { client, updateClient, clientsFound, selectedTab, lastServedDays, lastServedFoodDate, clientInactive } = props
@@ -51,20 +54,20 @@ export default function ServicesPage(props) {
             if (lastServedText !== "Never") setLastServedText("Never")
             if (nextServiceText !== "Today") setNextServiceText("Today")
         } else {
-            const lastSvcDate = moment(lastServedFoodDate).endOf('day'); // removes time of day so calculation is from end of service day
-            updateLastServedText(moment(lastServedFoodDate).fromNow().toUpperCase()) // used date/time to display FROM NOW
-            const targetDate = moment(lastSvcDate).add(14, 'days')
+            const lastSvcDate = dayjs(lastServedFoodDate).endOf('day'); // removes time of day so calculation is from end of service day
+            updateLastServedText(dayjs(lastServedFoodDate).fromNow().toUpperCase()) // used date/time to display FROM NOW
+            const targetDate = dayjs(lastSvcDate).add(14, 'days')
             const nextSvcDate = calFindOpenDate(targetDate, 7);
             setNextServiceDate(nextSvcDate)
-            const daysFromNow = moment().diff(nextSvcDate, 'days')
-            const isAfter = moment().isAfter(nextSvcDate, 'day')
+            const daysFromNow = dayjs().diff(nextSvcDate, 'days')
+            const isAfter = dayjs().isAfter(nextSvcDate, 'day')
             setIsAfter(isAfter)
             if ( isAfter ) {
                 if (daysFromNow === 0) updateNextServiceText("TODAY")
                 if (daysFromNow === 1) updateNextServiceText(daysFromNow + " DAY OVERDUE")
                 if (daysFromNow > 1) updateNextServiceText(daysFromNow + " DAYS OVERDUE")
             } else {
-                updateNextServiceText(moment(nextSvcDate).format("MMMM D").toUpperCase())
+                updateNextServiceText(dayjs(nextSvcDate).format("MMMM D").toUpperCase())
             }
         }
 

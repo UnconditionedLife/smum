@@ -2,7 +2,7 @@ import { Box, Table, TableContainer, TableRow, TableCell, TableBody, Typography,
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { dbGetSingleClientAsync, dbGetValidSvcsByDateAsync, SettingsZipcodes } from '../../../System/js/Database';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { ReportsHeader } from "../..";
 
 NewClientsReport.propTypes = {
@@ -17,7 +17,7 @@ export default function NewClientsReport(props) {
     const [loading, setLoading] = useState(true)
 
     let numNewClients = []
-    const reportMonth = moment(props.yearMonth, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
+    const reportMonth = dayjs(props.yearMonth, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
 
 
     function StartRunReport(){
@@ -29,7 +29,7 @@ export default function NewClientsReport(props) {
     function RunReport(){
         const zipCodes = SettingsZipcodes()
 
-        dbGetValidSvcsByDateAsync(moment(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
+        dbGetValidSvcsByDateAsync(dayjs(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
             .then(svcs => {
 
                 let firstSvcs = svcs.filter(item => item.svcFirst == true)
@@ -46,15 +46,15 @@ export default function NewClientsReport(props) {
                         .then(c => {
 
                             console.log("client", c);
-                            // const dividedYearMonth = moment(props.yearMonth).format('YYYYMM').substring(0,4) + "-" + moment(props.yearMonth).format('YYYYMM').substring(4)
+                            // const dividedYearMonth = dayjs(props.yearMonth).format('YYYYMM').substring(0,4) + "-" + dayjs(props.yearMonth).format('YYYYMM').substring(4)
                             // const created = c.firstSeenDate
 
                             console.log("CREATED", c.createdDateTime);
                             console.log("REPORT MONTH", props.yearMonth);
-                            console.log("DIFF", moment(c.createdDateTime).format('YYYYMM'))
+                            console.log("DIFF", dayjs(c.createdDateTime).format('YYYYMM'))
 
 
-                            if (moment(c.createdDateTime).format('YYYYMM') === props.yearMonth ){
+                            if (dayjs(c.createdDateTime).format('YYYYMM') === props.yearMonth ){
                                 newClients.push(svc)
                                 newIds.push(svc.cId)
                             }

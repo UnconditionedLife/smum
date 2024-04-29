@@ -4,7 +4,7 @@ import { Box, Chip, Typography } from '@mui/material';
 import { House } from '@mui/icons-material';
 // import { HeaderDateTime } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { calcFamilyCounts } from '../../System/js/Clients/ClientUtils';
 
 HeaderTitle.propTypes = {
@@ -15,7 +15,7 @@ HeaderTitle.propTypes = {
 export default function HeaderTitle(props) {
     const client = props.client
     const clientsFound = props.clientsFound
-    const todaysDate = moment().format("dddd, MMM DD YYYY")
+    const todaysDate = dayjs().format("dddd, MMM DD YYYY")
     const [ headerMessage, setHeaderMessage ] = useState(todaysDate)
     let titleType = 'nonclient';
     const familyCounts = calcFamilyCounts(client)

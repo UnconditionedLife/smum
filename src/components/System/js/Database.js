@@ -2,7 +2,8 @@
 //***** DATABASE SECTION JAVASCRIPT FUNCTIONS *****
 //************************************************
 
-import moment from 'moment';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import cuid from 'cuid';
 import { utilArrayToObject, utilCleanUpDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
 import { calDecodeRules, calEncodeRules } from './Calendar';
@@ -10,6 +11,8 @@ import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { searchClients } from './Clients/Clients';
 import { prnConnect } from './Clients/Receipts';
 import jwt_decode from 'jwt-decode';
+
+dayjs.extend(customParseFormat);
 
 const dbBase = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com/';
 
@@ -484,9 +487,9 @@ export async function dbGetValidSvcsByDateAsync(month, svcCat, date) {
 
 // formerly utilGetServicesInMonth in app.js
 export async function dbGetSvcsInMonthAsync(monthYear){    
-    const currentMonth = moment().format("YYYYMM")
-    let daysInMonth = moment(monthYear, "YYYYMM").daysInMonth()
-    if (monthYear == currentMonth) daysInMonth = moment().format("D")
+    const currentMonth = dayjs().format("YYYYMM")
+    let daysInMonth = dayjs(monthYear, "YYYYMM").daysInMonth()
+    if (monthYear == currentMonth) daysInMonth = dayjs().format("D")
     let monthOfSvcs = []
     daysInMonth = parseInt(daysInMonth) + 1
     // Loop through days of month
@@ -520,7 +523,7 @@ export function dbSetUrl(instance) {
 }
 
 export function dbSetModifiedTime(obj, isNew) {
-    const now = moment().format('YYYY-MM-DDTHH:mm');
+    const now = dayjs().format('YYYY-MM-DDTHH:mm');
     obj.updatedDateTime = now;
     if (isNew)
         obj.createdDateTime = now;
@@ -702,7 +705,7 @@ function makeOldServices(svcs){
                 servicedByUserName: svc.svcBy,
                 serviceCategory: svc.svcCat,
                 servicedDateTime: svc.svcDT,
-                servicedDay: moment(svc.svcDT).format("YYYYMMDD"),
+                servicedDay: dayjs(svc.svcDT).format("YYYYMMDD"),
                 serviceId: svc.svcId,
                 itemsServed: svc.svcItems,
                 serviceName: svc.svcName,

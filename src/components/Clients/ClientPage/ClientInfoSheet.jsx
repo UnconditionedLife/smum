@@ -5,7 +5,7 @@ import { navigationAllowed } from '../../System/js/Database';
 import { Box, Tooltip } from '@mui/material';
 import { Print } from '@mui/icons-material';
 import { Fab, Typography } from '../../System';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 
 // This component must be implemented with a class in order to use the ref property.
@@ -92,7 +92,7 @@ const ClientInfoSheet = React.forwardRef((props, ref) => {
                 <tbody>
                     <tr>
                         <td><Typography>Signature (Firma) ____________________________________</Typography></td>
-                        <td><Typography>Date (Fecha) {moment().format('YYYY-MM-DD')}</Typography></td>
+                        <td><Typography>Date (Fecha) {dayjs().format('YYYY-MM-DD')}</Typography></td>
                     </tr>
                 </tbody>
                 </table>

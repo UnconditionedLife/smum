@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { Box, Tooltip } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Button from '../Core/Button.jsx';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 // Props
 //      onClick - Callback function(isSave). Argument indicates which button
@@ -36,6 +37,8 @@ SaveCancel.defaultProps = {
     disabled: false,
 }
 
+dayjs.extend(customParseFormat);
+
 export default function SaveCancel(props) {
     const saveDisabled = props.saveDisabled || props.disabled;
     const cancelDisabled = props.cancelDisabled || props.disabled;
@@ -44,8 +47,8 @@ export default function SaveCancel(props) {
     if (props.message?.result === 'success') {
         m.severity = 'info';
         if (props.message.time) {
-            m.text = "Saved " + moment(props.message.time).fromNow();
-            m.tooltip = moment(props.message.time).format("MMM DD, YYYY h:mma");
+            m.text = "Saved " + dayjs(props.message.time).fromNow();
+            m.tooltip = dayjs(props.message.time).format("MMM DD, YYYY h:mma");
         } else {
             m.text = props.message.text;
         }

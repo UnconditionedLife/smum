@@ -2,11 +2,13 @@
 //****** GLOBAL UTILITIES JAVASCRIPT FUNCTIONS *****
 //**************************************************
 
-import moment from 'moment';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { SettingsSound } from './Database';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
+dayjs.extend(customParseFormat);
 
 export function isEmpty(obj) {
     if (typeof obj === "undefined") return false
@@ -14,7 +16,7 @@ export function isEmpty(obj) {
 }
 
 export function utilNow() {
-	return moment().format('YYYY-MM-DDTHH:mm')
+	return dayjs().format('YYYY-MM-DDTHH:mm')
 }
 
 export function utilStringToArray(str){
@@ -102,7 +104,7 @@ export function utilCleanUpDate(d) {
 	if (yearLength == 1) {
 		dateArr[2] = "200" + year
 	} else if (yearLength == 2) {
-		if (year <= moment().format("YY")) {
+		if (year <= dayjs().format("YY")) {
 			dateArr[2] = "20" + year
 		} else {
 			dateArr[2] = "19" + year

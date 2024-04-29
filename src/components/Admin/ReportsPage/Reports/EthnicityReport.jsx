@@ -2,7 +2,7 @@ import { Box, Table, TableContainer, TableRow, TableCell, TableBody, Typography,
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { dbGetSingleClientAsync, dbGetValidSvcsByDateAsync, SettingsZipcodes } from '../../../System/js/Database';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { ReportsHeader } from "../..";
 
 EthnicityReport.propTypes = {
@@ -16,7 +16,7 @@ export default function EthnicityReport(props) {
     const [loading, setLoading] = useState(true)
 
     let numNewClients = []
-    const reportMonth = moment(props.yearMonth, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
+    const reportMonth = dayjs(props.yearMonth, "YYYYMM").format("MMMM YYYY").toLocaleUpperCase()
 
     function StartRunReport(){
         setTimeout(() => {
@@ -25,7 +25,7 @@ export default function EthnicityReport(props) {
     }
 
     function RunReport(){
-        dbGetValidSvcsByDateAsync(moment(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
+        dbGetValidSvcsByDateAsync(dayjs(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
             .then(svcs => {
                 const ids = new Set()
                 const ethnicityGroups = {}

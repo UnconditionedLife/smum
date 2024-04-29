@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, CardContent, CardHeader, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { isEmpty, isMobile } from '../../System/js/GlobalUtils.js';
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { Card } from '../../System/index.js';
@@ -63,7 +63,7 @@ export default function FoundPage(props) {
                                 <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} component="th" scope="row">{row.clientId}</TableCell>
                                 <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.givenName}</TableCell>
                                 <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.familyName}</TableCell>
-                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{moment(row.dob).format("MMM DD, YYYY")}</TableCell>
+                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{dayjs(row.dob).format("MMM DD, YYYY")}</TableCell>
                                 <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.street}</TableCell>
                             </TableRow>
                             ))}
@@ -95,7 +95,7 @@ export default function FoundPage(props) {
                                         <Box ml={ 2 }>
                                             <Typography fontSize='90%'>
                                                 {row.clientId} <br />
-                                                {moment(row.dob).format("MMM DD, YYYY")} <br />
+                                                {dayjs(row.dob).format("MMM DD, YYYY")} <br />
                                                 {row.street}
                                             </Typography>
                                         </Box>

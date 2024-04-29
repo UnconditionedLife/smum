@@ -5,7 +5,8 @@ import { Alert } from '@mui/material';
 import { ClientsHeader, ClientsContent } from '..';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { dbSearchClientsAsync, dbGetAllClientSvcsAsync, dbSetModifiedTime,
      utilEmptyPlaceholders, getUserName, globalMsgFunc } from '../../System/js/Database';
 import { getLastServedDays } from '../../System/js/Clients/Services'
@@ -19,7 +20,11 @@ ClientsMain.propTypes = {
     url: PropTypes.string,
 }
 
+dayjs.extend(utc)
+
+
 export default function ClientsMain(props) {
+
     const { searchTerm, selectedTab, checkClientsURL, updateClientsURL, url }  = props
     const [ clientsFound, setClientsFound ] = useState([]);
     const [ client, setClient ] = useState({});
@@ -109,9 +114,9 @@ export default function ClientsMain(props) {
                 newClient = utilCalcAge(newClient)
                 newClient.dependents = calcDependentsAges(newClient)
                 newClient.family = calcFamilyCounts(newClient)
-                newClient.dependents.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
+                newClient.dependents.sort((a, b) => dayjs.utc(b.createdDateTime).diff(dayjs.utc(a.createdDateTime)))
                 newClient.dependents = arrayAddIds(newClient.dependents, 'depId')
-                newClient.notes.sort((a, b) => moment.utc(b.createdDateTime).diff(moment.utc(a.createdDateTime)))
+                newClient.notes.sort((a, b) => dayjs.utc(b.createdDateTime).diff(dayjs.utc(a.createdDateTime)))
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
                 // add service handling objects
                 dbGetAllClientSvcsAsync(newClient.clientId)
@@ -156,8 +161,8 @@ export default function ClientsMain(props) {
         age: 0,
         createdDateTime: "",
         updatedDateTime: "",
-        firstSeenDate: moment().format('YYYY-MM-DD'),
-        familyIdCheckedDate: moment().format('YYYY-MM-DD'),
+        firstSeenDate: dayjs().format('YYYY-MM-DD'),
+        familyIdCheckedDate: dayjs().format('YYYY-MM-DD'),
         street: "",
         city: "San Jose",
         state: "CA",

@@ -5,7 +5,8 @@ import { Box, Dialog, DialogContent, DialogTitle, MenuItem } from '@mui/material
 import { FormSelect, FormTextField, SaveCancel } from '../../System';
 import { setEditingState } from '../../System/js/Database';
 import cuid from 'cuid';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 DependentsFormDialog.propTypes = {
     client: PropTypes.object.isRequired,                // current client
@@ -19,6 +20,8 @@ DependentsFormDialog.propTypes = {
 }
 
 export default function DependentsFormDialog(props) {
+    dayjs.extend(customParseFormat)
+
     const { client, selectedDependent, saveAndUpdateClient, saveMessage, 
         handleEditRecord, setAnchorEl, setSelectedDependent  } = props
     const [ dialogOpen, setDialogOpen ] = useState(true);
@@ -33,7 +36,7 @@ export default function DependentsFormDialog(props) {
 
     React.useEffect(() => {
         if (dob) {
-            setValue("age", moment().diff(dob, "years"))
+            setValue("age", dayjs().diff(dob, "years"))
         }
 
       }, [dob, setValue]);
@@ -45,7 +48,7 @@ export default function DependentsFormDialog(props) {
         const data = Object.assign({}, client);
         if (selectedDependent === "new") {
             // insert new dependent data
-            const now = moment().format('YYYY-MM-DDTHH:mm');
+            const now = dayjs().format('YYYY-MM-DDTHH:mm');
             const newDep = {
                 depId: cuid(),
                 createdDateTime: now, 

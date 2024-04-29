@@ -2,7 +2,7 @@ import { Box, Table, TableContainer, TableRow, TableCell, TableBody, CircularPro
 import React, { useState, useEffect } from "react";
 import PropTypes from 'prop-types';
 import { ReportsHeader } from "../..";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { dbGetSingleClientAsync, dbGetValidSvcsByDateAsync } from '../../../System/js/Database';
 import { useTheme } from '@mui/material/styles';
 import { calcDependentsAges, utilCalcAgeGroupingAllDeps } from "../../../System/js/Clients/ClientUtils";
@@ -68,15 +68,15 @@ export default function ChristmasGiftCardReport(props) {
     }
 
     function RunReport() {
-        let start = moment(props.year+"/01/01", "YYYY/MM/DD")
-        let end = moment(props.year+"/12/31", "YYYY/MM/DD")
+        let start = dayjs(props.year+"/01/01", "YYYY/MM/DD")
+        let end = dayjs(props.year+"/12/31", "YYYY/MM/DD")
         
-        if (moment().isBefore(end)) {
-            end = moment().endOf("day")
+        if (dayjs().isBefore(end)) {
+            end = dayjs().endOf("day")
         }
 
         let promises = []
-        for (let m = moment(start); m.isBefore(end); m.add(1, 'months')) {
+        for (let m = dayjs(start); m.isBefore(end); m.add(1, 'months')) {
             console.log(m.format('YYYY-MM'))
             promises.push(dbGetValidSvcsByDateAsync(m.format('YYYY-MM'), "Christmas"))
         }

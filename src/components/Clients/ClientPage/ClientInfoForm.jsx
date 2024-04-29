@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { Box, MenuItem, Typography } from '@mui/material';
 import { FormTextField, SaveCancel, FormSelect } from '../../System';
 import { useForm } from "react-hook-form";
@@ -52,7 +52,7 @@ export default function ClientInfoForm(props) {
 
     React.useEffect(() => {
         if (dob) {
-            setValue("age", moment().diff(dob, "years"))
+            setValue("age", dayjs().diff(dob, "years"))
         }
 
       }, [dob, setValue]);
