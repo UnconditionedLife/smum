@@ -61,7 +61,7 @@ export default function ThanksgivingTurkeyReport(props) {
         }
 
         let promises = []
-        for (let m = dayjs(start); m.isBefore(end); m.add(1, 'months')) {
+        for (let m = dayjs(start); m.isBefore(end); m = m.add(1, 'months')) {
             console.log(m.format('YYYY-MM'))
             promises.push(dbGetValidSvcsByDateAsync(m.format('YYYY-MM'), "Thanksgiving"))
         }

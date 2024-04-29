@@ -152,7 +152,7 @@ export function calFindOpenDate(targetDate, maxDaysBefore) {
 	// Start with target date and work backward to earliest
 	for (let i = 0; i < maxDaysBefore; i++) {
 		if (calIsClosed(schedule, proposed)) {
-			proposed.subtract(1, 'days');
+			proposed = proposed.subtract(1, 'days');
 		} else {
 			return proposed;
 		}
@@ -162,7 +162,7 @@ export function calFindOpenDate(targetDate, maxDaysBefore) {
 	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		if (calIsClosed(schedule, proposed)) {
-			proposed.add(1, 'days');
+			proposed = proposed.add(1, 'days');
 		} else {
 			return proposed;
 		}

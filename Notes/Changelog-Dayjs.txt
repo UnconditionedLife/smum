@@ -1,0 +1,114 @@
+Files touched:
+
+AnnualDistributionReport.jsx:
+- Display and date selection working
+- Methods to test: RunReport
+
+ChristmasGiftCardReport.jsx
+- Display and date selection working
+- Methods to test: RunReport
+
+ChristmasToyReport.jsx
+- Display and date selection working
+- Methods to test: RunReport
+
+DailyDistributionReport.jsx
+- Methods to test: RunReport, props
+- Tested display, date selection (all working)
+
+DailyFoodBankReport.jsx
+- Methods to test: RunReport, props
+- Tested display, date selection (all working)
+
+DailyFoodBankReportNonUSDA.jsx
+- Methods to test: RunReport, props
+- Tested display, date selection (all working)
+
+EthnicityReport.jsx
+- Methods to test: RunReport, props
+- Tested display, date selection (all working)
+
+MonthlyDistributionReport.jsx
+- Methods to test: RunReport, props
+- Tested display, date selection (all working)
+
+NewClientsReport.jsx
+- Methods to test: RunReport, props
+- Tested display, date selection (all working)
+
+PopulationChildrenByVisitsReport.jsx
+- Not used anywhere
+
+PopulationChildrenByAgeReport.jsx
+- Methods to test: props, getMonthsSvcs, getClients
+- Lagging here too, I think there is an error (not related to DayJs), non numeric inputs are being passed as props when the page expects a numeric props
+
+ThanksgivingTurkeyReport.jsx
+- Methods to test: props, getMonthsSvcs, getClients
+- Working fully
+
+CalendarPage.jsx
+- Need to test editing, creating event
+- Both working
+
+ClientInfoForm.jsx
+- Need to test DOB features
+- Editing works fine
+
+ClientInfoSheet.jsx
+- Need to test printing functionality
+- Display is good
+
+DependentFormDialog.jsx
+- Saving and editing dependents working
+
+ClientsMain.jsx
+- Tested notes sorting and clients sorting, all working
+
+HeaderDateTime.jsx
+- Time displays correctly
+
+FoundPage.jsx
+- DOB formatted properly
+
+
+HistoryBodyCard.jsx
+- For some reason some dates showing up as invalid (need help debugging)
+
+
+HistoryBodyRow.jsx
+- For some reason some dates showing up as invalid (need help debugging)
+
+HistoryDisplay.jsx
+- Sorting seems to be working
+- For editing only working if I say homeless is YES
+
+HistoryHeader.jsx
+- Displaying properly
+
+NotesDisplay.jsx
+- Working properly with relative time
+
+ServicesPage.jsx
+- Date calculations are working correctly
+
+SaveCancel.jsx
+- Functionality seems to be working correctly
+
+Calendar.js
+- Next day functionality working
+
+Services.js
+- Adding and removing services works
+
+Database.js
+- Database functionality works
+
+GlobalUtils.js
+- Now functionality working
+
+MoveSvcsTable.js, Patch.js 
+- Hard to test
+
+UpdateClient.js
+- Nothing to test

@@ -53,7 +53,7 @@ export default function PopulationChildrenAgeReport(props) {
     const months = []
     while (currentMonth > oldestMonth || oldestMonth.format('M') === currentMonth.format('M')) {
         months.push(oldestMonth.format('YYYY-MM'))
-        oldestMonth.add(1,'month')
+        oldestMonth = oldestMonth.add(1,'month')
     }
 
     let mVisits = minVisits

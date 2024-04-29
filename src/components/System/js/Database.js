@@ -12,7 +12,6 @@ import { calDecodeRules, calEncodeRules } from './Calendar';
 import { prnConnect } from './Clients/Receipts';
 import jwt_decode from 'jwt-decode';
 import { forEach } from 'lodash';
-import dayjs from 'dayjs';
 
 dayjs.extend(customParseFormat);
 
