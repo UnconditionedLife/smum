@@ -95,26 +95,16 @@ export function isMobile(width) {
 	return width  <= 1000;
 }
 
-export function utilCleanUpDate(d) {
-	d = d.replaceAll("-", "/")
-	d = d.replaceAll(".", "/")
-    const dateArr = d.split("/")
-    const year = dateArr[2]
-	const yearLength = year.length
-	if (yearLength == 1) {
-		dateArr[2] = "200" + year
-	} else if (yearLength == 2) {
-		if (year <= dayjs().format("YY")) {
-			dateArr[2] = "20" + year
-		} else {
-			dateArr[2] = "19" + year
-		}
-	} else {
-		dateArr[2] = year
-	}
-    if (dateArr[0].length == 1) dateArr[0] = "0" + dateArr[0]
-    if (dateArr[1].length == 1) dateArr[1] = "0" + dateArr[1]
-	return dateArr[2] +"-"+ dateArr[0] +"-"+ dateArr[1]
+export function utilCleanDate(d) {
+	d = d.replace(/[- .]/g, "/")                                            // make seperator the "/"
+    const array = d.split("/")
+    let nonZero = true
+    array.forEach((value) => {
+        if (value < 1) nonZero = false
+    })
+    if (!nonZero) return null                                               // exit if a value is 0
+    const regex = /^\d{1,2}\/\d{1,2}\/\d{2,4}$/                             // checks format n/n/nn
+    return regex.test(d) ? new Date(d).toISOString().split('T')[0] : null   // YYYY-MM-DD or null
 }
 
 export function utilChangeWordCase(str) {
@@ -134,6 +124,7 @@ export function removeErrorPrefix(str) {
 }
 
 export function utilRemoveDupClients(clients) {
+    console.log('clients', clients)
 	let ids=[], temp=[], undupClients = []
 	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)
 	for (let i = 0; i < ids.length; i++) {

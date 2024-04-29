@@ -65,11 +65,11 @@ function UserList(props) {
 
 export default function AllUsersPage(props) {
     const [ newUser, setNewUser ] = useState(false);
-    const [ users, setUsers ] = useState(null) 
+    const [ users, setUsers ] = useState(null);
 
     useEffect(() => { 
         getUserList()
-    }, [])
+    }, [newUser])
 
     function getUserList() {
         dbGetAllUsersAsync()
@@ -77,7 +77,6 @@ export default function AllUsersPage(props) {
                 setUsers( usersArray.sort((a, b) => a.userName.localeCompare(b.userName)))
             })
     }
-    
     
     if (users === null) return null
 

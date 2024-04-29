@@ -56,13 +56,13 @@ export default function ClientsMain(props) {
     })
 
     useEffect(() => {
-        if (searchTerm !== '') {
+        if (searchTerm !== '' ) {
             dbSearchClientsAsync(searchTerm).then(clients => { 
-                changeClientsFound(clients)
+                changeClientsFound(clients, searchTerm)
                 if (clients.length === 0) {
                     globalMsgFunc('error', "No clients found matching: '"+ searchTerm + "'")
                 }
-             })
+            })
         }
     }, [searchTerm]);
 
@@ -94,11 +94,11 @@ export default function ClientsMain(props) {
         })
     }, [client])
 
-    function changeClientsFound(newValue) {
-        if (clientsFound !== newValue) {
-            setClientsFound(newValue);
-            if (newValue.length === 1) {
-                changeClient(newValue[0], 1)
+    function changeClientsFound(newClients) {
+        if (clientsFound !== newClients) {
+            setClientsFound(newClients);
+            if (newClients.length === 1) {
+                changeClient(newClients[0], 1)
             } else {
                 changeClient({}, 0) // second aregument is tab to change URL to
             }
