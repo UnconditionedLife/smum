@@ -4,7 +4,7 @@ import { useHistory, useLocation, matchPath } from "react-router-dom";
 import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport } from '@mui/icons-material';
 import { AllUsersPage, CalendarPage, ReportsPage, ErrorPage,
             ServiceTypePage, SettingsPage } from '..';
-import { globalMsgFunc, isAdmin, navigationAllowed } from '../../System/js/Database';
+import { isAdmin, navigationAllowed } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 import { dbFetchErrorLogs } from '../../System/js/Database';
 
@@ -18,9 +18,12 @@ const tabURL = [
 ];
 
 export default function AdminMain(props) {
+    // ===== State for ErrorPage ===== //
     const [totalCountErrors, setTotalCountErrors] = useState(0)
     const [countErrors, setCountErrors] = useState(0);
     const [errorMessages, setErrorMessages] = useState([]);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
     useEffect(() => {
         // query the error log api to find the number of errors
         dbFetchErrorLogs("","").then((errors) => {
@@ -29,6 +32,7 @@ export default function AdminMain(props) {
             setTotalCountErrors(errors.length);
         });
     }, []);
+    // ===== end state for ErrorPage ===== //
 
     const history = useHistory();
     const route = useLocation();
@@ -98,7 +102,15 @@ export default function AdminMain(props) {
                     {selectedTab === 2 && <ServiceTypePage />}
                     {selectedTab === 3 && <AllUsersPage />}
                     {selectedTab === 4 && <SettingsPage />}
-                    {selectedTab === 5 && <ErrorPage errorMessages={errorMessages} errorMessagesUpdate={setErrorMessages} countUpdate={setCountErrors}/>}
+                    {selectedTab === 5 && <ErrorPage 
+                                            errorMessages={errorMessages} 
+                                            errorMessagesUpdate={setErrorMessages} 
+                                            totalCountErrors={totalCountErrors}
+                                            startDate={startDate}
+                                            setStartDate={setStartDate}
+                                            endDate={endDate}
+                                            setEndDate={setEndDate}
+                                            />}
                 </Box>
             </Box>
         </Box>
