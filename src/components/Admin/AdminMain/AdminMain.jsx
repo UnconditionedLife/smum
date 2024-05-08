@@ -6,7 +6,6 @@ import { AllUsersPage, CalendarPage, ReportsPage, ErrorPage,
             ServiceTypePage, SettingsPage } from '..';
 import { isAdmin, navigationAllowed } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
-import { dbFetchErrorLogs } from '../../System/js/Database';
 
 const tabURL = [
     "/admin/reports",
@@ -20,18 +19,6 @@ const tabURL = [
 export default function AdminMain(props) {
     // ===== State for ErrorPage ===== //
     const [totalCountErrors, setTotalCountErrors] = useState(0)
-    const [countErrors, setCountErrors] = useState(0);
-    const [errorMessages, setErrorMessages] = useState([]);
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
-    useEffect(() => {
-        // query the error log api to find the number of errors
-        dbFetchErrorLogs("","").then((errors) => {
-            setErrorMessages(errors);
-            setCountErrors(errors.length);
-            setTotalCountErrors(errors.length);
-        });
-    }, []);
     // ===== end state for ErrorPage ===== //
 
     const history = useHistory();
@@ -89,7 +76,7 @@ export default function AdminMain(props) {
                         <Tab icon={<AccountBox/>} label={ navLabels[3] } style={{  minWidth:'62px' }} />
                         <Tab icon={<SettingsApplications/>} label={ navLabels[4] } style={{  minWidth:'62px' }} />
                         <Tab label={ navLabels[5] } style={{  minWidth:'62px' }} icon={
-                            <Badge badgeContent={selectedTab === 5 ? countErrors : totalCountErrors} color='error' max={999}>
+                            <Badge badgeContent={totalCountErrors} color='error' max={999}>
                                 <BugReport/>
                             </Badge>}  />
                     </Tabs>
@@ -103,13 +90,7 @@ export default function AdminMain(props) {
                     {selectedTab === 3 && <AllUsersPage />}
                     {selectedTab === 4 && <SettingsPage />}
                     {selectedTab === 5 && <ErrorPage 
-                                            errorMessages={errorMessages} 
-                                            errorMessagesUpdate={setErrorMessages} 
-                                            totalCountErrors={totalCountErrors}
-                                            startDate={startDate}
-                                            setStartDate={setStartDate}
-                                            endDate={endDate}
-                                            setEndDate={setEndDate}
+                                            setTotalCountErrors={setTotalCountErrors}
                                             />}
                 </Box>
             </Box>

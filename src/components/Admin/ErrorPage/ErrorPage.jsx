@@ -5,17 +5,17 @@ import { TextField } from "../../System";
 import {
     Alert,
     Box,
+    Button,
+    Switch,
     Table,
     TableBody,
-    Button,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
+    Typography,
 } from "@mui/material";
 
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -23,20 +23,12 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { dbFetchErrorLogs } from "../../System/js/Database";
 import { globalMsgFunc } from '../../System/js/Database';
 
-// import dayjs, { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 
 ErrorPage.propTypes = {
-    errorMessagesUpdate: PropTypes.func.isRequired,
-    errorMessages: PropTypes.array.isRequired,
-    // countUpdate: PropTypes.func.isRequired,
-    totalCountErrors: PropTypes.number,
-    startDate: PropTypes.instanceOf(dayjs),
-    setStartDate: PropTypes.func.isRequired,
-    endDate: PropTypes.instanceOf(dayjs),
-    setEndDate: PropTypes.func.isRequired
+    setTotalCountErrors: PropTypes.func.isRequired,
 }
 
 // delete errors
@@ -52,32 +44,37 @@ ErrorPage.propTypes = {
 // maintain the dates used in the query between navigation between tabs
 //      rerun the empty query every time we go to the errors tab
 export default function ErrorPage(props) {
+
+    const [errorMessages, setErrorMessages] = useState([]);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    useEffect(() => {
+        // query the error log api to find the number of errors
+        dbFetchErrorLogs("","").then((errors) => {
+            setErrorMessages(errors);
+            props.setTotalCountErrors(errors.length);
+        });
+    }, []);
+
+
     // error messages list stores the dates in utc time
-    // const [startDate, setStartDate] = useState(null);
-    // const [endDate, setEndDate] = useState(null);
     const [isValidRange, setIsValidRange] = useState(true);
-    // const [viewingCount, setViewingCount] = useState(null);
     const [categoryName, setCategoryName] = useState("ERROR");
     const [traceMessages, setTraceMessages] = useState([]);
-    console.log("type of Dayjs: ", typeof dayjs);
 
     useEffect(() => {
-        const invalidStart = props.startDate && !props.startDate.isValid();
-        const invalidEnd = props.endDate && !props.endDate.isValid();
+        const invalidStart = startDate && !startDate.isValid();
+        const invalidEnd = endDate && !endDate.isValid();
         const outOfOrder =
-            props.startDate?.isValid() &&
-            props.endDate?.isValid() &&
-            !props.startDate.isBefore(props.endDate);
+            startDate?.isValid() &&
+            endDate?.isValid() &&
+            startDate.isBefore(endDate);
         if (invalidStart || invalidEnd || outOfOrder) {
             setIsValidRange(false);
         } else {
             setIsValidRange(true);
         }
-    }, [props.startDate, props.endDate]);
-
-    // useEffect(() => {
-    //     setViewingCount(props.errorMessages.length);
-    // }, [props.errorMessages])
+    }, [startDate, endDate]);
 
     useEffect(() => {
         dbFetchErrorLogs("", "", "TRACE").then((newTraceMessages) => {
@@ -92,25 +89,25 @@ export default function ErrorPage(props) {
         }
         let start = "";
         let end = "";
-        if (props.startDate?.isValid() && props.endDate?.isValid()) {
-            start = props.startDate.utc().format();
-            end = dayjs(props.endDate).add(23, "h").add(59, "m").utc().format();
-        } else if (props.startDate?.isValid()) {
-            start = props.startDate.utc().format();
-        } else if (props.endDate?.isValid()) {
-            end = dayjs(props.endDate).add(23, "h").add(59, "m").utc().format();
+        if (startDate?.isValid() && endDate?.isValid()) {
+            start = startDate.utc().format();
+            end = dayjs(endDate).add(23, "h").add(59, "m").utc().format();
+        } else if (startDate?.isValid()) {
+            start = startDate.utc().format();
+        } else if (endDate?.isValid()) {
+            end = dayjs(endDate).add(23, "h").add(59, "m").utc().format();
         }
         dbFetchErrorLogs(start, end, "ERROR").then((newErrorMessages) => {
-            props.errorMessagesUpdate(newErrorMessages);
-            // props.countUpdate(newErrorMessages.length);
+            setErrorMessages(newErrorMessages);
+            // countUpdate(newErrorMessages.length);
         });
         dbFetchErrorLogs(start, end, "TRACE").then((newTraceMessages) => {
             setTraceMessages(newTraceMessages);
         });
     };
 
-    const handleCategoryChange = (event, newCategory) => {
-        setCategoryName(newCategory);
+    const handleCategoryChange = (event) => {
+        setCategoryName(event.target.checked ? 'TRACE' : 'ERROR');
     };
 
     return (
@@ -135,9 +132,9 @@ export default function ErrorPage(props) {
                         InputLabelProps={{ shrink: true }}
                         inputFormat="MMM DD YYYY"
                         label="Start Date"
-                        value={props.startDate}
+                        value={startDate}
                         renderInput={(params) => <TextField {...params} />}
-                        onChange={(newValue) => props.setStartDate(newValue)}
+                        onChange={(newValue) => setStartDate(newValue)}
                         disableMaskedInput
                     />
                     <DatePicker
@@ -153,12 +150,17 @@ export default function ErrorPage(props) {
                         InputLabelProps={{ shrink: true }}
                         inputFormat="MMM DD YYYY"
                         label="End Date"
-                        value={props.endDate}
+                        value={endDate}
                         renderInput={(params) => <TextField {...params} />}
-                        onChange={(newValue) => props.setEndDate(newValue)}
+                        onChange={(newValue) => setEndDate(newValue)}
                         disableMaskedInput
                     />
                 </LocalizationProvider>
+                <Box display="flex" flexDirection="row" ml={ 1 } mr={ 1 }>
+                    <Typography>Error</Typography>
+                    <Switch checked={ categoryName === "TRACE" } onChange={handleCategoryChange} />
+                    <Typography>Trace</Typography>
+                </Box>
                 <Button
                     onClick={updateRange}
                     variant="contained"
@@ -167,23 +169,7 @@ export default function ErrorPage(props) {
                 >
                     Apply
                 </Button>
-                <ToggleButtonGroup
-                    color="primary"
-                    value={categoryName}
-                    exclusive
-                    onChange={handleCategoryChange}
-                    aria-label="Platform"
-                >
-                    <ToggleButton value="ERROR">Error</ToggleButton>
-                    <ToggleButton value="TRACE">Trace</ToggleButton>
-                </ToggleButtonGroup>
             </Box>
-            {/* <p>Viewing {viewingCount} of {props.totalCountErrors}</p> */}
-            {/* {!isValidRange && (
-                <Alert severity="warning">
-                    Dates must be valid and sequential
-                </Alert>
-            )} */}
             <TableContainer>
                 <Table>
                     <TableHead>
@@ -193,7 +179,7 @@ export default function ErrorPage(props) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {(categoryName === "ERROR" ? props.errorMessages : traceMessages).map((row) => (
+                        {(categoryName === "ERROR" ? errorMessages : traceMessages).map((row) => (
                             <TableRow key={row.logID}>
                                 <TableCell component="th" scope="row">
                                     {dayjs(row.logTimestamp)
@@ -210,7 +196,7 @@ export default function ErrorPage(props) {
                     </TableBody>
                 </Table>
             </TableContainer>
-            {props.errorMessages.length == 0 && (
+            {errorMessages.length == 0 && (
                 <Alert severity="info">
                     There are no error logs in this time frame
                 </Alert>
