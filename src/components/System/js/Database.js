@@ -227,8 +227,8 @@ async function dbLog(category, message) {
         });
 }
 
-export async function dbFetchErrorLogs(startDate, endDate) {
-    return await dbGetDataPageAsync("/logs", {"start": startDate, "end": endDate})
+export async function dbFetchErrorLogs(startDate, endDate, category="ERROR") {
+    return await dbGetDataPageAsync("/logs", {"start": startDate, "end": endDate, "category": category})
         .catch(err => {
             console.error("failed to read logs, ", err);
         })
