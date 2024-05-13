@@ -229,8 +229,8 @@ async function dbLog(category, message) {
         });
 }
 
-export async function dbFetchErrorLogs(startDate, endDate) {
-    return await dbGetDataPageAsync("/logs", {"start": startDate, "end": endDate})
+export async function dbFetchErrorLogs(startDate, endDate, category="ERROR") {
+    return await dbGetDataPageAsync("/logs", {"start": startDate, "end": endDate, "category": category})
         .catch(err => {
             console.error("failed to read logs, ", err);
         })
@@ -626,9 +626,9 @@ async function dbPostDataAsync(subUrl, data, logErrors=true) {
     })
     .catch((error) => {
         if (logErrors) {
-            dbLogError('dbPostData Error: ' + JSON.stringify(error));
-            dbLogError('URL: ' + subUrl);
-            dbLogError('User: ' + getUserName());
+            const msg = 'dbPostData Error: ' + JSON.stringify(error) +
+                ' URL: ' + subUrl + ' User: ' + getUserName();
+            dbLogError(msg);
             globalMsgFunc('error', 'Database Failure');
         }
         return Promise.reject(error);
