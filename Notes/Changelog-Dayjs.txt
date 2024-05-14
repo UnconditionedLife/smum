@@ -73,11 +73,11 @@ FoundPage.jsx
 
 
 HistoryBodyCard.jsx
-- For some reason some dates showing up as invalid (need help debugging)
+- Working
 
 
 HistoryBodyRow.jsx
-- For some reason some dates showing up as invalid (need help debugging)
+- Working
 
 HistoryDisplay.jsx
 - Sorting seems to be working

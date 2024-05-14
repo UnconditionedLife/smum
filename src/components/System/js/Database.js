@@ -11,7 +11,6 @@ import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { searchClients } from './Clients/Clients';
 import { prnConnect } from './Clients/Receipts';
 import jwt_decode from 'jwt-decode';
-import { forEach } from 'lodash';
 
 dayjs.extend(customParseFormat);
 
@@ -231,8 +230,8 @@ async function dbLog(category, message) {
         });
 }
 
-export async function dbFetchErrorLogs(startDate, endDate) {
-    return await dbGetDataPageAsync("/logs", {"start": startDate, "end": endDate})
+export async function dbFetchErrorLogs(startDate, endDate, category="ERROR") {
+    return await dbGetDataPageAsync("/logs", {"start": startDate, "end": endDate, "category": category})
         .catch(err => {
             console.error("failed to read logs, ", err);
         })
@@ -284,11 +283,6 @@ export async function dbSaveUserAsync(data) {
 //*************************************************
 
 export async function dbSearchClientsAsync(searchTerm, isDate) {
-    // const dateRegex = /^\d+[./-]\d+[./-]\d+/g
-    // const isDate = dateRegex.test(searchTerm) //checks to see if search term is a date
-    // const regex = /[/.]/g was used to do dash count
-    // const slashCount = (searchTerm.match(regex) || []).length
-
     return await dbGetClientsAsync(searchTerm, isDate).then(
         clients => {
             if (clients == undefined || clients == null || clients.length == 0){
@@ -300,32 +294,24 @@ export async function dbSearchClientsAsync(searchTerm, isDate) {
 }
 
 async function dbGetClientsAsync(searchTerm){
-	// let clientData = []
+    const isNum = /^[0-9]+$/.test(searchTerm);
+    const idTerm = (isNum) ? searchTerm : false
 
-    console.log("SEARCHTERM:", searchTerm)
+    const isAlpha = /^[a-zA-Z ]+$/.test(searchTerm);
+    const nameTerm = (isAlpha) ? utilChangeWordCase(searchTerm) : false
 
-    const isAlphaNum = /^[a-zA-Z0-9 ]+$/.test(searchTerm);
-    const dateTerm = (isAlphaNum) ? searchTerm : utilCleanDate(searchTerm)
+    const isAlphaNum = /^[0-9/.-]+$/.test(searchTerm);
+    const dateTerm = (isAlphaNum) ? utilCleanDate(searchTerm) : false
     const isDate = dayjs(dateTerm, 'YYYY-MM-DD', true).isValid()
-
-    if (!isAlphaNum && !isDate) {
-        console.log("ERROR")
-        globalMsgFunc('error', "'"+ searchTerm + "' is not a valid date or name.")
-        return null
-    }
 
 	if (isDate){
 		return await dbGetDataAsync("clients", "/clients/dob/" + dateTerm)    // expected date
 
-    } else if (!isNaN(searchTerm)){
-        return await dbGetDataAsync("clients", "/clients/" + searchTerm)        // expected Client ID
+    } else if (idTerm){
+        return await dbGetDataAsync("clients", "/clients/" + idTerm)        // expected Client ID
         
-	} else {
-		searchTerm = utilChangeWordCase(searchTerm)
-		const split = searchTerm.split(" ")
-
-console.log("Split", split)
-
+	} else if (nameTerm) {
+		const split = nameTerm.split(" ")
         let d3 = [], d4 = [], d5 = [], d6 = []  
 		const d1 = await dbGetDataAsync("clients", "/clients/givenname/" + split[0])
 		const d2 = await dbGetDataAsync("clients", "/clients/familyname/" + split[0])
@@ -338,6 +324,9 @@ console.log("Split", split)
 		    d6 = await dbGetDataAsync("clients", "/clients/familyname/" + split[2])
         }
    		return utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4).concat(d5).concat(d6))
+
+    } else {
+        return null
     }
 }
 
@@ -628,9 +617,9 @@ async function dbPostDataAsync(subUrl, data, logErrors=true) {
     })
     .catch((error) => {
         if (logErrors) {
-            dbLogError('dbPostData Error: ' + JSON.stringify(error));
-            dbLogError('URL: ' + subUrl);
-            dbLogError('User: ' + getUserName());
+            const msg = 'dbPostData Error: ' + JSON.stringify(error) +
+                ' URL: ' + subUrl + ' User: ' + getUserName();
+            dbLogError(msg);
             globalMsgFunc('error', 'Database Failure');
         }
         return Promise.reject(error);

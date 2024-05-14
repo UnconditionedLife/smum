@@ -86,7 +86,7 @@ export default function HistoryBodyCard(props) {
                                                         {svc.individuals} <br />
                                                         {svc.seniors} <br />
                                                         {svc.svcBy} <br />
-                                                        {(dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma")}
+                                                        {(dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma")}
                                                     </Typography>
                                                 </Box>
                                             </Box>

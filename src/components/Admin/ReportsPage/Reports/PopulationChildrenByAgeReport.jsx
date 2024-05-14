@@ -10,16 +10,20 @@ import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge, utilCal
 import { useTheme } from '@mui/material/styles';
 
 PopulationChildrenAgeReport.propTypes = {
-    days: PropTypes.number,
-    minVisits: PropTypes.number,
-    maxVisits: PropTypes.number
+    days: PropTypes.string,
+    minVisits: PropTypes.string,
+    maxVisits: PropTypes.string
 }
 
 dayjs.extend(utc)
 
 
 export default function PopulationChildrenAgeReport(props) {
-    const { days, minVisits, maxVisits } = props
+    let { days, minVisits, maxVisits } = props
+
+    days = isNaN(days) ? 90 : parseInt(days)
+    minVisits = isNaN(minVisits) ? 3 : parseInt(minVisits)
+    maxVisits = isNaN(maxVisits) ? 5 : parseInt(maxVisits)
 
 
     if (minVisits < 1) {
@@ -48,7 +52,7 @@ export default function PopulationChildrenAgeReport(props) {
     const theme = useTheme()
     const greenBackground = { backgroundColor: theme.palette.primary.light }
 
-    const oldestMonth = dayjs().subtract(days, "days")
+    let oldestMonth = dayjs().subtract(days, "days")
     const currentMonth = dayjs()
     const months = []
     while (currentMonth > oldestMonth || oldestMonth.format('M') === currentMonth.format('M')) {
@@ -135,7 +139,7 @@ export default function PopulationChildrenAgeReport(props) {
     function getClients(){
         dbGetAllClientsAsync().then((clients) => {
             let clientsWithChildren = clients.filter((client) => {
-                return client.dependents.length > 0 & client.clientId < 8888
+                return client.dependents.length > 0
             })
             clientsWithChildren.forEach((c) => {
                 let newC = utilCalcAge(c)
@@ -173,8 +177,8 @@ export default function PopulationChildrenAgeReport(props) {
     })
  
     function RenderCountTotals(totals){
-        const jsxCode = totals.map(c => 
-            <TableCell key={ c } style={ greenBackground } align="center">
+        const jsxCode = totals.map((c, i) => 
+            <TableCell key={ i } style={ greenBackground } align="center">
                 <strong>{ c }&nbsp;</strong>({ Math.round((c/totals[0])*100)}%)
             </TableCell>
         )

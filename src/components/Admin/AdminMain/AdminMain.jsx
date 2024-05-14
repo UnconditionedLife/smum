@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AppBar,Badge, Box, Tab, Tabs, Typography } from '@mui/material';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
 import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport } from '@mui/icons-material';
@@ -6,7 +6,6 @@ import { AllUsersPage, CalendarPage, ReportsPage, ErrorPage,
             ServiceTypePage, SettingsPage } from '..';
 import { globalMsgFunc, isAdmin, navigationAllowed } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
-import { dbFetchErrorLogs } from '../../System/js/Database';
 
 const tabURL = [
     "/admin/reports",
@@ -18,17 +17,7 @@ const tabURL = [
 ];
 
 export default function AdminMain(props) {
-    const [totalCountErrors, setTotalCountErrors] = useState(0)
     const [countErrors, setCountErrors] = useState(0);
-    const [errorMessages, setErrorMessages] = useState([]);
-    useEffect(() => {
-        // query the error log api to find the number of errors
-        dbFetchErrorLogs("","").then((errors) => {
-            setErrorMessages(errors);
-            setCountErrors(errors.length);
-            setTotalCountErrors(errors.length);
-        });
-    }, []);
 
     const history = useHistory();
     const route = useLocation();
@@ -68,6 +57,7 @@ export default function AdminMain(props) {
     return (
         <Box width="100%">
             <Box width={ 1 } display="flex" flexWrap="wrap-reverse">
+                <ErrorPage norender countUpdate={setCountErrors} />
                 <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'72px',
                     justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>                    
                     <Tabs
@@ -85,7 +75,7 @@ export default function AdminMain(props) {
                         <Tab icon={<AccountBox/>} label={ navLabels[3] } style={{  minWidth:'62px' }} />
                         <Tab icon={<SettingsApplications/>} label={ navLabels[4] } style={{  minWidth:'62px' }} />
                         <Tab label={ navLabels[5] } style={{  minWidth:'62px' }} icon={
-                            <Badge badgeContent={selectedTab === 5 ? countErrors : totalCountErrors} color='error' max={999}>
+                            <Badge badgeContent={ countErrors } color='error' max={999}>
                                 <BugReport/>
                             </Badge>}  />
                     </Tabs>
@@ -98,7 +88,7 @@ export default function AdminMain(props) {
                     {selectedTab === 2 && <ServiceTypePage />}
                     {selectedTab === 3 && <AllUsersPage />}
                     {selectedTab === 4 && <SettingsPage />}
-                    {selectedTab === 5 && <ErrorPage errorMessages={errorMessages} errorMessagesUpdate={setErrorMessages} countUpdate={setCountErrors}/>}
+                    {selectedTab === 5 && <ErrorPage countUpdate={ setCountErrors } />}
                 </Box>
             </Box>
         </Box>

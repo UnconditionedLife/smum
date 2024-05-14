@@ -93,14 +93,14 @@ console.log("Updated Client", updatedClient);
                     </FormSelect>
 
                     <FormSelect width='160px' name="cStatus" label="Client Status" error={ errors.cStatus } 
-                        control={ control } rules={ {required: 'Homeless is required'}} >
+                        control={ control } rules={ {required: 'Client is required'}} >
                             <MenuItem value="Client">Client</MenuItem>
                             <MenuItem value="NonClient">NonClient</MenuItem>
                             <MenuItem value="Inactive">Inactive</MenuItem>
                     </FormSelect>
                 
                     <FormSelect width='100px' name="homeless" label="Homeless" error={ errors.homeless } 
-                        control={ control } rules={ {required: 'Homeless is required'}} >
+                        control={ control } >
                             <MenuItem value={ true }>YES</MenuItem>
                             <MenuItem value={ false }>NO</MenuItem>
                     </FormSelect>

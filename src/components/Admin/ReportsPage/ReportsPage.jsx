@@ -42,9 +42,9 @@ export default function ReportsPage() {
 
     const [ populationType, handlePopulationType ] = useState("CHILDREN-BY-VISITS")
 
-    const [ days, handleDaysChange] = useState(90)
-    const [ minVisits, handleMinVisitsChange] = useState(3)
-    const [ maxVisits, handleMaxVisitsChange] = useState(5)
+    const [ days, handleDaysChange] = useState("90")
+    const [ minVisits, handleMinVisitsChange] = useState("3")
+    const [ maxVisits, handleMaxVisitsChange] = useState("5")
     
 
 

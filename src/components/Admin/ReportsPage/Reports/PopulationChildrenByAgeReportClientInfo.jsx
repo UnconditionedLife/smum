@@ -10,16 +10,19 @@ import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge, utilCal
 import { useTheme } from '@mui/material/styles';
 
 PopulationChildrenByAgeReportClientInfo.propTypes = {
-    days: PropTypes.number,
-    minVisits: PropTypes.number,
-    maxVisits: PropTypes.number
+    days: PropTypes.string,
+    minVisits: PropTypes.string,
+    maxVisits: PropTypes.string
 }
 
 dayjs.extend(utc)
 
 export default function PopulationChildrenByAgeReportClientInfo(props) {
-    const { days, minVisits, maxVisits } = props
+    let { days, minVisits, maxVisits } = props
 
+    days = isNaN(days) ? 90 : parseInt(days)
+    minVisits = isNaN(minVisits) ? 3 : parseInt(minVisits)
+    maxVisits = isNaN(maxVisits) ? 5 : parseInt(maxVisits)
 
     if (minVisits < 1) {
         globalMsgFunc('error', "Min Visits must be at least 1.")
@@ -44,12 +47,12 @@ export default function PopulationChildrenByAgeReportClientInfo(props) {
     const theme = useTheme()
     const greenBackground = { backgroundColor: theme.palette.primary.light }
 
-    const oldestMonth = dayjs().subtract(days, "days")
+    let oldestMonth = dayjs().subtract(days, "days")
     const currentMonth = dayjs()
     const months = []
     while (currentMonth > oldestMonth || oldestMonth.format('M') === currentMonth.format('M')) {
         months.push(oldestMonth.format('YYYY-MM'))
-        oldestMonth.add(1,'month')
+        oldestMonth = oldestMonth.add(1,'month')
     }
 
     let mVisits = minVisits
@@ -92,7 +95,7 @@ export default function PopulationChildrenByAgeReportClientInfo(props) {
         dbGetAllClientsAsync().then((clients) => {
             console.log(clients)
             let clientsWithChildren = clients.filter((client) => {
-                return client.dependents.length > 0 & client.clientId < 8888
+                return client.dependents.length > 0
             })
 
             let clientsWithChildrenFiltered = clientsWithChildren.filter((c) => {

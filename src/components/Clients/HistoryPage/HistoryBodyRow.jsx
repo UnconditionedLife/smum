@@ -40,7 +40,7 @@ export default function HistoryBodyRow(props) {
                                     style={ (svc.svcValid) ? validRow : invalidRow }>
                                         { (svc.svcValid) ? 
                                             <span style={{ fontSize: '85%'}}>
-                                                { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
+                                                { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? 
                                                     dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
                                                 <br/>
                                                 { dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
@@ -51,7 +51,7 @@ export default function HistoryBodyRow(props) {
                                                 </Box>
                                                 <Box>
                                                     <span style={{ fontSize: '69%'}}>
-                                                        { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid date') ? 
+                                                        { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? 
                                                             dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
                                                         <br/>
                                                         { dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
