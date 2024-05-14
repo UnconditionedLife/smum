@@ -479,15 +479,6 @@ export async function dbGetValidSvcsByDateAsync(month, svcCat, date) {
 // *********************** NEW SVCS DATABASE *************************
 // ***************************************************************
 
-// export async function dbGetSvcsByIdAndYear(serviceTypeId, year) {
-// 	return await dbGetDataAsync("services", "/clients/services/byservicetype/" + serviceTypeId)
-//             .then( data => { 
-//                 return data
-//                 .filter(item => item.serviceValid == 'true')
-//                 .filter(item => moment(item.svcDT).year() == year)
-//             })					
-// }
-
 // formerly utilGetServicesInMonth in app.js
 export async function dbGetSvcsInMonthAsync(monthYear){    
     const currentMonth = dayjs().format("YYYYMM")

@@ -53,8 +53,8 @@ export default function NoteForm(props) {
         if (noteImportant) important = "true"
         if (isEmpty(editNote)) {
             const noteId = cuid()
-            newNote.createdDateTime = utilNow() // moment().format(dateTime);
-            newNote.updatedDateTime = utilNow() // moment().format(dateTime);
+            newNote.createdDateTime = utilNow() 
+            newNote.updatedDateTime = utilNow() 
             newNote.isImportant = important;
             newNote.noteByUserName = getUserName();
             newNote.noteId = noteId;

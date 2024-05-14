@@ -42,13 +42,6 @@ export default function ClientInfoForm(props) {
 
     // this hack is required because onchange is not working 
     // with the version of react-hook-form we are using
-    // useEffect(() => {
-    //     const newDob = getValues().dob
-    //     if (dob !== newDob) {
-    //         setDob(newDob)
-    //         setValue("age", moment().diff(newDob, "years"))
-    //     }
-    // }, [getValues().dob, dob])
 
     React.useEffect(() => {
         if (dob) {

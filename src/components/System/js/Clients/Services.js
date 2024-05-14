@@ -112,30 +112,6 @@ export function getSvcsRendered(svcHistory){
     return svcsRendered
 }
 
-// export function utilCalcLastServedDays(client) {
-// 	// get Last Served Date from client & calculate number of days
-// 	const lastServed = { daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000 }
-// 	if (client.lastServed[0] === undefined) return lastServed
-// 	const lastServedFood = client.lastServed.filter(obj => obj.serviceCategory == "Food_Pantry")
-// 	lastServedFood.forEach((svcItem) => {
-// 		if (svcItem !== "Emergency") {
-// 			let lastServedDay = moment(svcItem.serviceDateTime).startOf('day')
-// 			if (svcItem.isUSDA === "USDA") {
-// 				lastServed.daysUSDA = moment().diff(lastServedDay, 'days')
-// 			} else {
-// 				lastServed.daysNonUSDA = moment().diff(lastServedDay, 'days')
-// 			}
-// 		}
-// 	})
-// 	lastServed.lowestDays = lastServed.daysUSDA
-// 	if (lastServed.daysNonUSDA < lastServed.daysUSDA) lastServed.lowestDays = lastServed.daysNonUSDA
-// 	let lastServedBackToSchool = client.lastServed.filter(obj => obj.serviceCategory == "Back_To_School")
-// 	if (lastServedBackToSchool.length > 0) {
-// 		lastServed.backToSchool = moment(lastServedBackToSchool[0].serviceDateTime).startOf('day')
-// 	}
-// 	return lastServed
-// }
-
 export function getLastServedDays(client) {
     // get calculate number of days
     let lsDays = { lastServedFoodDate: null, daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000 }
@@ -478,22 +454,7 @@ function validateSvcInterval( props ){
                     }
                 })
                 if (!found) return false
-
-
-				// const voucherHistory = getHistoryLastService({ svcHistory: client.svcHistory, serviceType: activeServiceType })
-				// if (voucherHistory.length > 0) {
-				// 	return false;
-				// }
-			// } else {
-			// 	inLastServed = inLastServed[0].serviceDateTime
 			}
-		// } else if (svcCat == "Administration") {
-		// 	inLastServed = client.familyIdCheckedDate
-		// } else {
-		// 	inLastServed = "2000-01-01"
-		// }
-		// const lastServedDate = moment(inLastServed).startOf('day')
-		// if (moment().startOf('day').diff(lastServedDate, 'days') < activeServiceType.svcInterval) return false
 	} else {
 		// secondary buttons
         // Greater than 0 lowest day is used to provide same day buffer for secondary buttons

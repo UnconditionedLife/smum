@@ -3,11 +3,8 @@ import { Box, Button, Card, CardContent, CardHeader, Container, FormControl, Inp
 import { Select, TextField, FormTextField } from '../../System'
 import { DatePicker } from '@mui/x-date-pickers' // MuiPickersUtilsProvider
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-// import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { getSvcTypes } from '../../System/js/Database.js';
-// import MomentUtils from '@date-io/moment';
-// import moment from 'moment';
 import dayjs from 'dayjs';
 import ReportDialog from './ReportDialog.jsx';
 import NewClientsReport from './Reports/NewClientsReport.jsx';
@@ -208,7 +205,6 @@ export default function ReportsPage() {
     }
 
     return (
-        // <MuiPickersUtilsProvider utils={MomentUtils}>
         <Container>
         <Card width='100%'>
             <CardHeader title="Distribution Reports" />
