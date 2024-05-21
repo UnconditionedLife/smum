@@ -650,9 +650,9 @@ async function dbGetDataPageAsync(subUrl, paramObj) {
         }
     })
     .catch((error) => {
-        dbLogError('dbGetData Error: ' + JSON.stringify(error));
-        dbLogError('URL: ' + subUrl);
-        dbLogError('User: ' + getUserName());
+        const msg = 'dbGetData Error: ' + JSON.stringify(error) +
+                ' URL: ' + subUrl + ' User: ' + getUserName();
+        dbLogError(msg);
         globalMsgFunc('error', 'Error while loading - try again!!') 
         Promise.reject(error);
     })
