@@ -2,8 +2,7 @@
 
 import argparse
 import requests
-from datetime import datetime
-from datetime import timezone
+import datetime as dt
 import uuid
 import json
 
@@ -13,9 +12,9 @@ def retrieve(queue, start, end, level):
     url = f'{url_base}/{queue}/logs'
     # Convert start and end timespecs to UTC
     if start:
-        start = datetime.fromisoformat(start).astimezone(timezone.utc).isoformat(timespec='seconds')
+        start = dt.datetime.fromisoformat(start).astimezone(dt.UTC).isoformat(timespec='seconds')
     if end:
-        end = datetime.fromisoformat(end).astimezone(timezone.utc).isoformat(timespec='seconds')
+        end = dt.datetime.fromisoformat(end).astimezone(dt.UTC).isoformat(timespec='seconds')
     req = requests.get(url, params={'start': start, 'end': end, 'category': level.upper()})
 
     print(req.url)
@@ -24,7 +23,7 @@ def retrieve(queue, start, end, level):
 
 def display(items):
     for msg in items:
-        gmt_time = datetime.fromisoformat(msg['logTimestamp'])
+        gmt_time = dt.datetime.fromisoformat(msg['logTimestamp'])
         timestamp = gmt_time.astimezone().replace(tzinfo=None).isoformat(sep=' ', timespec='seconds')
         print(f"{timestamp}  {msg['message']}")
 
@@ -37,7 +36,8 @@ def delete(queue, items):
 
 def add(queue, message, level):
     url = f'{url_base}/{queue}/logs'
-    payload = {'message': message, 'logTimestamp': datetime.utcnow().isoformat(timespec='seconds') + 'Z', 
+    timestamp = dt.datetime.now(dt.UTC).isoformat(timespec='seconds').replace('+00:00', '') + 'Z'
+    payload = {'message': message, 'logTimestamp': timestamp, 
         'logID': str(uuid.uuid1()), 'category': level.upper()}
     req = requests.post(url, data=json.dumps(payload))
 

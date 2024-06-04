@@ -5,7 +5,7 @@ import uuid
 import argparse
 import sys
 import time
-from datetime import datetime
+import datetime as dt
 
 # TODO Embed logo in server code
 
@@ -178,8 +178,8 @@ def printq_delete(queue, id):
 
 def poll_interval():
     time_struct = time.localtime()
-    # Mon-Sat 9am-1pm
-    if args.interactive or time_struct[6] != 6 and 9 <= time_struct[3] <= 12:
+    # Mon-Sat 8am-2pm
+    if args.interactive or time_struct[6] != 6 and 8 <= time_struct[3] <= 13:
         return 1
     else:
         return 20
@@ -206,8 +206,8 @@ def log_error(msg):
 def log_to_database(cat, msg):
     try:
         url = f'{url_base}/{args.queue}/logs'
-        payload = {'message': 'Print Server: ' + msg, 
-            'logTimestamp': datetime.utcnow().isoformat(timespec='seconds') + 'Z', 
+        timestamp = dt.datetime.now(dt.UTC).isoformat(timespec='seconds').replace('+00:00', '') + 'Z'
+        payload = {'message': 'Print Server: ' + msg, 'logTimestamp': timestamp, 
             'logID': str(uuid.uuid1()), 'category': cat}
         requests.post(url, data=json.dumps(payload))
     except Exception as e:
