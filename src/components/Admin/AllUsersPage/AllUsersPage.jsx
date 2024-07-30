@@ -27,7 +27,6 @@ function UserList(props) {
         setUserName(null)
     }
 
-
     return (
         <Box width='100%' mx={ 2 }>
             <TableContainer> 
@@ -68,7 +67,7 @@ export default function AllUsersPage(props) {
     const [ users, setUsers ] = useState(null);
 
     useEffect(() => { 
-        getUserList()
+        getUserList() //initial load
     }, [newUser])
 
     function getUserList() {
@@ -83,7 +82,7 @@ export default function AllUsersPage(props) {
     return (
         <Box mt={ 2 } mb={ 2 }>
             
-            <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
+            <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
                 <Tooltip title= 'Add User'>
                     <Fab onClick={()=>{
                         if (navigationAllowed()) {
@@ -98,6 +97,7 @@ export default function AllUsersPage(props) {
             { newUser &&
                 <UserPage clearRecord={ ()=>setNewUser(false) } userName={ null } />
             }
+
             <Accordion defaultExpanded={ true }>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
                     <Typography variant='button' >Active Users</Typography>

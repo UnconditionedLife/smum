@@ -282,8 +282,8 @@ export async function dbSaveUserAsync(data) {
 //******************** CLIENTS ********************
 //*************************************************
 
-export async function dbSearchClientsAsync(searchTerm, isDate) {
-    return await dbGetClientsAsync(searchTerm, isDate).then(
+export async function dbSearchClientsAsync(searchTerm) {
+    return await dbGetClientsAsync(searchTerm).then(
         clients => {
             if (clients == undefined || clients == null || clients.length == 0){
                 clients = []
@@ -609,7 +609,7 @@ async function dbPostDataAsync(subUrl, data, logErrors=true) {
     .catch((error) => {
         if (logErrors) {
             const msg = 'dbPostData Error: ' + JSON.stringify(error) +
-                ' URL: ' + subUrl + ' User: ' + getUserName();
+                ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(data);
             dbLogError(msg);
             globalMsgFunc('error', 'Database Failure');
         }
@@ -621,7 +621,7 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
     let lastKey = null;
     let allData = [];
     do {
-        const queryParams = (lastKey) ? { ... paramObj, lastkey: lastKey } : paramObj;
+        const queryParams = (lastKey) ? { ...paramObj, lastkey: lastKey } : paramObj;
         const dataPage = await dbGetDataPageAsync(subUrl, queryParams)
             .then(data => {
                 lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null;

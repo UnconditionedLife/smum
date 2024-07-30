@@ -102,8 +102,8 @@ export default function ErrorPage(props) {
                     <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="center">Time Stamp</TableCell>
-                            <TableCell align="center">Message</TableCell>
+                            <TableCell align="center" width='35%'>Time Stamp</TableCell>
+                            <TableCell align="center" width='65%'>Message</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

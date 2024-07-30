@@ -61,9 +61,9 @@ export default function ClientInfoForm(props) {
         let data = Object.assign({}, client);
         Object.assign(data, values);
         Object.assign(data, unpackZipcode(values.zipcode));
-        saveAndUpdateClient(data)
+        saveAndUpdateClient(data)    
         reset(values);
-        values.telephone = formatPhone(values.telephone);
+        // values.telephone = formatPhone(values.telephone);
     }
 
     function handleCancel() {
