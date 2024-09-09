@@ -5,7 +5,7 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import cuid from 'cuid';
-import { utilArrayToObject, utilCleanDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
+import { utilUriEncodeData, utilUriDecodeData, utilCleanDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty, utilSanitizeData } from './GlobalUtils';
 import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
@@ -346,9 +346,11 @@ export async function dbGetSingleClientAsync(clientId) {
 
 export async function dbGetNewClientIDAsync(){
     let emptyId = 0
+    // TODO: clientsIncrement to get id from API
     let newId = await dbGetDataPageAsync("/clients/lastid")
         .then( async data => { return parseInt(data.lastId) + 1 })
 
+    // TODO: drop checking if it exists
     while(emptyId === 0) {
         emptyId = await dbGetDataPageAsync("/clients/exists/" + newId)
             .then( data => {
@@ -360,6 +362,8 @@ export async function dbGetNewClientIDAsync(){
                 return emptyId
             })
     }
+
+    // TODO: get rid of post
     const request = { lastId: newId.toString() }
     dbPostDataAsync("/clients/lastid", request)
         .catch( msg => {
@@ -583,13 +587,16 @@ function stringToMap(string) {
 
 
 async function dbPostDataAsync(subUrl, data, logErrors=true) {
+    const copiedData = JSON.parse(JSON.stringify(data))
+    const sanitizedData = utilUriEncodeData(copiedData);
+
     return fetch(dbUrl + subUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',    
             "Authorization": cachedSession.auth.idToken,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(sanitizedData),
     })
     .then(response => {
         if (response.ok) {
@@ -609,7 +616,7 @@ async function dbPostDataAsync(subUrl, data, logErrors=true) {
     .catch((error) => {
         if (logErrors) {
             const msg = 'dbPostData Error: ' + JSON.stringify(error) +
-                ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(data);
+                ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(sanitizedData);
             dbLogError(msg);
             globalMsgFunc('error', 'Database Failure');
         }
@@ -625,7 +632,7 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
         const dataPage = await dbGetDataPageAsync(subUrl, queryParams)
             .then(data => {
                 lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null;
-                return data[arrayName];
+                return utilUriDecodeData(data[arrayName]);
             })
         allData = allData.concat(dataPage);  
     } while (lastKey != null);
