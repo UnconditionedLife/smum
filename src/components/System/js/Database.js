@@ -386,10 +386,10 @@ export async function dbSaveClientAsync(data) {
                         return result
                     }
                 } else {
-                    globalMsgFunc('error', 'New Client ID Failure') 
+                    globalMsgFunc("error", "New Client ID failure")
+                    return Promise.reject("Failed to get Client ID, please retry")
                 }
-            }
-        )
+            })
 	} else {
         dbSetModifiedTime(data, false);
         return await dbPostDataAsync("/clients/", data)
