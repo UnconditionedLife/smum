@@ -345,32 +345,8 @@ export async function dbGetSingleClientAsync(clientId) {
 }
 
 export async function dbGetNewClientIDAsync(){
-    let emptyId = 0
     // TODO: clientsIncrement to get id from API
-    let newId = await dbGetDataPageAsync("/clients/lastid")
-        .then( async data => { return parseInt(data.lastId) + 1 })
-
-    // TODO: drop checking if it exists
-    while(emptyId === 0) {
-        emptyId = await dbGetDataPageAsync("/clients/exists/" + newId)
-            .then( data => {
-                if (data.count == 0) {
-                    emptyId = newId
-                } else {
-                    newId++
-                }
-                return emptyId
-            })
-    }
-
-    // TODO: get rid of post
-    const request = { lastId: newId.toString() }
-    dbPostDataAsync("/clients/lastid", request)
-        .catch( msg => {
-            globalMsgFunc('error', 'New Client ID save failed')
-            console.log('New Client ID save failed', msg);
-        });
-    return emptyId
+    return await dbPostDataAsync("/clients/lastidinc", {}).then(data => {return data.lastId})
 }
 
 // ***************************************************************
