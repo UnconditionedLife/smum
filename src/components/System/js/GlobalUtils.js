@@ -116,6 +116,40 @@ export function utilChangeWordCase(str) {
 	return str;
 }
 
+export function utilUriEncodeData(data) {
+    if (typeof data === 'object') {
+        for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+                if (typeof data[key] === 'string') {
+                    data[key] = encodeURIComponent(data[key]);
+                }
+                // If nested objects exist, encode recursively
+                if (typeof data[key] === 'object') {
+                    utilUriEncodeData(data[key]);
+                }
+            }
+        }
+    }
+    return data;
+}
+
+export function utilUriDecodeData(data) {
+    if (typeof data === 'object') {
+        for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+                if (typeof data[key] === 'string') {
+                    data[key] = decodeURIComponent(data[key]);
+                }
+                // If nested objects exist, decode recursively
+                if (typeof data[key] === 'object') {
+                    utilUriDecodeData(data[key]);
+                }
+            }
+        }
+    }
+    return data;
+}
+
 // Remove the prefix giving the broad error type before a specific error message.
 // For example, "NotAuthorizedException: Incorrect username or password" becomes
 // "Incorrect username or password".
