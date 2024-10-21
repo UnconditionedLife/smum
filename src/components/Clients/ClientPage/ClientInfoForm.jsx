@@ -28,15 +28,13 @@ export default function ClientInfoForm(props) {
     const dob = watch("dob")
     const zip = watch("zipcode")
 
-    React.useEffect(() => {
-        console.log(validZips)
+    useEffect(() => {
         if (validZips.includes(zip)) {
             setValue("isActive", "Client")
         }
         else {
             setValue("isActive", "NonClient")
         }
-
       }, [zip, setValue]);
 
 
