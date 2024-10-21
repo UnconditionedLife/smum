@@ -1,0 +1,9 @@
+## SERVICES GET REQUEST TAMPLATE
+{
+    "TableName": "$stageVariables.svcsTable",
+    "ScanIndexForward": false, ## reverse order sort
+    "KeyConditionExpression": "cId = :v1",
+    "ExpressionAttributeValues": {
+        ":v1": {"S": "$input.params('cid')"}
+    }
+}
