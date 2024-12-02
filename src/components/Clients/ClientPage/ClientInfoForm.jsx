@@ -5,17 +5,22 @@ import { Box, MenuItem, Typography } from '@mui/material';
 import { FormTextField, SaveCancel, FormSelect } from '../../System';
 import { useForm } from "react-hook-form";
 import { packZipcode, unpackZipcode, validState, validPhone, formatPhone } from '../../System/js/Forms.js';
-import { setEditingState, SettingsZipcodes  } from '../../System/js/Database';
+import { setEditingState, SettingsZipcodes, dbSaveClientAsync  } from '../../System/js/Database';
+import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 
 
 ClientInfoForm.propTypes = {
     client: PropTypes.object.isRequired,
-    saveMessage: PropTypes.object.isRequired,
-    saveAndUpdateClient: PropTypes.func.isRequired,
+    dependentsDirty: PropTypes.bool.isRequired,
+    setDependentsDirty: PropTypes.func.isRequired,
+    updateClient: PropTypes.func.isRequired,
+    updateClientsURL: PropTypes.func.isRequired,
 }
 
 export default function ClientInfoForm(props) {
-    const { client, saveAndUpdateClient, saveMessage } = props
+    const { client, dependentsDirty, setDependentsDirty, updateClient, updateClientsURL } = props
+    const [ saveMessage, setSaveMessage ] = useState({ result: 'success', time: client.updatedDateTime });
+
     const validZips = SettingsZipcodes()
     let defValues = { ...client };
     defValues.zipcode = packZipcode(defValues.zipcode, defValues.zipSuffix);
@@ -59,9 +64,24 @@ export default function ClientInfoForm(props) {
         let data = Object.assign({}, client);
         Object.assign(data, values);
         Object.assign(data, unpackZipcode(values.zipcode));
-        saveAndUpdateClient(data)    
-        reset(values);
-        // values.telephone = formatPhone(values.telephone);
+
+        setSaveMessage({ result: 'working' });
+        dbSaveClientAsync(data)
+            .then( (result) => {
+                setEditingState(false);
+                setDependentsDirty(false);
+                reset(values);
+                if (result.clientId) data.clientId = result.clientId;
+                setSaveMessage({ result: 'success', time: data.updatedDateTime });
+                data = utilCalcAge(data);
+                data.dependents = calcDependentsAges(data);
+                data.family = calcFamilyCounts(data);
+                updateClient(data);
+                updateClientsURL(data.clientId, 2);
+            })
+            .catch( message => {
+                setSaveMessage({ result: 'error', text: message });
+            });
     }
 
     function handleCancel() {
@@ -146,7 +166,7 @@ export default function ClientInfoForm(props) {
                 </Box>
             </form>
 
-            <SaveCancel disabled={!formState.isDirty} onClick={(isSave) => { isSave ? submitForm() : handleCancel() }} 
+            <SaveCancel disabled={!formState.isDirty && !dependentsDirty} onClick={(isSave) => { isSave ? submitForm() : handleCancel() }} 
                 message={ saveMessage }/>
         </Fragment>
     );

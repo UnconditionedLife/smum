@@ -11,12 +11,11 @@ import { navigationAllowed } from '../../System/js/Database';
 
 DependentsDisplay.propTypes = {
     client: PropTypes.object.isRequired,
-    saveAndUpdateClient: PropTypes.func.isRequired,
-    saveMessage: PropTypes.object.isRequired,
+    setDependentsDirty: PropTypes.func.isRequired,
 }
 
 export default function DependentsDisplay(props) {
-    const { client, saveAndUpdateClient, saveMessage } = props
+    const { client, setDependentsDirty } = props
     const [ editRecord, setEditRecord ] = useState(null);
     const [ selectedDependent, setSelectedDependent ] = useState(null);
     const [ anchorEl, setAnchorEl ] = useState(null);
@@ -47,7 +46,7 @@ export default function DependentsDisplay(props) {
     }
 
     const dialogProps = {
-        client, saveAndUpdateClient, saveMessage, selectedDependent, 
+        client, selectedDependent, setDependentsDirty,
         editRecord, handleEditRecord, setAnchorEl, setSelectedDependent
     }
 

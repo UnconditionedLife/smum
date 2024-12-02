@@ -10,19 +10,18 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 DependentsFormDialog.propTypes = {
     client: PropTypes.object.isRequired,                // current client
-    saveMessage: PropTypes.object.isRequired,
     editRecord: PropTypes.object,                       // history record being edited
     handleEditRecord: PropTypes.func.isRequired,        // editMode handler
-    saveAndUpdateClient: PropTypes.func.isRequired,     // saving and updateing client handler
     selectedDependent: PropTypes.string,
+    setDependentsDirty: PropTypes.func.isRequired,
     setAnchorEl: PropTypes.func.isRequired,
-    setSelectedDependent: PropTypes.func.isRequired
+    setSelectedDependent: PropTypes.func.isRequired,
 }
 
 export default function DependentsFormDialog(props) {
     dayjs.extend(customParseFormat)
 
-    const { client, selectedDependent, saveAndUpdateClient, saveMessage, 
+    const { client, selectedDependent, setDependentsDirty,
         handleEditRecord, setAnchorEl, setSelectedDependent  } = props
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const dependent = getDependent(selectedDependent)
@@ -65,7 +64,7 @@ export default function DependentsFormDialog(props) {
                 }
             })
         }
-        saveAndUpdateClient(data)
+        setDependentsDirty(true)
         handleCancel()
     }
 
@@ -159,8 +158,8 @@ export default function DependentsFormDialog(props) {
                     </FormSelect>   
 
                     </form>
-                    <SaveCancel key={ saveMessage.text }
-                        saveDisabled={ !formState.isDirty } message={ saveMessage } 
+                    <SaveCancel key={ "" }
+                        saveDisabled={ !formState.isDirty } saveLabel={ "Update" }
                         onClick={ (isSave) => { isSave ? submitForm() : handleCancel() } } />
                 </Box>
             </DialogContent>

@@ -4,9 +4,7 @@ import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar, Tooltip, Typography } from '@mui/material';
 import { Add, ExpandMore } from '@mui/icons-material';
 import { DependentsDisplay } from '..';
-import { calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import { ClientInfoForm, FamilyTotalsForm, FinancialInfoForm, PrintClientInfo } from '..';
-import { dbSaveClientAsync, setEditingState } from '../../System/js/Database';
 
 ClientPage.propTypes = {
     client: PropTypes.object.isRequired,
@@ -18,29 +16,13 @@ ClientPage.propTypes = {
 export default function ClientPage(props) {
     const { client, updateClient, updateClientsURL } = props
     const [ expanded, setExpanded ] = useState(false);
-    const [ saveMessage, setSaveMessage ] = useState({ result: 'success', time: client.updatedDateTime });
-  
+    const [ dependentsDirty, setDependentsDirty ] = useState(false);
+
     const handleChange = (panel) => (event, isExpanded) => {
       setExpanded(isExpanded ? panel : false);
     };
 
-    function saveAndUpdateClient(data){
-        setSaveMessage({ result: 'working' });
-        dbSaveClientAsync(data)
-            .then( (result) => {
-                setEditingState(false)
-                if (result.clientId) data.clientId = result.clientId
-                setSaveMessage({ result: 'success', time: data.updatedDateTime });
-                data = utilCalcAge(data)
-                data.dependents = calcDependentsAges(data)
-                data.family = calcFamilyCounts(data)
-                updateClient(data);
-                updateClientsURL(data.clientId, 2)
-            })
-            .catch( message => {
-                setSaveMessage({ result: 'error', text: message });
-            });
-    }
+
 
     const clientLable = (client.clientId == 0) ? "New Client" : "Client #" + client.clientId
 
@@ -60,8 +42,7 @@ export default function ClientPage(props) {
                     </AccordionSummary>
                     <AccordionDetails style={{justifyContent: "center"}}> 
                         <Box ml={ 3 } mr={ 3 }>
-                            <ClientInfoForm client={ client } saveAndUpdateClient={ saveAndUpdateClient } 
-                                saveMessage={ saveMessage } />
+                            <ClientInfoForm client={ client } updateClient={ updateClient } updateClientsURL={ updateClientsURL } dependentsDirty={ dependentsDirty } setDependentsDirty={ setDependentsDirty } />
                         </Box>
                     </AccordionDetails>
                 </Accordion>
@@ -82,8 +63,7 @@ export default function ClientPage(props) {
                                     <Fab  float='right' onClick={() => handleNewDependent()} size='small' color='primary' ><Add /></Fab> 
                                 </Tooltip>
                             </Box> */}
-                            <DependentsDisplay client= { client } saveAndUpdateClient={ saveAndUpdateClient } 
-                                saveMessage={ saveMessage }/>
+                            <DependentsDisplay client= { client } setDependentsDirty={ setDependentsDirty } />
                         </Box>
                     </AccordionDetails>
                 </Accordion>
