@@ -5,7 +5,7 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import cuid from 'cuid';
-import { utilUriEncodeData, utilUriDecodeData, utilCleanDate, utilChangeWordCase, utilRemoveDupClients, utilStringToArray, isEmpty, utilSanitizeData } from './GlobalUtils';
+import { utilArrayToObject, utilCleanDate, utilChangeWordCase, utilDecodeStrings, utilEncodeStrings, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
 import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
@@ -133,6 +133,8 @@ export function getAppVersion() {
 //**************** APP SETTINGS ******************
 //************************************************
 
+// Settings data bypasses the step of encoding/decoding strings
+
 export async function dbGetSettingsAsync() {
     return await dbGetDataPageAsync("/settings")
         .then( settings => {
@@ -157,7 +159,7 @@ export async function dbSaveSettingsAsync(settings) {
         data[x] = utilArrayToObject(data[x]);
     });
 
-    return await dbPostDataAsync('/settings/', data)
+    return await dbPostDataRawAsync('/settings/', data)
         .then( () => {
             cachedSettings = settings;
         });
@@ -231,7 +233,7 @@ async function dbLog(category, message) {
 }
 
 export async function dbFetchErrorLogs(startDate, endDate, category="ERROR") {
-    return await dbGetDataPageAsync("/logs", {"start": startDate, "end": endDate, "category": category})
+    return await dbGetDataAsync("", "/logs", {"start": startDate, "end": endDate, "category": category})
         .catch(err => {
             console.error("failed to read logs, ", err);
         })
@@ -484,7 +486,7 @@ export async function dbGetServiceAsync(svcId) {
 //*************************************************
 
 export async function dbGetEthnicGroupCountAsync(ethnicGroup){
-    return await dbGetDataPageAsync("/clients/ethnicgroup/" + ethnicGroup)
+    return await dbGetDataAsync("", "/clients/ethnicgroup/" + ethnicGroup)
         .then( data => { return data.count})
 }
 
@@ -493,7 +495,8 @@ export async function dbGetEthnicGroupCountAsync(ethnicGroup){
 
 export function dbSetUrl(instance) {
     dbUrl = dbBase + instance;
-    console.log('DB URL set to ' + dbUrl)
+    console.log('DB URL set to ' + dbUrl);
+    initCache();
 }
 
 export function dbSetModifiedTime(obj, isNew) {
@@ -564,15 +567,18 @@ function stringToMap(string) {
 
 async function dbPostDataAsync(subUrl, data, logErrors=true) {
     const copiedData = JSON.parse(JSON.stringify(data))
-    const sanitizedData = utilUriEncodeData(copiedData);
+    const sanitizedData = utilEncodeStrings(copiedData);
+    return dbPostDataRawAsync(subUrl, sanitizedData, logErrors);
+}
 
+async function dbPostDataRawAsync(subUrl, data, logErrors=true) {
     return fetch(dbUrl + subUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',    
             "Authorization": cachedSession.auth.idToken,
         },
-        body: JSON.stringify(sanitizedData),
+        body: JSON.stringify(data),
     })
     .then(response => {
         if (response.ok) {
@@ -592,7 +598,7 @@ async function dbPostDataAsync(subUrl, data, logErrors=true) {
     .catch((error) => {
         if (logErrors) {
             const msg = 'dbPostData Error: ' + JSON.stringify(error) +
-                ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(sanitizedData);
+                ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(data);
             dbLogError(msg);
             globalMsgFunc('error', 'Database Failure');
         }
@@ -608,7 +614,10 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
         const dataPage = await dbGetDataPageAsync(subUrl, queryParams)
             .then(data => {
                 lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null;
-                return utilUriDecodeData(data[arrayName]);
+                if (arrayName)
+                    return utilDecodeStrings(data[arrayName]);
+                else
+                    return utilDecodeStrings(data);
             })
         allData = allData.concat(dataPage);  
     } while (lastKey != null);

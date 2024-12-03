@@ -116,16 +116,22 @@ export function utilChangeWordCase(str) {
 	return str;
 }
 
-export function utilUriEncodeData(data) {
+export function utilEncodeStrings(data) {
     if (typeof data === 'object') {
         for (const key in data) {
             if (data.hasOwnProperty(key)) {
                 if (typeof data[key] === 'string') {
-                    data[key] = encodeURIComponent(data[key]);
+                    let encoded = encodeURIComponent(data[key]);
+                    // Exception to URI encoding: Leave space (%20) unmodified
+                    encoded = encoded.replace(/%(20)/g, (str, hex) =>
+                        String.fromCharCode(parseInt(hex, 16)));
+                    // if (encoded != data[key])
+                    //     console.log('ENCODE', data[key], '->', encoded)
+                    data[key] = encoded;
                 }
                 // If nested objects exist, encode recursively
                 if (typeof data[key] === 'object') {
-                    utilUriEncodeData(data[key]);
+                    utilEncodeStrings(data[key]);
                 }
             }
         }
@@ -133,16 +139,19 @@ export function utilUriEncodeData(data) {
     return data;
 }
 
-export function utilUriDecodeData(data) {
+export function utilDecodeStrings(data) {
     if (typeof data === 'object') {
         for (const key in data) {
             if (data.hasOwnProperty(key)) {
                 if (typeof data[key] === 'string') {
-                    data[key] = decodeURIComponent(data[key]);
+                    const decoded = decodeURIComponent(data[key]);
+                    // if (data[key] != decoded)
+                    //     console.log('DECODE', data[key], '->', decoded)
+                    data[key] = decoded;
                 }
                 // If nested objects exist, decode recursively
                 if (typeof data[key] === 'object') {
-                    utilUriDecodeData(data[key]);
+                    utilDecodeStrings(data[key]);
                 }
             }
         }
@@ -158,7 +167,6 @@ export function removeErrorPrefix(str) {
 }
 
 export function utilRemoveDupClients(clients) {
-    console.log('clients', clients)
 	let ids=[], temp=[], undupClients = []
 	for (let i = 0; i < clients.length; i++) ids.push(clients[i].clientId)
 	for (let i = 0; i < ids.length; i++) {
