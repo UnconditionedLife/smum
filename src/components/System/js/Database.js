@@ -5,7 +5,7 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import cuid from 'cuid';
-import { utilArrayToObject, utilCleanDate, utilChangeWordCase, utilDecodeStrings, utilEncodeStrings, utilRemoveDupClients, utilStringToArray, isEmpty } from './GlobalUtils';
+import { utilArrayToObject, utilCleanDate, utilChangeWordCase, utilDecodeStrings, utilEncodeStrings, utilRemoveDupClients, utilStringToArray, isEmpty, utilNow } from './GlobalUtils';
 import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
@@ -409,7 +409,10 @@ export async function dbSaveServicePatchAsync(svc) {
 }
 
 export async function dbSaveServiceRecordAsync(svc) {
-    console.log("svcRecord - just before post", svc)
+    
+    // Set Update time
+    svc.svcUpdatedDT = utilNow()
+
     return await dbPostDataAsync("/clients/svcs", svc)
         .then( async (r) => {
             // if (Object.keys(r).length === 0) {

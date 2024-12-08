@@ -11,7 +11,6 @@ import { calFindOpenDate } from '../Calendar.js';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt } from './Receipts';
 import cuid from 'cuid';
-import { utilNow } from '../GlobalUtils.js';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
@@ -37,13 +36,6 @@ console.log("SVCTYPE???", svc)
 	// save service record
 	const servedCounts = calcServiceFamilyCounts( svcTypes, client, svcTypeId)
     const svcRecord = utilBuildServiceRecord( svcType, svcId, servedCounts, svcValid, client )
-
-    console.log("svcRecord", svcRecord)
-
-    svcRecord.svcUpdatedDT = utilNow()
-
-    // USED BECAUSE DB IS STILL INDEXING OLD ATTRIBUTE NAME
-    // svcRecord.serviceTypeId = svcRecord.svcTypeId
 
 	return await dbSaveServiceRecordAsync(svcRecord)
         .then((savedSvc) => {
