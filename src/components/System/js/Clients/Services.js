@@ -43,7 +43,7 @@ console.log("SVCTYPE???", svc)
     svcRecord.svcUpdatedDT = utilNow()
 
     // USED BECAUSE DB IS STILL INDEXING OLD ATTRIBUTE NAME
-    svcRecord.serviceTypeId = svcRecord.svcTypeId
+    // svcRecord.serviceTypeId = svcRecord.svcTypeId
 
 	return await dbSaveServiceRecordAsync(svcRecord)
         .then((savedSvc) => {

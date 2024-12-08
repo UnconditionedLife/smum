@@ -409,24 +409,20 @@ export async function dbSaveServicePatchAsync(svc) {
 }
 
 export async function dbSaveServiceRecordAsync(svc) {
-    // to be used in production
-    // return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
-
-    // to be used during migration period
-    // return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
+    console.log("svcRecord - just before post", svc)
     return await dbPostDataAsync("/clients/svcs", svc)
         .then( async (r) => {
-            if (Object.keys(r).length === 0) {
-                const svcTypes = getSvcTypes()
-                const svcArray = []
-                svcArray.push(svc)
-                const oldSvc = makeOldServices(svcArray)
-                svcTypes.forEach(s => {
-                    if (s.svcTypeId === oldSvc.svcTypeId) 
-                        oldSvc.svcTypeId = s.serviceOldTypeId
-                });
-                return await dbPostDataAsync("/clients/services", oldSvc[0])
-            } else
+            // if (Object.keys(r).length === 0) {
+            //     const svcTypes = getSvcTypes()
+            //     const svcArray = []
+            //     svcArray.push(svc)
+            //     const oldSvc = makeOldServices(svcArray)
+            //     svcTypes.forEach(s => {
+            //         if (s.svcTypeId === oldSvc.svcTypeId) 
+            //             oldSvc.svcTypeId = s.serviceOldTypeId
+            //     });
+            //     return await dbPostDataAsync("/clients/services", oldSvc[0])
+            // } else
                 return r 
         })
 }
