@@ -72,6 +72,9 @@ export async function removeSvcAsync(client, svc){
     // incase it's from the new svc table TODO - remove after migration
     svc.servicedDay = dayjs(svc.svcDT).format("YYYYMMDD")
 
+     // USED BECAUSE DB IS STILL INDEXING OLD ATTRIBUTE NAME
+     svc.serviceTypeId = svc.svcTypeId
+
     return await dbSaveServiceRecordAsync(svc)
         .then((savedSvc) => {
             if (Object.keys(savedSvc).length === 0) {

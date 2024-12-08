@@ -137,48 +137,68 @@ export function utilCalcGradeGrouping(dependent){
 	}
 }
 
-export function utilCalcTargetServices(activeServiceTypes) {
+export function utilCalcTargetServices(activeSvcTypes) {
 	let targets = [];
 	// build list of client target items for each Active Service Type
-	for (let i = 0; i < activeServiceTypes.length; i++) {
+	
+    activeSvcTypes.forEach((aSvcType, i) => {
+    // for (let i = 0; i < activeServiceTypes.length; i++) {
 		// make list of specific targets.... for each type.
 		targets[i] = {}
-		// target homeless
-		if (activeServiceTypes[i].target.homeless !== "Unselected") targets[i].homeless = activeServiceTypes[i].target.homeless;
-		// target families with children, singles, couples
-		if (activeServiceTypes[i].target.family == "Single Individual") {
-			targets[i].family_totalSize = 1;
-		} else if (activeServiceTypes[i].target.family == "Couple") {
-			targets[i].family_totalSize = 2;
-			targets[i].family_totalChildren = 0;
-		} else if (activeServiceTypes[i].target.family == "With Children") {
+
+		// TARGET HOMELESS 
+        if (aSvcType.target.homeless == "YES") targets[i].homeless = "YES"
+        if (aSvcType.target.homeless == "NO") targets[i].homeless = "NO"
+
+		// TARGET FAMILY SIZE: with children, no-children, singles, couples
+		if (aSvcType.target.family == "Single_Individual") {
+            targets[i].forFamily = "YES"
+			targets[i].family_totalSize = "1"
+
+		} else if (aSvcType.target.family == "Couple") {
+            targets[i].forFamily = "YES"
+			targets[i].family_totalAdults = "2";
+
+		} else if (aSvcType.target.family == "Family_with_Children") {
+            targets[i].forFamily = "YES"
+            targets[i].family_totalChildren = "1+";
+
+		} else if (aSvcType.target.family == "Family_No_Children") {
+            targets[i].forFamily = "YES"
 			targets[i].family_totalChildren = "0";
 		}
-		// target gender male/female
-		if (activeServiceTypes[i].target.gender !== "Unselected") targets[i].gender = activeServiceTypes[i].target.gender;
-		// target children
-		if (activeServiceTypes[i].target.child == "YES") {
-			targets[i].family_totalChildren = "Greater Than 0"
-			// target age
-			if (activeServiceTypes[i].target.childMaxAge > 0) {
-				targets[i].dependents_ageMin = activeServiceTypes[i].target.childMinAge
-				targets[i].dependents_ageMax = activeServiceTypes[i].target.childMaxAge
+
+		// TARGET GENDER male/female
+		if (aSvcType.target.gender !== "Unselected") targets[i].gender = aSvcType.target.gender;
+		
+        // TARGET CHILDREN YES/NO
+		if (aSvcType.target.child == "YES") {
+			targets[i].forChildren = "YES"
+
+			// TARGET CHILD AGE
+			if (aSvcType.target.childMaxAge > 0) {
+				targets[i].dependents_ageMin = aSvcType.target.childMinAge
+				targets[i].dependents_ageMax = aSvcType.target.childMaxAge
 			}
-			//target grade
-			if (activeServiceTypes[i].target.childMinGrade !== "Unselected") {
-				targets[i].dependents_gradeMin = activeServiceTypes[i].target.childMinGrade;
+			// TARGET CHILD GRADE
+			if (aSvcType.target.childMinGrade !== "Unselected") {
+				targets[i].dependents_gradeMin = aSvcType.target.childMinGrade;
 			}
-			if (activeServiceTypes[i].target.childMaxGrade !== "Unselected") {
-				targets[i].dependents_gradeMax = activeServiceTypes[i].target.childMaxGrade;
+			if (aSvcType.target.childMaxGrade !== "Unselected") {
+				targets[i].dependents_gradeMax = aSvcType.target.childMaxGrade;
 			}
-		} else if (activeServiceTypes[i].target.child == "NO"){
+		} else if (aSvcType.target.child == "NO") {
 			targets[i].family_totalChildren = "0";
 		}
-		// target Voucher Service
-		if (activeServiceTypes[i].target.service !== "Unselected") {
-			targets[i].service = activeServiceTypes[i].target.service; //set target to Voucher service ID
+
+		// TARGET VOUCHER SERVICE
+		if (aSvcType.target.service !== "Unselected") {
+			targets[i].service = aSvcType.target.service; //set target to Voucher service ID
 		}
-	}
+	})
+
+    // console.log("Target Client TARGETS", targets)
+
 	return targets;
 }
 

@@ -50,7 +50,7 @@ export function cacheSessionVar(newSession) {
     if (newSession.user)
         cachedSession.user = { userName: newSession.user.userName, userRole: newSession.user.userRole }
     cachedSession.editingState = false;
-    console.log('New session:', cachedSession)
+    console.log('New Session:', cachedSession)
 }
 
 export function sessionTimeRemaining() {
@@ -138,15 +138,17 @@ export function getAppVersion() {
 export async function dbGetSettingsAsync() {
     return await dbGetDataPageAsync("/settings")
         .then( settings => {
-            const fields = ["serviceZip", "serviceCat", "calClosed",
-                "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"];
-            fields.forEach(x => {
-                settings[x] = utilStringToArray(settings[x]);
-            });
-            Object.assign(settings, calDecodeRules(settings));
+            if (settings !== null) {
+                const fields = ["serviceZip", "serviceCat", "calClosed",
+                    "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"];
+                fields.forEach(x => {
+                    settings[x] = utilStringToArray(settings[x]);
+                });
+                Object.assign(settings, calDecodeRules(settings));
 
-            cachedSettings = settings;
-            return settings;
+                cachedSettings = settings;
+                return settings;
+            }
         });
 }
 
@@ -613,11 +615,15 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
         const queryParams = (lastKey) ? { ...paramObj, lastkey: lastKey } : paramObj;
         const dataPage = await dbGetDataPageAsync(subUrl, queryParams)
             .then(data => {
-                lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null;
-                if (arrayName)
-                    return utilDecodeStrings(data[arrayName]);
-                else
-                    return utilDecodeStrings(data);
+                if (data !== null) {
+                    lastKey = data.LastEvaluatedKey ? stringToMap(data.LastEvaluatedKey) : null;
+                    if (arrayName)
+                        return utilDecodeStrings(data[arrayName]);
+                    else
+                        return utilDecodeStrings(data);
+                } else {
+                    return null
+                } 
             })
         allData = allData.concat(dataPage);  
     } while (lastKey != null);
@@ -625,6 +631,9 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
 }
 
 async function dbGetDataPageAsync(subUrl, paramObj) { 
+
+    if (cachedSession === null) return null
+
     const params = (paramObj) ? "?" + new URLSearchParams(paramObj) : "";
     return await fetch(dbUrl + subUrl + params, {
         method: 'GET',

@@ -18,7 +18,6 @@ function HeaderMain(){
 
     //{ result: 'success', time: props.client.updatedDateTime }
 
-
     useEffect(() => {
         setGlobalMsgFunc(openGlobalMsg)
     }, [])

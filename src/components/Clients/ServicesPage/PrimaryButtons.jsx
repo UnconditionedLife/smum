@@ -157,8 +157,7 @@ export default function PrimaryButtons(props) {
                             key={ svc.svcTypeId }
                             className={ classes.image }
                             focusVisibleClassName={ classes.focusVisible }
-                            onClick={ () => handleAddSvc(svc.svcTypeId, 
-                                svc.svcCat, svc.svcBtns) }>
+                            onClick={ () => handleAddSvc(svc) }>
                                 <>
                                     <span className={ classes.imageSrc }
                                     style={{ backgroundImage: `url(${ 
@@ -188,8 +187,7 @@ export default function PrimaryButtons(props) {
                             key={ svc.svcTypeId }
                             className={ classes.image }
                             focusVisibleClassName={ classes.focusVisible }
-                            onClick={ () => handleAddSvc(svc.svcTypeId, 
-                                svc.svcCat, svc.svcBtns) }
+                            onClick={ () => handleAddSvc(svc) }
                         >
                             <span className={classes.imageSrc}
                                 style={{ backgroundImage: `url(${ 

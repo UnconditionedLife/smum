@@ -11,21 +11,25 @@ import { calFindOpenDate } from '../Calendar.js';
 import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
             prnPrintVoucherReceipt } from './Receipts';
 import cuid from 'cuid';
+import { utilNow } from '../GlobalUtils.js';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
 
 dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrAfter)
 
-export async function addServiceAsync( client, svcTypeId ){
-    // const { client, svcTypeId, svcCat } = props
+export async function addServiceAsync( client, svc ){
 
-    // console.log("client", client)
-    // console.log("svcTypeId", svcTypeId)
+console.log("SVCTYPE???", svc)
 
+    const svcTypeId = svc.svcTypeId
+    
     const svcTypes = getSvcTypes()
-	const svcType = getServiceTypeByID(svcTypes, svcTypeId)
-    const svcCat = svcType.svcCat
+	const svcType = getServiceTypeByID(svcTypes, svc.svcTypeId)
+
+
+
+    const svcCat = svc.svcCat
 	const svcId = "" // new service
     const svcValid = true
     const newClient = Object.assign({}, client) 
@@ -34,11 +38,16 @@ export async function addServiceAsync( client, svcTypeId ){
 	const servedCounts = calcServiceFamilyCounts( svcTypes, client, svcTypeId)
     const svcRecord = utilBuildServiceRecord( svcType, svcId, servedCounts, svcValid, client )
 
-    // console.log("svcRecord", svcRecord)
+    console.log("svcRecord", svcRecord)
+
+    svcRecord.svcUpdatedDT = utilNow()
+
+    // USED BECAUSE DB IS STILL INDEXING OLD ATTRIBUTE NAME
+    svcRecord.serviceTypeId = svcRecord.svcTypeId
 
 	return await dbSaveServiceRecordAsync(svcRecord)
         .then((savedSvc) => {
-            // empty object denotes saved with not errors
+            // empty object denotes saved with no errors
             if (Object.keys(savedSvc).length === 0) {
                 if (svcId === "") {
                     printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat)                    
@@ -56,10 +65,19 @@ export function getButtonData( props ) {
     const { client, buttons, lastServedDays, activeServiceTypes, targetServices } = props
     const buttonData = { lastServedDays, activeServiceTypes }
     buttonData[buttons] = getActiveServicesButtons({ client, buttons, activeServiceTypes, targetServices, lastServedDays });
-    // list of buttns that have been used today
+
+    // console.log("Initial " + buttons + " Active Buttons",  buttonData[buttons])
+
+    // list of buttons that have been used today
     buttonData[buttons] = getUsedServicesButtons(client, buttons, buttonData)
+
+    // console.log("Initial " + buttons + " Used Today Buttons",  buttonData[buttons])
+
     // sort the button in category and alpha order
     buttonData[buttons] = sortButtons(buttonData[buttons])
+
+    // console.log("Initial " + buttons + " Buttons",  buttonData[buttons])
+
     return buttonData[buttons]
 }
 
@@ -186,21 +204,39 @@ export function getActiveSvcTypes(){
     let activeSvcTypes = []
     const svcTypes = getSvcTypes()        
     svcTypes.forEach((svcType) => {
+        
+        // if (svcType.svcName == "Thanksgiving Chicken") {
+        //     console.log("SVCNAME", svcType.svcName )
+        //     console.log("Thanksgiving Chicken", svcType )
+        // }
         if (svcType.isActive){
-            // FROM
+            // FROM Date
             let fromDateString = [
                 dayjs().year(), 
-                Number(svcType.available.dateFromMonth),  
+                // TODO the +1 is because it only works if we -1 at time of saving the date in ADMIN
+                Number(svcType.available.dateFromMonth) + 1,  
                 Number(svcType.available.dateFromDay)
             ]
             let fromDate = dayjs(fromDateString).startOf('day')
-            // TO
+            // if (svcType.svcName == "Thanksgiving Chicken") {
+            //     console.log("FROM DATE", fromDate )
+            //     console.log("FROM MONTH", svcType.available.dateFromMonth )
+            // }
+
+            // TO Date
             let toDateString = [
                 dayjs().year(),
-                Number(svcType.available.dateToMonth),
+                // TODO the +1 is because it only works if we -1 at time of saving the date in ADMIN
+                Number(svcType.available.dateToMonth) + 1,
                 Number(svcType.available.dateToDay)
             ]
             let toDate = dayjs(toDateString).endOf('day')
+
+            // if (svcType.svcName == "Thanksgiving Chicken") {
+            //     console.log("TO DATE", toDate )
+            //     console.log("TO MONTH", svcType.available.dateToMonth )
+            // }
+
             // Adjust year dependent on months of TO and FROM
             if (dayjs(fromDate).isAfter(toDate)) toDate = dayjs(toDate).add(1, 'y');
             // Adjust year if FROM is after TODAY
@@ -212,63 +248,17 @@ export function getActiveSvcTypes(){
             if (dayjs().isBetween(fromDate, toDate, null, '[]')) activeSvcTypes.push(svcType)
         }
     })
+
+    // console.log("activeSvcTypes", activeSvcTypes)
     return activeSvcTypes
 }
-
-export function getTargetServices(activeSvcTypes) {
-	let targets = [];
-	// build list of client target items for each Active Service Type
-	activeSvcTypes.forEach((aSvcType, i) => {
-		// make list of specific targets.... for each type.
-		targets[i] = {}
-		// target homeless
-		if (aSvcType.target.homeless !== "Unselected") {
-            targets[i].homeless = aSvcType.target.homeless
-        }
-		// target families with children, singles, couples
-		if (aSvcType.target.family == "Single Individual") {
-			targets[i].family_totalSize = 1;
-		} else if (aSvcType.target.family == "Couple") {
-			targets[i].family_totalSize = 2;
-			targets[i].family_totalChildren = 0;
-		} else if (aSvcType.target.family == "With Children") {
-			targets[i].family_totalChildren = "0";
-		}
-		// target gender male/female
-		if (aSvcType.target.gender !== "Unselected") targets[i].gender = aSvcType.target.gender;
-		// target children
-		if (aSvcType.target.child == "YES") {
-			targets[i].family_totalChildren = "Greater Than 0"
-			// target age
-			if (aSvcType.target.childMaxAge > 0) {
-				targets[i].dependents_ageMin = aSvcType.target.childMinAge
-				targets[i].dependents_ageMax = aSvcType.target.childMaxAge
-			}
-			//target grade
-			if (aSvcType.target.childMinGrade !== "Unselected") {
-				targets[i].dependents_gradeMin = aSvcType.target.childMinGrade;
-			}
-			if (aSvcType.target.childMaxGrade !== "Unselected") {
-				targets[i].dependents_gradeMax = aSvcType.target.childMaxGrade;
-			}
-		} else if (aSvcType.target.child == "NO"){
-			targets[i].family_totalChildren = "0";
-		}
-		// target Voucher Service
-		if (aSvcType.target.service !== "Unselected") {
-			targets[i].service = aSvcType.target.service; //set target to Voucher service ID
-		}
-    })
-	return targets;
-}
-
 
 
 //******************************************************************
 //**** JAVASCRIPT FUNCTIONS FOR USE WITHIN EXPORTABLE FUNCTIONS ****
 //******************************************************************
 
-
+// activeServiceTypes are services that are: 1) Status is Active 2) Service Available date span includes current date
 
 function getActiveServicesButtons( props ) {	
     const { client, buttons, activeServiceTypes, targetServices, lastServedDays } = props
@@ -277,37 +267,120 @@ function getActiveServicesButtons( props ) {
     let validDependents = []
     const intervals = getFoodInterval(activeServiceTypes)
 
-
-    // console.log('CLIENT', client);
-
-    // check for not a valid service based on interval between services  
+    // check for not a valid service based on 
+    // interval between services  
 	activeServiceTypes.forEach((svcType, i) => {
 		let display = true;
+
+        // REMOVE INACTIVE SERVICES
+        if (svcType.isActive == "false") display = false
+
         // check the interval since last service of same type
 		if (!validateSvcInterval({ client, activeServiceType: svcType, lastServedDays, intervals })) return;
-        // check to see if food has been served within svcPeriod the number of time (svcFrequency) defined
+        
+        // check to see if food has been served within svcPeriod the number of times (svcFrequency) defined
         if (!usageQualified({client, svcType})) return;
 
 		// loop through each property in each targetServices
 		for (let prop in targetServices[i]) {
-			if (prop=="family_totalChildren") {
+            if (prop == "homeless") {
+                if (targetServices[i][prop] == "YES"
+                    && client.homeless == "NO") {
+                        display = false
+                }
+                if (targetServices[i][prop] == "NO"
+                    && client.homeless == "YES") {
+                        display = false
+                }
+            }
+
+			if (prop == "forChildren" ) {
 				// TODO move to grade and age target detection to helper function
-				if (targetServices[i]['dependents_gradeMin'] !== "Unselected" && targetServices[i]['dependents_gradeMax']!== "Unselected"){
+				if (targetServices[i]['dependents_gradeMin'] !== "Unselected" 
+                    && targetServices[i]['dependents_gradeMax']!== "Unselected") {
 					validDependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetServices[i] })
 				}
-				//TODO change service types to store non age entries as -1
+				// TODO change service types to store non age entries as -1
 				if (targetServices[i]['dependents_ageMax'] > 0){
 					validDependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetServices[i] })
 				}
 				if (validDependents.length == 0) display = false
 			}
-            // TODO SIMPLIFY THIS CODE  
-			if (prop == "service") { // targeting a voucher fulfill service
+
+            // TARGETING FAMILIES OF A CERTAIN SIZE
+
+            // family 
+            //    .totalAdults
+            //    .totalChildren
+            //    .totalOtherDependents
+            //    .totalSeniors
+            //    .totalSize
+
+            if (prop == "forFamily") {
                 
-			} else if (targetServices[i][prop] != client[prop]
-					&& prop.includes("family")==false
-					&& prop.includes("dependents")==false) display = false
+                // SINGLE INDIVIDUAL
+                if (targetServices[i]["family_totalSize"] == "1") {
+                    if (client.family.totalSize !== 1) {
+                        display = false
+                    }
+                }
+
+                // COUPLE
+                if (targetServices[i]["family_totalAdults"] == "2") {
+
+                    // console.log("COUPLE", client.family.totalAdults !== 2)
+
+                    if (client.family.totalAdults !== 2) {
+                        display = false
+                    }
+                }
+
+                // FAMILY WITH CHILDREN
+                if (targetServices[i]["family_totalChildren"] == "1+") {
+
+                    // console.log("WITH CHILDREN", client.family.totalChildren < 1)
+
+                    if (client.family.totalChildren < 1) { // IF NO CHILDREN THEN FALSE
+                        display = false
+                    }
+                }
+
+                // FAMILY NO CHILDREN
+                if (targetServices[i]["family_totalChildren"] == "0") {
+
+                    if (i == 19) {
+                        console.log("NO CHILDREN", client.family.totalChildren > 0)
+                    }
+
+                    if (client.family.totalChildren > 0) {
+                        display = false
+                    }
+                }
+            }
+
+            // TARGET GENDER
+            if (prop == "gender") {
+                if (targetServices[i][prop] == "Male"
+                    && client.gender !== "Male") {
+                        display = false
+                }
+                if (targetServices[i][prop] == "Female"
+                    && client.gender !== "Female") {
+                        display = false
+                }
+            }
+
+            // targeting a voucher fulfill service
+			// if (prop == "service" && targetServices[i][prop] !== "" ) { 
+                
+                // TODO - DO SOMETHING WITH VOUCHER
+
+			// } else if (targetServices[i][prop] != client[prop]
+			// 		&& prop.includes("family")==false
+			// 		&& prop.includes("dependents")==false) display = false
 		}
+
+        
 		if (display) {
             let btn = Object.assign({}, svcType)
             // btnType is used to display "normal" button (grey outline), "highlight" button (red outline), 
@@ -325,6 +398,9 @@ function getActiveServicesButtons( props ) {
 		}
 
     })
+
+    // console.log("BUTTONS", btnPrimary, btnSecondary)
+
     return (buttons == "primary") ? btnPrimary : btnSecondary
 }
 
@@ -664,7 +740,7 @@ function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
         } else if (svcCat == 'Christmas') {
             const targetService = utilCalcTargetServices([svcType])
 
-            if (targetService[0].family_totalChildren == "Greater Than 0") {
+            if (targetService[0].family_totalChildren == "1+") {
                 const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] })
                 params = { client: client, svcType: svcType, dependents: dependents, grouping: 'age' }
             } else {

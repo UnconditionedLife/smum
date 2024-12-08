@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from "react-hook-form";
 import { useTheme } from '@mui/material/styles';
@@ -20,7 +20,7 @@ ServiceTypeFormDialog.propTypes = {
 
 export default function ServiceTypeFormDialog(props) {
     const { serviceTypes, updateSvcTypes, editRecord, handleEditMode, handleEditRecord } = props
-    const [ receipts, setReceipts] = useState(editRecord.receipts.split(","));
+    const [ receipts, setReceipts] = useState([]);
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const isNewSvcType = (editRecord == null);
     const initMsg = isNewSvcType ? {} : {result: 'success', time: editRecord.updatedDateTime};
@@ -40,6 +40,14 @@ export default function ServiceTypeFormDialog(props) {
           },
         },
       };
+
+    useEffect( () => {
+        if (editRecord != null) {
+            setReceipts(editRecord.receipts.split(","))
+        } else {
+            setReceipts([])
+        }
+    }, [ editRecord ] )
 
     function getStyles(receipt, receiptList, theme) {
         return {
@@ -153,7 +161,7 @@ export default function ServiceTypeFormDialog(props) {
 
 
     function doSave(values) {
-        let fullfillment = data.fulfillment;
+        let fulfillment = data.fulfillment;
         let available = data.available;
         let target = data.target;
 
@@ -174,14 +182,14 @@ export default function ServiceTypeFormDialog(props) {
         }
 
         Object.assign(data, values);
-        Object.assign(fullfillment, values.fulfillment);
+        Object.assign(fulfillment, values.fulfillment);
         Object.assign(available, values.available);
         Object.assign(target, values.target);
 
         // Unpack dates into month day atttributes and place in "available" object
         Object.assign(data, unpackDates(values.fromdate, values.todate));
         data.numberItems = parseInt(data.numberItems)
-        data.fulfillment = fullfillment;
+        data.fulfillment = fulfillment;
         data.target = target;
         // strips out the leading comma
         data.receipts = receipts.toString().charAt(0) == ","
@@ -200,6 +208,7 @@ export default function ServiceTypeFormDialog(props) {
     const toTime = watch("fulfillment.toDateTime");
 
     const targetServices = getTargetServices()
+
     return (
         <Dialog maxWidth="md" open={ dialogOpen } aria-labelledby="form-dialog-title"> 
             <DialogTitle id="form-dialog-title">Service Type Record</DialogTitle>
@@ -221,10 +230,11 @@ export default function ServiceTypeFormDialog(props) {
                     </FormSelect>     
 
                     <FormSelect name="isActive" label="Status" control={ control } fieldsize="sm" error={ errors.isActive }
-                        rules={ {required: 'Required'}} >
+                        // rules={ {required: 'Required'}}
+                        >
                         <MenuItem value="">&nbsp;</MenuItem>
-                        <MenuItem value={ true }>Active</MenuItem>
-                        <MenuItem value={ false }>Inactive</MenuItem>
+                        <MenuItem value="true">Active</MenuItem>
+                        <MenuItem value="false">Inactive</MenuItem>
                     </FormSelect>
 
                     <FormSelect name="svcBtns" label="Buttons" control={ control } fieldsize="sm" error={ errors.svcBtns }
@@ -296,6 +306,7 @@ export default function ServiceTypeFormDialog(props) {
                         <MenuItem value="Single_Individual">Single Individual</MenuItem>
                         <MenuItem value="Couple">Couple</MenuItem>
                         <MenuItem value="Family_with_Children">With Children</MenuItem>
+                        <MenuItem value="Family_No_Children">No Children</MenuItem>
                     </FormSelect>
                     <FormSelect fieldsize="sm" name="target.gender" label="Gender" control={ control } error={ errors.target?.gender }
                         rules={ {required: 'Required'}} >
@@ -359,7 +370,12 @@ export default function ServiceTypeFormDialog(props) {
                     </Box>
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Fulfillment</strong></Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">
-                        <FormSelect fieldsize="md" name="fulfillment.type" label="Type" control={ control } error={ errors.fulfillment?.type }
+                        <FormSelect 
+                            fieldsize="md" 
+                            name="fulfillment.type" 
+                            label="Type" 
+                            control={ control } 
+                            error={ errors.fulfillment?.type }
                             rules={ {required: 'Required'}} >
                                 <MenuItem value="">&nbsp;</MenuItem>
                                 <MenuItem value="Fulfill">Fulfill</MenuItem>
@@ -385,32 +401,36 @@ export default function ServiceTypeFormDialog(props) {
                         </FormSelect>}
                     </Box>
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap">
-                        <Typography><strong>Print Receipts</strong></Typography></Box>
-                        <InputLabel id="print-receipts-label"></InputLabel>
+                        <Typography><strong>Print Receipts</strong></Typography>
+                    </Box>
+                        {/* <InputLabel id="print-receipts-label"></InputLabel> */}
                         <FormControl size="small">
-                        <Select 
-                            style={{minWidth: "200px"}}
-                            labelId="print-receipts-label"
-                            // fullWidth
-                            control={ control }
-                            error={ errors.receipts } 
-                            // id="receipts"
-                            name="receipts"
-                            multiple
-                            value={ receipts }
-                            onChange={ updateReceipts }
-                            input={<OutlinedInput label="receipt" />}
-                            MenuProps={ MenuProps }
-                            label=""
-                        >
-                            {receiptList.map((receipt) => (
-                                <MenuItem key={ receipt } value={ receipt }
-                                    style={getStyles(receipt, receiptList, theme)}
-                                >
-                                    {receipt}
-                                </MenuItem>
-                            ))}
-                        </Select>
+                            <Select 
+                                fieldsize="md"
+                                style={ {minWidth: "150px"} }
+                                labelId="print-receipts-label"
+                                label="Print"
+                                // fullWidth
+                                control={ control }
+                                error={ errors.receipts } 
+                                // id="receipts"
+                                name="receipts"
+                                multiple
+                                value={ receipts }
+                                onChange={ updateReceipts }
+                                input={<OutlinedInput label="receipt" />}
+                                MenuProps={ MenuProps }
+                                defaultValue={receiptList[0]}
+                            >
+                                {receiptList.map((receipt) => (
+                                    <MenuItem 
+                                        key={ receipt } 
+                                        value={ receipt }
+                                        style={getStyles(receipt, receiptList, theme)}>
+                                        { receipt }
+                                    </MenuItem>
+                                ))}
+                            </Select>
                         </FormControl>
                     </form>
                     <SaveCancel key={saveMessage.text} saveDisabled={ !formState.isDirty } message={ saveMessage } onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />

@@ -5,13 +5,14 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Box, Typography } from '@mui/material';
 import PrintIcon from '@mui/icons-material/Print';
-import { addServiceAsync, getLastServedDays, getActiveSvcTypes, getTargetServices } from '../../System/js/Clients/Services'
+import { addServiceAsync, getLastServedDays, getActiveSvcTypes } from '../../System/js/Clients/Services'
 import { PrimaryButtons, SecondaryButtons, ServiceNotes } from '..';
 import { prnPrintReminderReceipt } from '../../System/js/Clients/Receipts';
 import { removeSvcAsync } from '../../System/js/Clients/History';
 import { globalMsgFunc } from '../../System/js/Database';
 import { HeaderTitle } from '..';
 import { calFindOpenDate } from '../../System/js/Calendar';
+import { utilCalcTargetServices } from '../../System/js/Clients/ClientUtils.js';
 
 ServicesPage.propTypes = {
     client: PropTypes.object.isRequired, 
@@ -83,18 +84,18 @@ export default function ServicesPage(props) {
     useEffect(() => {
         // List of all Active Service Types
         const tempAST = getActiveSvcTypes()
-        if (activeServiceTypes === null) {
+        // if (activeServiceTypes === null) {
             setActiveServiceTypes(tempAST)
-        }
+        // }
         // List of services available today
-        const tempTS = getTargetServices(tempAST)
-        if (targetServices === null) {
+        const tempTS = utilCalcTargetServices(tempAST)
+        // if (targetServices === null) {
             setTargetServices(tempTS)
-        }
+        // }
     },[ client ])
 
-    function handleAddSvc(svcTypeId){
-        addServiceAsync( client, svcTypeId )
+    function handleAddSvc(svcType){
+        addServiceAsync( client, svcType )
             .then((updatedClient) => {
                 if (updatedClient !== null){
                     // updates svcHistory
@@ -105,8 +106,8 @@ export default function ServicesPage(props) {
             })
     }
 
-    function handleUndoSvc(svc){ 
-        removeSvcAsync( client, svc )
+    function handleUndoSvc(svcType){ 
+        removeSvcAsync( client, svcType )
             .then((updatedClient) => {                
                 if (updatedClient !== null){
                     // updates svcHistory
