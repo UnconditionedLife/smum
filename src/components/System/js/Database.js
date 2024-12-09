@@ -208,7 +208,9 @@ export async function dbSendReceipt(rcpt) {
     const rcpt_str = JSON.stringify(rcpt).replaceAll('"', "%34").replaceAll("\\t", "%09");
     let data = { "receiptID": cuid(), "content": rcpt_str };
 
-    return await dbPostDataAsync('/receipts', data);
+    // return await dbPostDataAsync('/receipts', data);
+    return await dbPostDataRawAsync('/receipts', data);
+    
 }
 
 //****************** ERROR LOGGING ********************
