@@ -84,7 +84,9 @@ export async function removeSvcAsync(client, svc){
                 });
                 const tempClient = Object.assign({}, client)
                 tempClient.svcHistory = newHistory
+                
                 // add the removed record to invalid list
+                if (tempClient.invalidSvcs == undefined) tempClient.invalidSvcs = []
                 tempClient.invalidSvcs.unshift(svc)
                 return tempClient
             } else {
