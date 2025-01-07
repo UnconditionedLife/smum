@@ -26,107 +26,81 @@ export default function NewClientsReport(props) {
         }, 200)
     }
 
-    function RunReport(){
-        const zipCodes = SettingsZipcodes()
-
+    function RunReport() {
+        const zipCodes = SettingsZipcodes();
+    
         dbGetValidSvcsByDateAsync(dayjs(props.yearMonth).format('YYYY-MM'), "Food_Pantry")
             .then(svcs => {
-
-                let firstSvcs = svcs.filter(item => item.svcFirst == true)
-
-                let newIds = []
-                let newClients = []
-
-                let total = 0
-                let homeless = 0
-
-                const numSvcs = firstSvcs.length
-                firstSvcs.forEach((svc, i )=> {    
+                let firstSvcs = svcs.filter(item => item.svcFirst == true);
+                let newClients = [];
+                let newIds = [];
+    
+                const clientPromises = firstSvcs.map(svc => 
                     dbGetSingleClientAsync(svc.cId)
                         .then(c => {
-
-                            console.log("client", c);
-                            // const dividedYearMonth = dayjs(props.yearMonth).format('YYYYMM').substring(0,4) + "-" + dayjs(props.yearMonth).format('YYYYMM').substring(4)
-                            // const created = c.firstSeenDate
-
-                            console.log("CREATED", c.createdDateTime);
-                            console.log("REPORT MONTH", props.yearMonth);
-                            console.log("DIFF", dayjs(c.createdDateTime).format('YYYYMM'))
-
-
-                            if (dayjs(c.createdDateTime).format('YYYYMM') === props.yearMonth ){
-                                newClients.push(svc)
-                                newIds.push(svc.cId)
-                            }
-                            if (i === (numSvcs -1)) {
-
-                                console.log("FINISHED");
-                                let sortedNewIds = newIds.sort((b, a) => { return b-a })
-
-                                setClientIds(sortedNewIds)
-
-                                zipCodes.forEach(zip => {
-
-                                    console.log("ZIP", zip);
-
-                                    const zipRecord = { area: zip }
-                                    const zipTotalSvcs = newClients.filter(s => s.cZip == zip)
-                                    
-                                    zipRecord.total = zipTotalSvcs.length
-                                    zipRecord.homeless = zipTotalSvcs.filter(s => s.homeless == true).length
-                                    numNewClients = updateCounts(numNewClients, zipRecord.total, zipRecord.homeless, zip)
-                                    total += zipRecord.total
-                                    homeless += zipRecord.homeless
-                                    setCounts(numNewClients)
-
-                                    // remove these svcs with this zip from list
-                                    newClients = newClients.filter(s => s.cZip != zip)
-                                })
-                                let zipRecord = { area: "Emergency" }
-                                zipRecord.total = newClients.length
-                                zipRecord.homeless = newClients.filter(svc => svc.homeless == true).length
-                                numNewClients = updateCounts(numNewClients, zipRecord.total, zipRecord.homeless, "Emergency")
-                                setCounts(numNewClients)
-                                total += zipRecord.total
-                                homeless += zipRecord.homeless
-                                setTotalNewClients(total)
-                                setTotalNewHomeless(homeless)
-                                setLoading(false)
+                            if (dayjs(c.createdDateTime).format('YYYYMM') === props.yearMonth) {
+                                newClients.push(svc);
+                                newIds.push(svc.cId);
                             }
                         })
-                //         if (firstSeen.substring(0,7) == dividedYearMonth) {
-                //             console.log("matching MONTH")
-                //             tempList.push(svc.cId)
-                //             newClients.push(client)
-                //         }
-
-                    
-                })
-
-
-
-                
-
-
-
-                    })
-    }
-
-    function updateCounts(countsList, total, homeless, zip) {
-        let foundArea = false
-        for (let i = 0; i < countsList.length; i++) {
-            if (countsList[i].area == zip) {
-                foundArea = true
-                countsList[i].homeless = homeless
-                countsList[i].total = total
-            }
-        }
-
-        if (!foundArea) {
-            countsList.push({area: zip, total: total, homeless: homeless})
-        }
-
-        return countsList
+                );
+    
+                Promise.all(clientPromises).then(() => {
+                    console.log("All clients fetched");
+    
+                    let sortedNewIds = [...newIds].sort((a, b) => a - b);
+                    setClientIds(sortedNewIds);
+    
+                    let total = 0;
+                    let homeless = 0;
+                    let remainingClients = [...newClients];
+    
+                    let updatedCounts = zipCodes.map(zip => {
+                        const zipTotalSvcs = newClients.filter(s => s.cZip == zip);
+                        const zipRecord = {
+                            area: zip,
+                            total: zipTotalSvcs.length,
+                            homeless: zipTotalSvcs.filter(s => s.homeless === true).length
+                        };
+    
+                        total += zipRecord.total;
+                        homeless += zipRecord.homeless;
+    
+                        // Remove processed clients from remaining list
+                        remainingClients = remainingClients.filter(s => s.cZip !== zip);
+    
+                        return zipRecord;
+                    });
+    
+                    // Process clients that do not match the zip codes (Emergency Category)
+                    const emergencyRecord = {
+                        area: "Emergency",
+                        total: remainingClients.length,
+                        homeless: remainingClients.filter(s => s.homeless === true).length
+                    };
+    
+                    // Collect emergency client IDs
+                    remainingClients.forEach(svc => {
+                        if (!newIds.includes(svc.cId)) {
+                            newIds.push(svc.cId);
+                        }
+                    });
+    
+                    total += emergencyRecord.total;
+                    homeless += emergencyRecord.homeless;
+    
+                    updatedCounts.push(emergencyRecord);
+                    setCounts(updatedCounts);
+    
+                    // Ensure all IDs (including Emergency) are printed
+                    let finalIds = [...new Set(newIds)].sort((a, b) => a - b);
+                    setClientIds(finalIds);
+    
+                    setTotalNewClients(total);
+                    setTotalNewHomeless(homeless);
+                    setLoading(false);
+                });
+            });
     }
 
     useEffect(()=>{
