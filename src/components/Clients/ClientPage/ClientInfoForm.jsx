@@ -13,12 +13,13 @@ ClientInfoForm.propTypes = {
     client: PropTypes.object.isRequired,
     dependentsDirty: PropTypes.bool.isRequired,
     setDependentsDirty: PropTypes.func.isRequired,
+    handleCancelParent: PropTypes.func.isRequired,
     updateClient: PropTypes.func.isRequired,
     updateClientsURL: PropTypes.func.isRequired,
 }
 
 export default function ClientInfoForm(props) {
-    const { client, dependentsDirty, setDependentsDirty, updateClient, updateClientsURL } = props
+    const { client, dependentsDirty, setDependentsDirty, handleCancelParent, updateClient, updateClientsURL } = props
     const [ saveMessage, setSaveMessage ] = useState({ result: 'success', time: client.updatedDateTime });
 
     const validZips = SettingsZipcodes()
@@ -85,6 +86,7 @@ export default function ClientInfoForm(props) {
     }
 
     function handleCancel() {
+        handleCancelParent()
         setEditingState(false)
         reset()
     }

@@ -15,6 +15,8 @@ ClientPage.propTypes = {
 
 export default function ClientPage(props) {
     const { client, updateClient, updateClientsURL } = props
+    const [originalClient, setOriginalClient] = useState(JSON.parse(JSON.stringify(client)));
+
     const [ expanded, setExpanded ] = useState(false);
     const [ dependentsDirty, setDependentsDirty ] = useState(false);
 
@@ -23,6 +25,10 @@ export default function ClientPage(props) {
     };
 
 
+    function handleCancel() {
+        updateClient(originalClient); // Revert the client to its original state
+        setDependentsDirty(false);
+    }    
 
     const clientLable = (client.clientId == 0) ? "New Client" : "Client #" + client.clientId
 
@@ -42,7 +48,7 @@ export default function ClientPage(props) {
                     </AccordionSummary>
                     <AccordionDetails style={{justifyContent: "center"}}> 
                         <Box ml={ 3 } mr={ 3 }>
-                            <ClientInfoForm client={ client } updateClient={ updateClient } updateClientsURL={ updateClientsURL } dependentsDirty={ dependentsDirty } setDependentsDirty={ setDependentsDirty } />
+                            <ClientInfoForm client={ client } updateClient={ updateClient } updateClientsURL={ updateClientsURL } dependentsDirty={ dependentsDirty } setDependentsDirty={ setDependentsDirty } handleCancelParent={handleCancel} />
                         </Box>
                     </AccordionDetails>
                 </Accordion>
