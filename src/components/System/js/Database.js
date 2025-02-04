@@ -9,7 +9,6 @@ import { utilArrayToObject, utilCleanDate, utilChangeWordCase, utilDecodeStrings
 import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
-import { prnConnect } from './Clients/Receipts';
 import jwt_decode from 'jwt-decode';
 
 dayjs.extend(customParseFormat);
@@ -79,7 +78,6 @@ export function initCache() {
     dbGetSettingsAsync()
         .then( settings => { 
             cachedSettings = settings;
-            prnConnect(settings);
         });
     
     dbGetSvcTypesAsync()
@@ -169,10 +167,6 @@ export async function dbSaveSettingsAsync(settings) {
 
 export function SettingsSound() {
     return (cachedSettings.sounds == 'YES');
-}
-
-export function SettingsPrinter() {
-    return (cachedSettings.printerIP);
 }
 
 export function SettingsSeniorAge() {

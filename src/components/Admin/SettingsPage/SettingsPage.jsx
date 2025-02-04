@@ -115,10 +115,7 @@ function SettingsForm(props) {
                             <MenuItem value="YES">Yes</MenuItem>
                             <MenuItem value="NO">No</MenuItem>
                     </FormSelect>
-                    <FormTextField fieldsize="sm" name="printerIP" label="Printer Address" error={ errors.printerIP } 
-                        control={ control } rules={ {required: 'Required'}} />
                 </Box>
-
                 <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Services</Typography></Box>
                 <MuiChipsInput value={ serviceZip }
                     label='Service Zip Codes'
