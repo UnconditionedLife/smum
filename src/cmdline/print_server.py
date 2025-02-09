@@ -170,6 +170,7 @@ def printq_poll(queue):
             log_error(f'Exception while polling print queue: {e}')
 
 def printq_delete(queue, id):
+    log_trace(2, f'Delete ID {id}')
     try:
         resp = requests.delete(f'{url_base}/{queue}/receipts', params={'receiptID': id})
         resp.raise_for_status()
