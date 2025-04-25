@@ -169,6 +169,23 @@ def printq_poll(queue):
         except Exception as e:
             log_error(f'Exception while polling print queue: {e}')
 
+def printq_list(queue):
+    print(f'Listing print queue {url_base}/{queue}/receipts')
+    try:
+        resp = requests.get(f'{url_base}/{queue}/receipts')
+        resp.raise_for_status()
+        try:
+            payload = resp.json()
+        except Exception as e:
+            log_error(f'Bad payload from print queue: {e}')
+            log_error(resp.text)
+            payload = {'receipts': []}
+        for msg in sorted(payload['receipts'], key=lambda x: x['receiptID']):
+            id = msg['receiptID']
+            print(f'Receipt ID {id}')
+    except Exception as e:
+        log_error(f'Exception while polling print queue: {e}')
+
 def printq_delete(queue, id):
     log_trace(2, f'Delete ID {id}')
     try:
@@ -221,6 +238,8 @@ if __name__ == '__main__':
         help='file to receive printer commands')
     parser.add_argument('-i', '--interactive', action='store_true', 
         help='display receipts on screen instead of printing')
+    parser.add_argument('-l', '--list', action='store_true',
+        help='display print queue and exit')
     parser.add_argument('-p', '--printer', 
         help='IP address of Epson printer')
     parser.add_argument('-q', '--queue', 
@@ -231,7 +250,7 @@ if __name__ == '__main__':
         default=1, choices=range(0, 3), help='level of debug tracing')
     args = parser.parse_args()
 
-    if not args.interactive:
+    if not (args.interactive or args.test or args.list):
         # Redirect output to log file
         sys.stdout = open('printlog_' + 
             time.strftime('%Y%m%d', time.localtime()) + '.txt', 'a')
@@ -241,6 +260,8 @@ if __name__ == '__main__':
     try:
         if args.test:
             prn_test_receipt()
+        elif args.list:
+            printq_list(args.queue)
         else:
             printq_poll(args.queue)
     except KeyboardInterrupt:
