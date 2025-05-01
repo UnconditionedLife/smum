@@ -29,7 +29,10 @@ def prn_open(printer_ip, filename):
         else:
             log_error('No print destination specified')
             return None
-    except OSError as e:
+    except Exception as e:
+        # Never happens. Even an invalid filename or IP address will
+        # return an apparently valid handle that throws an exception
+        # when used for printing.
         log_error('Failed to open printer: ' + e)
         return None
 
@@ -99,19 +102,24 @@ def prn_close_window():
     prn['handle'].destroy()
     prn['handle'].update()
 
+# Print the receipt. Return True if successful so that the
+# caller will delete the receipt from the print queue.
 def print_receipt(msg):
     global prn
-    prn = prn_open(printer_ip=args.printer, filename=args.file)
-    if not prn:
-        return
+
     try:
         cmd_list = json.loads(msg)
     except Exception as e:
         log_error(f'Invalid receipt: {e}')
         log_error(msg)
-        return
+        return True # delete malformed receipt
+    
     log_trace(2, '--- Start Receipt ---')
     try:
+        result = True
+        prn = prn_open(printer_ip=args.printer, filename=args.file)
+        if not prn:
+            return False
         prn_start_receipt()
         for cmd in cmd_list:
             log_trace(2, '\t' + str(cmd))
@@ -125,8 +133,10 @@ def print_receipt(msg):
         prn_end_receipt()
     except Exception as e:
         log_error(f'Exception while printing: {e}')
+        result = False
     log_trace(2, '--- End Receipt ---')
     prn_close()
+    return result
 
 def prn_test_receipt():
     rcpt = [
@@ -164,8 +174,8 @@ def printq_poll(queue):
                 id = msg['receiptID']
                 log_trace(1, f'Receipt ID {id}')
                 rcpt = msg['content'].replace('%34', '"').replace('%09', '\\t')
-                print_receipt(rcpt)
-                printq_delete(queue, id)
+                if print_receipt(rcpt):
+                    printq_delete(queue, id)
         except Exception as e:
             log_error(f'Exception while polling print queue: {e}')
 

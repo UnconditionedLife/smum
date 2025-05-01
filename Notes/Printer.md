@@ -15,12 +15,13 @@ printer. For debugging purposes without a printer, the print server can print a 
 each receipt on the screen instead.
 
 ```
-print_server.py [-h] [-f FILE] [-i] [-p PRINTER] [-q QUEUE] [-t] [-v VERBOSITY]
+print_server.py [-h] [-f FILE] [-i] [-l] [-p PRINTER] [-q QUEUE] [-t] [-v VERBOSITY]
 
 options:
   -h, --help            show this help message and exit
   -f FILE, --file FILE  file to receive printer commands
   -i, --interactive     display receipts on screen instead of printing
+  -l, --list            display print queue and exit
   -p PRINTER, --printer PRINTER
                         IP address of Epson printer
   -q QUEUE, --queue QUEUE
@@ -31,6 +32,7 @@ options:
 ```
 
 To print receipts on screen while debugging, run `print_server.py -i -q dev`.  
+To see the contents of the print queue, run `print_server.py -l -q dev`.  
 To clear receipts accumulated in the print queue, run `print_server.py -f /dev/null -q dev`.
 
 ## Private Network Restrictions
@@ -59,8 +61,8 @@ the print server on the same PC that runs the browser primarily used to access t
 support print requests from any number of additional browsers running the application simultaneously.
 
 The only dependency of the print server not found in a standard Python installation is the 
-[`escpos`](https://python-escpos.readthedocs.io/en/v3.0a8/index.html) module. This module can be installed by the 
-command `pip install escpos`, which will also install several dependencies required by `escpos`.
+[`python-escpos`](https://python-escpos.readthedocs.io/en/latest/) module. This module can be installed by the 
+command `pip install python-escpos`, which will also install several dependencies required by `python-escpos`.
 
 ### Mac OS Special Requirements
 

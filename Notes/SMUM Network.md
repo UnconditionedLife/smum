@@ -15,7 +15,7 @@ restart the router.
 - Router address `192.168.1.1`
 - Subnet mask `255.255.255.0`
 - DHCP range `192.168.1.2` through `192.168.1.253`
-- Reserved IP address `192.168.1.3` for the receipt printer
+- Reserved IP address `192.168.1.3` for the receipt printer (MAC address `F8-D0-27-A6-A1-9A`)
 
 The wifi network must also be restarted by power cycling the small device with a power cord on one end and two ethernet
-cables on the other.
+ports on the other.
