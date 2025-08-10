@@ -568,6 +568,60 @@ async function dbPostDataAsync(subUrl, data, logErrors=true) {
     return dbPostDataRawAsync(subUrl, sanitizedData, logErrors);
 }
 
+async function dbPutDataAsync(subUrl, data, logErrors=true) {
+    const copiedData = JSON.parse(JSON.stringify(data))
+    const sanitizedData = utilEncodeStrings(copiedData);
+    return dbPutDataRawAsync(subUrl, sanitizedData, logErrors);
+}
+
+async function dbPutDataRawAsync(subUrl, data, logErrors=true) {
+    // For public endpoints (volunteers, shiftAction), auth is optional
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    
+    // Add auth header if session exists
+    if (cachedSession && cachedSession.auth && cachedSession.auth.idToken) {
+        headers.Authorization = cachedSession.auth.idToken;
+    }
+    
+    return fetch(dbUrl + subUrl, {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            const message = httpMessage(response.status);
+            return Promise.reject(message);
+        }
+    })
+    .then(json => {
+        if (json.message) {
+            // Check if the message indicates success
+            const successMessages = ['Volunteer created.', 'Volunteer updated.', 'Shift action recorded.'];
+            if (successMessages.includes(json.message)) {
+                return Promise.resolve(json);
+            } else {
+                return Promise.reject(json.message);
+            }
+        } else {
+            return Promise.resolve(json);
+        }
+    })
+    .catch((error) => {
+        if (logErrors) {
+            const msg = 'dbPutData Error: ' + JSON.stringify(error) +
+                ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(data);
+            dbLogError(msg);
+            globalMsgFunc('error', 'Database Failure');
+        }
+        return Promise.reject(error);
+    });
+}
+
 async function dbPostDataRawAsync(subUrl, data, logErrors=true) {
     return fetch(dbUrl + subUrl, {
         method: 'POST',
@@ -708,4 +762,174 @@ function makeOldServices(svcs){
     });
 
     return services
+}
+
+//******************** VOLUNTEERS ********************
+//*************************************************
+
+export async function dbGetAllVolunteersAsync() {
+    // GET /volunteers (auth required)
+    const response = await dbGetDataPageAsync("/volunteers");
+    let data = response;
+    // If the response has a 'body' property, parse it
+    if (data && typeof data.body === 'string') {
+        try {
+            data = JSON.parse(data.body);
+        } catch (e) {
+            data = {};
+        }
+    }
+    // Get volunteers array from various possible response formats
+    let volunteers = Array.isArray(data.volunteers) ? data.volunteers : 
+                    Array.isArray(data) ? data : [];
+    
+    // Normalize field names to uppercase first letter format and decode strings
+    return volunteers.map(vol => utilDecodeStrings({
+        VolunteerId: vol.volunteerId || vol.VolunteerId,
+        FullName: vol.fullName || vol.FullName,
+        Email: vol.email || vol.Email,
+        Telephone: vol.telephone || vol.Telephone,
+        ProgramId: vol.programId || vol.ProgramId
+    }));
+}
+
+export async function dbGetSingleVolunteerAsync(volunteerId) {
+    // GET /volunteers/{id} (auth required)
+    const response = await dbGetDataPageAsync(`/volunteers/${volunteerId}`);
+    console.log("RESPONSE", response)
+    let data = response;
+    if (data && typeof data.body === 'string') {
+        try {
+            data = JSON.parse(data.body);
+        } catch (e) {
+            data = {};
+        }
+    }
+    // If the API returns an array, return the first item
+    if (Array.isArray(data.volunteers) && data.volunteers.length > 0) {
+        return utilDecodeStrings(data.volunteers[0]);
+    }
+    // If wrapped in volunteer property, return that
+    if (data.volunteer) {
+        return utilDecodeStrings(data.volunteer);
+    }
+    // If the data itself is a volunteer object (has VolunteerId), return it directly
+    if (data && data.VolunteerId) {
+        return utilDecodeStrings(data);
+    }
+    return null;
+}
+
+export async function dbSaveVolunteerAsync(data) {
+    // PUT /volunteers (no auth required for volunteer app)
+    // Map field names to match API expectations (lowercase)
+    const apiData = {
+        volunteerId: data.VolunteerId,
+        fullName: data.FullName,
+        telephone: data.Telephone,
+        email: data.Email,
+        programId: data.ProgramId
+    };
+    
+    // Remove volunteerId if it's undefined (for new volunteers)
+    if (!apiData.volunteerId) {
+        delete apiData.volunteerId;
+    }
+    
+    // Use PUT method as specified in the API
+    const response = await dbPutDataAsync('/volunteers', apiData);
+    
+    // Map response back to internal format (uppercase first letter)
+    if (response) {
+        return {
+            VolunteerId: response.volunteerId,
+            FullName: response.fullName,
+            Telephone: response.telephone,
+            Email: response.email,
+            ProgramId: response.programId
+        };
+    }
+    return response;
+}
+
+//******************** SHIFTS ********************
+//*************************************************
+
+export async function dbGetAllShiftsByDateAsync(date) {
+    // GET /shiftsByDate?date=YYYY-MM-DD (auth required)
+    const response = await dbGetDataPageAsync(`/shiftsByDate?date=${encodeURIComponent(date)}`);
+    let data = response;
+    // If the response has a 'body' property, parse it
+    if (data && typeof data.body === 'string') {
+        try {
+            data = JSON.parse(data.body);
+        } catch (e) {
+            data = {};
+        }
+    }
+    // Handle both 'shifts' and 'items' array names
+    return Array.isArray(data.shifts) ? data.shifts : 
+           Array.isArray(data.items) ? data.items : 
+           Array.isArray(data) ? data : [];
+}
+
+export async function dbGetShiftsByVolunteerAsync(volunteerId, startDate = null, endDate = null) {
+    // GET /shiftByVolunteer?volunteerId=...&startDate=...&endDate=... (auth required)
+    let url = `/shiftByVolunteer?volunteerId=${encodeURIComponent(volunteerId)}`;
+    if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`;
+    if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`;
+    const response = await dbGetDataPageAsync(url);
+    let data = response;
+    if (data && typeof data.body === 'string') {
+        try {
+            data = JSON.parse(data.body);
+        } catch (e) {
+            data = {};
+        }
+    }
+    // Handle both 'shifts' and 'items' array names
+    return Array.isArray(data.shifts) ? data.shifts : 
+           Array.isArray(data.items) ? data.items : 
+           Array.isArray(data) ? data : [];
+}
+
+export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId, date) {
+    // GET /shiftsByProgramOrActivity (auth required)
+    let url = '/shiftsByProgramOrActivity?';
+    if (programId) url += `programId=${encodeURIComponent(programId)}&`;
+    if (activityId) url += `activityId=${encodeURIComponent(activityId)}&`;
+    if (date) url += `date=${encodeURIComponent(date)}`;
+    
+    const response = await dbGetDataPageAsync(url);
+    let data = response;
+    if (data && typeof data.body === 'string') {
+        try {
+            data = JSON.parse(data.body);
+        } catch (e) {
+            data = {};
+        }
+    }
+    // Handle both 'shifts' and 'items' array names
+    return Array.isArray(data.shifts) ? data.shifts : 
+           Array.isArray(data.items) ? data.items : 
+           Array.isArray(data) ? data : [];
+}
+
+export async function dbSaveShiftActionAsync(data) {
+    // PUT /shiftAction (no auth required for volunteer app)
+    // Map field names to match API expectations (lowercase)
+    const apiData = {
+        volunteerId: data.volunteerId,
+        action: data.action, // "check-in" or "check-out"
+        timestamp: data.timestamp,
+        activityId: data.activityId,
+        programId: data.programId
+    };
+    
+    // Remove optional fields if undefined
+    if (!apiData.activityId) delete apiData.activityId;
+    if (!apiData.programId) delete apiData.programId;
+    
+    // Use PUT method as specified in the API
+    return await dbPutDataAsync('/shiftAction', apiData);
 }

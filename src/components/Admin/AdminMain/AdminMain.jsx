@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { AppBar,Badge, Box, Tab, Tabs, Typography } from '@mui/material';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
-import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport } from '@mui/icons-material';
+import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport, People } from '@mui/icons-material';
 import { AllUsersPage, CalendarPage, ReportsPage, ErrorPage,
-            ServiceTypePage, SettingsPage } from '..';
+            ServiceTypePage, SettingsPage, VolunteersPage } from '..';
 import { globalMsgFunc, isAdmin, navigationAllowed } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 
@@ -12,6 +12,7 @@ const tabURL = [
     "/admin/calendar",
     "/admin/servicetypes",
     "/admin/users",
+    "/admin/volunteers",
     "/admin/settings",
     "/admin/error"
 ];
@@ -43,9 +44,9 @@ export default function AdminMain(props) {
         return <Typography>Not an admin user</Typography>
     }
 
-    let navLabels = [ 'Reports', 'Calendar', 'Service Types', 'Users', 'Settings', 'Errors' ];
+    let navLabels = [ 'Reports', 'Calendar', 'Service Types', 'Users', 'Volunteers', 'Settings', 'Errors' ];
     if (UseWindowSize().width < 450) 
-        navLabels = [ '','','','','' ]
+        navLabels = [ '','','','','','','' ]
 
     let selectedTab = sectionFromURL(url);
     if (selectedTab < 0) {
@@ -73,8 +74,9 @@ export default function AdminMain(props) {
                         <Tab icon={<DateRange/>} label={ navLabels[1] } style={{  minWidth:'62px' }} />
                         <Tab icon={<RoomService/>} label={ navLabels[2] } style={{  minWidth:'62px' }} />
                         <Tab icon={<AccountBox/>} label={ navLabels[3] } style={{  minWidth:'62px' }} />
-                        <Tab icon={<SettingsApplications/>} label={ navLabels[4] } style={{  minWidth:'62px' }} />
-                        <Tab label={ navLabels[5] } style={{  minWidth:'62px' }} icon={
+                        <Tab icon={<People/>} label={ navLabels[4] } style={{  minWidth:'62px' }} />
+                        <Tab icon={<SettingsApplications/>} label={ navLabels[5] } style={{  minWidth:'62px' }} />
+                        <Tab label={ navLabels[6] } style={{  minWidth:'62px' }} icon={
                             <Badge badgeContent={ countErrors } color='error' max={999}>
                                 <BugReport/>
                             </Badge>}  />
@@ -87,8 +89,9 @@ export default function AdminMain(props) {
                     {selectedTab === 1 && <CalendarPage />}
                     {selectedTab === 2 && <ServiceTypePage />}
                     {selectedTab === 3 && <AllUsersPage />}
-                    {selectedTab === 4 && <SettingsPage />}
-                    {selectedTab === 5 && <ErrorPage countUpdate={ setCountErrors } />}
+                    {selectedTab === 4 && <VolunteersPage />}
+                    {selectedTab === 5 && <SettingsPage />}
+                    {selectedTab === 6 && <ErrorPage countUpdate={ setCountErrors } />}
                 </Box>
             </Box>
         </Box>
