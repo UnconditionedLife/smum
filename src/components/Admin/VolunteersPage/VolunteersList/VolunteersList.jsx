@@ -14,21 +14,23 @@ function VolunteerList(props) {
                 <Table>
                 <TableHead>
                     <TableRow>
-                    <TableCell align="center">Full Name</TableCell>
+                    <TableCell align="center">First Name</TableCell>
+                    <TableCell align="center">Last Name</TableCell>
                     <TableCell align="center">Email</TableCell>
                     <TableCell align="center">Telephone</TableCell>
-                    <TableCell align="center">Program ID</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {props.list.map((row) => (
                     <TableRow 
                         key={ row.VolunteerId || row.volunteerId }
+                        onClick={() => props.onEdit && props.onEdit(row.VolunteerId || row.volunteerId)}
+                        sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f5f5f5' } }}
                     >
-                        <TableCell align="center">{row.FullName || row.fullName || ''}</TableCell>
+                        <TableCell align="center">{row.FirstName || row.firstName || ''}</TableCell>
+                        <TableCell align="center">{row.LastName || row.lastName || ''}</TableCell>
                         <TableCell align="center">{row.Email || row.email || ''}</TableCell>
                         <TableCell align="center">{row.Telephone || row.telephone || ''}</TableCell>
-                        <TableCell align="center">{row.ProgramId || row.programId || ''}</TableCell>
                     </TableRow>
                     ))}
                 </TableBody>
@@ -40,10 +42,12 @@ function VolunteerList(props) {
 
 VolunteerList.propTypes = {
     list: PropTypes.array.isRequired,
+    onEdit: PropTypes.func,
 }
 
 export default function VolunteersList() {
     const [ newVolunteer, setNewVolunteer ] = useState(false);
+    const [ editVolunteerId, setEditVolunteerId ] = useState(null);
     const [ volunteers, setVolunteers ] = useState([]);
 
     useEffect(() => { 
@@ -57,9 +61,13 @@ export default function VolunteersList() {
                 (volunteers || [])
                     .filter(v => v && typeof v === 'object')
                     .sort((a, b) => {
-                        const nameA = a.FullName || a.fullName || '';
-                        const nameB = b.FullName || b.fullName || '';
-                        return nameA.localeCompare(nameB);
+                        const lastA = a.LastName || a.lastName || '';
+                        const lastB = b.LastName || b.lastName || '';
+                        const firstA = a.FirstName || a.firstName || '';
+                        const firstB = b.FirstName || b.firstName || '';
+                        // Sort by last name, then first name
+                        const lastCompare = lastA.localeCompare(lastB);
+                        return lastCompare !== 0 ? lastCompare : firstA.localeCompare(firstB);
                     })
             );
         });
@@ -83,10 +91,19 @@ export default function VolunteersList() {
             { newVolunteer &&
                 <VolunteerPage clearRecord={ ()=>{ setNewVolunteer(false); getVolunteerList(); } } volunteerId={ null } />
             }
+            
+            { editVolunteerId &&
+                <VolunteerPage clearRecord={ ()=>{ setEditVolunteerId(null); getVolunteerList(); } } volunteerId={ editVolunteerId } />
+            }
 
             <Typography variant='h6' sx={{ mb: 2 }}>Volunteers</Typography>
             <VolunteerList 
                 list={ volunteers }
+                onEdit={ (volunteerId) => {
+                    if (navigationAllowed()) {
+                        setEditVolunteerId(volunteerId);
+                    }
+                }}
             />
         </Box>
     );

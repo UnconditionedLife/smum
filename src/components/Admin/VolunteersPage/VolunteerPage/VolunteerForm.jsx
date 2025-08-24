@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
 import { Box, Grid, Button, Typography, MenuItem, Divider } from '@mui/material';
 import { FormTextField, FormSelect, SaveCancel } from '../../../System';
-import { dbSaveVolunteerAsync } from '../../../System/js/Database';
+import { dbSaveVolunteerAsync, dbUpdateVolunteerAsync } from '../../../System/js/Database';
 
 VolunteerForm.propTypes = {
     volunteer: PropTypes.object,     // null to create new volunteer
@@ -16,18 +16,18 @@ export default function VolunteerForm(props) {
     let volunteerData;
     if (isNewVolunteer) {
         volunteerData = {
-            FullName: '',
+            FirstName: '',
+            LastName: '',
             Telephone: '',
-            Email: '',
-            ProgramId: ''
+            Email: ''
         };
     } else {
         volunteerData = {
             VolunteerId: props.volunteer.VolunteerId || '',
-            FullName: props.volunteer.FullName || '',
+            FirstName: props.volunteer.FirstName || '',
+            LastName: props.volunteer.LastName || '',
             Telephone: props.volunteer.Telephone || '',
-            Email: props.volunteer.Email || '',
-            ProgramId: props.volunteer.ProgramId || ''
+            Email: props.volunteer.Email || ''
         };
     }
 
@@ -42,7 +42,15 @@ export default function VolunteerForm(props) {
 
     async function saveVolunteer(volunteerData, isNewVolunteer) {
         // Save to database
-        return dbSaveVolunteerAsync(volunteerData);
+        if (isNewVolunteer) {
+            return dbSaveVolunteerAsync(volunteerData);
+        } else {
+            // Use UPDATE endpoint for existing volunteers
+            const volunteerId = volunteerData.VolunteerId;
+            const updateData = { ...volunteerData };
+            delete updateData.VolunteerId; // Don't send ID in the body
+            return dbUpdateVolunteerAsync(volunteerId, updateData);
+        }
     }
 
     async function onSubmit(formValues) {
@@ -82,18 +90,18 @@ export default function VolunteerForm(props) {
                         />
                     )}
                     <FormTextField
-                        name="FullName"
-                        label="Full Name"
-                        fieldsize="lg"
-                        error={errors.FullName}
+                        name="FirstName"
+                        label="First Name"
+                        fieldsize="md"
+                        error={errors.FirstName}
                         control={control}
                         rules={{ required: 'Required' }}
                     />
                     <FormTextField
-                        name="ProgramId"
-                        label="Program ID"
-                        fieldsize="sm"
-                        error={errors.ProgramId}
+                        name="LastName"
+                        label="Last Name"
+                        fieldsize="md"
+                        error={errors.LastName}
                         control={control}
                         rules={{ required: 'Required' }}
                     />

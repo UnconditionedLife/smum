@@ -6,16 +6,14 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync, 
-         dbGetShiftsByProgramOrActivityAsync, dbGetAllVolunteersAsync } from '../../../System/js/Database';
+         dbGetAllVolunteersAsync } from '../../../System/js/Database';
 import { TextField } from '../../../System';
 
 export default function ShiftsList() {
     const [shifts, setShifts] = useState([]);
     const [selectedDate, setSelectedDate] = useState(dayjs());
-    const [filterType, setFilterType] = useState('date'); // 'date', 'volunteer', 'program', 'activity'
+    const [filterType, setFilterType] = useState('date'); // 'date', 'volunteer'
     const [selectedVolunteerId, setSelectedVolunteerId] = useState('');
-    const [selectedProgramId, setSelectedProgramId] = useState('');
-    const [selectedActivityId, setSelectedActivityId] = useState('');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [volunteers, setVolunteers] = useState([]);
@@ -32,7 +30,7 @@ export default function ShiftsList() {
 
     useEffect(() => {
         loadShifts();
-    }, [filterType, selectedDate, selectedVolunteerId, selectedProgramId, selectedActivityId, startDate, endDate]);
+    }, [filterType, selectedDate, selectedVolunteerId, startDate, endDate]);
 
     async function loadShifts() {
         setLoading(true);
@@ -50,20 +48,6 @@ export default function ShiftsList() {
                         const start = startDate ? dayjs(startDate).format('YYYY-MM-DD') : null;
                         const end = endDate ? dayjs(endDate).format('YYYY-MM-DD') : null;
                         shiftsData = await dbGetShiftsByVolunteerAsync(selectedVolunteerId, start, end);
-                    }
-                    break;
-                    
-                case 'program':
-                    if (selectedProgramId) {
-                        const dateStr = selectedDate ? dayjs(selectedDate).format('YYYY-MM-DD') : null;
-                        shiftsData = await dbGetShiftsByProgramOrActivityAsync(selectedProgramId, null, dateStr);
-                    }
-                    break;
-                    
-                case 'activity':
-                    if (selectedActivityId) {
-                        const dateStr = selectedDate ? dayjs(selectedDate).format('YYYY-MM-DD') : null;
-                        shiftsData = await dbGetShiftsByProgramOrActivityAsync(null, selectedActivityId, dateStr);
                     }
                     break;
             }
@@ -90,7 +74,12 @@ export default function ShiftsList() {
 
     function getVolunteerName(volunteerId) {
         const volunteer = volunteers.find(vol => vol.VolunteerId === volunteerId);
-        return volunteer ? volunteer.FullName : `Unknown (${volunteerId})`;
+        if (volunteer) {
+            const firstName = volunteer.FirstName || volunteer.firstName || '';
+            const lastName = volunteer.LastName || volunteer.lastName || '';
+            return `${firstName} ${lastName}`.trim() || `Unknown (${volunteerId})`;
+        }
+        return `Unknown (${volunteerId})`;
     }
 
     function renderFilterControls() {
@@ -105,8 +94,6 @@ export default function ShiftsList() {
                     >
                         <MenuItem value="date">By Date</MenuItem>
                         <MenuItem value="volunteer">By Volunteer</MenuItem>
-                        <MenuItem value="program">By Program</MenuItem>
-                        <MenuItem value="activity">By Activity</MenuItem>
                     </Select>
                 </FormControl>
                 
@@ -133,7 +120,7 @@ export default function ShiftsList() {
                                 <MenuItem value="">None</MenuItem>
                                 {volunteers.map(vol => (
                                     <MenuItem key={vol.VolunteerId} value={vol.VolunteerId}>
-                                        {vol.FullName}
+                                        {`${vol.FirstName || vol.firstName || ''} ${vol.LastName || vol.lastName || ''}`.trim()}
                                     </MenuItem>
                                 ))}
                             </Select>
@@ -156,46 +143,6 @@ export default function ShiftsList() {
                                 />
                             </LocalizationProvider>
                         </Box>
-                    </Box>
-                )}
-                
-                {filterType === 'program' && (
-                    <Box>
-                        <MuiTextField
-                            fullWidth
-                            label="Program ID"
-                            value={selectedProgramId}
-                            onChange={(e) => setSelectedProgramId(e.target.value)}
-                            sx={{ mb: 2 }}
-                        />
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                value={selectedDate}
-                                onChange={setSelectedDate}
-                                renderInput={(params) => <TextField {...params} fullWidth />}
-                                label="Date (Optional - defaults to today)"
-                            />
-                        </LocalizationProvider>
-                    </Box>
-                )}
-                
-                {filterType === 'activity' && (
-                    <Box>
-                        <MuiTextField
-                            fullWidth
-                            label="Activity ID"
-                            value={selectedActivityId}
-                            onChange={(e) => setSelectedActivityId(e.target.value)}
-                            sx={{ mb: 2 }}
-                        />
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                value={selectedDate}
-                                onChange={setSelectedDate}
-                                renderInput={(params) => <TextField {...params} fullWidth />}
-                                label="Date (Optional - defaults to today)"
-                            />
-                        </LocalizationProvider>
                     </Box>
                 )}
             </Box>
@@ -283,7 +230,7 @@ export default function ShiftsList() {
         <Box width="100%">
             <Typography variant="h6" sx={{ mb: 2 }}>Shift Records</Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                View volunteer check-in/check-out records. Use filters to search by date, volunteer, program, or activity.
+                View volunteer check-in/check-out records. Use filters to search by date or by volunteer.
             </Typography>
             {renderFilterControls()}
             {renderShiftsTable()}

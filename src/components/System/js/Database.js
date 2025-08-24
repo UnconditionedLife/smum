@@ -768,7 +768,7 @@ function makeOldServices(svcs){
 //*************************************************
 
 export async function dbGetAllVolunteersAsync() {
-    // GET /volunteers (auth required)
+    // GET /prod/volunteers (auth required)
     const response = await dbGetDataPageAsync("/volunteers");
     let data = response;
     // If the response has a 'body' property, parse it
@@ -783,18 +783,23 @@ export async function dbGetAllVolunteersAsync() {
     let volunteers = Array.isArray(data.volunteers) ? data.volunteers : 
                     Array.isArray(data) ? data : [];
     
-    // Normalize field names to uppercase first letter format and decode strings
-    return volunteers.map(vol => utilDecodeStrings({
-        VolunteerId: vol.volunteerId || vol.VolunteerId,
-        FullName: vol.fullName || vol.FullName,
-        Email: vol.email || vol.Email,
-        Telephone: vol.telephone || vol.Telephone,
-        ProgramId: vol.programId || vol.ProgramId
-    }));
+    // Normalize field names and decode strings
+    return volunteers.map(vol => {
+        const decoded = utilDecodeStrings(vol);
+        return {
+            VolunteerId: decoded.id || decoded.volunteerId || decoded.VolunteerId,
+            FirstName: decoded.firstName || decoded.FirstName || '',
+            LastName: decoded.lastName || decoded.LastName || '',
+            Email: decoded.email || decoded.Email,
+            Telephone: decoded.telephone || decoded.Telephone,
+            ProgramId: decoded.programId || decoded.ProgramId,
+            RegComplete: decoded.regComplete || decoded.RegComplete || false
+        };
+    });
 }
 
 export async function dbGetSingleVolunteerAsync(volunteerId) {
-    // GET /volunteers/{id} (auth required)
+    // GET /prod/volunteers/{id} (auth required)
     const response = await dbGetDataPageAsync(`/volunteers/${volunteerId}`);
     console.log("RESPONSE", response)
     let data = response;
@@ -805,48 +810,96 @@ export async function dbGetSingleVolunteerAsync(volunteerId) {
             data = {};
         }
     }
+    let volunteer = null;
     // If the API returns an array, return the first item
     if (Array.isArray(data.volunteers) && data.volunteers.length > 0) {
-        return utilDecodeStrings(data.volunteers[0]);
+        volunteer = data.volunteers[0];
     }
     // If wrapped in volunteer property, return that
-    if (data.volunteer) {
-        return utilDecodeStrings(data.volunteer);
+    else if (data.volunteer) {
+        volunteer = data.volunteer;
     }
-    // If the data itself is a volunteer object (has VolunteerId), return it directly
-    if (data && data.VolunteerId) {
-        return utilDecodeStrings(data);
+    // If the data itself is a volunteer object
+    else if (data && (data.VolunteerId || data.volunteerId || data.id || data.firstName || data.lastName)) {
+        volunteer = data;
+    }
+    
+    if (volunteer) {
+        const decoded = utilDecodeStrings(volunteer);
+        return {
+            VolunteerId: decoded.id || decoded.volunteerId || decoded.VolunteerId,
+            FirstName: decoded.firstName || decoded.FirstName || '',
+            LastName: decoded.lastName || decoded.LastName || '',
+            Email: decoded.email || decoded.Email,
+            Telephone: decoded.telephone || decoded.Telephone,
+            ProgramId: decoded.programId || decoded.ProgramId,
+            RegComplete: decoded.regComplete || decoded.RegComplete || false
+        };
     }
     return null;
 }
 
 export async function dbSaveVolunteerAsync(data) {
-    // PUT /volunteers (no auth required for volunteer app)
-    // Map field names to match API expectations (lowercase)
+    // PUT /prod/volunteers (private endpoint with auth)
+    // Map field names to match API expectations
     const apiData = {
-        volunteerId: data.VolunteerId,
-        fullName: data.FullName,
-        telephone: data.Telephone,
-        email: data.Email,
-        programId: data.ProgramId
+        firstName: data.FirstName || data.firstName,
+        lastName: data.LastName || data.lastName,
+        telephone: data.Telephone || data.telephone,
+        email: data.Email || data.email,
+        programId: data.ProgramId || data.programId,
+        RegComplete: data.RegComplete || false
     };
     
-    // Remove volunteerId if it's undefined (for new volunteers)
-    if (!apiData.volunteerId) {
-        delete apiData.volunteerId;
-    }
-    
-    // Use PUT method as specified in the API
     const response = await dbPutDataAsync('/volunteers', apiData);
     
     // Map response back to internal format (uppercase first letter)
     if (response) {
         return {
-            VolunteerId: response.volunteerId,
-            FullName: response.fullName,
+            VolunteerId: response.id || response.volunteerId,
+            FirstName: response.firstName,
+            LastName: response.lastName,
             Telephone: response.telephone,
             Email: response.email,
-            ProgramId: response.programId
+            ProgramId: response.programId,
+            RegComplete: response.regComplete
+        };
+    }
+    return response;
+}
+
+export async function dbUpdateVolunteerAsync(volunteerId, data) {
+    // UPDATE /prod/volunteers/{id} (private endpoint with auth)
+    // Map field names to match API expectations
+    const apiData = {};
+    
+    // Only include fields that are being updated
+    if (data.FirstName !== undefined || data.firstName !== undefined) 
+        apiData.firstName = data.FirstName || data.firstName;
+    if (data.LastName !== undefined || data.lastName !== undefined) 
+        apiData.lastName = data.LastName || data.lastName;
+    if (data.Telephone !== undefined || data.telephone !== undefined) 
+        apiData.telephone = data.Telephone || data.telephone;
+    if (data.Email !== undefined || data.email !== undefined) 
+        apiData.email = data.Email || data.email;
+    if (data.ProgramId !== undefined || data.programId !== undefined) 
+        apiData.programId = data.ProgramId || data.programId;
+    if (data.RegComplete !== undefined) 
+        apiData.RegComplete = data.RegComplete;
+    
+    // Use POST method for updates (API doesn't support PATCH or PUT for updates)
+    const response = await dbPostDataAsync(`/volunteers/${volunteerId}`, apiData);
+    
+    // Map response back to internal format
+    if (response) {
+        return {
+            VolunteerId: response.id || response.volunteerId,
+            FirstName: response.firstName,
+            LastName: response.lastName,
+            Telephone: response.telephone,
+            Email: response.email,
+            ProgramId: response.programId,
+            RegComplete: response.regComplete
         };
     }
     return response;
@@ -856,7 +909,7 @@ export async function dbSaveVolunteerAsync(data) {
 //*************************************************
 
 export async function dbGetAllShiftsByDateAsync(date) {
-    // GET /shiftsByDate?date=YYYY-MM-DD (auth required)
+    // GET /prod/shiftsByDate?date=YYYY-MM-DD (auth required)
     const response = await dbGetDataPageAsync(`/shiftsByDate?date=${encodeURIComponent(date)}`);
     let data = response;
     // If the response has a 'body' property, parse it
@@ -874,7 +927,7 @@ export async function dbGetAllShiftsByDateAsync(date) {
 }
 
 export async function dbGetShiftsByVolunteerAsync(volunteerId, startDate = null, endDate = null) {
-    // GET /shiftByVolunteer?volunteerId=...&startDate=...&endDate=... (auth required)
+    // GET /prod/shiftByVolunteer?volunteerId=...&startDate=...&endDate=... (auth required)
     let url = `/shiftByVolunteer?volunteerId=${encodeURIComponent(volunteerId)}`;
     if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`;
     if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`;
@@ -894,7 +947,7 @@ export async function dbGetShiftsByVolunteerAsync(volunteerId, startDate = null,
 }
 
 export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId, date) {
-    // GET /shiftsByProgramOrActivity (auth required)
+    // GET /prod/shiftsByProgramOrActivity (auth required)
     let url = '/shiftsByProgramOrActivity?';
     if (programId) url += `programId=${encodeURIComponent(programId)}&`;
     if (activityId) url += `activityId=${encodeURIComponent(activityId)}&`;
@@ -916,7 +969,7 @@ export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId,
 }
 
 export async function dbSaveShiftActionAsync(data) {
-    // PUT /shiftAction (no auth required for volunteer app)
+    // PUT /prod/shiftAction (auth required)
     // Map field names to match API expectations (lowercase)
     const apiData = {
         volunteerId: data.volunteerId,
