@@ -562,10 +562,13 @@ function stringToMap(string) {
 }
 
 
-async function dbPostDataAsync(subUrl, data, logErrors=true) {
+async function dbPostDataAsync(subUrl, data, method, logErrors=true) {
+
+    console.log('dbPostDataAsync', subUrl, data, method, logErrors)
+
     const copiedData = JSON.parse(JSON.stringify(data))
     const sanitizedData = utilEncodeStrings(copiedData);
-    return dbPostDataRawAsync(subUrl, sanitizedData, logErrors);
+    return dbPostDataRawAsync(subUrl, sanitizedData, method, logErrors);
 }
 
 async function dbPutDataAsync(subUrl, data, logErrors=true) {
@@ -622,9 +625,16 @@ async function dbPutDataRawAsync(subUrl, data, logErrors=true) {
     });
 }
 
-async function dbPostDataRawAsync(subUrl, data, logErrors=true) {
+async function dbPostDataRawAsync(subUrl, data, method = 'POST', logErrors=true) {
+
+    console.log("method", method)
+
+    if (!['POST', 'PATCH'].includes(method)) {
+        return Promise.reject(`Unsupported method: ${method}`);
+    }
+
     return fetch(dbUrl + subUrl, {
-        method: 'POST',
+        method: method,
         headers: {
             'Content-Type': 'application/json',    
             "Authorization": cachedSession.auth.idToken,
@@ -800,6 +810,9 @@ export async function dbGetAllVolunteersAsync() {
 
 export async function dbGetSingleVolunteerAsync(volunteerId) {
     // GET /prod/volunteers/{id} (auth required)
+    
+    console.log("Get Volunteer:", volunteerId)
+    
     const response = await dbGetDataPageAsync(`/volunteers/${volunteerId}`);
     console.log("RESPONSE", response)
     let data = response;
@@ -888,7 +901,7 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
         apiData.RegComplete = data.RegComplete;
     
     // Use POST method for updates (API doesn't support PATCH or PUT for updates)
-    const response = await dbPostDataAsync(`/volunteers/${volunteerId}`, apiData);
+    const response = await dbPostDataAsync(`/volunteers/${volunteerId}`, apiData, 'PATCH');
     
     // Map response back to internal format
     if (response) {
