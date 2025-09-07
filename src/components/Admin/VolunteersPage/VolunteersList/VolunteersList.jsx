@@ -4,9 +4,22 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar, Tabl
      TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
 import { Add, ExpandMore } from '@mui/icons-material';
 import VolunteerPage from '../VolunteerPage/VolunteerPage.jsx';
-import { navigationAllowed, dbGetAllVolunteersAsync } from '../../../System/js/Database';
+import { navigationAllowed, dbGetAllVolunteersAsync, dbGetAllProgramsAsync } from '../../../System/js/Database';
 
 function VolunteerList(props) {
+
+    function getProgramName(programId) {
+        if (!programId || programId === '-') return 'N/A';
+        const program = props.programs.find(prog => {
+            // Check various possible ID field names
+            const progId = prog.ProgramId || prog.programId || prog.Id || prog.id || prog.ID;
+            return progId === programId || progId == programId;
+        });
+        if (program) {
+            return program.ProgramName || program.Name || program.name || 'N/A';
+        }
+        return 'N/A';
+    }
 
     return (
         <Box width='100%' mx={ 2 }>
@@ -18,6 +31,7 @@ function VolunteerList(props) {
                     <TableCell align="center">Last Name</TableCell>
                     <TableCell align="center">Email</TableCell>
                     <TableCell align="center">Telephone</TableCell>
+                    <TableCell align="center">Program</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -31,6 +45,7 @@ function VolunteerList(props) {
                         <TableCell align="center">{row.LastName || row.lastName || ''}</TableCell>
                         <TableCell align="center">{row.Email || row.email || ''}</TableCell>
                         <TableCell align="center">{row.Telephone || row.telephone || ''}</TableCell>
+                        <TableCell align="center">{getProgramName(row.ProgramId || row.programId)}</TableCell>
                     </TableRow>
                     ))}
                 </TableBody>
@@ -42,6 +57,7 @@ function VolunteerList(props) {
 
 VolunteerList.propTypes = {
     list: PropTypes.array.isRequired,
+    programs: PropTypes.array.isRequired,
     onEdit: PropTypes.func,
 }
 
@@ -49,9 +65,11 @@ export default function VolunteersList() {
     const [ newVolunteer, setNewVolunteer ] = useState(false);
     const [ editVolunteerId, setEditVolunteerId ] = useState(null);
     const [ volunteers, setVolunteers ] = useState([]);
+    const [ programs, setPrograms ] = useState([]);
 
     useEffect(() => { 
         getVolunteerList() //initial load
+        getProgramsList() //load programs for decoding
     }, [newVolunteer])
 
     function getVolunteerList() {
@@ -70,6 +88,16 @@ export default function VolunteersList() {
                         return lastCompare !== 0 ? lastCompare : firstA.localeCompare(firstB);
                     })
             );
+        });
+    }
+    
+    function getProgramsList() {
+        dbGetAllProgramsAsync().then(progs => {
+            console.log('Fetched programs:', progs);
+            setPrograms(progs || []);
+        }).catch(err => {
+            console.error('Error loading programs:', err);
+            setPrograms([]);
         });
     }
     
@@ -99,6 +127,7 @@ export default function VolunteersList() {
             <Typography variant='h6' sx={{ mb: 2 }}>Volunteers</Typography>
             <VolunteerList 
                 list={ volunteers }
+                programs={ programs }
                 onEdit={ (volunteerId) => {
                     if (navigationAllowed()) {
                         setEditVolunteerId(volunteerId);

@@ -918,6 +918,45 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
     return response;
 }
 
+//******************** PROGRAMS & ACTIVITIES ********************
+//*************************************************
+
+export async function dbGetAllProgramsAsync() {
+    // GET /prod/programs (auth required)
+    const response = await dbGetDataPageAsync("/programs");
+    let data = response;
+    // If the response has a 'body' property, parse it
+    if (data && typeof data.body === 'string') {
+        try {
+            data = JSON.parse(data.body);
+        } catch (e) {
+            data = {};
+        }
+    }
+    // Get programs array from various possible response formats
+    return Array.isArray(data.programs) ? data.programs : 
+           Array.isArray(data.items) ? data.items :
+           Array.isArray(data) ? data : [];
+}
+
+export async function dbGetAllActivitiesAsync() {
+    // GET /prod/activities (auth required)
+    const response = await dbGetDataPageAsync("/activities");
+    let data = response;
+    // If the response has a 'body' property, parse it
+    if (data && typeof data.body === 'string') {
+        try {
+            data = JSON.parse(data.body);
+        } catch (e) {
+            data = {};
+        }
+    }
+    // Get activities array from various possible response formats
+    return Array.isArray(data.activities) ? data.activities : 
+           Array.isArray(data.items) ? data.items :
+           Array.isArray(data) ? data : [];
+}
+
 //******************** SHIFTS ********************
 //*************************************************
 
@@ -987,7 +1026,8 @@ export async function dbSaveShiftActionAsync(data) {
     const apiData = {
         volunteerId: data.volunteerId,
         action: data.action, // "check-in" or "check-out"
-        timestamp: data.timestamp,
+        // Ensure timestamp is in UTC ISO format
+        timestamp: data.timestamp ? new Date(data.timestamp).toISOString() : new Date().toISOString(),
         activityId: data.activityId,
         programId: data.programId
     };
@@ -998,4 +1038,35 @@ export async function dbSaveShiftActionAsync(data) {
     
     // Use PUT method as specified in the API
     return await dbPutDataAsync('/shiftAction', apiData);
+}
+
+export async function dbUpdateShiftAsync(shiftData) {
+    // PATCH /prod/shifts/{shiftId} (auth required)
+    // Extract the shift ID
+    const shiftId = shiftData.ShiftId || shiftData.shiftId || shiftData.Id || shiftData.id;
+    if (!shiftId) {
+        return Promise.reject('Shift ID is required for update');
+    }
+    
+    // Prepare update data - remove ID from the payload
+    const updateData = { ...shiftData };
+    delete updateData.ShiftId;
+    delete updateData.shiftId;
+    delete updateData.Id;
+    delete updateData.id;
+    
+    // Ensure timestamps are in UTC ISO format if provided
+    if (updateData.TimestampIn) {
+        updateData.TimestampIn = typeof updateData.TimestampIn === 'string' 
+            ? updateData.TimestampIn 
+            : new Date(updateData.TimestampIn).toISOString();
+    }
+    if (updateData.TimestampOut) {
+        updateData.TimestampOut = typeof updateData.TimestampOut === 'string'
+            ? updateData.TimestampOut
+            : new Date(updateData.TimestampOut).toISOString();
+    }
+    
+    // Use PATCH method to update the shift
+    return await dbPostDataAsync(`/shifts/${shiftId}`, updateData, 'PATCH');
 }
