@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar, Table, TableBody,
-     TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
+     TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, Chip } from '@mui/material';
 import { Add, ExpandMore } from '@mui/icons-material';
 import VolunteerPage from '../VolunteerPage/VolunteerPage.jsx';
 import { navigationAllowed, dbGetAllVolunteersAsync, dbGetAllProgramsAsync } from '../../../System/js/Database';
+import { formatPhone } from '../../../System/js/Forms';
+import dayjs from 'dayjs';
 
 function VolunteerList(props) {
 
@@ -32,6 +34,8 @@ function VolunteerList(props) {
                     <TableCell align="center">Email</TableCell>
                     <TableCell align="center">Telephone</TableCell>
                     <TableCell align="center">Program</TableCell>
+                    <TableCell align="center">Registered</TableCell>
+                    <TableCell align="center">Status</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -44,8 +48,20 @@ function VolunteerList(props) {
                         <TableCell align="center">{row.FirstName || row.firstName || ''}</TableCell>
                         <TableCell align="center">{row.LastName || row.lastName || ''}</TableCell>
                         <TableCell align="center">{row.Email || row.email || ''}</TableCell>
-                        <TableCell align="center">{row.Telephone || row.telephone || ''}</TableCell>
+                        <TableCell align="center">{formatPhone(row.Telephone || row.telephone || '')}</TableCell>
                         <TableCell align="center">{getProgramName(row.ProgramId || row.programId)}</TableCell>
+                        <TableCell align="center">
+                            {row.Time ? dayjs(row.Time).format('MMM D, YYYY h:mm A') : 'N/A'}
+                        </TableCell>
+                        <TableCell align="center">
+                            {row.RegComplete !== undefined && (
+                                row.RegComplete ? (
+                                    <Chip label="Registered" size="small" color="success" />
+                                ) : (
+                                    <Chip label="Not Registered" size="small" color="warning" />
+                                )
+                            )}
+                        </TableCell>
                     </TableRow>
                     ))}
                 </TableBody>

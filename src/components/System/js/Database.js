@@ -797,13 +797,14 @@ export async function dbGetAllVolunteersAsync() {
     return volunteers.map(vol => {
         const decoded = utilDecodeStrings(vol);
         return {
-            VolunteerId: decoded.id || decoded.volunteerId || decoded.VolunteerId,
+            VolunteerId: decoded.VolunteerId || decoded.volunteerId || decoded.id,
             FirstName: decoded.firstName || decoded.FirstName || '',
             LastName: decoded.lastName || decoded.LastName || '',
             Email: decoded.email || decoded.Email,
             Telephone: decoded.telephone || decoded.Telephone,
-            ProgramId: decoded.programId || decoded.ProgramId,
-            RegComplete: decoded.regComplete || decoded.RegComplete || false
+            ProgramId: decoded.ProgramId || decoded.programId || '0',
+            RegComplete: decoded.RegComplete || decoded.regComplete || false,
+            Time: decoded.time || decoded.Time || null
         };
     });
 }
@@ -840,13 +841,14 @@ export async function dbGetSingleVolunteerAsync(volunteerId) {
     if (volunteer) {
         const decoded = utilDecodeStrings(volunteer);
         return {
-            VolunteerId: decoded.id || decoded.volunteerId || decoded.VolunteerId,
+            VolunteerId: decoded.VolunteerId || decoded.volunteerId || decoded.id,
             FirstName: decoded.firstName || decoded.FirstName || '',
             LastName: decoded.lastName || decoded.LastName || '',
             Email: decoded.email || decoded.Email,
             Telephone: decoded.telephone || decoded.Telephone,
-            ProgramId: decoded.programId || decoded.ProgramId,
-            RegComplete: decoded.regComplete || decoded.RegComplete || false
+            ProgramId: decoded.ProgramId || decoded.programId || '0',
+            RegComplete: decoded.RegComplete || decoded.regComplete || false,
+            Time: decoded.time || decoded.Time || null
         };
     }
     return null;
@@ -860,8 +862,8 @@ export async function dbSaveVolunteerAsync(data) {
         lastName: data.LastName || data.lastName,
         telephone: data.Telephone || data.telephone,
         email: data.Email || data.email,
-        programId: data.ProgramId || data.programId,
-        RegComplete: data.RegComplete || false
+        ProgramId: data.ProgramId || data.programId || '0',
+        RegComplete: data.RegComplete || data.regComplete || true
     };
     
     const response = await dbPutDataAsync('/volunteers', apiData);
@@ -869,13 +871,14 @@ export async function dbSaveVolunteerAsync(data) {
     // Map response back to internal format (uppercase first letter)
     if (response) {
         return {
-            VolunteerId: response.id || response.volunteerId,
+            VolunteerId: response.VolunteerId || response.volunteerId || response.id,
             FirstName: response.firstName,
             LastName: response.lastName,
             Telephone: response.telephone,
             Email: response.email,
-            ProgramId: response.programId,
-            RegComplete: response.regComplete
+            ProgramId: response.ProgramId || response.programId || '0',
+            RegComplete: response.RegComplete || response.regComplete || true,
+            Time: response.time || response.Time || new Date().toLocaleString()
         };
     }
     return response;
@@ -896,7 +899,7 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
     if (data.Email !== undefined || data.email !== undefined) 
         apiData.email = data.Email || data.email;
     if (data.ProgramId !== undefined || data.programId !== undefined) 
-        apiData.programId = data.ProgramId || data.programId;
+        apiData.ProgramId = data.ProgramId || data.programId || '0';
     if (data.RegComplete !== undefined) 
         apiData.RegComplete = data.RegComplete;
     
@@ -906,13 +909,14 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
     // Map response back to internal format
     if (response) {
         return {
-            VolunteerId: response.id || response.volunteerId,
+            VolunteerId: response.VolunteerId || response.volunteerId || response.id,
             FirstName: response.firstName,
             LastName: response.lastName,
             Telephone: response.telephone,
             Email: response.email,
-            ProgramId: response.programId,
-            RegComplete: response.regComplete
+            ProgramId: response.ProgramId || response.programId || '0',
+            RegComplete: response.RegComplete || response.regComplete || true,
+            Time: response.time || response.Time || new Date().toLocaleString()
         };
     }
     return response;
@@ -1026,8 +1030,8 @@ export async function dbSaveShiftActionAsync(data) {
     const apiData = {
         volunteerId: data.volunteerId,
         action: data.action, // "check-in" or "check-out"
-        // Ensure timestamp is in UTC ISO format
-        timestamp: data.timestamp ? new Date(data.timestamp).toISOString() : new Date().toISOString(),
+        // Use local time for timestamp
+        timestamp: data.timestamp ? data.timestamp : new Date().toLocaleString(),
         activityId: data.activityId,
         programId: data.programId
     };
@@ -1041,7 +1045,7 @@ export async function dbSaveShiftActionAsync(data) {
 }
 
 export async function dbUpdateShiftAsync(shiftData) {
-    // PATCH /prod/shifts/{shiftId} (auth required)
+    // PATCH /prod/shiftsAction/{id} (auth required)
     // Extract the shift ID
     const shiftId = shiftData.ShiftId || shiftData.shiftId || shiftData.Id || shiftData.id;
     if (!shiftId) {
@@ -1049,24 +1053,35 @@ export async function dbUpdateShiftAsync(shiftData) {
     }
     
     // Prepare update data - remove ID from the payload
-    const updateData = { ...shiftData };
-    delete updateData.ShiftId;
-    delete updateData.shiftId;
-    delete updateData.Id;
-    delete updateData.id;
+    const updateData = {};
     
-    // Ensure timestamps are in UTC ISO format if provided
-    if (updateData.TimestampIn) {
-        updateData.TimestampIn = typeof updateData.TimestampIn === 'string' 
-            ? updateData.TimestampIn 
-            : new Date(updateData.TimestampIn).toISOString();
+    // Only include fields that are being updated
+    if (shiftData.Action !== undefined) updateData.Action = shiftData.Action;
+    if (shiftData.ActivityId !== undefined) updateData.ActivityId = shiftData.ActivityId;
+    if (shiftData.Date !== undefined) updateData.Date = shiftData.Date;
+    if (shiftData.ProgramId !== undefined) updateData.ProgramId = shiftData.ProgramId;
+    if (shiftData.VolunteerId !== undefined) updateData.VolunteerId = shiftData.VolunteerId;
+    
+    // Format timestamps properly for the API
+    if (shiftData.TimestampIn !== undefined) {
+        if (shiftData.TimestampIn === null) {
+            updateData.TimestampIn = null; // Explicit null to remove
+        } else {
+            updateData.TimestampIn = typeof shiftData.TimestampIn === 'string' 
+                ? shiftData.TimestampIn 
+                : shiftData.TimestampIn.format('YYYY-MM-DD HH:mm:ss');
+        }
     }
-    if (updateData.TimestampOut) {
-        updateData.TimestampOut = typeof updateData.TimestampOut === 'string'
-            ? updateData.TimestampOut
-            : new Date(updateData.TimestampOut).toISOString();
+    if (shiftData.TimestampOut !== undefined) {
+        if (shiftData.TimestampOut === null) {
+            updateData.TimestampOut = null; // Explicit null to remove
+        } else {
+            updateData.TimestampOut = typeof shiftData.TimestampOut === 'string'
+                ? shiftData.TimestampOut
+                : shiftData.TimestampOut.format('YYYY-MM-DD HH:mm:ss');
+        }
     }
     
     // Use PATCH method to update the shift
-    return await dbPostDataAsync(`/shifts/${shiftId}`, updateData, 'PATCH');
+    return await dbPostDataAsync(`/shiftsAction/${shiftId}`, updateData, 'PATCH');
 }

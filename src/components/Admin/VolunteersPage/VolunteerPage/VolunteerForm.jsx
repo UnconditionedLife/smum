@@ -1,9 +1,11 @@
 import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
-import { Box, Grid, Button, Typography, MenuItem, Divider } from '@mui/material';
+import { Box, Grid, Button, Typography, MenuItem, Divider, Chip } from '@mui/material';
 import { FormTextField, FormSelect, SaveCancel } from '../../../System';
 import { dbSaveVolunteerAsync, dbUpdateVolunteerAsync } from '../../../System/js/Database';
+import { validPhone, formatPhone } from '../../../System/js/Forms';
+import dayjs from 'dayjs';
 
 VolunteerForm.propTypes = {
     volunteer: PropTypes.object,     // null to create new volunteer
@@ -54,6 +56,9 @@ export default function VolunteerForm(props) {
     }
 
     async function onSubmit(formValues) {
+        // Format phone number before submitting
+        formValues.Telephone = formatPhone(formValues.Telephone);
+        
         // Overwrite volunteer data structure with form values
         let submitData = { ...formValues };
         if (isNewVolunteer) {
@@ -74,21 +79,39 @@ export default function VolunteerForm(props) {
         }
     }
 
+    // Format registration time if available
+    const formatRegistrationTime = () => {
+        if (!props.volunteer?.Time) return null;
+        const time = dayjs(props.volunteer.Time);
+        if (!time.isValid()) return null;
+        return time.format('MMM D, YYYY [at] h:mm A');
+    };
+
+    const registrationTime = formatRegistrationTime();
+
     return (
         <Fragment>
             <form>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>Volunteer Info</Typography>
+                {!isNewVolunteer && (
+                    <Box sx={{ mb: 3 }}>
+                        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap" sx={{ mb: 2 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                ID: <strong>{volunteerData.VolunteerId}</strong>
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">•</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {props.volunteer?.RegComplete ? 
+                                    `Registered: ${registrationTime || 'N/A'}` : 
+                                    'Not Registered'
+                                }
+                            </Typography>
+                        </Box>
+                        <Divider sx={{ mb: 2 }} />
+                    </Box>
+                )}
 
-                <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap">
-                    {!isNewVolunteer && (
-                        <FormTextField
-                            name="VolunteerId"
-                            label="Volunteer ID"
-                            disabled={true}
-                            error={errors.VolunteerId}
-                            control={control}
-                        />
-                    )}
+                <Typography variant="subtitle1" sx={{ mb: 2 }}>Personal Information</Typography>
+                <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap" sx={{ mb: 3 }}>
                     <FormTextField
                         name="FirstName"
                         label="First Name"
@@ -107,7 +130,7 @@ export default function VolunteerForm(props) {
                     />
                 </Box>
 
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>Contact Info</Typography>
+                <Typography variant="subtitle1" sx={{ mb: 2 }}>Contact Information</Typography>
                 <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap">
                     <FormTextField
                         name="Email"
@@ -125,15 +148,18 @@ export default function VolunteerForm(props) {
                     />
                     <FormTextField
                         name="Telephone"
-                        label="Telephone"
+                        label="Telephone" 
                         error={errors.Telephone}
                         control={control}
-                        rules={{ required: 'Required' }}
+                        rules={{
+                            required: 'Required',
+                            validate: value => validPhone(value) || 'Enter a US phone number with area code'
+                        }}
                     />
                 </Box>
 
                 {saveMessage.result && (
-                    <Box mt={2} mb={1}>
+                    <Box mt={3} mb={1}>
                         <Typography
                             color={saveMessage.result === 'success' ? 'success.main' : 'error.main'}
                             align="center"

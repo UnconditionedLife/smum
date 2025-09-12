@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-         Chip, FormControl, InputLabel, Select, MenuItem, TextField as MuiTextField, IconButton } from '@mui/material';
-import { Edit as EditIcon } from '@mui/icons-material';
+         Chip, FormControl, InputLabel, Select, MenuItem, TextField as MuiTextField } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync, 
@@ -16,8 +13,6 @@ import { dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync,
 import { TextField } from '../../../System';
 import ShiftEditDialog from './ShiftEditDialog.jsx';
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
@@ -62,63 +57,38 @@ export default function ShiftsList() {
             
             switch (filterType) {
                 case 'date':
-                    // For date filtering, we need to get all shifts that fall within the selected date in local time
-                    // This means we need to convert the start and end of the local day to UTC
+                    // Get all shifts for the selected date (using local time)
+                    const dateStr = dayjs(selectedDate).format('YYYY-MM-DD');
+                    shiftsData = await dbGetAllShiftsByDateAsync(dateStr);
+                    
+                    // Filter to only include shifts within the selected day
                     const localDayStart = dayjs(selectedDate).startOf('day');
                     const localDayEnd = dayjs(selectedDate).endOf('day');
                     
-                    // Convert to UTC - these could span across two UTC dates
-                    const utcStartStr = localDayStart.utc().format('YYYY-MM-DD');
-                    const utcEndStr = localDayEnd.utc().format('YYYY-MM-DD');
-                    
-                    // If the local day spans two UTC days, we need to fetch both
-                    if (utcStartStr !== utcEndStr) {
-                        const shifts1 = await dbGetAllShiftsByDateAsync(utcStartStr);
-                        const shifts2 = await dbGetAllShiftsByDateAsync(utcEndStr);
-                        shiftsData = [...(shifts1 || []), ...(shifts2 || [])];
-                        
-                        // Filter to only include shifts within the local day boundaries
-                        shiftsData = shiftsData.filter(shift => {
-                            if (shift.TimestampIn) {
-                                const shiftTime = dayjs.utc(shift.TimestampIn).local();
-                                return shiftTime.isSameOrAfter(localDayStart) && shiftTime.isSameOrBefore(localDayEnd);
-                            }
-                            return false;
-                        });
-                    } else {
-                        // Single UTC day query
-                        shiftsData = await dbGetAllShiftsByDateAsync(utcStartStr);
-                        
-                        // Still filter to ensure we only show shifts from the selected local day
-                        shiftsData = (shiftsData || []).filter(shift => {
-                            if (shift.TimestampIn) {
-                                const shiftTime = dayjs.utc(shift.TimestampIn).local();
-                                return shiftTime.isSameOrAfter(localDayStart) && shiftTime.isSameOrBefore(localDayEnd);
-                            }
-                            return false;
-                        });
-                    }
+                    shiftsData = (shiftsData || []).filter(shift => {
+                        if (shift.TimestampIn) {
+                            const shiftTime = dayjs(shift.TimestampIn);
+                            return shiftTime.isSameOrAfter(localDayStart) && shiftTime.isSameOrBefore(localDayEnd);
+                        }
+                        return false;
+                    });
                     break;
                     
                 case 'volunteer':
                     if (selectedVolunteerId) {
-                        // For date range filtering, convert local date boundaries to UTC
-                        let utcStart = null;
-                        let utcEnd = null;
+                        // Use local dates directly
+                        let localStart = null;
+                        let localEnd = null;
                         
                         if (startDate) {
-                            // Start of day in local time, converted to UTC
-                            utcStart = dayjs(startDate).startOf('day').utc().format('YYYY-MM-DD');
+                            localStart = dayjs(startDate).format('YYYY-MM-DD');
                         }
                         
                         if (endDate) {
-                            // End of day in local time, converted to UTC
-                            // We might need to add one day if the end of local day extends to next UTC day
-                            const localEndOfDay = dayjs(endDate).endOf('day');
-                            utcEnd = localEndOfDay.utc().format('YYYY-MM-DD');
+                            localEnd = dayjs(endDate).format('YYYY-MM-DD');
                         }
                         
-                        shiftsData = await dbGetShiftsByVolunteerAsync(selectedVolunteerId, utcStart, utcEnd);
+                        shiftsData = await dbGetShiftsByVolunteerAsync(selectedVolunteerId, localStart, localEnd);
                         
                         // Filter results to ensure they fall within the local date range
                         if (shiftsData && (startDate || endDate)) {
@@ -127,7 +97,7 @@ export default function ShiftsList() {
                             
                             shiftsData = shiftsData.filter(shift => {
                                 if (shift.TimestampIn) {
-                                    const shiftTime = dayjs.utc(shift.TimestampIn).local();
+                                    const shiftTime = dayjs(shift.TimestampIn);
                                     if (localStartBoundary && shiftTime.isBefore(localStartBoundary)) return false;
                                     if (localEndBoundary && shiftTime.isAfter(localEndBoundary)) return false;
                                     return true;
@@ -154,7 +124,8 @@ export default function ShiftsList() {
             case 'Completed': return 'success';
             case 'Cancelled': return 'error';
             case 'In Progress': return 'warning';
-            case 'Checked In': return 'info';
+            case 'Checked In': return 'info';  // Blue chip for current day
+            case 'Forgotten': return 'error';  // Red chip for not current day
             default: return 'default';
         }
     }
@@ -298,7 +269,6 @@ export default function ShiftsList() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Shift ID</TableCell>
                             <TableCell>Date</TableCell>
                             <TableCell>Check In - Check Out</TableCell>
                             <TableCell>Duration</TableCell>
@@ -306,21 +276,19 @@ export default function ShiftsList() {
                             <TableCell>Program</TableCell>
                             <TableCell>Activity</TableCell>
                             <TableCell>Status</TableCell>
-                            <TableCell>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {shifts.map((shift, index) => {
                             // Handle the actual API response structure
                             const shiftId = shift.ShiftId || `shift-${index}`;
-                            const displayShiftId = shiftId.length > 8 ? shiftId.substring(0, 8) + '...' : shiftId;
                             const volunteerId = shift.VolunteerId;
                             const programId = shift.ProgramId || shift.programId || null;
                             const activityId = shift.ActivityId || shift.activityId || null;
                             
-                            // Parse UTC timestamps and convert to local time for display
-                            const timestampIn = shift.TimestampIn ? dayjs.utc(shift.TimestampIn).local() : null;
-                            const timestampOut = shift.TimestampOut ? dayjs.utc(shift.TimestampOut).local() : null;
+                            // Parse timestamps (already in local time)
+                            const timestampIn = shift.TimestampIn ? dayjs(shift.TimestampIn) : null;
+                            const timestampOut = shift.TimestampOut ? dayjs(shift.TimestampOut) : null;
                             
                             // Get the date from the timestamp (in local time) or from the Date field
                             let displayDate = shift.Date || '-';
@@ -343,29 +311,32 @@ export default function ShiftsList() {
                                     duration = `${minutes}m`;
                                 }
                             } else if (timestampIn && !timestampOut) {
-                                // Show elapsed time for in-progress shifts
-                                const now = dayjs();
-                                const durationMinutes = now.diff(timestampIn, 'minute');
-                                const hours = Math.floor(durationMinutes / 60);
-                                const minutes = durationMinutes % 60;
-                                if (hours > 0) {
-                                    duration = `${hours}h ${minutes}m (ongoing)`;
-                                } else {
-                                    duration = `${minutes}m (ongoing)`;
-                                }
+                                // Show "Ongoing" for both checked in and forgotten statuses
+                                duration = 'Ongoing';
                             }
                             
-                            // Determine status based on timestamps
+                            // Determine status based on timestamps and date
                             let status = 'Scheduled';
                             if (timestampIn && timestampOut) {
                                 status = 'Completed';
                             } else if (timestampIn && !timestampOut) {
-                                status = 'Checked In';
+                                // Check if it's the current day for open check-ins vs forgotten check-outs
+                                const today = dayjs().startOf('day');
+                                const shiftDate = timestampIn.startOf('day');
+                                
+                                if (shiftDate.isSame(today)) {
+                                    status = 'Checked In';
+                                } else {
+                                    status = 'Forgotten';
+                                }
                             }
                             
                             return (
-                                <TableRow key={shiftId}>
-                                    <TableCell title={shiftId}>{displayShiftId}</TableCell>
+                                <TableRow 
+                                    key={shiftId}
+                                    onClick={() => handleEditShift(shift)}
+                                    sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f5f5f5' } }}
+                                >
                                     <TableCell>{displayDate}</TableCell>
                                     <TableCell>{`${startTime} - ${endTime}`}</TableCell>
                                     <TableCell>{duration}</TableCell>
@@ -378,15 +349,6 @@ export default function ShiftsList() {
                                             color={getStatusColor(status)}
                                             size="small"
                                         />
-                                    </TableCell>
-                                    <TableCell>
-                                        <IconButton 
-                                            size="small" 
-                                            onClick={() => handleEditShift(shift)}
-                                            title="Edit Shift"
-                                        >
-                                            <EditIcon fontSize="small" />
-                                        </IconButton>
                                     </TableCell>
                                 </TableRow>
                             );

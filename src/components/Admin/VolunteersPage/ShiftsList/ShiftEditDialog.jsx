@@ -2,18 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, TextField, FormControl, InputLabel, Select, MenuItem,
-    Box, Grid
+    Box, Grid, Typography, Divider
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import { dbUpdateShiftAsync } from '../../../System/js/Database';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export default function ShiftEditDialog({ open, shift, onClose, volunteers, programs, activities }) {
     const [editedShift, setEditedShift] = useState({});
@@ -23,15 +18,15 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
         if (shift) {
             setEditedShift({
                 ...shift,
-                // Convert UTC timestamps to local dayjs objects for editing
-                TimestampIn: shift.TimestampIn ? dayjs.utc(shift.TimestampIn).local() : null,
-                TimestampOut: shift.TimestampOut ? dayjs.utc(shift.TimestampOut).local() : null,
+                // Timestamps are already in local time
+                TimestampIn: shift.TimestampIn ? dayjs(shift.TimestampIn) : null,
+                TimestampOut: shift.TimestampOut ? dayjs(shift.TimestampOut) : null,
                 VolunteerId: shift.VolunteerId || '',
                 ProgramId: shift.ProgramId || shift.programId || '',
                 ActivityId: shift.ActivityId || shift.activityId || ''
             });
         }
-    }, [shift]);
+    }, [shift, programs]);
 
     const handleChange = (field, value) => {
         setEditedShift(prev => ({
@@ -41,20 +36,44 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
     };
 
     const handleSave = async () => {
+        // Validation
+        if (!editedShift.VolunteerId) {
+            alert('Please select a volunteer');
+            return;
+        }
+        
+        if (!editedShift.TimestampIn) {
+            alert('Check-in time is required');
+            return;
+        }
+        
+        // If check-out time exists, it must be after check-in time
+        if (editedShift.TimestampOut && editedShift.TimestampIn) {
+            if (editedShift.TimestampOut.isBefore(editedShift.TimestampIn)) {
+                alert('Check-out time must be after check-in time');
+                return;
+            }
+        }
+        
         setSaving(true);
         try {
-            // Prepare data for API - convert local times back to UTC
+            // Prepare data for API - only send fields that are being updated
             const dataToSave = {
-                ...editedShift,
-                TimestampIn: editedShift.TimestampIn ? editedShift.TimestampIn.utc().toISOString() : null,
-                TimestampOut: editedShift.TimestampOut ? editedShift.TimestampOut.utc().toISOString() : null
+                ShiftId: editedShift.ShiftId || editedShift.shiftId,
+                VolunteerId: editedShift.VolunteerId,
+                ProgramId: editedShift.ProgramId || null,
+                ActivityId: editedShift.ActivityId || null,
+                TimestampIn: editedShift.TimestampIn ? editedShift.TimestampIn.format('YYYY-MM-DD HH:mm:ss') : null,
+                TimestampOut: editedShift.TimestampOut ? editedShift.TimestampOut.format('YYYY-MM-DD HH:mm:ss') : null
             };
 
-            await dbUpdateShiftAsync(dataToSave);
+            console.log('Saving shift data:', dataToSave);
+            const result = await dbUpdateShiftAsync(dataToSave);
+            console.log('Shift save result:', result);
             onClose(true); // Pass true to indicate save was successful
         } catch (error) {
             console.error('Error saving shift:', error);
-            alert('Failed to save shift. Please try again.');
+            alert(`Failed to save shift: ${error.message || 'Unknown error'}`);
         } finally {
             setSaving(false);
         }
@@ -70,6 +89,53 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
         <Dialog open={open} onClose={handleCancel} maxWidth="md" fullWidth>
             <DialogTitle>Edit Shift</DialogTitle>
             <DialogContent>
+                <Box sx={{ mb: 3 }}>
+                    <Box display="flex" alignItems="center" gap={2} flexWrap="wrap" sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                            ID: <strong>{shift.ShiftId || shift.shiftId || 'Unknown'}</strong>
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">•</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Date: {shift.Date || dayjs(shift.TimestampIn).format('YYYY-MM-DD') || 'Unknown'}
+                        </Typography>
+                        {(() => {
+                            const timestampIn = shift.TimestampIn ? dayjs(shift.TimestampIn) : null;
+                            const timestampOut = shift.TimestampOut ? dayjs(shift.TimestampOut) : null;
+                            let duration = '-';
+                            
+                            if (timestampIn && timestampOut) {
+                                const durationMinutes = timestampOut.diff(timestampIn, 'minute');
+                                const hours = Math.floor(durationMinutes / 60);
+                                const minutes = durationMinutes % 60;
+                                if (hours > 0) {
+                                    duration = `${hours}h ${minutes}m`;
+                                } else {
+                                    duration = `${minutes}m`;
+                                }
+                            } else if (timestampIn && !timestampOut) {
+                                const now = dayjs();
+                                const durationMinutes = now.diff(timestampIn, 'minute');
+                                const hours = Math.floor(durationMinutes / 60);
+                                const minutes = durationMinutes % 60;
+                                if (hours > 0) {
+                                    duration = `${hours}h ${minutes}m (ongoing)`;
+                                } else {
+                                    duration = `${minutes}m (ongoing)`;
+                                }
+                            }
+                            
+                            return duration !== '-' ? (
+                                <>
+                                    <Typography variant="body2" color="text.secondary">•</Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Duration: {duration}
+                                    </Typography>
+                                </>
+                            ) : null;
+                        })()}
+                    </Box>
+                    <Divider sx={{ mb: 2 }} />
+                </Box>
                 <Box sx={{ mt: 2 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
