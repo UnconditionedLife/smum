@@ -888,6 +888,8 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
     // UPDATE /prod/volunteers/{id} (private endpoint with auth)
     // Map field names to match API expectations
     const apiData = {};
+
+    console.log( "VID", volunteerId)
     
     // Only include fields that are being updated
     if (data.FirstName !== undefined || data.firstName !== undefined) 
@@ -904,7 +906,7 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
         apiData.RegComplete = data.RegComplete;
     
     // Use POST method for updates (API doesn't support PATCH or PUT for updates)
-    const response = await dbPostDataAsync(`/volunteers/${volunteerId}`, apiData, 'PATCH');
+    const response = await dbPostDataAsync(`/volunteers/${ volunteerId }`, apiData, 'PATCH');
     
     // Map response back to internal format
     if (response) {
@@ -926,7 +928,7 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
 //*************************************************
 
 export async function dbGetAllProgramsAsync() {
-    // GET /prod/programs (auth required)
+    // GET /prod/programs (auth NOT required)
     const response = await dbGetDataPageAsync("/programs");
     let data = response;
     // If the response has a 'body' property, parse it
@@ -1045,7 +1047,7 @@ export async function dbSaveShiftActionAsync(data) {
 }
 
 export async function dbUpdateShiftAsync(shiftData) {
-    // PATCH /prod/shiftsAction/{id} (auth required)
+    // PATCH /prod/shiftAction/{id} (auth required)
     // Extract the shift ID
     const shiftId = shiftData.ShiftId || shiftData.shiftId || shiftData.Id || shiftData.id;
     if (!shiftId) {
@@ -1083,5 +1085,5 @@ export async function dbUpdateShiftAsync(shiftData) {
     }
     
     // Use PATCH method to update the shift
-    return await dbPostDataAsync(`/shiftsAction/${shiftId}`, updateData, 'PATCH');
+    return await dbPostDataAsync(`/shiftAction/${shiftId}`, updateData, 'PATCH');
 }

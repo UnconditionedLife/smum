@@ -12,6 +12,7 @@ import { dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync,
          dbGetAllActivitiesAsync } from '../../../System/js/Database';
 import { TextField } from '../../../System';
 import ShiftEditDialog from './ShiftEditDialog.jsx';
+import { utilDecodeStrings } from '../../../System/js/GlobalUtils.js';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -109,7 +110,7 @@ export default function ShiftsList() {
                     break;
             }
             
-            setShifts(shiftsData || []);
+            setShifts(utilDecodeStrings(shiftsData) || []);
         } catch (error) {
             console.error('Error loading shifts:', error);
             setShifts([]);

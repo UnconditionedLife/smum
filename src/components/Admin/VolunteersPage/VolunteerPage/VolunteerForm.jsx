@@ -48,7 +48,8 @@ export default function VolunteerForm(props) {
             return dbSaveVolunteerAsync(volunteerData);
         } else {
             // Use UPDATE endpoint for existing volunteers
-            const volunteerId = volunteerData.VolunteerId;
+            const volunteerId = JSON.parse(JSON.stringify(volunteerData.VolunteerId));
+            // const volunteerId = volunteerData.VolunteerId;
             const updateData = { ...volunteerData };
             delete updateData.VolunteerId; // Don't send ID in the body
             return dbUpdateVolunteerAsync(volunteerId, updateData);
@@ -64,7 +65,11 @@ export default function VolunteerForm(props) {
         if (isNewVolunteer) {
             // Do not send VolunteerId for new volunteers
             delete submitData.VolunteerId;
+        } else {
+            // Added the Volunteer ID back into data
+            if (!submitData.VolunteerId) submitData.VolunteerId = volunteerData.VolunteerId
         }
+
         try {
             const savedVolunteer = await saveVolunteer(submitData, isNewVolunteer);
             // Handle different API response formats
