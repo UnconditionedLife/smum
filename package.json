@@ -1,6 +1,6 @@
 {
   "name": "Santa Maria Urban Ministry",
-  "version": "2.8.7",
+  "version": "2.9.0",
   "description": "Client Recordkeeping System",
   "main": "index.js",
   "scripts": {
