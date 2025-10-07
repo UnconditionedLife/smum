@@ -224,7 +224,7 @@ async function dbLog(category, message) {
     let data = {"logID": cuid(), "logTimestamp": isoString, "message": message, "category": category};
 
     console.error(message);
-    return await dbPostDataAsync('/logs', data, false)
+    return await dbPostDataAsync('/logs', data, 'POST', false)
         .catch(err => {
             console.error('Failed write to error log', err);
         });
@@ -562,10 +562,7 @@ function stringToMap(string) {
 }
 
 
-async function dbPostDataAsync(subUrl, data, method, logErrors=true) {
-
-    console.log('dbPostDataAsync', subUrl, data, method, logErrors)
-
+async function dbPostDataAsync(subUrl, data, method='POST', logErrors=true) {
     const copiedData = JSON.parse(JSON.stringify(data))
     const sanitizedData = utilEncodeStrings(copiedData);
     return dbPostDataRawAsync(subUrl, sanitizedData, method, logErrors);
@@ -626,9 +623,6 @@ async function dbPutDataRawAsync(subUrl, data, logErrors=true) {
 }
 
 async function dbPostDataRawAsync(subUrl, data, method = 'POST', logErrors=true) {
-
-    console.log("method", method)
-
     if (!['POST', 'PATCH'].includes(method)) {
         return Promise.reject(`Unsupported method: ${method}`);
     }

@@ -5,8 +5,63 @@ import requests
 import datetime as dt
 import uuid
 import json
+from typing import Any, Mapping, Optional
+from urllib.parse import unquote_plus
 
 url_base = 'https://hjfje6icwa.execute-api.us-west-2.amazonaws.com'
+
+def traverse_and_decode(obj: Any,
+                        in_place: bool = False) -> Any:
+    """
+    Recursively traverse `obj` and decode URL-encoded string *values*.
+    Keys of dicts are NOT modified.
+
+    Parameters
+    ----------
+    obj :
+        A JSON-like structure (dict, list, tuple, str, numbers, bool, None).
+    in_place :
+        If True and obj is a mutable container (dict/list), modify it in-place and return it.
+        If False, function returns a new structure (non-destructive).
+
+    Returns
+    -------
+    The transformed structure with string *values* decoded.
+    """
+    # Mutable in-place helpers
+    if isinstance(obj, dict):
+        if in_place:
+            for k, v in list(obj.items()):
+                # DO NOT change keys; only update values
+                obj[k] = traverse_and_decode(v, in_place=in_place)
+            return obj
+        else:
+            return {k: traverse_and_decode(v, in_place=in_place)
+                    for k, v in obj.items()}
+
+    if isinstance(obj, list):
+        if in_place:
+            for i in range(len(obj)):
+                obj[i] = traverse_and_decode(obj[i], in_place=in_place)
+            return obj
+        else:
+            return [traverse_and_decode(x, in_place=in_place) for x in obj]
+
+    if isinstance(obj, tuple):
+        # tuples are immutable -> return new tuple
+        return tuple(traverse_and_decode(x, in_place=in_place) for x in obj)
+
+    # treat bytes as utf-8 strings
+    if isinstance(obj, (bytes, bytearray)):
+        s = obj.decode('utf-8')
+        return unquote_plus(s)
+
+    # string leaf -> decode/replace
+    if isinstance(obj, str):
+        return unquote_plus(obj)
+
+    # other primitive (int, float, bool, None) -> return as-is
+    return obj
 
 def retrieve(queue, start, end, level):
     url = f'{url_base}/{queue}/logs'
@@ -19,6 +74,7 @@ def retrieve(queue, start, end, level):
 
     print(req.url)
     items = req.json()
+    traverse_and_decode(items, True)
     return items
 
 def display(items):
