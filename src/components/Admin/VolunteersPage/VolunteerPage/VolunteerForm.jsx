@@ -1,9 +1,9 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
-import { Box, Grid, Button, Typography, MenuItem, Divider, Chip } from '@mui/material';
+import { Box, Typography, MenuItem, Divider } from '@mui/material';
 import { FormTextField, FormSelect, SaveCancel } from '../../../System';
-import { dbSaveVolunteerAsync, dbUpdateVolunteerAsync } from '../../../System/js/Database';
+import { dbSaveVolunteerAsync, dbUpdateVolunteerAsync, dbGetAllProgramsAsync } from '../../../System/js/Database';
 import { validPhone, formatPhone } from '../../../System/js/Forms';
 import dayjs from 'dayjs';
 
@@ -21,16 +21,37 @@ export default function VolunteerForm(props) {
             FirstName: '',
             LastName: '',
             Telephone: '',
-            Email: ''
+            Email: '',
+            ProgramId: '0'
         };
     } else {
+        console.log('Loading volunteer for edit:', props.volunteer);
+        console.log('Raw ProgramId from props:', props.volunteer.ProgramId);
+        console.log('Raw Telephone from props:', props.volunteer.Telephone);
+
+        // Decode phone if it's URL-encoded, then format for display
+        let rawPhone = props.volunteer.Telephone || '';
+        try {
+            // Try to decode in case it's still URL-encoded
+            rawPhone = decodeURIComponent(rawPhone);
+            console.log('Decoded telephone:', rawPhone);
+        } catch (e) {
+            console.log('Telephone not URL-encoded or decode failed:', e);
+        }
+
+        const formattedPhone = rawPhone ? formatPhone(rawPhone) : '';
+        console.log('Formatted telephone for display:', formattedPhone);
+
         volunteerData = {
             VolunteerId: props.volunteer.VolunteerId || '',
             FirstName: props.volunteer.FirstName || '',
             LastName: props.volunteer.LastName || '',
-            Telephone: props.volunteer.Telephone || '',
-            Email: props.volunteer.Email || ''
+            Telephone: formattedPhone,
+            Email: props.volunteer.Email || '',
+            ProgramId: String(props.volunteer.ProgramId || '0')
         };
+
+        console.log('Processed volunteerData.ProgramId:', volunteerData.ProgramId);
     }
 
     const initValues = { ...volunteerData };
@@ -41,6 +62,22 @@ export default function VolunteerForm(props) {
     });
 
     const [saveMessage, setSaveMessage] = useState({});
+    const [programs, setPrograms] = useState([]);
+
+    useEffect(() => {
+        // Load programs on mount
+        dbGetAllProgramsAsync().then(progs => {
+            console.log('Fetched programs for dropdown:', progs);
+            progs?.forEach(p => {
+                const id = p.ProgramId || p.programId || p.Id || p.id;
+                console.log(`Program: ${p.ProgramName || p.Name || p.name}, ID: ${id}, Type: ${typeof id}`);
+            });
+            setPrograms(progs || []);
+        }).catch(err => {
+            console.error('Error loading programs:', err);
+            setPrograms([]);
+        });
+    }, []);
 
     async function saveVolunteer(volunteerData, isNewVolunteer) {
         // Save to database
@@ -57,11 +94,16 @@ export default function VolunteerForm(props) {
     }
 
     async function onSubmit(formValues) {
-        // Format phone number before submitting
-        formValues.Telephone = formatPhone(formValues.Telephone);
-        
         // Overwrite volunteer data structure with form values
         let submitData = { ...formValues };
+
+        // Format phone: keep + and digits only (no dashes)
+        // The + will be URL-encoded by the fetch API automatically
+        const formattedPhone = formatPhone(formValues.Telephone);
+        submitData.Telephone = formattedPhone.replace(/[^+\d]/g, ''); // Keep + and digits, e.g. "+16509657150"
+
+        console.log('Submitting phone (before API):', submitData.Telephone);
+
         if (isNewVolunteer) {
             // Do not send VolunteerId for new volunteers
             delete submitData.VolunteerId;
@@ -136,7 +178,7 @@ export default function VolunteerForm(props) {
                 </Box>
 
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>Contact Information</Typography>
-                <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap">
+                <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap" sx={{ mb: 3 }}>
                     <FormTextField
                         name="Email"
                         label="Email"
@@ -153,7 +195,7 @@ export default function VolunteerForm(props) {
                     />
                     <FormTextField
                         name="Telephone"
-                        label="Telephone" 
+                        label="Telephone"
                         error={errors.Telephone}
                         control={control}
                         rules={{
@@ -161,6 +203,29 @@ export default function VolunteerForm(props) {
                             validate: value => validPhone(value) || 'Enter a US phone number with area code'
                         }}
                     />
+                </Box>
+
+                <Typography variant="subtitle1" sx={{ mb: 2 }}>Program Assignment</Typography>
+                <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap">
+                    <FormSelect
+                        name="ProgramId"
+                        label="Program"
+                        fieldsize="lg"
+                        error={errors.ProgramId}
+                        control={control}
+                        rules={{ required: 'Required' }}
+                    >
+                        <MenuItem value="0">No Program</MenuItem>
+                        {programs.map((program) => {
+                            const progId = program.ProgramId || program.programId || program.Id || program.id;
+                            const progName = program.ProgramName || program.Name || program.name || 'Unknown';
+                            return (
+                                <MenuItem key={progId} value={String(progId)}>
+                                    {progName}
+                                </MenuItem>
+                            );
+                        })}
+                    </FormSelect>
                 </Box>
 
                 {saveMessage.result && (

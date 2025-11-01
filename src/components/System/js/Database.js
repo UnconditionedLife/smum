@@ -787,33 +787,40 @@ export async function dbGetAllVolunteersAsync() {
     let volunteers = Array.isArray(data.volunteers) ? data.volunteers : 
                     Array.isArray(data) ? data : [];
     
-    // Normalize field names and decode strings
     return volunteers.map(vol => {
         const decoded = utilDecodeStrings(vol);
+
+        // Fix corrupted phone numbers (21XXXXXXXXXX should be +1XXXXXXXXXX)
+        let phone = decoded.telephone || '';
+        if (phone && phone.startsWith('21') && phone.length === 12) {
+            phone = '+1' + phone.substring(2);
+        }
+
         return {
-            VolunteerId: decoded.VolunteerId || decoded.volunteerId || decoded.id,
-            FirstName: decoded.firstName || decoded.FirstName || '',
-            LastName: decoded.lastName || decoded.LastName || '',
-            Email: decoded.email || decoded.Email,
-            Telephone: decoded.telephone || decoded.Telephone,
-            ProgramId: decoded.ProgramId || decoded.programId || '0',
-            RegComplete: decoded.RegComplete || decoded.regComplete || false,
-            Time: decoded.time || decoded.Time || null
+            VolunteerId: decoded.VolunteerId,
+            FirstName: decoded.firstName,
+            LastName: decoded.lastName,
+            Email: decoded.email,
+            Telephone: phone,
+            ProgramId: decoded.ProgramId || '0',
+            RegComplete: decoded.RegComplete || false,
+            Time: decoded.time
         };
     });
 }
 
 export async function dbGetSingleVolunteerAsync(volunteerId) {
     // GET /prod/volunteers/{id} (auth required)
-    
+
     console.log("Get Volunteer:", volunteerId)
-    
+
     const response = await dbGetDataPageAsync(`/volunteers/${volunteerId}`);
-    console.log("RESPONSE", response)
+    console.log("RAW API RESPONSE:", response)
     let data = response;
     if (data && typeof data.body === 'string') {
         try {
             data = JSON.parse(data.body);
+            console.log("PARSED RESPONSE:", data)
         } catch (e) {
             data = {};
         }
@@ -822,27 +829,37 @@ export async function dbGetSingleVolunteerAsync(volunteerId) {
     // If the API returns an array, return the first item
     if (Array.isArray(data.volunteers) && data.volunteers.length > 0) {
         volunteer = data.volunteers[0];
+        console.log("Got volunteer from data.volunteers[0]:", volunteer);
     }
     // If wrapped in volunteer property, return that
     else if (data.volunteer) {
         volunteer = data.volunteer;
+        console.log("Got volunteer from data.volunteer:", volunteer);
     }
     // If the data itself is a volunteer object
     else if (data && (data.VolunteerId || data.volunteerId || data.id || data.firstName || data.lastName)) {
         volunteer = data;
+        console.log("Got volunteer from data itself:", volunteer);
     }
-    
+
     if (volunteer) {
         const decoded = utilDecodeStrings(volunteer);
+
+        // Fix corrupted phone numbers (21XXXXXXXXXX should be +1XXXXXXXXXX)
+        let phone = decoded.telephone || '';
+        if (phone && phone.startsWith('21') && phone.length === 12) {
+            phone = '+1' + phone.substring(2);
+        }
+
         return {
-            VolunteerId: decoded.VolunteerId || decoded.volunteerId || decoded.id,
-            FirstName: decoded.firstName || decoded.FirstName || '',
-            LastName: decoded.lastName || decoded.LastName || '',
-            Email: decoded.email || decoded.Email,
-            Telephone: decoded.telephone || decoded.Telephone,
-            ProgramId: decoded.ProgramId || decoded.programId || '0',
-            RegComplete: decoded.RegComplete || decoded.regComplete || false,
-            Time: decoded.time || decoded.Time || null
+            VolunteerId: decoded.VolunteerId,
+            FirstName: decoded.firstName,
+            LastName: decoded.lastName,
+            Email: decoded.email,
+            Telephone: phone,
+            ProgramId: decoded.ProgramId || '0',
+            RegComplete: decoded.RegComplete || false,
+            Time: decoded.time
         };
     }
     return null;
@@ -850,29 +867,28 @@ export async function dbGetSingleVolunteerAsync(volunteerId) {
 
 export async function dbSaveVolunteerAsync(data) {
     // PUT /prod/volunteers (private endpoint with auth)
-    // Map field names to match API expectations
     const apiData = {
-        firstName: data.FirstName || data.firstName,
-        lastName: data.LastName || data.lastName,
-        telephone: data.Telephone || data.telephone,
-        email: data.Email || data.email,
-        ProgramId: data.ProgramId || data.programId || '0',
-        RegComplete: data.RegComplete || data.regComplete || true
+        firstName: data.FirstName,
+        lastName: data.LastName,
+        telephone: data.Telephone,
+        email: data.Email,
+        programId: data.ProgramId || '0',
+        RegComplete: data.RegComplete || true
     };
-    
+
     const response = await dbPutDataAsync('/volunteers', apiData);
-    
-    // Map response back to internal format (uppercase first letter)
+
+    // API doesn't return all fields, so merge with sent data
     if (response) {
         return {
-            VolunteerId: response.VolunteerId || response.volunteerId || response.id,
-            FirstName: response.firstName,
-            LastName: response.lastName,
-            Telephone: response.telephone,
-            Email: response.email,
-            ProgramId: response.ProgramId || response.programId || '0',
-            RegComplete: response.RegComplete || response.regComplete || true,
-            Time: response.time || response.Time || new Date().toLocaleString()
+            VolunteerId: response.VolunteerId,
+            FirstName: data.FirstName,
+            LastName: data.LastName,
+            Telephone: data.Telephone,
+            Email: data.Email,
+            ProgramId: data.ProgramId || '0',
+            RegComplete: response.RegComplete || true,
+            Time: new Date().toISOString()
         };
     }
     return response;
@@ -880,39 +896,42 @@ export async function dbSaveVolunteerAsync(data) {
 
 export async function dbUpdateVolunteerAsync(volunteerId, data) {
     // UPDATE /prod/volunteers/{id} (private endpoint with auth)
-    // Map field names to match API expectations
-    const apiData = {};
+    // Map internal format to API format
+    const apiData = {
+        firstName: data.FirstName,
+        lastName: data.LastName,
+        telephone: data.Telephone,
+        email: data.Email,
+        programId: data.ProgramId || '0',
+        RegComplete: data.RegComplete !== undefined ? data.RegComplete : true
+    };
 
-    console.log( "VID", volunteerId)
-    
-    // Only include fields that are being updated
-    if (data.FirstName !== undefined || data.firstName !== undefined) 
-        apiData.firstName = data.FirstName || data.firstName;
-    if (data.LastName !== undefined || data.lastName !== undefined) 
-        apiData.lastName = data.LastName || data.lastName;
-    if (data.Telephone !== undefined || data.telephone !== undefined) 
-        apiData.telephone = data.Telephone || data.telephone;
-    if (data.Email !== undefined || data.email !== undefined) 
-        apiData.email = data.Email || data.email;
-    if (data.ProgramId !== undefined || data.programId !== undefined) 
-        apiData.ProgramId = data.ProgramId || data.programId || '0';
-    if (data.RegComplete !== undefined) 
-        apiData.RegComplete = data.RegComplete;
-    
-    // Use POST method for updates (API doesn't support PATCH or PUT for updates)
+    console.log("Updating volunteer with apiData:", apiData);
+
     const response = await dbPostDataAsync(`/volunteers/${ volunteerId }`, apiData, 'PATCH');
-    
+
+    console.log("Update volunteer response:", response);
+
     // Map response back to internal format
+    // API response format: {VolunteerId, ProgramId, firstName, lastName, telephone, email, RegComplete}
     if (response) {
+        const decoded = utilDecodeStrings(response);
+
+        // Fix corrupted phone numbers
+        let phone = decoded.telephone || '';
+        if (phone && phone.startsWith('21') && phone.length === 12) {
+            phone = '+1' + phone.substring(2);
+        }
+
         return {
-            VolunteerId: response.VolunteerId || response.volunteerId || response.id,
-            FirstName: response.firstName,
-            LastName: response.lastName,
-            Telephone: response.telephone,
-            Email: response.email,
-            ProgramId: response.ProgramId || response.programId || '0',
-            RegComplete: response.RegComplete || response.regComplete || true,
-            Time: response.time || response.Time || new Date().toLocaleString()
+            VolunteerId: decoded.VolunteerId,
+            FirstName: decoded.firstName,
+            LastName: decoded.lastName,
+            Telephone: phone,
+            Email: decoded.email,
+            ProgramId: decoded.ProgramId || '0',
+            RegComplete: decoded.RegComplete || false,
+            Time: decoded.time
         };
     }
     return response;
@@ -998,13 +1017,17 @@ export async function dbGetShiftsByVolunteerAsync(volunteerId, startDate = null,
            Array.isArray(data) ? data : [];
 }
 
-export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId, date) {
+export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId, startDate = null, endDate = null) {
     // GET /prod/shiftsByProgramOrActivity (auth required)
-    let url = '/shiftsByProgramOrActivity?';
-    if (programId) url += `programId=${encodeURIComponent(programId)}&`;
-    if (activityId) url += `activityId=${encodeURIComponent(activityId)}&`;
-    if (date) url += `date=${encodeURIComponent(date)}`;
-    
+    // Supports filtering by program, activity, and optional date range
+    const params = [];
+    if (programId) params.push(`programId=${encodeURIComponent(programId)}`);
+    if (activityId) params.push(`activityId=${encodeURIComponent(activityId)}`);
+    if (startDate) params.push(`startDate=${encodeURIComponent(startDate)}`);
+    if (endDate) params.push(`endDate=${encodeURIComponent(endDate)}`);
+
+    const url = '/shiftsByProgramOrActivity' + (params.length > 0 ? '?' + params.join('&') : '');
+
     const response = await dbGetDataPageAsync(url);
     let data = response;
     if (data && typeof data.body === 'string') {
@@ -1015,8 +1038,8 @@ export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId,
         }
     }
     // Handle both 'shifts' and 'items' array names
-    return Array.isArray(data.shifts) ? data.shifts : 
-           Array.isArray(data.items) ? data.items : 
+    return Array.isArray(data.shifts) ? data.shifts :
+           Array.isArray(data.items) ? data.items :
            Array.isArray(data) ? data : [];
 }
 

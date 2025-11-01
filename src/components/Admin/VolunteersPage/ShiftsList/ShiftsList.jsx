@@ -7,9 +7,9 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync, 
-         dbGetAllVolunteersAsync, dbGetAllProgramsAsync, 
-         dbGetAllActivitiesAsync } from '../../../System/js/Database';
+import { dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync,
+         dbGetAllVolunteersAsync, dbGetAllProgramsAsync,
+         dbGetAllActivitiesAsync, dbGetShiftsByProgramOrActivityAsync } from '../../../System/js/Database';
 import { TextField } from '../../../System';
 import ShiftEditDialog from './ShiftEditDialog.jsx';
 import { utilDecodeStrings } from '../../../System/js/GlobalUtils.js';
@@ -20,8 +20,10 @@ dayjs.extend(isSameOrBefore);
 export default function ShiftsList() {
     const [shifts, setShifts] = useState([]);
     const [selectedDate, setSelectedDate] = useState(dayjs());
-    const [filterType, setFilterType] = useState('date'); // 'date', 'volunteer'
+    const [filterType, setFilterType] = useState('date'); // 'date', 'volunteer', 'program', 'activity'
     const [selectedVolunteerId, setSelectedVolunteerId] = useState('');
+    const [selectedProgramId, setSelectedProgramId] = useState('');
+    const [selectedActivityId, setSelectedActivityId] = useState('');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [volunteers, setVolunteers] = useState([]);
@@ -49,7 +51,7 @@ export default function ShiftsList() {
 
     useEffect(() => {
         loadShifts();
-    }, [filterType, selectedDate, selectedVolunteerId, startDate, endDate]);
+    }, [filterType, selectedDate, selectedVolunteerId, selectedProgramId, selectedActivityId, startDate, endDate]);
 
     async function loadShifts() {
         setLoading(true);
@@ -80,22 +82,88 @@ export default function ShiftsList() {
                         // Use local dates directly
                         let localStart = null;
                         let localEnd = null;
-                        
+
                         if (startDate) {
                             localStart = dayjs(startDate).format('YYYY-MM-DD');
                         }
-                        
+
                         if (endDate) {
                             localEnd = dayjs(endDate).format('YYYY-MM-DD');
                         }
-                        
+
                         shiftsData = await dbGetShiftsByVolunteerAsync(selectedVolunteerId, localStart, localEnd);
-                        
+
                         // Filter results to ensure they fall within the local date range
                         if (shiftsData && (startDate || endDate)) {
                             const localStartBoundary = startDate ? dayjs(startDate).startOf('day') : null;
                             const localEndBoundary = endDate ? dayjs(endDate).endOf('day') : null;
-                            
+
+                            shiftsData = shiftsData.filter(shift => {
+                                if (shift.TimestampIn) {
+                                    const shiftTime = dayjs(shift.TimestampIn);
+                                    if (localStartBoundary && shiftTime.isBefore(localStartBoundary)) return false;
+                                    if (localEndBoundary && shiftTime.isAfter(localEndBoundary)) return false;
+                                    return true;
+                                }
+                                return false;
+                            });
+                        }
+                    }
+                    break;
+
+                case 'program':
+                    if (selectedProgramId) {
+                        let localStart = null;
+                        let localEnd = null;
+
+                        if (startDate) {
+                            localStart = dayjs(startDate).format('YYYY-MM-DD');
+                        }
+
+                        if (endDate) {
+                            localEnd = dayjs(endDate).format('YYYY-MM-DD');
+                        }
+
+                        shiftsData = await dbGetShiftsByProgramOrActivityAsync(selectedProgramId, null, localStart, localEnd);
+
+                        // Filter results to ensure they fall within the local date range
+                        if (shiftsData && (startDate || endDate)) {
+                            const localStartBoundary = startDate ? dayjs(startDate).startOf('day') : null;
+                            const localEndBoundary = endDate ? dayjs(endDate).endOf('day') : null;
+
+                            shiftsData = shiftsData.filter(shift => {
+                                if (shift.TimestampIn) {
+                                    const shiftTime = dayjs(shift.TimestampIn);
+                                    if (localStartBoundary && shiftTime.isBefore(localStartBoundary)) return false;
+                                    if (localEndBoundary && shiftTime.isAfter(localEndBoundary)) return false;
+                                    return true;
+                                }
+                                return false;
+                            });
+                        }
+                    }
+                    break;
+
+                case 'activity':
+                    if (selectedActivityId) {
+                        let localStart = null;
+                        let localEnd = null;
+
+                        if (startDate) {
+                            localStart = dayjs(startDate).format('YYYY-MM-DD');
+                        }
+
+                        if (endDate) {
+                            localEnd = dayjs(endDate).format('YYYY-MM-DD');
+                        }
+
+                        shiftsData = await dbGetShiftsByProgramOrActivityAsync(null, selectedActivityId, localStart, localEnd);
+
+                        // Filter results to ensure they fall within the local date range
+                        if (shiftsData && (startDate || endDate)) {
+                            const localStartBoundary = startDate ? dayjs(startDate).startOf('day') : null;
+                            const localEndBoundary = endDate ? dayjs(endDate).endOf('day') : null;
+
                             shiftsData = shiftsData.filter(shift => {
                                 if (shift.TimestampIn) {
                                     const shiftTime = dayjs(shift.TimestampIn);
@@ -191,6 +259,8 @@ export default function ShiftsList() {
                     >
                         <MenuItem value="date">By Date</MenuItem>
                         <MenuItem value="volunteer">By Volunteer</MenuItem>
+                        <MenuItem value="program">By Program</MenuItem>
+                        <MenuItem value="activity">By Activity</MenuItem>
                     </Select>
                 </FormControl>
                 
@@ -220,6 +290,90 @@ export default function ShiftsList() {
                                         {`${vol.FirstName || vol.firstName || ''} ${vol.LastName || vol.lastName || ''}`.trim()}
                                     </MenuItem>
                                 ))}
+                            </Select>
+                        </FormControl>
+                        <Box display="flex" gap={2}>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                    value={startDate}
+                                    onChange={setStartDate}
+                                    renderInput={(params) => <TextField {...params} />}
+                                    label="Start Date (Optional)"
+                                />
+                            </LocalizationProvider>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                    value={endDate}
+                                    onChange={setEndDate}
+                                    renderInput={(params) => <TextField {...params} />}
+                                    label="End Date (Optional)"
+                                />
+                            </LocalizationProvider>
+                        </Box>
+                    </Box>
+                )}
+
+                {filterType === 'program' && (
+                    <Box>
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel>Select Program</InputLabel>
+                            <Select
+                                value={selectedProgramId}
+                                onChange={(e) => setSelectedProgramId(e.target.value)}
+                                label="Select Program"
+                            >
+                                <MenuItem value="">None</MenuItem>
+                                {programs.map(prog => {
+                                    const progId = prog.ProgramId || prog.programId || prog.Id || prog.id;
+                                    const progName = prog.ProgramName || prog.Name || prog.name || `Program ${progId}`;
+                                    return (
+                                        <MenuItem key={progId} value={progId}>
+                                            {progName}
+                                        </MenuItem>
+                                    );
+                                })}
+                            </Select>
+                        </FormControl>
+                        <Box display="flex" gap={2}>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                    value={startDate}
+                                    onChange={setStartDate}
+                                    renderInput={(params) => <TextField {...params} />}
+                                    label="Start Date (Optional)"
+                                />
+                            </LocalizationProvider>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                    value={endDate}
+                                    onChange={setEndDate}
+                                    renderInput={(params) => <TextField {...params} />}
+                                    label="End Date (Optional)"
+                                />
+                            </LocalizationProvider>
+                        </Box>
+                    </Box>
+                )}
+
+                {filterType === 'activity' && (
+                    <Box>
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel>Select Activity</InputLabel>
+                            <Select
+                                value={selectedActivityId}
+                                onChange={(e) => setSelectedActivityId(e.target.value)}
+                                label="Select Activity"
+                            >
+                                <MenuItem value="">None</MenuItem>
+                                {activities.map(act => {
+                                    const actId = act.ActivityId || act.activityId || act.Id || act.id;
+                                    const actName = act.ActivityName_en || act.ActivityName || act.Name || act.name || `Activity ${actId}`;
+                                    return (
+                                        <MenuItem key={actId} value={actId}>
+                                            {actName}
+                                        </MenuItem>
+                                    );
+                                })}
                             </Select>
                         </FormControl>
                         <Box display="flex" gap={2}>

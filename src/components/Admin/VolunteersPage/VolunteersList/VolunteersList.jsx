@@ -135,13 +135,13 @@ export default function VolunteersList() {
             { newVolunteer &&
                 <VolunteerPage clearRecord={ ()=>{ setNewVolunteer(false); getVolunteerList(); } } volunteerId={ null } />
             }
-            
+
             { editVolunteerId &&
                 <VolunteerPage clearRecord={ ()=>{ setEditVolunteerId(null); getVolunteerList(); } } volunteerId={ editVolunteerId } />
             }
 
             <Typography variant='h6' sx={{ mb: 2 }}>Volunteers</Typography>
-            <VolunteerList 
+            <VolunteerList
                 list={ volunteers }
                 programs={ programs }
                 onEdit={ (volunteerId) => {
