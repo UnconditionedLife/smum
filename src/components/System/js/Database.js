@@ -857,8 +857,8 @@ export async function dbGetSingleVolunteerAsync(volunteerId) {
             LastName: decoded.lastName,
             Email: decoded.email,
             Telephone: phone,
-            ProgramId: decoded.ProgramId || '0',
-            RegComplete: decoded.RegComplete || false,
+            ProgramId: decoded.programId || '0',
+            RegComplete: decoded.regComplete || false,
             Time: decoded.time
         };
     }
@@ -1017,14 +1017,16 @@ export async function dbGetShiftsByVolunteerAsync(volunteerId, startDate = null,
            Array.isArray(data) ? data : [];
 }
 
-export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId, startDate = null, endDate = null) {
+export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId, date = null) {
     // GET /prod/shiftsByProgramOrActivity (auth required)
-    // Supports filtering by program, activity, and optional date range
+    // Supports filtering by program, activity, and optional date (defaults to today)
     const params = [];
     if (programId) params.push(`programId=${encodeURIComponent(programId)}`);
     if (activityId) params.push(`activityId=${encodeURIComponent(activityId)}`);
-    if (startDate) params.push(`startDate=${encodeURIComponent(startDate)}`);
-    if (endDate) params.push(`endDate=${encodeURIComponent(endDate)}`);
+
+    // Default to today's date if not provided
+    const queryDate = date || dayjs().format('YYYY-MM-DD');
+    params.push(`date=${encodeURIComponent(queryDate)}`);
 
     const url = '/shiftsByProgramOrActivity' + (params.length > 0 ? '?' + params.join('&') : '');
 
