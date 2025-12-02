@@ -1,6 +1,6 @@
 {
   "name": "Santa Maria Urban Ministry",
-  "version": "2.9.3",
+  "version": "2.9.4",
   "description": "Client Recordkeeping System",
   "main": "index.js",
   "scripts": {
@@ -69,7 +69,8 @@
     "webpack": "^5.68.0",
     "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^4.11.1",
-    "webpack-merge": "^5.8.0"
+    "webpack-merge": "^5.8.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.19.1",
