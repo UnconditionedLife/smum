@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Tabs, Tab, Typography } from '@mui/material';
-import { People, Schedule } from '@mui/icons-material';
+import { People, Schedule, Assessment } from '@mui/icons-material';
 import VolunteersList from './VolunteersList/VolunteersList.jsx';
 import ShiftsList from './ShiftsList/ShiftsList.jsx';
+import Reports from './Reporting.jsx';
 
 export default function VolunteersPage() {
     const [selectedTab, setSelectedTab] = useState(0);
@@ -17,6 +18,8 @@ export default function VolunteersPage() {
                 return <VolunteersList />;
             case 1:
                 return <ShiftsList />;
+            case 2:
+                return <Reports />;
             default:
                 return <VolunteersList />;
         }
@@ -25,8 +28,8 @@ export default function VolunteersPage() {
     return (
         <Box width="100%">
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                <Tabs 
-                    value={selectedTab} 
+                <Tabs
+                    value={selectedTab}
                     onChange={handleTabChange}
                     indicatorColor="secondary"
                     textColor="primary"
@@ -40,14 +43,19 @@ export default function VolunteersPage() {
                         }
                     }}
                 >
-                    <Tab 
-                        icon={<People />} 
-                        label="Volunteers" 
+                    <Tab
+                        icon={<People />}
+                        label="Volunteers"
                         iconPosition="start"
                     />
-                    <Tab 
-                        icon={<Schedule />} 
-                        label="Shifts" 
+                    <Tab
+                        icon={<Schedule />}
+                        label="Shifts"
+                        iconPosition="start"
+                    />
+                    <Tab
+                        icon={<Assessment />}
+                        label="Reports"
                         iconPosition="start"
                     />
                 </Tabs>

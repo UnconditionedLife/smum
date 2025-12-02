@@ -30,7 +30,7 @@ export let globalMsgFunc = null;
 export function showCache() {
     console.log('Cached session:', cachedSession);
     console.log('Settings:', cachedSettings);
-    console.log('DB URL:',  dbUrl);
+    console.log('DB URL:', dbUrl);
     console.log('Service Types:', cachedSvcTypes);
 }
 
@@ -54,7 +54,7 @@ export function cacheSessionVar(newSession) {
 
 export function sessionTimeRemaining() {
     let decodedTkn = jwt_decode(cachedSession.auth.idToken);
-    return decodedTkn.exp*1000 - new Date().getTime();
+    return decodedTkn.exp * 1000 - new Date().getTime();
 }
 
 export function navigationAllowed() {
@@ -70,18 +70,18 @@ export function navigationAllowed() {
         return false;
     }
     else if (minutes < warningMinutes)
-        globalMsgFunc('warning', 'Session will expire in ' + minutes + ' minutes. Log out and back in again.') 
+        globalMsgFunc('warning', 'Session will expire in ' + minutes + ' minutes. Log out and back in again.')
     return true;
 }
 
 export function initCache() {
     dbGetSettingsAsync()
-        .then( settings => { 
+        .then(settings => {
             cachedSettings = settings;
         });
-    
+
     dbGetSvcTypesAsync()
-        .then( svcTypes => { 
+        .then(svcTypes => {
             cachedSvcTypes = svcTypes;
         });
 }
@@ -101,7 +101,7 @@ export function getUserName() {
 }
 
 export function isAdmin() {
-    return ['Admin', 'TechAdmin'].includes(cachedSession?.user?.userRole); 
+    return ['Admin', 'TechAdmin'].includes(cachedSession?.user?.userRole);
 }
 
 export function isTechAdmin() {
@@ -135,7 +135,7 @@ export function getAppVersion() {
 
 export async function dbGetSettingsAsync() {
     return await dbGetDataPageAsync("/settings")
-        .then( settings => {
+        .then(settings => {
             if (settings !== null) {
                 const fields = ["serviceZip", "serviceCat", "calClosed",
                     "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"];
@@ -151,16 +151,16 @@ export async function dbGetSettingsAsync() {
 }
 
 export async function dbSaveSettingsAsync(settings) {
-    let data = { ... settings };
+    let data = { ...settings };
     data.calClosed = calEncodeRules(data.calClosed);
-    const fields = ["serviceZip", "serviceCat", "calClosed", 
+    const fields = ["serviceZip", "serviceCat", "calClosed",
         "closedDays", "closedEveryDays", "closedEveryDaysWeek", "openDays"];
     fields.forEach(x => {
         data[x] = utilArrayToObject(data[x]);
     });
 
     return await dbPostDataRawAsync('/settings/', data)
-        .then( () => {
+        .then(() => {
             cachedSettings = settings;
         });
 }
@@ -204,7 +204,7 @@ export async function dbSendReceipt(rcpt) {
 
     // return await dbPostDataAsync('/receipts', data);
     return await dbPostDataRawAsync('/receipts', data);
-    
+
 }
 
 //****************** ERROR LOGGING ********************
@@ -221,7 +221,7 @@ export async function dbLogTrace(message) {
 async function dbLog(category, message) {
     const isoString = new Date().toISOString();
     message = message.replaceAll('"', "'"); // change double quotes to single quotes for JSON payload
-    let data = {"logID": cuid(), "logTimestamp": isoString, "message": message, "category": category};
+    let data = { "logID": cuid(), "logTimestamp": isoString, "message": message, "category": category };
 
     console.error(message);
     return await dbPostDataAsync('/logs', data, 'POST', false)
@@ -230,8 +230,8 @@ async function dbLog(category, message) {
         });
 }
 
-export async function dbFetchErrorLogs(startDate, endDate, category="ERROR") {
-    return await dbGetDataAsync("", "/logs", {"start": startDate, "end": endDate, "category": category})
+export async function dbFetchErrorLogs(startDate, endDate, category = "ERROR") {
+    return await dbGetDataAsync("", "/logs", { "start": startDate, "end": endDate, "category": category })
         .catch(err => {
             console.error("failed to read logs, ", err);
         })
@@ -240,17 +240,17 @@ export async function dbFetchErrorLogs(startDate, endDate, category="ERROR") {
 //******************* SVCTYPES *******************
 //************************************************
 
-export async function dbGetSvcTypesAsync(){
+export async function dbGetSvcTypesAsync() {
     return await dbGetDataAsync("serviceTypes", "/svctypes")
         .then(serviceTypes => {
             // case-insensitive sort
-            return  serviceTypes.sort((a, b) => a.svcName.localeCompare(b.svcName, undefined, {sensitivity: 'base'}));
+            return serviceTypes.sort((a, b) => a.svcName.localeCompare(b.svcName, undefined, { sensitivity: 'base' }));
         }
-    )
+        )
 }
 
-export function getSvcTypes(){
-    return cachedSvcTypes    
+export function getSvcTypes() {
+    return cachedSvcTypes
 }
 
 export async function dbSaveSvcTypeAsync(data) {
@@ -262,20 +262,20 @@ export async function dbSaveSvcTypeAsync(data) {
 
 export async function dbGetUserAsync(userName) {
     return await dbGetDataAsync("users", "/users/" + userName)
-        .then( users => {
+        .then(users => {
             if (users.length == 1)
                 return users[0];
             else
                 return Promise.reject('User not found');
         }
-    )
+        )
 }
 
 export async function dbGetAllUsersAsync() {
-	return await dbGetDataAsync("users", "/users");
+    return await dbGetDataAsync("users", "/users");
 }
 
-export async function dbSaveUserAsync(data) { 
+export async function dbSaveUserAsync(data) {
     return await dbPostDataAsync('/users/', data);
 }
 
@@ -285,7 +285,7 @@ export async function dbSaveUserAsync(data) {
 export async function dbSearchClientsAsync(searchTerm) {
     return await dbGetClientsAsync(searchTerm).then(
         clients => {
-            if (clients == undefined || clients == null || clients.length == 0){
+            if (clients == undefined || clients == null || clients.length == 0) {
                 clients = []
             }
             return clients
@@ -293,7 +293,7 @@ export async function dbSearchClientsAsync(searchTerm) {
     )
 }
 
-async function dbGetClientsAsync(searchTerm){
+async function dbGetClientsAsync(searchTerm) {
     const isNum = /^[0-9]+$/.test(searchTerm);
     const idTerm = (isNum) ? searchTerm : false
 
@@ -304,33 +304,33 @@ async function dbGetClientsAsync(searchTerm){
     const dateTerm = (isAlphaNum) ? utilCleanDate(searchTerm) : false
     const isDate = dayjs(dateTerm, 'YYYY-MM-DD', true).isValid()
 
-	if (isDate){
-		return await dbGetDataAsync("clients", "/clients/dob/" + dateTerm)    // expected date
+    if (isDate) {
+        return await dbGetDataAsync("clients", "/clients/dob/" + dateTerm)    // expected date
 
-    } else if (idTerm){
+    } else if (idTerm) {
         return await dbGetDataAsync("clients", "/clients/" + idTerm)        // expected Client ID
-        
-	} else if (nameTerm) {
-		const split = nameTerm.split(" ")
-        let d3 = [], d4 = [], d5 = [], d6 = []  
-		const d1 = await dbGetDataAsync("clients", "/clients/givenname/" + split[0])
-		const d2 = await dbGetDataAsync("clients", "/clients/familyname/" + split[0])
+
+    } else if (nameTerm) {
+        const split = nameTerm.split(" ")
+        let d3 = [], d4 = [], d5 = [], d6 = []
+        const d1 = await dbGetDataAsync("clients", "/clients/givenname/" + split[0])
+        const d2 = await dbGetDataAsync("clients", "/clients/familyname/" + split[0])
         if (split.length > 1) {
-		    d3 = await dbGetDataAsync("clients", "/clients/givenname/" + split[1])
-		    d4 = await dbGetDataAsync("clients", "/clients/familyname/" + split[1])
+            d3 = await dbGetDataAsync("clients", "/clients/givenname/" + split[1])
+            d4 = await dbGetDataAsync("clients", "/clients/familyname/" + split[1])
         }
         if (split.length > 2) {
-		    d5 = await dbGetDataAsync("clients", "/clients/givenname/" + split[2])
-		    d6 = await dbGetDataAsync("clients", "/clients/familyname/" + split[2])
+            d5 = await dbGetDataAsync("clients", "/clients/givenname/" + split[2])
+            d6 = await dbGetDataAsync("clients", "/clients/familyname/" + split[2])
         }
-   		return utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4).concat(d5).concat(d6))
+        return utilRemoveDupClients(d1.concat(d2).concat(d3).concat(d4).concat(d5).concat(d6))
 
     } else {
         return null
     }
 }
 
-export async function dbGetAllClientsAsync(){
+export async function dbGetAllClientsAsync() {
     return await dbGetDataAsync("clients", "/clients/")
 }
 
@@ -344,15 +344,15 @@ export async function dbGetSingleClientAsync(clientId) {
         })
 }
 
-export async function dbGetNewClientIDAsync(){
+export async function dbGetNewClientIDAsync() {
     // TODO: clientsIncrement to get id from API
-    return await dbPostDataAsync("/clients/lastidinc", {}).then(data => {return data.lastId})
+    return await dbPostDataAsync("/clients/lastidinc", {}).then(data => { return data.lastId })
 }
 
 // ***************************************************************
 // *********************** SVCS TABLE *************************
 
-export async function dbGetClientActiveSvcHistoryAsync(clientId){
+export async function dbGetClientActiveSvcHistoryAsync(clientId) {
     const paramObj = { cid: clientId }
     return await dbGetDataAsync("svcs", "/clients/svcs/bycid/", paramObj)
         .then(svcs => {
@@ -360,7 +360,7 @@ export async function dbGetClientActiveSvcHistoryAsync(clientId){
         })
 }
 
-export async function dbGetAllClientSvcsAsync(clientId){
+export async function dbGetAllClientSvcsAsync(clientId) {
     const paramObj = { cid: clientId }
     return await dbGetDataAsync("svcs", "/clients/svcs/bycid/", paramObj)
 }
@@ -371,11 +371,11 @@ export async function dbGetAllClientSvcsAsync(clientId){
 
 
 export async function dbSaveClientAsync(data) {
-	if (data.clientId === "0") {
+    if (data.clientId === "0") {
         dbSetModifiedTime(data, true);
         return await dbGetNewClientIDAsync()
-            .then( async newClientId  => {
-                if ( newClientId ) {
+            .then(async newClientId => {
+                if (newClientId) {
                     data.clientId = newClientId
                     // getNewClient(newClientId)
                     const result = await dbPostDataAsync("/clients/", data)
@@ -390,27 +390,27 @@ export async function dbSaveClientAsync(data) {
                     return Promise.reject("Failed to get Client ID, please retry")
                 }
             })
-	} else {
+    } else {
         dbSetModifiedTime(data, false);
         return await dbPostDataAsync("/clients/", data)
-	}
+    }
 }
 
 // ***************************************************************
 // *********************** NEW SVCS TABLE ************************
 
 export async function dbSaveServicePatchAsync(svc) {
-	// return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
+    // return await dbPostDataAsync("/clients/svcs", makeNewSvc(svc))
     return await dbPostDataAsync("/clients/svcs", svc)
 }
 
 export async function dbSaveServiceRecordAsync(svc) {
-    
+
     // Set Update time
     svc.svcUpdatedDT = utilNow()
 
     return await dbPostDataAsync("/clients/svcs", svc)
-        .then( async (r) => {
+        .then(async (r) => {
             // if (Object.keys(r).length === 0) {
             //     const svcTypes = getSvcTypes()
             //     const svcArray = []
@@ -422,12 +422,12 @@ export async function dbSaveServiceRecordAsync(svc) {
             //     });
             //     return await dbPostDataAsync("/clients/services", oldSvc[0])
             // } else
-                return r 
+            return r
         })
 }
 
 export async function dbSaveSvcAsync(svc) {
-	return await dbPostDataAsync("/clients/svcs", svc)
+    return await dbPostDataAsync("/clients/svcs", svc)
 }
 
 
@@ -459,7 +459,7 @@ export async function dbGetValidSvcsByDateAsync(month, svcCat, date) {
 // ***************************************************************
 
 // formerly utilGetServicesInMonth in app.js
-export async function dbGetSvcsInMonthAsync(monthYear){    
+export async function dbGetSvcsInMonthAsync(monthYear) {
     const currentMonth = dayjs().format("YYYYMM")
     let daysInMonth = dayjs(monthYear, "YYYYMM").daysInMonth()
     if (monthYear == currentMonth) daysInMonth = dayjs().format("D")
@@ -469,22 +469,22 @@ export async function dbGetSvcsInMonthAsync(monthYear){
     for (var i = 1; i < daysInMonth; i++) {
         const day = String(i).padStart(2, '0')
         const dayDate = monthYear + day
-        monthOfSvcs = monthOfSvcs.concat(await dbGetValidSvcsByDateAsync(dayDate).then( svcs => { return svcs }))
+        monthOfSvcs = monthOfSvcs.concat(await dbGetValidSvcsByDateAsync(dayDate).then(svcs => { return svcs }))
     }
     return monthOfSvcs
 }
 
 // ***** NOT USED *****
 export async function dbGetServiceAsync(svcId) {
-	return await dbGetDataAsync("services", "/clients/services/byid/" + svcId)
+    return await dbGetDataAsync("services", "/clients/services/byid/" + svcId)
 }
 
 //******************* REPORTS *********************
 //*************************************************
 
-export async function dbGetEthnicGroupCountAsync(ethnicGroup){
+export async function dbGetEthnicGroupCountAsync(ethnicGroup) {
     return await dbGetDataAsync("", "/clients/ethnicgroup/" + ethnicGroup)
-        .then( data => { return data.count})
+        .then(data => { return data.count })
 }
 
 //******************* UTILITIES *******************
@@ -503,21 +503,21 @@ export function dbSetModifiedTime(obj, isNew) {
         obj.createdDateTime = now;
 }
 
-export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove"
+export function utilEmptyPlaceholders(obj, action) { // action = "add" or "remove"
     const fromVal = (action === "remove") ? "*EMPTY*" : ""
     const toVal = (action === "add") ? "*EMPTY*" : ""
     for (const [key, value] of Object.entries(obj)) {
         if (value === fromVal || value === undefined) {
             obj[key] = toVal
         } else if (Array.isArray(value)) {
-			for (var i = 0; i < value.length; i++) {
+            for (var i = 0; i < value.length; i++) {
                 const array = value[i]
                 for (const [arrayKey, arrayVal] of Object.entries(array)) {
                     if (arrayVal === fromVal) {
                         obj[key][i][arrayKey] = toVal
                     }
                 }
-			}
+            }
         }
     }
     return obj
@@ -528,18 +528,18 @@ export function utilEmptyPlaceholders(obj, action){ // action = "add" or "remove
 // *******************************************************************************************************
 
 const httpCodes = [
-    {code: 200, msg: 'Success'},
-    {code: 400, msg: 'Bad Request Exception'},
-    {code: 401, msg: 'Authentication Failed'},
-    {code: 403, msg: 'Access Denied Exception'},
-    {code: 404, msg: 'Not Found Exception'},
-    {code: 409, msg: 'Conflict Exception'},
-    {code: 413, msg: 'Request Too Large'},
-    {code: 429, msg: 'API Configuration Error/Throttled'},
-    {code: 500, msg: 'Internal Server Error'},
-    {code: 502, msg: 'Bad Gateway Exception'},
-    {code: 503, msg: 'Service Unavailable Exception'},
-    {code: 504, msg: 'Endpoint Request Timed-out Exception'},
+    { code: 200, msg: 'Success' },
+    { code: 400, msg: 'Bad Request Exception' },
+    { code: 401, msg: 'Authentication Failed' },
+    { code: 403, msg: 'Access Denied Exception' },
+    { code: 404, msg: 'Not Found Exception' },
+    { code: 409, msg: 'Conflict Exception' },
+    { code: 413, msg: 'Request Too Large' },
+    { code: 429, msg: 'API Configuration Error/Throttled' },
+    { code: 500, msg: 'Internal Server Error' },
+    { code: 502, msg: 'Bad Gateway Exception' },
+    { code: 503, msg: 'Service Unavailable Exception' },
+    { code: 504, msg: 'Endpoint Request Timed-out Exception' },
 ];
 
 function httpMessage(result) {
@@ -562,67 +562,67 @@ function stringToMap(string) {
 }
 
 
-async function dbPostDataAsync(subUrl, data, method='POST', logErrors=true) {
+async function dbPostDataAsync(subUrl, data, method = 'POST', logErrors = true) {
     const copiedData = JSON.parse(JSON.stringify(data))
     const sanitizedData = utilEncodeStrings(copiedData);
     return dbPostDataRawAsync(subUrl, sanitizedData, method, logErrors);
 }
 
-async function dbPutDataAsync(subUrl, data, logErrors=true) {
+async function dbPutDataAsync(subUrl, data, logErrors = true) {
     const copiedData = JSON.parse(JSON.stringify(data))
     const sanitizedData = utilEncodeStrings(copiedData);
     return dbPutDataRawAsync(subUrl, sanitizedData, logErrors);
 }
 
-async function dbPutDataRawAsync(subUrl, data, logErrors=true) {
+async function dbPutDataRawAsync(subUrl, data, logErrors = true) {
     // For public endpoints (volunteers, shiftAction), auth is optional
     const headers = {
         'Content-Type': 'application/json'
     };
-    
+
     // Add auth header if session exists
     if (cachedSession && cachedSession.auth && cachedSession.auth.idToken) {
         headers.Authorization = cachedSession.auth.idToken;
     }
-    
+
     return fetch(dbUrl + subUrl, {
         method: 'PUT',
         headers: headers,
         body: JSON.stringify(data),
     })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            const message = httpMessage(response.status);
-            return Promise.reject(message);
-        }
-    })
-    .then(json => {
-        if (json.message) {
-            // Check if the message indicates success
-            const successMessages = ['Volunteer created.', 'Volunteer updated.', 'Shift action recorded.'];
-            if (successMessages.includes(json.message)) {
-                return Promise.resolve(json);
+        .then(response => {
+            if (response.ok) {
+                return response.json();
             } else {
-                return Promise.reject(json.message);
+                const message = httpMessage(response.status);
+                return Promise.reject(message);
             }
-        } else {
-            return Promise.resolve(json);
-        }
-    })
-    .catch((error) => {
-        if (logErrors) {
-            const msg = 'dbPutData Error: ' + JSON.stringify(error) +
-                ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(data);
-            dbLogError(msg);
-            globalMsgFunc('error', 'Database Failure');
-        }
-        return Promise.reject(error);
-    });
+        })
+        .then(json => {
+            if (json.message) {
+                // Check if the message indicates success
+                const successMessages = ['Volunteer created.', 'Volunteer updated.', 'Shift action recorded.'];
+                if (successMessages.includes(json.message)) {
+                    return Promise.resolve(json);
+                } else {
+                    return Promise.reject(json.message);
+                }
+            } else {
+                return Promise.resolve(json);
+            }
+        })
+        .catch((error) => {
+            if (logErrors) {
+                const msg = 'dbPutData Error: ' + JSON.stringify(error) +
+                    ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(data);
+                dbLogError(msg);
+                globalMsgFunc('error', 'Database Failure');
+            }
+            return Promise.reject(error);
+        });
 }
 
-async function dbPostDataRawAsync(subUrl, data, method = 'POST', logErrors=true) {
+async function dbPostDataRawAsync(subUrl, data, method = 'POST', logErrors = true) {
     if (!['POST', 'PATCH'].includes(method)) {
         return Promise.reject(`Unsupported method: ${method}`);
     }
@@ -630,38 +630,38 @@ async function dbPostDataRawAsync(subUrl, data, method = 'POST', logErrors=true)
     return fetch(dbUrl + subUrl, {
         method: method,
         headers: {
-            'Content-Type': 'application/json',    
+            'Content-Type': 'application/json',
             "Authorization": cachedSession.auth.idToken,
         },
         body: JSON.stringify(data),
     })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            const message = httpMessage(response.status);
-            return Promise.reject(message);
-        }
-    })
-    .then(json => {
-        if (json.message) {
-            return Promise.reject(json.message);
-        } else {
-            return Promise.resolve(json);
-        }
-    })
-    .catch((error) => {
-        if (logErrors) {
-            const msg = 'dbPostData Error: ' + JSON.stringify(error) +
-                ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(data);
-            dbLogError(msg);
-            globalMsgFunc('error', 'Database Failure');
-        }
-        return Promise.reject(error);
-    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                const message = httpMessage(response.status);
+                return Promise.reject(message);
+            }
+        })
+        .then(json => {
+            if (json.message) {
+                return Promise.reject(json.message);
+            } else {
+                return Promise.resolve(json);
+            }
+        })
+        .catch((error) => {
+            if (logErrors) {
+                const msg = 'dbPostData Error: ' + JSON.stringify(error) +
+                    ' URL: ' + subUrl + ' User: ' + getUserName() + " " + JSON.stringify(data);
+                dbLogError(msg);
+                globalMsgFunc('error', 'Database Failure');
+            }
+            return Promise.reject(error);
+        })
 }
 
-async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
+async function dbGetDataAsync(arrayName, subUrl, paramObj = null) {
     let lastKey = null;
     let allData = [];
     do {
@@ -676,14 +676,14 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj=null) {
                         return utilDecodeStrings(data);
                 } else {
                     return null
-                } 
+                }
             })
-        allData = allData.concat(dataPage);  
+        allData = allData.concat(dataPage);
     } while (lastKey != null);
     return allData;
 }
 
-async function dbGetDataPageAsync(subUrl, paramObj) { 
+async function dbGetDataPageAsync(subUrl, paramObj) {
 
     if (cachedSession === null) return null
 
@@ -691,25 +691,25 @@ async function dbGetDataPageAsync(subUrl, paramObj) {
     return await fetch(dbUrl + subUrl + params, {
         method: 'GET',
         headers: {
-            'Content-Type': 'application/json',    
+            'Content-Type': 'application/json',
             "Authorization": cachedSession.auth.idToken,
         }
     })
-    .then(response => {
-        if (response.ok) {
-            return Promise.resolve(response.json());
-        } else {
-            const message = httpMessage(response.status);
-            return Promise.reject(message);
-        }
-    })
-    .catch((error) => {
-        const msg = 'dbGetData Error: ' + JSON.stringify(error) +
+        .then(response => {
+            if (response.ok) {
+                return Promise.resolve(response.json());
+            } else {
+                const message = httpMessage(response.status);
+                return Promise.reject(message);
+            }
+        })
+        .catch((error) => {
+            const msg = 'dbGetData Error: ' + JSON.stringify(error) +
                 ' URL: ' + subUrl + ' User: ' + getUserName();
-        dbLogError(msg);
-        globalMsgFunc('error', 'Error while loading - try again!!') 
-        Promise.reject(error);
-    })
+            dbLogError(msg);
+            globalMsgFunc('error', 'Error while loading - try again!!')
+            Promise.reject(error);
+        })
 }
 
 // Return success with prob% probability
@@ -721,14 +721,14 @@ async function simulatedSave(prob) {
         return Promise.resolve();
 }
 
-function makeOldServices(svcs){
+function makeOldServices(svcs) {
     const svcTypes = getSvcTypes()
-    
+
     const services = []
     svcs.forEach(svc => {
-        const svcType = svcTypes.filter(svcType => svcType.svcTypeId === svc.svcTypeId )
+        const svcType = svcTypes.filter(svcType => svcType.svcTypeId === svc.svcTypeId)
         const oldSvcTypeId = svcType[0].svcOldTypeId
-        const fulfillment = { 
+        const fulfillment = {
             dateTime: svc.fillDT,
             byUserName: svc.fillBy,
             itemCount: svc.fillItems,
@@ -736,7 +736,7 @@ function makeOldServices(svcs){
             voucherNumber: svc.fillVoucher
         }
 
-        services.push( 
+        services.push(
             {
                 totalAdultsServed: svc.adults,
                 totalChildrenServed: svc.children,
@@ -746,7 +746,7 @@ function makeOldServices(svcs){
                 clientStatus: svc.cStatus,
                 clientZipcode: svc.cZip,
                 fulfillment: fulfillment,
-                homeless: ( svc.homeless === true ) ? "YES" : "NO",
+                homeless: (svc.homeless === true) ? "YES" : "NO",
                 totalIndividualsServed: svc.individuals,
                 totalSeniorsServed: svc.seniors,
                 serviceButtons: svc.svcBtns,
@@ -784,9 +784,9 @@ export async function dbGetAllVolunteersAsync() {
         }
     }
     // Get volunteers array from various possible response formats
-    let volunteers = Array.isArray(data.volunteers) ? data.volunteers : 
-                    Array.isArray(data) ? data : [];
-    
+    let volunteers = Array.isArray(data.volunteers) ? data.volunteers :
+        Array.isArray(data) ? data : [];
+
     // Normalize field names and decode strings
     return volunteers.map(vol => {
         const decoded = utilDecodeStrings(vol);
@@ -805,9 +805,9 @@ export async function dbGetAllVolunteersAsync() {
 
 export async function dbGetSingleVolunteerAsync(volunteerId) {
     // GET /prod/volunteers/{id} (auth required)
-    
+
     console.log("Get Volunteer:", volunteerId)
-    
+
     const response = await dbGetDataPageAsync(`/volunteers/${volunteerId}`);
     console.log("RESPONSE", response)
     let data = response;
@@ -831,7 +831,7 @@ export async function dbGetSingleVolunteerAsync(volunteerId) {
     else if (data && (data.VolunteerId || data.volunteerId || data.id || data.firstName || data.lastName)) {
         volunteer = data;
     }
-    
+
     if (volunteer) {
         const decoded = utilDecodeStrings(volunteer);
         return {
@@ -859,9 +859,9 @@ export async function dbSaveVolunteerAsync(data) {
         ProgramId: data.ProgramId || data.programId || '0',
         RegComplete: data.RegComplete || data.regComplete || true
     };
-    
+
     const response = await dbPutDataAsync('/volunteers', apiData);
-    
+
     // Map response back to internal format (uppercase first letter)
     if (response) {
         return {
@@ -883,25 +883,25 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
     // Map field names to match API expectations
     const apiData = {};
 
-    console.log( "VID", volunteerId)
-    
+    console.log("VID", volunteerId)
+
     // Only include fields that are being updated
-    if (data.FirstName !== undefined || data.firstName !== undefined) 
+    if (data.FirstName !== undefined || data.firstName !== undefined)
         apiData.firstName = data.FirstName || data.firstName;
-    if (data.LastName !== undefined || data.lastName !== undefined) 
+    if (data.LastName !== undefined || data.lastName !== undefined)
         apiData.lastName = data.LastName || data.lastName;
-    if (data.Telephone !== undefined || data.telephone !== undefined) 
+    if (data.Telephone !== undefined || data.telephone !== undefined)
         apiData.telephone = data.Telephone || data.telephone;
-    if (data.Email !== undefined || data.email !== undefined) 
+    if (data.Email !== undefined || data.email !== undefined)
         apiData.email = data.Email || data.email;
-    if (data.ProgramId !== undefined || data.programId !== undefined) 
+    if (data.ProgramId !== undefined || data.programId !== undefined)
         apiData.ProgramId = data.ProgramId || data.programId || '0';
-    if (data.RegComplete !== undefined) 
+    if (data.RegComplete !== undefined)
         apiData.RegComplete = data.RegComplete;
-    
+
     // Use POST method for updates (API doesn't support PATCH or PUT for updates)
-    const response = await dbPostDataAsync(`/volunteers/${ volunteerId }`, apiData, 'PATCH');
-    
+    const response = await dbPostDataAsync(`/volunteers/${volunteerId}`, apiData, 'PATCH');
+
     // Map response back to internal format
     if (response) {
         return {
@@ -934,9 +934,9 @@ export async function dbGetAllProgramsAsync() {
         }
     }
     // Get programs array from various possible response formats
-    return Array.isArray(data.programs) ? data.programs : 
-           Array.isArray(data.items) ? data.items :
-           Array.isArray(data) ? data : [];
+    return Array.isArray(data.programs) ? data.programs :
+        Array.isArray(data.items) ? data.items :
+            Array.isArray(data) ? data : [];
 }
 
 export async function dbGetAllActivitiesAsync() {
@@ -952,9 +952,9 @@ export async function dbGetAllActivitiesAsync() {
         }
     }
     // Get activities array from various possible response formats
-    return Array.isArray(data.activities) ? data.activities : 
-           Array.isArray(data.items) ? data.items :
-           Array.isArray(data) ? data : [];
+    return Array.isArray(data.activities) ? data.activities :
+        Array.isArray(data.items) ? data.items :
+            Array.isArray(data) ? data : [];
 }
 
 //******************** SHIFTS ********************
@@ -973,9 +973,27 @@ export async function dbGetAllShiftsByDateAsync(date) {
         }
     }
     // Handle both 'shifts' and 'items' array names
-    return Array.isArray(data.shifts) ? data.shifts : 
-           Array.isArray(data.items) ? data.items : 
-           Array.isArray(data) ? data : [];
+    return Array.isArray(data.shifts) ? data.shifts :
+        Array.isArray(data.items) ? data.items :
+            Array.isArray(data) ? data : [];
+}
+
+export async function dbGetShiftsByDateRangeAsync(startDate, endDate) {
+    // GET /prod/shiftsByDateRange?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD (auth required)
+    const response = await dbGetDataPageAsync(`/shiftsByDateRange?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);
+    let data = response;
+    // If the response has a 'body' property, parse it
+    if (data && typeof data.body === 'string') {
+        try {
+            data = JSON.parse(data.body);
+        } catch (e) {
+            data = {};
+        }
+    }
+    // Handle both 'shifts' and 'items' array names
+    return Array.isArray(data.shifts) ? data.shifts :
+        Array.isArray(data.items) ? data.items :
+            Array.isArray(data) ? data : [];
 }
 
 export async function dbGetShiftsByVolunteerAsync(volunteerId, startDate = null, endDate = null) {
@@ -993,9 +1011,9 @@ export async function dbGetShiftsByVolunteerAsync(volunteerId, startDate = null,
         }
     }
     // Handle both 'shifts' and 'items' array names
-    return Array.isArray(data.shifts) ? data.shifts : 
-           Array.isArray(data.items) ? data.items : 
-           Array.isArray(data) ? data : [];
+    return Array.isArray(data.shifts) ? data.shifts :
+        Array.isArray(data.items) ? data.items :
+            Array.isArray(data) ? data : [];
 }
 
 export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId, date) {
@@ -1004,7 +1022,7 @@ export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId,
     if (programId) url += `programId=${encodeURIComponent(programId)}&`;
     if (activityId) url += `activityId=${encodeURIComponent(activityId)}&`;
     if (date) url += `date=${encodeURIComponent(date)}`;
-    
+
     const response = await dbGetDataPageAsync(url);
     let data = response;
     if (data && typeof data.body === 'string') {
@@ -1015,9 +1033,9 @@ export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId,
         }
     }
     // Handle both 'shifts' and 'items' array names
-    return Array.isArray(data.shifts) ? data.shifts : 
-           Array.isArray(data.items) ? data.items : 
-           Array.isArray(data) ? data : [];
+    return Array.isArray(data.shifts) ? data.shifts :
+        Array.isArray(data.items) ? data.items :
+            Array.isArray(data) ? data : [];
 }
 
 export async function dbSaveShiftActionAsync(data) {
@@ -1031,11 +1049,11 @@ export async function dbSaveShiftActionAsync(data) {
         activityId: data.activityId,
         programId: data.programId
     };
-    
+
     // Remove optional fields if undefined
     if (!apiData.activityId) delete apiData.activityId;
     if (!apiData.programId) delete apiData.programId;
-    
+
     // Use PUT method as specified in the API
     return await dbPutDataAsync('/shiftAction', apiData);
 }
@@ -1047,24 +1065,24 @@ export async function dbUpdateShiftAsync(shiftData) {
     if (!shiftId) {
         return Promise.reject('Shift ID is required for update');
     }
-    
+
     // Prepare update data - remove ID from the payload
     const updateData = {};
-    
+
     // Only include fields that are being updated
     if (shiftData.Action !== undefined) updateData.Action = shiftData.Action;
     if (shiftData.ActivityId !== undefined) updateData.ActivityId = shiftData.ActivityId;
     if (shiftData.Date !== undefined) updateData.Date = shiftData.Date;
     if (shiftData.ProgramId !== undefined) updateData.ProgramId = shiftData.ProgramId;
     if (shiftData.VolunteerId !== undefined) updateData.VolunteerId = shiftData.VolunteerId;
-    
+
     // Format timestamps properly for the API
     if (shiftData.TimestampIn !== undefined) {
         if (shiftData.TimestampIn === null) {
             updateData.TimestampIn = null; // Explicit null to remove
         } else {
-            updateData.TimestampIn = typeof shiftData.TimestampIn === 'string' 
-                ? shiftData.TimestampIn 
+            updateData.TimestampIn = typeof shiftData.TimestampIn === 'string'
+                ? shiftData.TimestampIn
                 : shiftData.TimestampIn.format('YYYY-MM-DD HH:mm:ss');
         }
     }
@@ -1077,7 +1095,7 @@ export async function dbUpdateShiftAsync(shiftData) {
                 : shiftData.TimestampOut.format('YYYY-MM-DD HH:mm:ss');
         }
     }
-    
+
     // Use PATCH method to update the shift
     return await dbPostDataAsync(`/shiftAction/${shiftId}`, updateData, 'PATCH');
 }
