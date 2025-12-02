@@ -13,7 +13,7 @@ import { Search, Clear } from '@mui/icons-material';
 import {
     dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync,
     dbGetAllVolunteersAsync, dbGetAllProgramsAsync,
-    dbGetAllActivitiesAsync
+    dbGetAllActivitiesAsync, dbGetShiftsByProgramOrActivityAsync
 } from '../../../System/js/Database';
 // import { TextField } from '../../../System'; // Removed custom TextField to avoid conflict with MUI TextField for search
 import ShiftEditDialog from './ShiftEditDialog.jsx';
@@ -63,8 +63,10 @@ const headCells = [
 export default function ShiftsList() {
     const [shifts, setShifts] = useState([]);
     const [selectedDate, setSelectedDate] = useState(dayjs());
-    const [filterType, setFilterType] = useState('date'); // 'date', 'volunteer'
+    const [filterType, setFilterType] = useState('date'); // 'date', 'volunteer', 'program', 'activity'
     const [selectedVolunteerId, setSelectedVolunteerId] = useState('');
+    const [selectedProgramId, setSelectedProgramId] = useState('');
+    const [selectedActivityId, setSelectedActivityId] = useState('');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [volunteers, setVolunteers] = useState([]);
@@ -95,7 +97,7 @@ export default function ShiftsList() {
 
     useEffect(() => {
         loadShifts();
-    }, [filterType, selectedDate, selectedVolunteerId, startDate, endDate]);
+    }, [filterType, selectedDate, selectedVolunteerId, selectedProgramId, selectedActivityId, startDate, endDate]);
 
     async function loadShifts() {
         setLoading(true);
@@ -152,6 +154,20 @@ export default function ShiftsList() {
                                 return false;
                             });
                         }
+                    }
+                    break;
+
+                case 'program':
+                    if (selectedProgramId) {
+                        const dateStr = selectedDate ? dayjs(selectedDate).format('YYYY-MM-DD') : null;
+                        shiftsData = await dbGetShiftsByProgramOrActivityAsync(selectedProgramId, null, dateStr);
+                    }
+                    break;
+
+                case 'activity':
+                    if (selectedActivityId) {
+                        const dateStr = selectedDate ? dayjs(selectedDate).format('YYYY-MM-DD') : null;
+                        shiftsData = await dbGetShiftsByProgramOrActivityAsync(null, selectedActivityId, dateStr);
                     }
                     break;
             }
@@ -307,6 +323,8 @@ export default function ShiftsList() {
                     >
                         <MenuItem value="date">By Date</MenuItem>
                         <MenuItem value="volunteer">By Volunteer</MenuItem>
+                        <MenuItem value="program">By Program</MenuItem>
+                        <MenuItem value="activity">By Activity</MenuItem>
                     </Select>
                 </FormControl>
 
@@ -356,6 +374,70 @@ export default function ShiftsList() {
                                 />
                             </LocalizationProvider>
                         </Box>
+                    </Box>
+                )}
+
+                {filterType === 'program' && (
+                    <Box>
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel>Select Program</InputLabel>
+                            <Select
+                                value={selectedProgramId}
+                                onChange={(e) => setSelectedProgramId(e.target.value)}
+                                label="Select Program"
+                            >
+                                <MenuItem value="">None</MenuItem>
+                                {programs.map(prog => {
+                                    const progId = prog.ProgramId || prog.programId || prog.Id || prog.id;
+                                    const progName = prog.ProgramName || prog.Name || prog.name || `Program ${progId}`;
+                                    return (
+                                        <MenuItem key={progId} value={progId}>
+                                            {progName}
+                                        </MenuItem>
+                                    );
+                                })}
+                            </Select>
+                        </FormControl>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                                value={selectedDate}
+                                onChange={setSelectedDate}
+                                renderInput={(params) => <TextField {...params} fullWidth />}
+                                label="Select Date"
+                            />
+                        </LocalizationProvider>
+                    </Box>
+                )}
+
+                {filterType === 'activity' && (
+                    <Box>
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel>Select Activity</InputLabel>
+                            <Select
+                                value={selectedActivityId}
+                                onChange={(e) => setSelectedActivityId(e.target.value)}
+                                label="Select Activity"
+                            >
+                                <MenuItem value="">None</MenuItem>
+                                {activities.map(act => {
+                                    const actId = act.ActivityId || act.activityId || act.Id || act.id;
+                                    const actName = act.ActivityName_en || act.ActivityName || act.Name || act.name || `Activity ${actId}`;
+                                    return (
+                                        <MenuItem key={actId} value={actId}>
+                                            {actName}
+                                        </MenuItem>
+                                    );
+                                })}
+                            </Select>
+                        </FormControl>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                                value={selectedDate}
+                                onChange={setSelectedDate}
+                                renderInput={(params) => <TextField {...params} fullWidth />}
+                                label="Select Date"
+                            />
+                        </LocalizationProvider>
                     </Box>
                 )}
             </Box>
