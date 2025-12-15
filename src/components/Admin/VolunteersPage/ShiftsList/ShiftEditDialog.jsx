@@ -41,12 +41,12 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
             alert('Please select a volunteer');
             return;
         }
-        
+
         if (!editedShift.TimestampIn) {
             alert('Check-in time is required');
             return;
         }
-        
+
         // If check-out time exists, it must be after check-in time
         if (editedShift.TimestampOut && editedShift.TimestampIn) {
             if (editedShift.TimestampOut.isBefore(editedShift.TimestampIn)) {
@@ -54,7 +54,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                 return;
             }
         }
-        
+
         setSaving(true);
         try {
             // Prepare data for API - only send fields that are being updated
@@ -63,8 +63,9 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                 VolunteerId: editedShift.VolunteerId,
                 ProgramId: editedShift.ProgramId || null,
                 ActivityId: editedShift.ActivityId || null,
-                TimestampIn: editedShift.TimestampIn ? editedShift.TimestampIn.format('YYYY-MM-DD HH:mm:ss') : null,
-                TimestampOut: editedShift.TimestampOut ? editedShift.TimestampOut.format('YYYY-MM-DD HH:mm:ss') : null
+                Date: editedShift.Date || (editedShift.TimestampIn ? editedShift.TimestampIn.format('YYYY-MM-DD') : null),
+                TimestampIn: editedShift.TimestampIn,
+                TimestampOut: editedShift.TimestampOut
             };
 
             console.log('Saving shift data:', dataToSave);
@@ -78,7 +79,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
             setSaving(false);
         }
     };
-    
+
     const handleCancel = () => {
         onClose(false); // Pass false to indicate cancel
     };
@@ -102,7 +103,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                             const timestampIn = shift.TimestampIn ? dayjs(shift.TimestampIn) : null;
                             const timestampOut = shift.TimestampOut ? dayjs(shift.TimestampOut) : null;
                             let duration = '-';
-                            
+
                             if (timestampIn && timestampOut) {
                                 const durationMinutes = timestampOut.diff(timestampIn, 'minute');
                                 const hours = Math.floor(durationMinutes / 60);
@@ -123,7 +124,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                                     duration = `${minutes}m (ongoing)`;
                                 }
                             }
-                            
+
                             return duration !== '-' ? (
                                 <>
                                     <Typography variant="body2" color="text.secondary">•</Typography>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Chip, FormControl, InputLabel, Select, MenuItem, TextField as MuiTextField, TableSortLabel, TextField, InputAdornment, IconButton
+    Chip, FormControl, InputLabel, Select, MenuItem, TextField as MuiTextField, TableSortLabel, TextField, InputAdornment, IconButton, Tooltip
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -9,7 +9,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { Search, Clear } from '@mui/icons-material';
+import { Search, Clear, Refresh } from '@mui/icons-material';
 import {
     dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync,
     dbGetAllVolunteersAsync, dbGetAllProgramsAsync,
@@ -540,7 +540,15 @@ export default function ShiftsList() {
 
     return (
         <Box width="100%">
-            <Typography variant="h6" sx={{ mb: 2 }}>Shift Records</Typography>
+            <Box display="flex" alignItems="center" gap={2} mb={2}>
+                <Typography variant="h6">Shift Records</Typography>
+                <Chip label={visibleShifts.length} color="secondary" size="small" />
+                <Tooltip title="Refresh List">
+                    <IconButton size="small" onClick={loadShifts} color="success">
+                        <Refresh />
+                    </IconButton>
+                </Tooltip>
+            </Box>
             <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
                 View volunteer check-in/check-out records. Use filters to search by date or by volunteer.
             </Typography>

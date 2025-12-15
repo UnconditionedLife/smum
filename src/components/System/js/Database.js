@@ -622,8 +622,8 @@ async function dbPutDataRawAsync(subUrl, data, logErrors = true) {
         });
 }
 
-async function dbPostDataRawAsync(subUrl, data, method = 'POST', logErrors = true) {
-    if (!['POST', 'PATCH'].includes(method)) {
+export async function dbPostDataRawAsync(subUrl, data, method = 'POST', logErrors = true) {
+    if (!['POST', 'PATCH', 'DELETE'].includes(method)) {
         return Promise.reject(`Unsupported method: ${method}`);
     }
 
@@ -805,7 +805,8 @@ export async function dbGetAllVolunteersAsync() {
             Telephone: phone,
             ProgramId: decoded.ProgramId || '0',
             RegComplete: decoded.RegComplete || false,
-            Time: decoded.time
+            Time: decoded.time,
+            isDeleted: decoded.isDeleted || false
         };
     });
 }
@@ -924,6 +925,8 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
         apiData.ProgramId = data.ProgramId || data.programId || '0';
     if (data.RegComplete !== undefined)
         apiData.RegComplete = data.RegComplete;
+    if (data.isDeleted !== undefined)
+        apiData.isDeleted = data.isDeleted;
 
     // Use POST method for updates (API doesn't support PATCH or PUT for updates)
     const response = await dbPostDataAsync(`/volunteers/${volunteerId}`, apiData, 'PATCH');
@@ -1140,5 +1143,39 @@ export async function dbUpdateShiftAsync(shiftData) {
     }
 
     // Use PATCH method to update the shift
-    return await dbPostDataAsync(`/shiftAction/${shiftId}`, updateData, 'PATCH');
+    return await dbPostDataRawAsync(`/shiftAction/${shiftId}`, updateData, 'PATCH');
+}
+
+export async function dbDeleteVolunteerAsync(volunteerId) {
+    // Soft Delete: Update the volunteer record to set isDeleted = true
+    return await dbUpdateVolunteerAsync(volunteerId, { isDeleted: true });
+}
+
+export async function dbMergeVolunteersAsync(primaryId, duplicateId) {
+    console.log(`Merging volunteer ${duplicateId} into ${primaryId}`);
+
+    // 1. Get all shifts for the duplicate volunteer
+    const shifts = await dbGetShiftsByVolunteerAsync(duplicateId);
+    console.log(`Found ${shifts.length} shifts to reassign.`);
+
+    // 2. Reassign each shift to the primary volunteer
+    // We'll do this sequentially to avoid overwhelming the API, or parallel if robust
+    const updatePromises = shifts.map(shift => {
+        // Construct update object
+        const updateData = {
+            ShiftId: shift.ShiftId || shift.shiftId || shift.Id || shift.id,
+            VolunteerId: primaryId,
+            // Keep other fields as is, but dbUpdateShiftAsync only needs what changes
+        };
+        return dbUpdateShiftAsync(updateData);
+    });
+
+    await Promise.all(updatePromises);
+    console.log("All shifts reassigned.");
+
+    // 3. Soft Delete the duplicate volunteer
+    await dbDeleteVolunteerAsync(duplicateId);
+    console.log("Duplicate volunteer soft deleted.");
+
+    return { success: true, reassignedShifts: shifts.length };
 }

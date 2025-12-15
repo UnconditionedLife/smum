@@ -2,10 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
     Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar, Table, TableBody,
-    TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, Chip, TableSortLabel, TextField, InputAdornment, IconButton
+    TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, Chip, TableSortLabel, TextField, InputAdornment, IconButton, Button
 } from '@mui/material';
-import { Add, ExpandMore, Search, Clear } from '@mui/icons-material';
+import { Add, ExpandMore, Search, Clear, Refresh } from '@mui/icons-material';
 import VolunteerPage from '../VolunteerPage/VolunteerPage.jsx';
+import DuplicateVolunteersDialog from './DuplicateVolunteersDialog.jsx';
 import { navigationAllowed, dbGetAllVolunteersAsync, dbGetAllProgramsAsync } from '../../../System/js/Database';
 import { formatPhone } from '../../../System/js/Forms';
 import dayjs from 'dayjs';
@@ -134,6 +135,7 @@ VolunteerList.propTypes = {
 
 export default function VolunteersList() {
     const [newVolunteer, setNewVolunteer] = useState(false);
+    const [showDuplicatesDialog, setShowDuplicatesDialog] = useState(false);
     const [editVolunteerId, setEditVolunteerId] = useState(null);
     const [volunteers, setVolunteers] = useState([]);
     const [programs, setPrograms] = useState([]);
@@ -231,8 +233,34 @@ export default function VolunteersList() {
                 <VolunteerPage clearRecord={() => { setEditVolunteerId(null); getVolunteerList(); }} volunteerId={editVolunteerId} />
             }
 
+            <DuplicateVolunteersDialog
+                open={showDuplicatesDialog}
+                onClose={() => setShowDuplicatesDialog(false)}
+                onMergeComplete={() => {
+                    getVolunteerList();
+                    // Keep dialog open to find more duplicates? Or close it?
+                    // Let's keep it open if there are more groups, but the dialog handles that internally by removing the group.
+                    // If we want to refresh the list BEHIND the dialog, we do getVolunteerList.
+                }}
+            />
+
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} mx={2}>
-                <Typography variant='h6'>Volunteers</Typography>
+                <Box display="flex" alignItems="center" gap={2}>
+                    <Typography variant='h6'>Volunteers</Typography>
+                    <Chip label={visibleVolunteers.length} color="secondary" size="small" />
+                    <Tooltip title="Refresh List">
+                        <IconButton size="small" onClick={getVolunteerList} color="success">
+                            <Refresh />
+                        </IconButton>
+                    </Tooltip>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => setShowDuplicatesDialog(true)}
+                    >
+                        Find Duplicates
+                    </Button>
+                </Box>
                 <TextField
                     size="small"
                     placeholder="Search volunteers..."

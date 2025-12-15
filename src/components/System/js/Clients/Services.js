@@ -1,15 +1,19 @@
 //******************************************************************
 //****** CLIENTS ServiceInstance SECTION JAVASCRIPT FUNCTIONS ******
 //******************************************************************
-import dayjs from  'dayjs';
+import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { utilGradeToNumber, utilCalcTargetServices } from './ClientUtils'
-import { dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes, 
-    getUserName } from '../Database';
+import {
+    dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes,
+    getUserName
+} from '../Database';
 import { calFindOpenDate } from '../Calendar.js';
-import { prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
-            prnPrintVoucherReceipt } from './Receipts';
+import {
+    prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
+    prnPrintVoucherReceipt
+} from './Receipts';
 import cuid from 'cuid';
 
 //**** EXPORTABLE JAVASCRIPT FUNCTIONS ****
@@ -17,32 +21,32 @@ import cuid from 'cuid';
 dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrAfter)
 
-export async function addServiceAsync( client, svc ){
+export async function addServiceAsync(client, svc) {
 
-console.log("SVCTYPE???", svc)
+    console.log("SVCTYPE???", svc)
 
     const svcTypeId = svc.svcTypeId
-    
+
     const svcTypes = getSvcTypes()
-	const svcType = getServiceTypeByID(svcTypes, svc.svcTypeId)
+    const svcType = getServiceTypeByID(svcTypes, svc.svcTypeId)
 
 
 
     const svcCat = svc.svcCat
-	const svcId = "" // new service
+    const svcId = "" // new service
     const svcValid = true
-    const newClient = Object.assign({}, client) 
-    
-	// save service record
-	const servedCounts = calcServiceFamilyCounts( svcTypes, client, svcTypeId)
-    const svcRecord = utilBuildServiceRecord( svcType, svcId, servedCounts, svcValid, client )
+    const newClient = Object.assign({}, client)
 
-	return await dbSaveServiceRecordAsync(svcRecord)
+    // save service record
+    const servedCounts = calcServiceFamilyCounts(svcTypes, client, svcTypeId)
+    const svcRecord = utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client)
+
+    return await dbSaveServiceRecordAsync(svcRecord)
         .then((savedSvc) => {
             // empty object denotes saved with no errors
             if (Object.keys(savedSvc).length === 0) {
                 if (svcId === "") {
-                    printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat)                    
+                    printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat)
                     newClient.svcHistory.unshift(svcRecord)
                     return newClient
                 } else {
@@ -53,7 +57,7 @@ console.log("SVCTYPE???", svc)
 }
 
 // BUTTON RENDERING STARTS HERE
-export function getButtonData( props ) {
+export function getButtonData(props) {
     const { client, buttons, lastServedDays, activeServiceTypes, targetServices } = props
     const buttonData = { lastServedDays, activeServiceTypes }
     buttonData[buttons] = getActiveServicesButtons({ client, buttons, activeServiceTypes, targetServices, lastServedDays });
@@ -73,9 +77,9 @@ export function getButtonData( props ) {
     return buttonData[buttons]
 }
 
-export function sortButtons(btns){
+export function sortButtons(btns) {
     if (btns.length < 1) return btns
-    const cats = { food: [], clothes: [], admin: [], misc: [] }  
+    const cats = { food: [], clothes: [], admin: [], misc: [] }
     if (btns[0].svcBtns === "Primary") {
         btns.forEach(svc => {
             if (svc.svcCat === "Food_Pantry") {
@@ -90,7 +94,7 @@ export function sortButtons(btns){
         })
         return cats.food.concat(cats.clothes, cats.admin, cats.misc)
     } else {
-        return btns.sort(function(a, b){
+        return btns.sort(function (a, b) {
             if (a.svcName < b.svcName) return -1;
             if (a.svcName > b.svcName) return 1;
             return 0;
@@ -98,115 +102,115 @@ export function sortButtons(btns){
     }
 }
 
-export function getFoodInterval(aSvcTypes){
+export function getFoodInterval(aSvcTypes) {
     const svcTypes = aSvcTypes.length != 0 ? aSvcTypes : getSvcTypes()
-    const usdaArray = [ 'NonUSDA', 'USDA', 'Emergency' ]
+    const usdaArray = ['NonUSDA', 'USDA', 'Emergency']
     const foodInt = {}
-	svcTypes.forEach((t) => {
+    svcTypes.forEach((t) => {
         usdaArray.forEach((svcUSDA) => {
-            if ((t.svcBtns === "Primary") && (t.svcCat === "Food_Pantry") && (t.svcUSDA == svcUSDA)){
+            if ((t.svcBtns === "Primary") && (t.svcCat === "Food_Pantry") && (t.svcUSDA == svcUSDA)) {
                 foodInt[svcUSDA] = t.svcInterval
             }
         })
-	})
+    })
     return foodInt
 }
 
-export function getSvcsRendered(svcHistory){
+export function getSvcsRendered(svcHistory) {
     let svcsRendered = []
     svcHistory.forEach((svc) => {
         if (dayjs().isSame(svc.svcDT, "day")) {
             svcsRendered.push(svc)
-		}
+        }
     })
     return svcsRendered
 }
 
 export function getLastServedDays(client) {
     // get calculate number of days
-    let lsDays = { lastServedFoodDate: null, daysUSDA:10000, daysNonUSDA:10000, lowestDays:10000, backToSchool:10000 }
+    let lsDays = { lastServedFoodDate: null, daysUSDA: 10000, daysNonUSDA: 10000, lowestDays: 10000, backToSchool: 10000 }
     let tempUSDADate = null
     let tempNonUSDADate = null
-	let foodSvcs = []
-	if (client?.svcHistory.length === 0) {
+    let foodSvcs = []
+    if (client?.svcHistory.length === 0) {
         return lsDays
     } else {
-        foodSvcs = client.svcHistory.filter(( svc ) => {
+        foodSvcs = client.svcHistory.filter((svc) => {
             return svc.svcCat == "Food_Pantry"
         })
     }
-		
-	foodSvcs.forEach((foodSvc) => {
-		if (foodSvc.svcUSDA != "Emergency") {
+
+    foodSvcs.forEach((foodSvc) => {
+        if (foodSvc.svcUSDA != "Emergency") {
             let tempLastServedFoodDate = dayjs(foodSvc.svcDT)
             let tempLastServedFoodDateSTART = dayjs(foodSvc.svcDT).startOf('day')
-			if (foodSvc.svcUSDA == "USDA") {
+            if (foodSvc.svcUSDA == "USDA") {
                 let diffUSDA = dayjs().diff(tempLastServedFoodDateSTART, 'days')
-                if ( diffUSDA < lsDays.daysUSDA) {
+                if (diffUSDA < lsDays.daysUSDA) {
                     lsDays.daysUSDA = diffUSDA
                     tempUSDADate = tempLastServedFoodDate
                 }
-			} else {
+            } else {
                 let diffNonUSDA = dayjs().diff(tempLastServedFoodDateSTART, 'days')
-                if ( diffNonUSDA < lsDays.daysNonUSDA) {
+                if (diffNonUSDA < lsDays.daysNonUSDA) {
                     lsDays.daysNonUSDA = diffNonUSDA
                     tempNonUSDADate = tempLastServedFoodDate
                 }
-			}
-		}
-	})
-	lsDays.lowestDays = lsDays.daysUSDA
+            }
+        }
+    })
+    lsDays.lowestDays = lsDays.daysUSDA
     lsDays.lastServedFoodDate = tempUSDADate
-	if (lsDays.daysNonUSDA < lsDays.daysUSDA) {
+    if (lsDays.daysNonUSDA < lsDays.daysUSDA) {
         lsDays.lowestDays = lsDays.daysNonUSDA
         lsDays.lastServedFoodDate = tempNonUSDADate
     }
-	let backToSchoolSvcs = client.lastServed.filter(obj => obj.svcCat == "Back_To_School")
-	if (backToSchoolSvcs.length > 0) {
-		lsDays.backToSchool = dayjs(backToSchoolSvcs[0].serviceDateTime).startOf('day')
+    let backToSchoolSvcs = client.lastServed.filter(obj => obj.svcCat == "Back_To_School")
+    if (backToSchoolSvcs.length > 0) {
+        lsDays.backToSchool = dayjs(backToSchoolSvcs[0].serviceDateTime).startOf('day')
     }
-	return lsDays
+    return lsDays
 }
 
-export function getLastServedFood(client){
-	// TODO too much duplicated code with getLastServedDays()
-	let lastServedFood = null
+export function getLastServedFood(client) {
+    // TODO too much duplicated code with getLastServedDays()
+    let lastServedFood = null
     if (client?.svcHistory.length === 0) {
         return lastServedFood
     }
-	let lastServedFoodSvcs = client.svcHistory.filter(( svc ) => {
-		return svc.svcCat == "Food_Pantry"
-	})
-	lastServedFoodSvcs.forEach((svc) => {
-		if (svc.svcUSDA !== "Emergency") {
-			if (dayjs(svc.svcDT).isAfter(lastServedFood)){
-				lastServedFood = svc.svcDT
-			}
-		}
-	})
+    let lastServedFoodSvcs = client.svcHistory.filter((svc) => {
+        return svc.svcCat == "Food_Pantry"
+    })
+    lastServedFoodSvcs.forEach((svc) => {
+        if (svc.svcUSDA !== "Emergency") {
+            if (dayjs(svc.svcDT).isAfter(lastServedFood)) {
+                lastServedFood = svc.svcDT
+            }
+        }
+    })
 
     // console.log("LAST SERVED FOOD", lastServedFood);
 
-	return lastServedFood
+    return lastServedFood
 }
 
-export function getActiveSvcTypes(){
-	// ACTIVE AS IN AVAILABLE TODAY
+export function getActiveSvcTypes() {
+    // ACTIVE AS IN AVAILABLE TODAY
     // build Active Service Types array of Service Types which cover today's date
     let activeSvcTypes = []
-    const svcTypes = getSvcTypes()        
+    const svcTypes = getSvcTypes()
     svcTypes.forEach((svcType) => {
-        
+
         // if (svcType.svcName == "Thanksgiving Chicken") {
         //     console.log("SVCNAME", svcType.svcName )
         //     console.log("Thanksgiving Chicken", svcType )
         // }
-        if (svcType.isActive){
+        if (svcType.isActive) {
             // FROM Date
             let fromDateString = [
-                dayjs().year(), 
+                dayjs().year(),
                 // TODO the +1 is because it only works if we -1 at time of saving the date in ADMIN
-                Number(svcType.available.dateFromMonth) + 1,  
+                Number(svcType.available.dateFromMonth) + 1,
                 Number(svcType.available.dateFromDay)
             ]
             let fromDate = dayjs(fromDateString).startOf('day')
@@ -252,52 +256,52 @@ export function getActiveSvcTypes(){
 
 // activeServiceTypes are services that are: 1) Status is Active 2) Service Available date span includes current date
 
-function getActiveServicesButtons( props ) {	
+function getActiveServicesButtons(props) {
     const { client, buttons, activeServiceTypes, targetServices, lastServedDays } = props
-	let	btnPrimary = [];
-	let btnSecondary = [];
+    let btnPrimary = [];
+    let btnSecondary = [];
     let validDependents = []
     const intervals = getFoodInterval(activeServiceTypes)
 
     // check for not a valid service based on 
     // interval between services  
-	activeServiceTypes.forEach((svcType, i) => {
-		let display = true;
+    activeServiceTypes.forEach((svcType, i) => {
+        let display = true;
 
         // REMOVE INACTIVE SERVICES
         if (svcType.isActive == "false") display = false
 
         // check the interval since last service of same type
-		if (!validateSvcInterval({ client, activeServiceType: svcType, lastServedDays, intervals })) return;
-        
-        // check to see if food has been served within svcPeriod the number of times (svcFrequency) defined
-        if (!usageQualified({client, svcType})) return;
+        if (!validateSvcInterval({ client, activeServiceType: svcType, lastServedDays, intervals })) return;
 
-		// loop through each property in each targetServices
-		for (let prop in targetServices[i]) {
+        // check to see if food has been served within svcPeriod the number of times (svcFrequency) defined
+        if (!usageQualified({ client, svcType })) return;
+
+        // loop through each property in each targetServices
+        for (let prop in targetServices[i]) {
             if (prop == "homeless") {
                 if (targetServices[i][prop] == "YES"
                     && client.homeless == "NO") {
-                        display = false
+                    display = false
                 }
                 if (targetServices[i][prop] == "NO"
                     && client.homeless == "YES") {
-                        display = false
+                    display = false
                 }
             }
 
-			if (prop == "forChildren" ) {
-				// TODO move to grade and age target detection to helper function
-				if (targetServices[i]['dependents_gradeMin'] !== "Unselected" 
-                    && targetServices[i]['dependents_gradeMax']!== "Unselected") {
-					validDependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetServices[i] })
-				}
-				// TODO change service types to store non age entries as -1
-				if (targetServices[i]['dependents_ageMax'] > 0){
-					validDependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetServices[i] })
-				}
-				if (validDependents.length == 0) display = false
-			}
+            if (prop == "forChildren") {
+                // TODO move to grade and age target detection to helper function
+                if (targetServices[i]['dependents_gradeMin'] !== "Unselected"
+                    && targetServices[i]['dependents_gradeMax'] !== "Unselected") {
+                    validDependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetServices[i] })
+                }
+                // TODO change service types to store non age entries as -1
+                if (targetServices[i]['dependents_ageMax'] > 0) {
+                    validDependents = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetServices[i] })
+                }
+                if (validDependents.length == 0) display = false
+            }
 
             // TARGETING FAMILIES OF A CERTAIN SIZE
 
@@ -309,7 +313,7 @@ function getActiveServicesButtons( props ) {
             //    .totalSize
 
             if (prop == "forFamily") {
-                
+
                 // SINGLE INDIVIDUAL
                 if (targetServices[i]["family_totalSize"] == "1") {
                     if (client.family.totalSize !== 1) {
@@ -354,40 +358,40 @@ function getActiveServicesButtons( props ) {
             if (prop == "gender") {
                 if (targetServices[i][prop] == "Male"
                     && client.gender !== "Male") {
-                        display = false
+                    display = false
                 }
                 if (targetServices[i][prop] == "Female"
                     && client.gender !== "Female") {
-                        display = false
+                    display = false
                 }
             }
 
             // targeting a voucher fulfill service
-			// if (prop == "service" && targetServices[i][prop] !== "" ) { 
-                
-                // TODO - DO SOMETHING WITH VOUCHER
+            // if (prop == "service" && targetServices[i][prop] !== "" ) { 
 
-			// } else if (targetServices[i][prop] != client[prop]
-			// 		&& prop.includes("family")==false
-			// 		&& prop.includes("dependents")==false) display = false
-		}
+            // TODO - DO SOMETHING WITH VOUCHER
 
-        
-		if (display) {
+            // } else if (targetServices[i][prop] != client[prop]
+            // 		&& prop.includes("family")==false
+            // 		&& prop.includes("dependents")==false) display = false
+        }
+
+
+        if (display) {
             let btn = Object.assign({}, svcType)
             // btnType is used to display "normal" button (grey outline), "highlight" button (red outline), 
             // or "used" button, (undo icon)
             btn.btnType = "normal"
-            
+
             if (svcType.svcBtns == "Primary") {
                 if ((btn.svcCat === "Administration") || (btn.svcUSDA == "Emergency")) {
                     btn.btnType = "highlight"
-                }      
+                }
                 btnPrimary.push(btn)
             } else {
                 btnSecondary.push(btn)
             }
-		}
+        }
 
     })
 
@@ -396,7 +400,7 @@ function getActiveServicesButtons( props ) {
     return (buttons == "primary") ? btnPrimary : btnSecondary
 }
 
-function getUsedServicesButtons( client, buttons, buttonData ) {
+function getUsedServicesButtons(client, buttons, buttonData) {
     const svcHist = client.svcHistory
     const servedCount = svcHist.length
     let btn = null
@@ -428,29 +432,29 @@ function getUsedServicesButtons( client, buttons, buttonData ) {
                             if (histItem.svcTypeId === btnSvc.svcTypeId) {
                                 btn = Object.assign({}, histItem)
                                 btn.btnType = "used"
-                                buttonData[buttons][i] = btn 
+                                buttonData[buttons][i] = btn
                             }
                         })
                     }
                 }
             })
-        } 
+        }
     }
     return buttonData[buttons]
 }
 
-function validateSvcInterval( props ){
+function validateSvcInterval(props) {
     const { client, activeServiceType, lastServedDays, intervals } = props
     const lastSvcDate = dayjs().subtract(lastServedDays.lowestDays, 'days')
     const targetDate = dayjs(lastSvcDate).add(14, 'days').endOf('day'); // removes time of day so calculation is from end of service day
     const nextSvcDate = calFindOpenDate(targetDate, 7);
     const isSameOrAfter = dayjs().isSameOrAfter(nextSvcDate, 'day')
-    
-	if (activeServiceType.svcBtns == "Primary") {
-		const svcCat = activeServiceType.svcCat
-		if (svcCat == "Food_Pantry") {
+
+    if (activeServiceType.svcBtns == "Primary") {
+        const svcCat = activeServiceType.svcCat
+        if (svcCat == "Food_Pantry") {
             // CALCULATE THE NEXT VISIT DATE BASED ON OPEN DAYS
-            if ( isSameOrAfter ) {
+            if (isSameOrAfter) {
                 if (activeServiceType.svcUSDA == "USDA") {
                     // Default to USDA if it qualifies
                     if (lastServedDays.daysUSDA >= intervals.USDA) return true
@@ -463,7 +467,7 @@ function validateSvcInterval( props ){
                 }
                 // No Emergency Food
                 if (activeServiceType.svcUSDA === "Emergency") return false
-        
+
             } else {
                 // Emergency only if not day of service
                 if (activeServiceType.svcUSDA === "Emergency") {
@@ -471,24 +475,24 @@ function validateSvcInterval( props ){
                 }
                 return false
             }
-		}
+        }
 
-		// validate that a voucher was already registered for
-		if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
-			//serviceHistory = dbGetClientActiveServiceHistory(client)
-			//const voucherHistory = utilCalcVoucherServiceSignup(activeServiceType)
-			const voucherHistory = utilGetVoucherTargetService({ svcHistory: client.svcHistory, serviceType: activeServiceType })
-			let voucherDays = 10000
-			if (voucherHistory.length == 1) {
-				voucherDays = dayjs().diff(voucherHistory[0].svcDT, 'days')
-			}
-			if (activeServiceType.target.service == "Unselected") {
-				if (voucherDays < activeServiceType.svcInterval) return false
+        // validate that a voucher was already registered for
+        if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
+            //serviceHistory = dbGetClientActiveServiceHistory(client)
+            //const voucherHistory = utilCalcVoucherServiceSignup(activeServiceType)
+            const voucherHistory = utilGetVoucherTargetService({ svcHistory: client.svcHistory, serviceType: activeServiceType })
+            let voucherDays = 10000
+            if (voucherHistory.length == 1) {
+                voucherDays = dayjs().diff(voucherHistory[0].svcDT, 'days')
+            }
+            if (activeServiceType.target.service == "Unselected") {
+                if (voucherDays < activeServiceType.svcInterval) return false
             } else {
-				if (voucherDays == 10000) return false
-			}
-		}
-		if (activeServiceType.fulfillment.type == "Voucher"){
+                if (voucherDays == 10000) return false
+            }
+        }
+        if (activeServiceType.fulfillment.type == "Voucher") {
             const voucherSvcs = client.svcHistory.filter(hSvc => {
                 return hSvc.svcTypeId == activeServiceType.svcTypeId
             })
@@ -496,60 +500,62 @@ function validateSvcInterval( props ){
             let found = false
             voucherSvcs.forEach(vSvc => {
                 // Check that the service is within the service period - i.e. not from another year
-                if (dayjs().diff(vSvc.svcDT, 'days') <= activeServiceType.svcInterval ) {
+                if (dayjs().diff(vSvc.svcDT, 'days') <= activeServiceType.svcInterval) {
                     found = true
                 }
             })
 
             if (found) return false
         }
-		// let inLastServed = client.lastServed.filter(obj => obj.svcCat == svcCat)
-		// if (inLastServed.length > 0) {
-			// if a voucher fulfill service then need to check against Voucher service
-			if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
-				// get voucher services
-                const voucherSvcs = client.svcHistory.filter(hSvc => {
-                    return hSvc.svcTypeId == activeServiceType.target.service
-                })
+        // let inLastServed = client.lastServed.filter(obj => obj.svcCat == svcCat)
+        // if (inLastServed.length > 0) {
+        // if a voucher fulfill service then need to check against Voucher service
+        if (activeServiceType.fulfillment.type == "Voucher_Fulfill") {
+            // get voucher services
+            const voucherSvcs = client.svcHistory.filter(hSvc => {
+                return hSvc.svcTypeId == activeServiceType.target.service
+            })
 
-                if (voucherSvcs.length === 0) return false
+            if (voucherSvcs.length === 0) return false
 
-                let found = true
-                voucherSvcs.forEach(vSvc => {
-                    // Check that the service is within the service period - i.e. not from another year
-                    if (dayjs().diff(vSvc.svcDT, 'days') < activeServiceType.svcInterval ) {
-                        found = true
-                    }
-                })
-                if (!found) return false
-			}
-	} else {
-		// secondary buttons
+            let found = true
+            voucherSvcs.forEach(vSvc => {
+                // Check that the service is within the service period - i.e. not from another year
+                if (dayjs().diff(vSvc.svcDT, 'days') < activeServiceType.svcInterval) {
+                    found = true
+                }
+            })
+            if (!found) return false
+        }
+    } else {
+        // secondary buttons
+        if (activeServiceType.svcFrequency == 0 && activeServiceType.svcPeriod == 0) return true
+
         // Greater than 0 lowest day is used to provide same day buffer for secondary buttons
-        if ( (isSameOrAfter === false) && (dayjs().diff(lastSvcDate) > 1)) {
+        if ((isSameOrAfter === false) && (dayjs().diff(lastSvcDate) > 1)) {
             // if (lastServed.lowestDays < activeServiceType.svcInterval) 
             return false
         }
-	}
-	// default: show button
-	return true
+    }
+    // default: show button
+    return true
 }
 
-function usageQualified( props ){
+function usageQualified(props) {
     const { client, svcType } = props
     const svcPeriod = svcType.svcPeriod
     const svcFrequency = svcType.svcFrequency
 
-    if ( svcFrequency == 0 ) return true;
+    if (svcFrequency == 0) return true;
     // get history and filter matching services in svc period
     let periodSvcs = []
-    if ( svcPeriod > 0 ) {
+    if (svcPeriod > 0) {
         periodSvcs = client.svcHistory.filter(svc => {
             return (dayjs().diff(svc.svcDT, 'days') <= svcPeriod && svc.svcCat === "Food_Pantry")
-         }) 
+        })
     } else {
         periodSvcs = client.svcHistory.filter(svc => {
-            return ( svc.svcCat === "Food_Pantry" )
+            return (svc.svcCat === "Food_Pantry")
         })
     }
 
@@ -560,31 +566,31 @@ function usageQualified( props ){
 }
 
 
-function calcValidAgeGrade(props){ 
+function calcValidAgeGrade(props) {
     const { client, gradeOrAge, targetService } = props
-	let dependents = []
-	for (let j = 0; j < client.dependents.length; j++) {
-		if (gradeOrAge=="grade" &&
-		!(client.dependents[j].grade == undefined || client.dependents[j].grade == "") && client.dependents[j].isActive=="Active"){
-			let currentGrade = utilGradeToNumber(client.dependents[j].grade)
-			if (currentGrade >= utilGradeToNumber(targetService['dependents_gradeMin'])
-			&& currentGrade <= utilGradeToNumber(targetService['dependents_gradeMax'])){
-				dependents.push(client.dependents[j])
-			}
-		}
-		if (gradeOrAge == "age" && client.dependents[j].isActive == "Active"){
-			let age = client.dependents[j].age
-			if (age >= targetService['dependents_ageMin']
-			&& age <= targetService['dependents_ageMax']){
-				dependents.push(client.dependents[j])
-			}
-		}
+    let dependents = []
+    for (let j = 0; j < client.dependents.length; j++) {
+        if (gradeOrAge == "grade" &&
+            !(client.dependents[j].grade == undefined || client.dependents[j].grade == "") && client.dependents[j].isActive == "Active") {
+            let currentGrade = utilGradeToNumber(client.dependents[j].grade)
+            if (currentGrade >= utilGradeToNumber(targetService['dependents_gradeMin'])
+                && currentGrade <= utilGradeToNumber(targetService['dependents_gradeMax'])) {
+                dependents.push(client.dependents[j])
+            }
+        }
+        if (gradeOrAge == "age" && client.dependents[j].isActive == "Active") {
+            let age = client.dependents[j].age
+            if (age >= targetService['dependents_ageMin']
+                && age <= targetService['dependents_ageMax']) {
+                dependents.push(client.dependents[j])
+            }
+        }
     }
-	return dependents
+    return dependents
 }
 
-async function utilCalcVoucherServiceSignupAsync(client, serviceType){
-	return await dbGetClientActiveSvcHistoryAsync(client.clientId).then(
+async function utilCalcVoucherServiceSignupAsync(client, serviceType) {
+    return await dbGetClientActiveSvcHistoryAsync(client.clientId).then(
         clientHistory => {
             return clientHistory.filter(item => dayjs(item.svcDT).year() == dayjs().year()) // current year service
                 .filter(item => item.svcTypeId == serviceType.target.service)
@@ -592,112 +598,112 @@ async function utilCalcVoucherServiceSignupAsync(client, serviceType){
     )
 }
 
-function utilGetVoucherTargetService(props){
+function utilGetVoucherTargetService(props) {
     const { svcHistory, serviceType } = props
     return svcHistory
         .filter(item => dayjs(item.svcDT).year() == dayjs().year())
         .filter(item => item.svcTypeId == serviceType.target.service)
 }
 
-function getHistoryLastService( props ){
+function getHistoryLastService(props) {
     const { svcHistory, serviceType } = props
-	return svcHistory.filter(item => dayjs(item.svcDT).year() == dayjs().year()) // current year service
-	.filter(item => item.svcTypeId == serviceType.svcTypeId)
+    return svcHistory.filter(item => dayjs(item.svcDT).year() == dayjs().year()) // current year service
+        .filter(item => item.svcTypeId == serviceType.svcTypeId)
 }
 
-function calcServiceFamilyCounts(svcTypes, client, svcTypeId){
-	const svcType = getServiceTypeByID(svcTypes, svcTypeId)
-	let servedCounts = {
-		adults: String(client.family.totalAdults),
-		children: String(client.family.totalChildren),
-		individuals: String(client.family.totalSize),
-		seniors: String(client.family.totalSeniors),
-		svcItems: String(svcType.numberItems)
-	}
-	let targetService = utilCalcTargetServices([svcType])
+function calcServiceFamilyCounts(svcTypes, client, svcTypeId) {
+    const svcType = getServiceTypeByID(svcTypes, svcTypeId)
+    let servedCounts = {
+        adults: String(client.family.totalAdults),
+        children: String(client.family.totalChildren),
+        individuals: String(client.family.totalSize),
+        seniors: String(client.family.totalSeniors),
+        svcItems: String(svcType.numberItems)
+    }
+    let targetService = utilCalcTargetServices([svcType])
 
-	if (svcType.itemsPer == "Person") {
-		servedCounts.svcItems = String(servedCounts.svcItems * client.family.totalSize)
-		if (svcType.fulfillment.type =="Voucher"){
-			if (svcType.target.service == "Unselected" && svcType.svcCat == "Back_To_School") {
-				servedCounts = {
-					adults: 0,
-					children: 0,
-					individuals: 0,
-					seniors: 0,
-					svcItems: 0,
-				}
-			} else {
-				let numChildren = 0;
-				if (targetService[0].dependents_ageMax !== undefined){
-					numChildren = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0]} ).length
-				}
-				if (targetService[0].dependents_gradeMax !== undefined){
-					numChildren = Math.abs(numChildren - calcValidAgeGrade( { client: client, gradeOrAge: "grade", targetService: targetService[0] }).length)
-				}
+    if (svcType.itemsPer == "Person") {
+        servedCounts.svcItems = String(servedCounts.svcItems * client.family.totalSize)
+        if (svcType.fulfillment.type == "Voucher") {
+            if (svcType.target.service == "Unselected" && svcType.svcCat == "Back_To_School") {
+                servedCounts = {
+                    adults: 0,
+                    children: 0,
+                    individuals: 0,
+                    seniors: 0,
+                    svcItems: 0,
+                }
+            } else {
+                let numChildren = 0;
+                if (targetService[0].dependents_ageMax !== undefined) {
+                    numChildren = calcValidAgeGrade({ client: client, gradeOrAge: "age", targetService: targetService[0] }).length
+                }
+                if (targetService[0].dependents_gradeMax !== undefined) {
+                    numChildren = Math.abs(numChildren - calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] }).length)
+                }
 
-				servedCounts = {
-					adults: 0,
-					children: numChildren,
-					individuals: numChildren,
-					seniors: 0,
-					svcItems: svcType.numberItems * numChildren,
-				}
-			}
-		}
-	}
-	return servedCounts
+                servedCounts = {
+                    adults: 0,
+                    children: numChildren,
+                    individuals: numChildren,
+                    seniors: 0,
+                    svcItems: svcType.numberItems * numChildren,
+                }
+            }
+        }
+    }
+    return servedCounts
 }
 
-function getServiceTypeByID(svcTypes, svcTypeId){
-	let svcTypeArr = svcTypes.filter(function( obj ) {
-		return obj.svcTypeId == svcTypeId
-	})
-	return svcTypeArr[0]
+function getServiceTypeByID(svcTypes, svcTypeId) {
+    let svcTypeArr = svcTypes.filter(function (obj) {
+        return obj.svcTypeId == svcTypeId
+    })
+    return svcTypeArr[0]
 }
 
-function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client){
-	// TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
+function utilBuildServiceRecord(svcType, svcId, servedCounts, svcValid, client) {
+    // TODO add validation isActive(Client/NonClient) vs (Service Area Zipcodes)
     let firstFood = false
-	if (svcType.svcCat === "Food_Pantry") {
-        const foodSvcs = client.svcHistory.filter( svc => svc.svcCat === "Food_Pantry" )
+    if (svcType.svcCat === "Food_Pantry") {
+        const foodSvcs = client.svcHistory.filter(svc => svc.svcCat === "Food_Pantry")
         firstFood = (foodSvcs.length === 0) ? true : false
     }
 
-	let serviceRecord = {
-		svcId: (svcId == "") ? cuid() : svcId,
-		svcValid: svcValid,
-		svcDT: dayjs().format('YYYY-MM-DDTHH:mm'),
-		cId: client.clientId,
-		cStatus: client.isActive,
-		cGivName: client.givenName,
-		cFamName: client.familyName,
+    let serviceRecord = {
+        svcId: (svcId == "") ? cuid() : svcId,
+        svcValid: svcValid,
+        svcDT: dayjs().format('YYYY-MM-DDTHH:mm'),
+        cId: client.clientId,
+        cStatus: client.isActive,
+        cGivName: client.givenName,
+        cFamName: client.familyName,
         cEthnicGrp: client.ethnicGroup,
         cStreet: client.street,
-		cZip: client.zipcode,
-		svcBy: getUserName(),
-		svcTypeId: svcType.svcTypeId,
-		svcName: svcType.svcName,
-		svcCat: svcType.svcCat,
-		svcBtns: svcType.svcBtns,
+        cZip: client.zipcode,
+        svcBy: getUserName(),
+        svcTypeId: svcType.svcTypeId,
+        svcName: svcType.svcName,
+        svcCat: svcType.svcCat,
+        svcBtns: svcType.svcBtns,
         svcFirst: firstFood,
         svcMonth: dayjs().format("YYYY-MM"),
         svcUpdatedDT: "",
-		svcUSDA: svcType.svcUSDA,
-		svcItems: servedCounts.svcItems,
-		homeless: (client.homeless === "YES") ? true : false ,
-		adults: servedCounts.adults,
-		children: servedCounts.children,
-		seniors: servedCounts.seniors,
+        svcUSDA: svcType.svcUSDA,
+        svcItems: servedCounts.svcItems,
+        homeless: (client.homeless === "YES") ? true : false,
+        adults: servedCounts.adults,
+        children: servedCounts.children,
+        seniors: servedCounts.seniors,
         individuals: servedCounts.individuals,
-		fillPending: (svcType.fulfillment.type == "Voucher") ? true : false ,
+        fillPending: (svcType.fulfillment.type == "Voucher") ? true : false,
         fillDT: "",
-		fillVoucher: "",
+        fillVoucher: "",
         fillBy: "",
         fillItems: ""
-	}
+    }
 
-	return serviceRecord
+    return serviceRecord
 }
 
 function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
@@ -705,27 +711,27 @@ function printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat) {
     const receipts = svcType.receipts.split(',')
 
     if (receipts.includes("Food")) {
-        prnPrintFoodReceipt(client, svcType.svcUSDA )
+        prnPrintFoodReceipt(client, svcType.svcUSDA)
     }
-    
+
     if (receipts.includes("Reminder")) {
         // Determine next visit date
         let targetDate = dayjs().add(14, 'days');
         let nextVisit = calFindOpenDate(targetDate, 7);
         prnPrintReminderReceipt(client, nextVisit);
     }
-    
+
     if (receipts.includes("Clothes")) {
-        prnPrintClothesReceipt( client, svcType )
+        prnPrintClothesReceipt(client, svcType)
     }
-    
+
     if (receipts.includes("Voucher")) {
         let params
         if (svcCat == 'Back_To_School') {
             const targetService = utilCalcTargetServices([svcType])
             const dependents = calcValidAgeGrade({ client: client, gradeOrAge: "grade", targetService: targetService[0] })
             params = { client: client, svcType: svcType, dependents: dependents, gradeOrAge: 'grade' }
-        
+
         } else if (svcCat == 'Thanksgiving') {
             params = { client: client, svcType: svcType }
 
