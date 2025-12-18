@@ -17,14 +17,14 @@ HistoryFormDialog.propTypes = {
 
 export default function HistoryFormDialog(props) {
     const { editRecord, updateClient, client, handleEditMode } = props
-    const [ dialogOpen, setDialogOpen ] = useState(true);
-    
+    const [dialogOpen, setDialogOpen] = useState(true);
+
     const svcNames = getSvcTypes()
         // .filter(obj => obj.svcBtns == "Primary")   // removed to allow for changing secondary services
         .map(obj => obj.svcName)
 
-    function handleDialog(state){
-        if (!state) { 
+    function handleDialog(state) {
+        if (!state) {
             handleEditMode('cancel')
         }
         setDialogOpen(state)
@@ -33,7 +33,7 @@ export default function HistoryFormDialog(props) {
     const initValues = editRecord
     const { handleSubmit, control, errors, formState } = useForm({
         mode: 'onBlur',
-        defaultValues: initValues, 
+        defaultValues: initValues,
     })
 
     function doSave(formValues) {
@@ -42,26 +42,23 @@ export default function HistoryFormDialog(props) {
             globalMsgFunc('error', 'Individuals must equal sum of Children, Adults, and Seniors!')
             return null
         }
-        
+
         saveHistoryFormAsync(editRecord, formValues, client, getUserName())
-            .then( savedSvc => {
-                if (savedSvc !== null) { 
+            .then(savedSvc => {
+                if (savedSvc !== null) {
                     // update client history to reflect edits
                     const tempClient = Object.assign({}, client)
                     const index = tempClient.svcHistory.findIndex((svc) => svc.svcId === editRecord.svcId)
                     tempClient.svcHistory[index] = savedSvc
-                    updateClient(tempClient)
+
                     const oldRecord = Object.assign({}, editRecord)
-                    removeSvcAsync(client, oldRecord)
-                        .then( updatedClient => {
-                            if (updatedClient !== null) { 
-
-console.log("Updated Client", updatedClient);
-
+                    // Pass the tempClient (which has the new record) to removeSvcAsync
+                    // so it can perform further updates (like unshifting to invalidSvcs)
+                    // and return the final synced client state.
+                    removeSvcAsync(tempClient, oldRecord)
+                        .then(updatedClient => {
+                            if (updatedClient !== null) {
                                 globalMsgFunc('success', 'Saved changes and archived old history record!')
-
-                                // update invalidSvcs in client to include old unedited svc
-                                // tempClient.invalidSvcs.unshift(oldSvc)
                                 updateClient(updatedClient)
                                 handleDialog(false)
                             } else {
@@ -71,59 +68,59 @@ console.log("Updated Client", updatedClient);
                 } else {
                     globalMsgFunc('error', 'Failed to save edited service history!')
                 }
-            }) 
+            })
     }
 
     const submitForm = handleSubmit(doSave);
 
     return (
-        <Dialog open={ dialogOpen } aria-labelledby="form-dialog-title"> 
+        <Dialog open={dialogOpen} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Edit Service History Record</DialogTitle>
             <DialogContent>
                 <Box>
-                <form>
-                    <FormTextField name="svcDT" label="Service Date/Time" type="datetime-local" fieldsize="xl"
-                        error={ errors.svcDT } control={ control } />
+                    <form>
+                        <FormTextField name="svcDT" label="Service Date/Time" type="datetime-local" fieldsize="xl"
+                            error={errors.svcDT} control={control} />
 
-                    <FormSelect name="svcName" label="Service Name" error={ errors.svcName } 
-                        control={ control } rules={ {required: 'Service name is required'}} >
-                        { svcNames.map((item) => (
-                            <MenuItem value={ item } key={ item }>{ item }</MenuItem>
-                        ))}
-                    </FormSelect>
+                        <FormSelect name="svcName" label="Service Name" error={errors.svcName}
+                            control={control} rules={{ required: 'Service name is required' }} >
+                            {svcNames.map((item) => (
+                                <MenuItem value={item} key={item}>{item}</MenuItem>
+                            ))}
+                        </FormSelect>
 
-                    <FormSelect width='160px' name="cStatus" label="Client Status" error={ errors.cStatus } 
-                        control={ control } rules={ {required: 'Client is required'}} >
+                        <FormSelect width='160px' name="cStatus" label="Client Status" error={errors.cStatus}
+                            control={control} rules={{ required: 'Client is required' }} >
                             <MenuItem value="Client">Client</MenuItem>
                             <MenuItem value="NonClient">NonClient</MenuItem>
                             <MenuItem value="Inactive">Inactive</MenuItem>
-                    </FormSelect>
-                
-                    <FormSelect width='100px' name="homeless" label="Homeless" error={ errors.homeless } 
-                        control={ control } >
-                            <MenuItem value={ true }>YES</MenuItem>
-                            <MenuItem value={ false }>NO</MenuItem>
-                    </FormSelect>
-                
-                    <FormTextField width='100px' name="svcItems" label="# Items" error={ errors.svcItems } 
-                        control={ control } rules={ {required: 'Service name is required'}} />
-                
-                    <FormTextField width='100px' name="adults" label="# Adults" error={ errors.adults } 
-                        control={ control } rules={ {required: 'Service name is required'}} />
+                        </FormSelect>
 
-                    <FormTextField width='100px' name="children" label="# Children" error={ errors.children } 
-                        control={ control } rules={ {required: 'Service name is required'}} />
-                
-                    <FormTextField width='100px' name="individuals" label="# Individuals" error={ errors.individuals } 
-                        control={ control } rules={ {required: 'Service name is required'}} />
-                    
-                    <FormTextField width='100px' name="seniors" label="# Seniors" error={ errors.seniors } 
-                        control={ control } rules={ {required: 'Service name is required'}} />
-                    
-                    <FormTextField width='160px' name="svcBy" label="Serviced By" error={ errors.svcBy } 
-                        control={ control } disabled={ true } />
+                        <FormSelect width='100px' name="homeless" label="Homeless" error={errors.homeless}
+                            control={control} >
+                            <MenuItem value={true}>YES</MenuItem>
+                            <MenuItem value={false}>NO</MenuItem>
+                        </FormSelect>
+
+                        <FormTextField width='100px' name="svcItems" label="# Items" error={errors.svcItems}
+                            control={control} rules={{ required: 'Service name is required' }} />
+
+                        <FormTextField width='100px' name="adults" label="# Adults" error={errors.adults}
+                            control={control} rules={{ required: 'Service name is required' }} />
+
+                        <FormTextField width='100px' name="children" label="# Children" error={errors.children}
+                            control={control} rules={{ required: 'Service name is required' }} />
+
+                        <FormTextField width='100px' name="individuals" label="# Individuals" error={errors.individuals}
+                            control={control} rules={{ required: 'Service name is required' }} />
+
+                        <FormTextField width='100px' name="seniors" label="# Seniors" error={errors.seniors}
+                            control={control} rules={{ required: 'Service name is required' }} />
+
+                        <FormTextField width='160px' name="svcBy" label="Serviced By" error={errors.svcBy}
+                            control={control} disabled={true} />
                     </form>
-                    <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? submitForm() : handleDialog(false) } } />
+                    <SaveCancel saveDisabled={!formState.isDirty} onClick={(isSave) => { isSave ? submitForm() : handleDialog(false) }} />
                 </Box>
             </DialogContent>
         </Dialog>

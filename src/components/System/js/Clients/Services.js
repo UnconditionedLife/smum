@@ -9,6 +9,7 @@ import {
     dbGetClientActiveSvcHistoryAsync, dbSaveServiceRecordAsync, getSvcTypes,
     getUserName
 } from '../Database';
+import { updateLastServed } from './History';
 import { calFindOpenDate } from '../Calendar.js';
 import {
     prnPrintFoodReceipt, prnPrintClothesReceipt, prnPrintReminderReceipt,
@@ -48,7 +49,10 @@ export async function addServiceAsync(client, svc) {
                 if (svcId === "") {
                     printSvcReceipt(client, svcTypes, svcType, svcTypeId, svcCat)
                     newClient.svcHistory.unshift(svcRecord)
-                    return newClient
+                    return updateLastServed(newClient)
+                        .then(() => {
+                            return newClient
+                        })
                 } else {
                     return null
                 }
@@ -127,48 +131,48 @@ export function getSvcsRendered(svcHistory) {
 }
 
 export function getLastServedDays(client) {
-    // get calculate number of days
     let lsDays = { lastServedFoodDate: null, daysUSDA: 10000, daysNonUSDA: 10000, lowestDays: 10000, backToSchool: 10000 }
-    let tempUSDADate = null
-    let tempNonUSDADate = null
-    let foodSvcs = []
-    if (client?.svcHistory.length === 0) {
+
+    if (!client?.svcHistory || client.svcHistory.length === 0) {
         return lsDays
-    } else {
-        foodSvcs = client.svcHistory.filter((svc) => {
-            return svc.svcCat == "Food_Pantry"
-        })
     }
 
+    const foodSvcs = client.svcHistory.filter((svc) => svc.svcCat === "Food_Pantry")
+
     foodSvcs.forEach((foodSvc) => {
-        if (foodSvc.svcUSDA != "Emergency") {
-            let tempLastServedFoodDate = dayjs(foodSvc.svcDT)
-            let tempLastServedFoodDateSTART = dayjs(foodSvc.svcDT).startOf('day')
-            if (foodSvc.svcUSDA == "USDA") {
-                let diffUSDA = dayjs().diff(tempLastServedFoodDateSTART, 'days')
-                if (diffUSDA < lsDays.daysUSDA) {
-                    lsDays.daysUSDA = diffUSDA
-                    tempUSDADate = tempLastServedFoodDate
+        if (foodSvc.svcUSDA !== "Emergency") {
+            const svcDate = dayjs(foodSvc.svcDT)
+            const svcDateStart = svcDate.startOf('day')
+            const diff = dayjs().diff(svcDateStart, 'days')
+
+            if (foodSvc.svcUSDA === "USDA") {
+                if (diff < lsDays.daysUSDA) {
+                    lsDays.daysUSDA = diff
+                }
+                if (!lsDays.lastServedFoodDate || svcDate.isAfter(lsDays.lastServedFoodDate)) {
+                    lsDays.lastServedFoodDate = svcDate
                 }
             } else {
-                let diffNonUSDA = dayjs().diff(tempLastServedFoodDateSTART, 'days')
-                if (diffNonUSDA < lsDays.daysNonUSDA) {
-                    lsDays.daysNonUSDA = diffNonUSDA
-                    tempNonUSDADate = tempLastServedFoodDate
+                if (diff < lsDays.daysNonUSDA) {
+                    lsDays.daysNonUSDA = diff
+                }
+                if (!lsDays.lastServedFoodDate || svcDate.isAfter(lsDays.lastServedFoodDate)) {
+                    lsDays.lastServedFoodDate = svcDate
                 }
             }
         }
     })
-    lsDays.lowestDays = lsDays.daysUSDA
-    lsDays.lastServedFoodDate = tempUSDADate
-    if (lsDays.daysNonUSDA < lsDays.daysUSDA) {
-        lsDays.lowestDays = lsDays.daysNonUSDA
-        lsDays.lastServedFoodDate = tempNonUSDADate
+
+    lsDays.lowestDays = Math.min(lsDays.daysUSDA, lsDays.daysNonUSDA)
+
+    // Check lastServed array for specific services like Back_To_School
+    const backToSchoolSvc = (client.lastServed || []).find(obj => (obj.svcCat || obj.serviceCategory) === "Back_To_School")
+    if (backToSchoolSvc) {
+        // Handle both old 'serviceDateTime' and new 'svcDT' field names
+        const btsDate = backToSchoolSvc.svcDT || backToSchoolSvc.serviceDateTime
+        if (btsDate) lsDays.backToSchool = dayjs(btsDate).startOf('day')
     }
-    let backToSchoolSvcs = client.lastServed.filter(obj => obj.svcCat == "Back_To_School")
-    if (backToSchoolSvcs.length > 0) {
-        lsDays.backToSchool = dayjs(backToSchoolSvcs[0].serviceDateTime).startOf('day')
-    }
+
     return lsDays
 }
 

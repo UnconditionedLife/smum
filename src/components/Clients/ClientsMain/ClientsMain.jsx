@@ -7,8 +7,10 @@ import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { arrayAddIds, calcFamilyCounts, calcDependentsAges, utilCalcAge } from '../../System/js/Clients/ClientUtils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { dbSearchClientsAsync, dbGetAllClientSvcsAsync, dbSetModifiedTime,
-     utilEmptyPlaceholders, getUserName, globalMsgFunc } from '../../System/js/Database';
+import {
+    dbSearchClientsAsync, dbGetAllClientSvcsAsync, dbSetModifiedTime,
+    utilEmptyPlaceholders, getUserName, globalMsgFunc
+} from '../../System/js/Database';
 import { getLastServedDays } from '../../System/js/Clients/Services'
 
 ClientsMain.propTypes = {
@@ -25,24 +27,24 @@ dayjs.extend(utc)
 
 export default function ClientsMain(props) {
 
-    const { searchTerm, selectedTab, checkClientsURL, updateClientsURL, url }  = props
-    const [ clientsFound, setClientsFound ] = useState([]);
-    const [ client, setClient ] = useState({});
-    const [ showFound, setShowFound ] = useState(false);
-    const [ showServices, setShowService ] = useState(false);
-    const [ showClient, setShowClient ] = useState(false);
-    const [ openAlert, setOpenAlert ] = useState(false)
-    const [ alertSeverity, setAlertSeverity ] = useState("info")
-    const [ alertMsg, setAlertMsg ] = useState("")
-    const [ lastServedDays, setLastServedDays ] = useState(null)
-    const [ lastServedFoodDate, setLastServedFoodDate ] = useState(null)
-    const [ clientInactive, setClientInactive ]  = useState(null)
+    const { searchTerm, selectedTab, checkClientsURL, updateClientsURL, url } = props
+    const [clientsFound, setClientsFound] = useState([]);
+    const [client, setClient] = useState({});
+    const [showFound, setShowFound] = useState(false);
+    const [showServices, setShowService] = useState(false);
+    const [showClient, setShowClient] = useState(false);
+    const [openAlert, setOpenAlert] = useState(false)
+    const [alertSeverity, setAlertSeverity] = useState("info")
+    const [alertMsg, setAlertMsg] = useState("")
+    const [lastServedDays, setLastServedDays] = useState(null)
+    const [lastServedFoodDate, setLastServedFoodDate] = useState(null)
+    const [clientInactive, setClientInactive] = useState(null)
 
     useEffect(() => {
-        if (getUserName()){
-             checkClientsURL(client); 
-            } 
-    }, [ getUserName, url ])
+        if (getUserName()) {
+            checkClientsURL(client);
+        }
+    }, [getUserName, url])
 
     useEffect(() => {
         const foundEval = !isEmpty(clientsFound)
@@ -56,8 +58,8 @@ export default function ClientsMain(props) {
     })
 
     useEffect(() => {
-        if (searchTerm !== '' ) {
-            dbSearchClientsAsync(searchTerm).then(clients => { 
+        if (searchTerm !== '') {
+            dbSearchClientsAsync(searchTerm).then(clients => {
                 changeClientsFound(clients, searchTerm)
                 if (clients.length === 0) {
                     globalMsgFunc('error', "No matching clients were found. Make sure the search term is an ID, date, or name(s).")
@@ -71,20 +73,30 @@ export default function ClientsMain(props) {
             // add client history of none exists
             if (!("svcHistory" in client)) client.svcHistory = []
             const tempLastServedDays = getLastServedDays(client)
-            if (lastServedDays !== tempLastServedDays) setLastServedDays(tempLastServedDays)
-            if (lastServedFoodDate !== tempLastServedDays.lastServedFoodDate) setLastServedFoodDate(tempLastServedDays.lastServedFoodDate)
+            if (JSON.stringify(lastServedDays) !== JSON.stringify(tempLastServedDays)) setLastServedDays(tempLastServedDays)
+
+            const newDate = tempLastServedDays.lastServedFoodDate;
+            const oldDate = lastServedFoodDate;
+
+            if (!oldDate && newDate) {
+                setLastServedFoodDate(newDate);
+            } else if (oldDate && newDate && !dayjs(oldDate).isSame(dayjs(newDate))) {
+                setLastServedFoodDate(newDate);
+            } else if (oldDate && !newDate) {
+                setLastServedFoodDate(null);
+            }
             if (client.isActive === "Inactive") {
                 setClientInactive(true)
             } else {
                 setClientInactive(false)
             }
         }
-    },[ client, client.isActive ])
+    }, [client, client.isActive])
 
     // NOTIFY user if there are children over age of 17
     useEffect(() => {
         const deps = client?.dependents ? client.dependents : []
-        deps.forEach((dep) => {        
+        deps.forEach((dep) => {
             if (dep.age > 17 && dep.isActive === "Active") {
                 if (dep.relationship === "Child" || dep.relationship === "Other") {
                     const msg = dep.givenName + " " + dep.familyName + " is over 17 years of age and still active."
@@ -105,9 +117,9 @@ export default function ClientsMain(props) {
         }
     }
 
-    function changeClient(newClient, clientsTab){
+    function changeClient(newClient, clientsTab) {
         if (!isEmpty(newClient)) {
-            if ( newClient.clientId !== "0" ){
+            if (newClient.clientId !== "0") {
                 // TODO client should be sorted and have ids for nested arrays saved to the database
                 // Existing client record
                 newClient = utilEmptyPlaceholders(newClient, "remove")
@@ -120,10 +132,10 @@ export default function ClientsMain(props) {
                 newClient.notes = arrayAddIds(newClient.notes, 'noteId')
                 // add service handling objects
                 dbGetAllClientSvcsAsync(newClient.clientId)
-                    .then( svcHistory => {
+                    .then(svcHistory => {
                         //add svcHistory to client record
-                        const tempSvcHistory = svcHistory.filter(svc => { 
-                            return svc.svcValid === true 
+                        const tempSvcHistory = svcHistory.filter(svc => {
+                            return svc.svcValid === true
                         })
                         newClient.svcHistory = (Array.isArray(tempSvcHistory)) ? tempSvcHistory : []
 
@@ -147,7 +159,7 @@ export default function ClientsMain(props) {
         }
     }
 
-    function updateClient(newClient){
+    function updateClient(newClient) {
         newClient = utilCalcAge(newClient)
         setClient(newClient);
     }
@@ -193,25 +205,25 @@ export default function ClientsMain(props) {
         // svcsRendered: []
     }
 
-    function isNewClientChange(){
-        changeClientsFound([])        
+    function isNewClientChange() {
+        changeClientsFound([])
         changeClient(emptyClient, 2) // second argument is tab to set URL to
     }
 
-    function showAlert(severity, msg){
+    function showAlert(severity, msg) {
         setAlertSeverity(severity) // error, warning, info, success
         setAlertMsg(msg)
         setOpenAlert(true)
     }
 
-    function handleAlertClose(){
+    function handleAlertClose() {
         setOpenAlert(false)
     }
 
     const passProps = {
-        client, clientsFound, 
+        client, clientsFound,
         changeClient: changeClient,
-        updateClient: updateClient, 
+        updateClient: updateClient,
         isNewClientChange: isNewClientChange,
         selectedTab, updateClientsURL,
         showFound: showFound,
@@ -225,14 +237,14 @@ export default function ClientsMain(props) {
     // if (getUserName() === null) return null 
 
     return (
-        <Box key={ client.updatedDateTime } width="100%" px={0} py={2}  >
-            <Snackbar open={ openAlert } autoHideDuration={ 15000 } onClose={ handleAlertClose }>
-                <Alert onClose={ handleAlertClose } severity={ alertSeverity }>{ alertMsg }</Alert>
+        <Box key={client.updatedDateTime} width="100%" px={0} py={2}  >
+            <Snackbar open={openAlert} autoHideDuration={15000} onClose={handleAlertClose}>
+                <Alert onClose={handleAlertClose} severity={alertSeverity}>{alertMsg}</Alert>
             </Snackbar>
 
-            <ClientsHeader { ...passProps } />
+            <ClientsHeader {...passProps} />
             <Box maxWidth="100%" display="flex" justifyContent="center" mt={0} pt={0}>
-                <ClientsContent { ...passProps } showAlert={ showAlert } />
+                <ClientsContent {...passProps} showAlert={showAlert} />
             </Box>
         </Box>
     )
