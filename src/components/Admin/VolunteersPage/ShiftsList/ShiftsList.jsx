@@ -79,6 +79,14 @@ export default function ShiftsList() {
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
+        loadAll();
+    }, []);
+
+    useEffect(() => {
+        loadShifts();
+    }, [filterType, selectedDate, selectedVolunteerId, selectedProgramId, selectedActivityId, startDate, endDate]);
+
+    async function loadAll() {
         // Load volunteers, programs, and activities for the dropdowns and decoding
         Promise.all([
             dbGetAllVolunteersAsync(),
@@ -93,11 +101,7 @@ export default function ShiftsList() {
         });
         // Load initial shifts
         loadShifts();
-    }, []);
-
-    useEffect(() => {
-        loadShifts();
-    }, [filterType, selectedDate, selectedVolunteerId, selectedProgramId, selectedActivityId, startDate, endDate]);
+    }
 
     async function loadShifts() {
         setLoading(true);
@@ -544,7 +548,7 @@ export default function ShiftsList() {
                 <Typography variant="h6">Shift Records</Typography>
                 <Chip label={visibleShifts.length} color="secondary" size="small" />
                 <Tooltip title="Refresh List">
-                    <IconButton size="small" onClick={loadShifts} color="success">
+                    <IconButton size="small" onClick={loadAll} color="success">
                         <Refresh />
                     </IconButton>
                 </Tooltip>

@@ -40,13 +40,13 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
-    { id: 'firstName', label: 'First Name' },
-    { id: 'lastName', label: 'Last Name' },
-    { id: 'email', label: 'Email' },
-    { id: 'telephone', label: 'Telephone' },
-    { id: 'programName', label: 'Program' },
-    { id: 'time', label: 'Registered' },
-    { id: 'status', label: 'Status' },
+    { id: 'FirstName', label: 'First Name' },
+    { id: 'LastName', label: 'Last Name' },
+    { id: 'Email', label: 'Email' },
+    { id: 'Telephone', label: 'Telephone' },
+    { id: 'ProgramName', label: 'Program' },
+    { id: 'Time', label: 'Registered' },
+    { id: 'Status', label: 'Status' },
 ];
 
 function VolunteerList(props) {
@@ -59,11 +59,10 @@ function VolunteerList(props) {
         if (!programId || programId === '-') return 'N/A';
         const program = props.programs.find(prog => {
             // Check various possible ID field names
-            const progId = prog.ProgramId || prog.programId || prog.Id || prog.id || prog.ID;
-            return progId === programId || progId == programId;
+            return prog.ProgramId == programId;
         });
         if (program) {
-            return program.ProgramName || program.Name || program.name || 'N/A';
+            return program.ProgramName || 'N/A';
         }
         return 'N/A';
     }
@@ -98,11 +97,11 @@ function VolunteerList(props) {
                                 onClick={() => props.onEdit && props.onEdit(row.VolunteerId || row.volunteerId)}
                                 sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f5f5f5' } }}
                             >
-                                <TableCell align="center">{row.FirstName || row.firstName || ''}</TableCell>
-                                <TableCell align="center">{row.LastName || row.lastName || ''}</TableCell>
-                                <TableCell align="center">{row.Email || row.email || ''}</TableCell>
-                                <TableCell align="center">{formatPhone(row.Telephone || row.telephone || '')}</TableCell>
-                                <TableCell align="center">{getProgramName(row.ProgramId || row.programId)}</TableCell>
+                                <TableCell align="center">{row.FirstName || ''}</TableCell>
+                                <TableCell align="center">{row.LastName || ''}</TableCell>
+                                <TableCell align="center">{row.Email || ''}</TableCell>
+                                <TableCell align="center">{formatPhone(row.Telephone || '')}</TableCell>
+                                <TableCell align="center">{getProgramName(row.ProgramId)}</TableCell>
                                 <TableCell align="center">
                                     {row.Time ? dayjs(row.Time).format('MMM D, YYYY h:mm A') : 'N/A'}
                                 </TableCell>
@@ -140,7 +139,7 @@ export default function VolunteersList() {
     const [volunteers, setVolunteers] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [order, setOrder] = useState('asc');
-    const [orderBy, setOrderBy] = useState('lastName');
+    const [orderBy, setOrderBy] = useState('LastName');
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -178,18 +177,18 @@ export default function VolunteersList() {
         // Normalize data for sorting
         let normalized = volunteers.map(v => {
             const programName = programs.find(p =>
-                (p.ProgramId || p.programId || p.Id || p.id || p.ID) === (v.ProgramId || v.programId)
+                p.ProgramId == v.ProgramId
             )?.ProgramName || 'N/A';
 
             return {
                 ...v,
-                firstName: (v.FirstName || v.firstName || '').toLowerCase(),
-                lastName: (v.LastName || v.lastName || '').toLowerCase(),
-                email: (v.Email || v.email || '').toLowerCase(),
-                telephone: (v.Telephone || v.telephone || '').replace(/\D/g, ''),
-                programName: programName.toLowerCase(),
-                time: v.Time ? new Date(v.Time).getTime() : 0,
-                status: v.RegComplete ? 1 : 0,
+                FirstName: (v.FirstName || '').toLowerCase(),
+                LastName: (v.LastName || '').toLowerCase(),
+                Email: (v.Email || '').toLowerCase(),
+                Telephone: (v.Telephone || '').replace(/\D/g, ''),
+                ProgramName: programName.toLowerCase(),
+                Time: v.Time ? new Date(v.Time).getTime() : 0,
+                Status: v.RegComplete ? 1 : 0,
             };
         });
 
@@ -197,10 +196,10 @@ export default function VolunteersList() {
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             normalized = normalized.filter(v =>
-                v.firstName.includes(query) ||
-                v.lastName.includes(query) ||
-                v.email.includes(query) ||
-                v.telephone.includes(query)
+                v.FirstName.includes(query) ||
+                v.LastName.includes(query) ||
+                v.Email.includes(query) ||
+                v.Telephone.includes(query)
             );
         }
 
