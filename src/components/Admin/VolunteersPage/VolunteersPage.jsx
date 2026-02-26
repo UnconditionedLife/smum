@@ -19,7 +19,8 @@ export default function VolunteersPage() {
             case 1:
                 return <ShiftsList />;
             case 2:
-                return <Reports />;
+                return <Typography variant="h6">Reports - Coming Soon</Typography>;
+                // return <Reports />;
             default:
                 return <VolunteersList />;
         }
