@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Chip, FormControl, InputLabel, Select, MenuItem, TextField as MuiTextField, TableSortLabel, TextField, InputAdornment, IconButton, Tooltip
+    Chip, FormControl, FormControlLabel, FormLabel, InputLabel, Radio, RadioGroup, Select, MenuItem,
+    TextField as MuiTextField, TableSortLabel, TextField, InputAdornment, IconButton, Tooltip
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -319,17 +320,17 @@ export default function ShiftsList() {
         return (
             <Box mb={3} p={2} sx={{ backgroundColor: '#f5f5f5', borderRadius: 1 }}>
                 <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel>Filter By</InputLabel>
-                    <Select
+                    <FormLabel>Filter By</FormLabel>
+                    <RadioGroup
+                        row
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
-                        label="Filter By"
                     >
-                        <MenuItem value="date">By Date</MenuItem>
-                        <MenuItem value="volunteer">By Volunteer</MenuItem>
-                        <MenuItem value="program">By Program</MenuItem>
-                        <MenuItem value="activity">By Activity</MenuItem>
-                    </Select>
+                        <FormControlLabel value="date" control={<Radio />} label="Date" />
+                        <FormControlLabel value="volunteer" control={<Radio />} label="Volunteer" />
+                        <FormControlLabel value="program" control={<Radio />} label="Program" />
+                        <FormControlLabel value="activity" control={<Radio />} label="Activity" />
+                    </RadioGroup>
                 </FormControl>
 
                 {filterType === 'date' && (
