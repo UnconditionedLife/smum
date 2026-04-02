@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-    Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Autocomplete, Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     Chip, FormControl, FormControlLabel, FormLabel, InputLabel, Radio, RadioGroup, Select, MenuItem,
-    TextField as MuiTextField, TableSortLabel, TextField, InputAdornment, IconButton, Tooltip
+    TextField as MuiTextField, TableSortLabel, TextField, InputAdornment, IconButton, Tooltip,
+    createFilterOptions
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -346,21 +347,21 @@ export default function ShiftsList() {
 
                 {filterType === 'volunteer' && (
                     <Box>
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                            <InputLabel>Select Volunteer</InputLabel>
-                            <Select
-                                value={selectedVolunteerId}
-                                onChange={(e) => setSelectedVolunteerId(e.target.value)}
-                                label="Select Volunteer"
-                            >
-                                <MenuItem value="">None</MenuItem>
-                                {volunteers.map(vol => (
-                                    <MenuItem key={vol.VolunteerId} value={vol.VolunteerId}>
-                                        {`${vol.FirstName || vol.firstName || ''} ${vol.LastName || vol.lastName || ''}`.trim()}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <Autocomplete
+                            options={volunteers}
+                            getOptionLabel={(vol) =>
+                                `${vol.FirstName || vol.firstName || ''} ${vol.LastName || vol.lastName || ''}`.trim()
+                            }
+                            filterOptions={createFilterOptions({ limit: 20 })}
+                            value={volunteers.find(v => v.VolunteerId === selectedVolunteerId) || null}
+                            onChange={(e, newValue) => setSelectedVolunteerId(newValue ? newValue.VolunteerId : '')}
+                            isOptionEqualToValue={(option, value) => option.VolunteerId === value.VolunteerId}
+                            noOptionsText="Type to search..."
+                            renderInput={(params) => (
+                                <TextField {...params} label="Search Volunteer" placeholder="Start typing a name..." />
+                            )}
+                            sx={{ mb: 2 }}
+                        />
                         <Box display="flex" gap={2}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker
