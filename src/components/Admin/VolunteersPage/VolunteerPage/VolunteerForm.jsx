@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useForm } from 'react-hook-form';
-import { Box, Typography, MenuItem, Divider } from '@mui/material';
+import { useForm, Controller } from 'react-hook-form';
+import { Box, Typography, MenuItem, Divider, Switch, FormControlLabel } from '@mui/material';
 import { FormTextField, FormSelect, SaveCancel } from '../../../System';
 import { dbSaveVolunteerAsync, dbUpdateVolunteerAsync, dbGetAllProgramsAsync } from '../../../System/js/Database';
 import { validPhone, formatPhone } from '../../../System/js/Forms';
@@ -48,7 +48,8 @@ export default function VolunteerForm(props) {
             LastName: props.volunteer.LastName || '',
             Telephone: formattedPhone,
             Email: props.volunteer.Email || '',
-            ProgramId: String(props.volunteer.ProgramId || '0')
+            ProgramId: String(props.volunteer.ProgramId || '0'),
+            isDeleted: props.volunteer.isDeleted || false
         };
 
         console.log('Processed volunteerData.ProgramId:', volunteerData.ProgramId);
@@ -147,8 +148,8 @@ export default function VolunteerForm(props) {
                             </Typography>
                             <Typography variant="body2" color="text.secondary">•</Typography>
                             <Typography variant="body2" color="text.secondary">
-                                {props.volunteer?.RegComplete ? 
-                                    `Registered: ${registrationTime || 'N/A'}` : 
+                                {props.volunteer?.RegComplete ?
+                                    `Registered: ${registrationTime || 'N/A'}` :
                                     'Not Registered'
                                 }
                             </Typography>
@@ -227,6 +228,36 @@ export default function VolunteerForm(props) {
                         })}
                     </FormSelect>
                 </Box>
+
+                {!isNewVolunteer && (
+                    <>
+                        <Typography variant="subtitle1" sx={{ mt: 3, mb: 1, color: 'error.main' }}>Danger Zone</Typography>
+                        <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap" sx={{ mb: 3, p: .5, border: '1px solid', borderColor: 'error.main', borderRadius: 1 }}>
+                            <FormControlLabel
+                                control={
+                                    <Controller
+                                        name="isDeleted"
+                                        control={control}
+                                        defaultValue={volunteerData?.isDeleted || false}
+                                        render={(props) => {
+                                            // Handle react-hook-form v6 vs v7 differences safely
+                                            const val = props.field ? props.field.value : props.value;
+                                            const onChange = props.field ? props.field.onChange : props.onChange;
+                                            return (
+                                                <Switch
+                                                    checked={!!val}
+                                                    onChange={(e) => onChange(e.target.checked)}
+                                                    color="error"
+                                                />
+                                            );
+                                        }}
+                                    />
+                                }
+                                label="Mark as Deleted (Volunteer will no longer be active)"
+                            />
+                        </Box>
+                    </>
+                )}
 
                 {saveMessage.result && (
                     <Box mt={3} mb={1}>

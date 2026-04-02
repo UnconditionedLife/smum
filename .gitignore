@@ -38,3 +38,4 @@ public/components/main.bundle.js.map
 build/*.*
 /build
 /build
+build/index.html

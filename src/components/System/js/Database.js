@@ -927,6 +927,8 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
         apiData.RegComplete = data.RegComplete;
     if (data.isDeleted !== undefined)
         apiData.isDeleted = data.isDeleted;
+    if (data.RedirectTo !== undefined)
+        apiData.RedirectTo = data.RedirectTo;
 
     // Use POST method for updates (API doesn't support PATCH or PUT for updates)
     const response = await dbPostDataAsync(`/volunteers/${volunteerId}`, apiData, 'PATCH');
@@ -1121,6 +1123,7 @@ export async function dbUpdateShiftAsync(shiftData) {
     if (shiftData.Date !== undefined) updateData.Date = shiftData.Date;
     if (shiftData.ProgramId !== undefined) updateData.ProgramId = shiftData.ProgramId;
     if (shiftData.VolunteerId !== undefined) updateData.VolunteerId = shiftData.VolunteerId;
+    if (shiftData.isDeleted !== undefined) updateData.isDeleted = shiftData.isDeleted;
 
     // Format timestamps properly for the API
     if (shiftData.TimestampIn !== undefined) {
@@ -1146,9 +1149,11 @@ export async function dbUpdateShiftAsync(shiftData) {
     return await dbPostDataRawAsync(`/shiftAction/${shiftId}`, updateData, 'PATCH');
 }
 
-export async function dbDeleteVolunteerAsync(volunteerId) {
+export async function dbDeleteVolunteerAsync(volunteerId, redirectToId = null) {
     // Soft Delete: Update the volunteer record to set isDeleted = true
-    return await dbUpdateVolunteerAsync(volunteerId, { isDeleted: true });
+    const payload = { isDeleted: true };
+    if (redirectToId) payload.RedirectTo = redirectToId;
+    return await dbUpdateVolunteerAsync(volunteerId, payload);
 }
 
 export async function dbMergeVolunteersAsync(primaryId, duplicateId) {
@@ -1174,7 +1179,7 @@ export async function dbMergeVolunteersAsync(primaryId, duplicateId) {
     console.log("All shifts reassigned.");
 
     // 3. Soft Delete the duplicate volunteer
-    await dbDeleteVolunteerAsync(duplicateId);
+    await dbDeleteVolunteerAsync(duplicateId, primaryId);
     console.log("Duplicate volunteer soft deleted.");
 
     return { success: true, reassignedShifts: shifts.length };

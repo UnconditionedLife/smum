@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, TextField, FormControl, InputLabel, Select, MenuItem,
-    Box, Grid, Typography, Divider
+    Box, Grid, Typography, Divider, Switch, FormControlLabel
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
@@ -23,7 +23,8 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                 TimestampOut: shift.TimestampOut ? dayjs(shift.TimestampOut) : null,
                 VolunteerId: shift.VolunteerId || '',
                 ProgramId: shift.ProgramId || shift.programId || '',
-                ActivityId: shift.ActivityId || shift.activityId || ''
+                ActivityId: shift.ActivityId || shift.activityId || '',
+                isDeleted: shift.isDeleted || false
             });
         }
     }, [shift, programs]);
@@ -65,7 +66,8 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                 ActivityId: editedShift.ActivityId || null,
                 Date: editedShift.Date || (editedShift.TimestampIn ? editedShift.TimestampIn.format('YYYY-MM-DD') : null),
                 TimestampIn: editedShift.TimestampIn,
-                TimestampOut: editedShift.TimestampOut
+                TimestampOut: editedShift.TimestampOut,
+                isDeleted: editedShift.isDeleted
             };
 
             console.log('Saving shift data:', dataToSave);
@@ -184,7 +186,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                             <FormControl fullWidth>
                                 <InputLabel>Program</InputLabel>
                                 <Select
-                                    value={editedShift.ProgramId || ''}
+                                    value={editedShift.ProgramId === '0' ? '' : (editedShift.ProgramId || '')}
                                     onChange={(e) => handleChange('ProgramId', e.target.value)}
                                     label="Program"
                                 >
@@ -206,7 +208,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                             <FormControl fullWidth>
                                 <InputLabel>Activity</InputLabel>
                                 <Select
-                                    value={editedShift.ActivityId || ''}
+                                    value={editedShift.ActivityId === '0' ? '' : (editedShift.ActivityId || '')}
                                     onChange={(e) => handleChange('ActivityId', e.target.value)}
                                     label="Activity"
                                 >
@@ -222,6 +224,22 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                                     })}
                                 </Select>
                             </FormControl>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle1" sx={{ mt: 3, mb: 1, color: 'error.main' }}>Danger Zone</Typography>
+                            <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap" sx={{ mb: 3, p: .5, border: '1px solid', borderColor: 'error.main', borderRadius: 1 }}>
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            checked={!!editedShift.isDeleted}
+                                            onChange={(e) => handleChange('isDeleted', e.target.checked)}
+                                            color="error"
+                                        />
+                                    }
+                                    label="Mark as Deleted (Shift will no longer be active)"
+                                />
+                            </Box>
                         </Grid>
                     </Grid>
                 </Box>

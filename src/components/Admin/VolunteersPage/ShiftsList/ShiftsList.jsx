@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
     Autocomplete, Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     Chip, FormControl, FormControlLabel, FormLabel, InputLabel, Radio, RadioGroup, Select, MenuItem,
-    TextField as MuiTextField, TableSortLabel, TextField, InputAdornment, IconButton, Tooltip,
+    TextField as MuiTextField, TableSortLabel, TextField, InputAdornment, IconButton, Tooltip, Switch,
     createFilterOptions
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -79,6 +79,7 @@ export default function ShiftsList() {
     const [order, setOrder] = useState('desc');
     const [orderBy, setOrderBy] = useState('date');
     const [searchQuery, setSearchQuery] = useState('');
+    const [showDeleted, setShowDeleted] = useState(false);
 
     useEffect(() => {
         loadAll();
@@ -300,9 +301,15 @@ export default function ShiftsList() {
                 programName,
                 activityName,
                 status,
-                original: shift
+                original: shift,
+                isDeleted: shift.isDeleted === "true" || shift.isDeleted === true
             };
         });
+
+        // Soft delete filtering
+        if (!showDeleted) {
+            normalized = normalized.filter(s => !s.isDeleted);
+        }
 
         // Filter based on search query
         if (searchQuery) {
@@ -315,24 +322,30 @@ export default function ShiftsList() {
         }
 
         return stableSort(normalized, getComparator(order, orderBy));
-    }, [shifts, volunteers, programs, activities, order, orderBy, searchQuery]);
+    }, [shifts, volunteers, programs, activities, order, orderBy, searchQuery, showDeleted]);
 
     function renderFilterControls() {
         return (
             <Box mb={3} p={2} sx={{ backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                    <FormLabel>Filter By</FormLabel>
-                    <RadioGroup
-                        row
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                    >
-                        <FormControlLabel value="date" control={<Radio />} label="Date" />
-                        <FormControlLabel value="volunteer" control={<Radio />} label="Volunteer" />
-                        <FormControlLabel value="program" control={<Radio />} label="Program" />
-                        <FormControlLabel value="activity" control={<Radio />} label="Activity" />
-                    </RadioGroup>
-                </FormControl>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" sx={{ mb: 2 }}>
+                    <FormControl>
+                        <FormLabel>Filter By</FormLabel>
+                        <RadioGroup
+                            row
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                        >
+                            <FormControlLabel value="date" control={<Radio />} label="Date" />
+                            <FormControlLabel value="volunteer" control={<Radio />} label="Volunteer" />
+                            <FormControlLabel value="program" control={<Radio />} label="Program" />
+                            <FormControlLabel value="activity" control={<Radio />} label="Activity" />
+                        </RadioGroup>
+                    </FormControl>
+                    <FormControlLabel
+                        control={<Switch checked={showDeleted} onChange={(e) => setShowDeleted(e.target.checked)} color="error" />}
+                        label="Show Deleted"
+                    />
+                </Box>
 
                 {filterType === 'date' && (
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -517,7 +530,13 @@ export default function ShiftsList() {
                             <TableRow
                                 key={row.id}
                                 onClick={() => handleEditShift(row.original)}
-                                sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f5f5f5' } }}
+                                sx={{
+                                    cursor: 'pointer',
+                                    backgroundColor: row.isDeleted ? 'rgba(211, 47, 47, 0.08)' : 'inherit',
+                                    '&:hover': {
+                                        backgroundColor: row.isDeleted ? 'rgba(211, 47, 47, 0.16)' : '#f5f5f5'
+                                    }
+                                }}
                             >
                                 <TableCell>{row.displayDate}</TableCell>
                                 <TableCell>{row.timeRange}</TableCell>
