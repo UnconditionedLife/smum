@@ -244,7 +244,8 @@ export async function dbGetSvcTypesAsync() {
     return await dbGetDataAsync("serviceTypes", "/svctypes")
         .then(serviceTypes => {
             // case-insensitive sort
-            return serviceTypes.sort((a, b) => a.svcName.localeCompare(b.svcName, undefined, { sensitivity: 'base' }));
+            cachedSvcTypes = serviceTypes.sort((a, b) => a.svcName.localeCompare(b.svcName, undefined, { sensitivity: 'base' }));
+            return cachedSvcTypes;
         }
         )
 }

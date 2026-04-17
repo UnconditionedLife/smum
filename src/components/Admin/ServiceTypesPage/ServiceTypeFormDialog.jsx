@@ -64,7 +64,7 @@ export default function ServiceTypeFormDialog(props) {
     if (isNewSvcType) {
         data = {available: {dateFromDay: "1", dateToDay: "1", dateFromMonth:"0", dateToMonth: "1"},
         fulfillment: {fromDateTime:"", toDateTime:"", type:""},
-        target: {homeless: "", gender:"", family:"", child:"", childMinGrade:"Unselected", childMaxGrade:"Unselected", childMinAge:"0", childMaxAge:"0", service:""},
+        target: {homeless: "", gender:"", family:"", child:"", childMinGrade:"Unselected", childMaxGrade:"Unselected", childMinAge:"0", childMaxAge:"0", familyMinSize:"0", familyMaxSize:"0", service:""},
         isActive:"", svcUSDA:"", itemsPer:"", numberItems:"", receipts:"",
         svcBtns:"", svcCat:"",svcDesc:"",svcInterval:"",svcName:"", svcPeriod: "", 
         svcFrequency: ""};
@@ -73,6 +73,10 @@ export default function ServiceTypeFormDialog(props) {
     }
     else {
         data = editRecord;
+        if (data.target) {
+            if (data.target.familyMinSize === undefined) data.target.familyMinSize = "0";
+            if (data.target.familyMaxSize === undefined) data.target.familyMaxSize = "0";
+        }
         data.fromdate = packFromDate(editRecord)
         data.todate = packToDate(editRecord)
     }
@@ -322,6 +326,7 @@ export default function ServiceTypeFormDialog(props) {
                         <MenuItem value="YES">Yes</MenuItem>
                         <MenuItem value="NO">No</MenuItem>
                     </FormSelect>
+                    <Box width="100%" /> 
                     {childSelected == "YES" &&
                         <React.Fragment>
                         <FormTextField fieldsize="sm" name="target.childMinAge" label="Min Age" error={ errors.target?.childMinAge } 
@@ -367,6 +372,11 @@ export default function ServiceTypeFormDialog(props) {
                         </React.Fragment>
                         
                     }
+                    <Box width="100%" /> 
+                    <FormTextField fieldsize="sm" name="target.familyMinSize" label="Min Family Size" error={ errors.target?.familyMinSize } 
+                    control={ control } rules={ {required: 'Required'}} />
+                    <FormTextField fieldsize="sm" name="target.familyMaxSize" label="Max Family Size" error={ errors.target?.familyMaxSize } 
+                    control={ control } rules={ {required: 'Required'}} />
                     </Box>
                     <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Fulfillment</strong></Typography></Box>
                     <Box display="flex" flexDirection="row" flexWrap="wrap">

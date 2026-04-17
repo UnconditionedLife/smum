@@ -281,6 +281,17 @@ function getActiveServicesButtons(props) {
         // check to see if food has been served within svcPeriod the number of times (svcFrequency) defined
         if (!usageQualified({ client, svcType })) return;
 
+        // check family size limits (ignoring 0 values)
+        if (svcType.target) {
+            let fMin = parseInt(svcType.target.familyMinSize, 10);
+            if (isNaN(fMin)) fMin = 0;
+            let fMax = parseInt(svcType.target.familyMaxSize, 10);
+            if (isNaN(fMax)) fMax = 0;
+
+            if (fMin > 0 && client.family.totalSize < fMin) display = false;
+            if (fMax > 0 && client.family.totalSize > fMax) display = false;
+        }
+
         // loop through each property in each targetServices
         for (let prop in targetServices[i]) {
             if (prop == "homeless") {
