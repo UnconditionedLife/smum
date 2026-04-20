@@ -15,7 +15,7 @@ import { Search, Clear, Refresh } from '@mui/icons-material';
 import {
     dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync,
     dbGetAllVolunteersAsync, dbGetAllProgramsAsync,
-    dbGetAllActivitiesAsync, dbGetShiftsByProgramOrActivityAsync
+    dbGetAllActivitiesAsync, dbGetShiftsByProgramOrActivityAsync, dbGetShiftsByDateRangeAsync
 } from '../../../System/js/Database';
 // import { TextField } from '../../../System'; // Removed custom TextField to avoid conflict with MUI TextField for search
 import ShiftEditDialog from './ShiftEditDialog.jsx';
@@ -131,36 +131,54 @@ export default function ShiftsList() {
                     break;
 
                 case 'volunteer':
+                    let localStart = null;
+                    let localEnd = null;
+
+                    if (startDate) {
+                        localStart = dayjs(startDate).format('YYYY-MM-DD');
+                    }
+
+                    if (endDate) {
+                        localEnd = dayjs(endDate).format('YYYY-MM-DD');
+                    }
+
                     if (selectedVolunteerId) {
-                        // Use local dates directly
-                        let localStart = null;
-                        let localEnd = null;
-
-                        if (startDate) {
-                            localStart = dayjs(startDate).format('YYYY-MM-DD');
-                        }
-
-                        if (endDate) {
-                            localEnd = dayjs(endDate).format('YYYY-MM-DD');
-                        }
-
                         shiftsData = await dbGetShiftsByVolunteerAsync(selectedVolunteerId, localStart, localEnd);
-
-                        // Filter results to ensure they fall within the local date range
-                        if (shiftsData && (startDate || endDate)) {
-                            const localStartBoundary = startDate ? dayjs(startDate).startOf('day') : null;
-                            const localEndBoundary = endDate ? dayjs(endDate).endOf('day') : null;
-
-                            shiftsData = shiftsData.filter(shift => {
-                                if (shift.TimestampIn) {
-                                    const shiftTime = dayjs(shift.TimestampIn);
-                                    if (localStartBoundary && shiftTime.isBefore(localStartBoundary)) return false;
-                                    if (localEndBoundary && shiftTime.isAfter(localEndBoundary)) return false;
-                                    return true;
-                                }
-                                return false;
-                            });
+                    } else if (localStart || localEnd) {
+                        let queryStart = dayjs(localStart || localEnd);
+                        const queryEnd = dayjs(localEnd || localStart);
+                        
+                        shiftsData = [];
+                        let daysCount = 0;
+                        
+                        // Limit to 31 days max to prevent API spamming
+                        while(queryStart.isSameOrBefore(queryEnd) && daysCount < 31) {
+                            const dateStr = queryStart.format('YYYY-MM-DD');
+                            const dayShifts = await dbGetAllShiftsByDateAsync(dateStr);
+                            if (dayShifts && Array.isArray(dayShifts)) {
+                                shiftsData = shiftsData.concat(dayShifts);
+                            }
+                            queryStart = queryStart.add(1, 'day');
+                            daysCount++;
                         }
+                    } else {
+                        shiftsData = [];
+                    }
+
+                    // Filter results to ensure they fall within the local date range
+                    if (shiftsData && (startDate || endDate)) {
+                        const localStartBoundary = startDate ? dayjs(startDate).startOf('day') : null;
+                        const localEndBoundary = endDate ? dayjs(endDate).endOf('day') : null;
+
+                        shiftsData = shiftsData.filter(shift => {
+                            if (shift.TimestampIn) {
+                                const shiftTime = dayjs(shift.TimestampIn);
+                                if (localStartBoundary && shiftTime.isBefore(localStartBoundary)) return false;
+                                if (localEndBoundary && shiftTime.isAfter(localEndBoundary)) return false;
+                                return true;
+                            }
+                            return false;
+                        });
                     }
                     break;
 
@@ -360,22 +378,7 @@ export default function ShiftsList() {
 
                 {filterType === 'volunteer' && (
                     <Box>
-                        <Autocomplete
-                            options={volunteers}
-                            getOptionLabel={(vol) =>
-                                `${vol.FirstName || vol.firstName || ''} ${vol.LastName || vol.lastName || ''}`.trim()
-                            }
-                            filterOptions={createFilterOptions({ limit: 20 })}
-                            value={volunteers.find(v => v.VolunteerId === selectedVolunteerId) || null}
-                            onChange={(e, newValue) => setSelectedVolunteerId(newValue ? newValue.VolunteerId : '')}
-                            isOptionEqualToValue={(option, value) => option.VolunteerId === value.VolunteerId}
-                            noOptionsText="Type to search..."
-                            renderInput={(params) => (
-                                <TextField {...params} label="Search Volunteer" placeholder="Start typing a name..." />
-                            )}
-                            sx={{ mb: 2 }}
-                        />
-                        <Box display="flex" gap={2}>
+                        <Box display="flex" gap={2} sx={{ mb: 2 }}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker
                                     value={startDate}
@@ -393,6 +396,45 @@ export default function ShiftsList() {
                                 />
                             </LocalizationProvider>
                         </Box>
+                        <Autocomplete
+                            options={volunteers}
+                            getOptionLabel={(vol) =>
+                                `${vol.FirstName || vol.firstName || ''} ${vol.LastName || vol.lastName || ''}`.trim()
+                            }
+                            filterOptions={createFilterOptions({ limit: 20 })}
+                            value={volunteers.find(v => v.VolunteerId === selectedVolunteerId) || null}
+                            onChange={(e, newValue) => setSelectedVolunteerId(newValue ? newValue.VolunteerId : '')}
+                            isOptionEqualToValue={(option, value) => option.VolunteerId === value.VolunteerId}
+                            noOptionsText="Type to search..."
+                            popupIcon={null}
+                            renderOption={(props, option) => {
+                                const { key, ...restProps } = props;
+                                const name = `${option.FirstName || option.firstName || ''} ${option.LastName || option.lastName || ''}`.trim();
+                                return (
+                                    <li key={option.VolunteerId} {...restProps}>
+                                        {name}
+                                    </li>
+                                );
+                            }}
+                            renderInput={(params) => {
+                                const { InputProps, ...restParams } = params;
+                                return (
+                                    <TextField
+                                        {...restParams}
+                                        size="small"
+                                        placeholder="Search volunteers..."
+                                        InputProps={{
+                                            ...InputProps,
+                                            startAdornment: (
+                                                <InputAdornment position="start" sx={{ pl: 1 }}>
+                                                    <Search color="action" />
+                                                </InputAdornment>
+                                            )
+                                        }}
+                                    />
+                                );
+                            }}
+                        />
                     </Box>
                 )}
 
