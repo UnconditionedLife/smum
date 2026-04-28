@@ -465,6 +465,23 @@ function validateSvcInterval(props) {
     const nextSvcDate = calFindOpenDate(targetDate, 7);
     const isSameOrAfter = dayjs().isSameOrAfter(nextSvcDate, 'day')
 
+    // Ensure the service has not been served within its own svcInterval
+    // We skip Food_Pantry because it uses global intervals by USDA type.
+    if (activeServiceType.svcCat !== "Food_Pantry" && activeServiceType.svcInterval > 0) {
+        const historySvcs = client.svcHistory.filter(hSvc => {
+            return hSvc.svcTypeId == activeServiceType.svcTypeId &&
+                   !dayjs(hSvc.svcDT).isSame(dayjs(), "day") // Ignore same-day so UI can render "used" undo button
+        })
+
+        let foundRecentSvc = false
+        historySvcs.forEach(vSvc => {
+            if (dayjs().diff(vSvc.svcDT, 'days') <= activeServiceType.svcInterval) {
+                foundRecentSvc = true
+            }
+        })
+        if (foundRecentSvc) return false
+    }
+
     if (activeServiceType.svcBtns == "Primary") {
         const svcCat = activeServiceType.svcCat
         if (svcCat == "Food_Pantry") {
@@ -507,21 +524,7 @@ function validateSvcInterval(props) {
                 if (voucherDays == 10000) return false
             }
         }
-        if (activeServiceType.fulfillment.type == "Voucher") {
-            const voucherSvcs = client.svcHistory.filter(hSvc => {
-                return hSvc.svcTypeId == activeServiceType.svcTypeId
-            })
 
-            let found = false
-            voucherSvcs.forEach(vSvc => {
-                // Check that the service is within the service period - i.e. not from another year
-                if (dayjs().diff(vSvc.svcDT, 'days') <= activeServiceType.svcInterval) {
-                    found = true
-                }
-            })
-
-            if (found) return false
-        }
         // let inLastServed = client.lastServed.filter(obj => obj.svcCat == svcCat)
         // if (inLastServed.length > 0) {
         // if a voucher fulfill service then need to check against Voucher service
@@ -533,10 +536,10 @@ function validateSvcInterval(props) {
 
             if (voucherSvcs.length === 0) return false
 
-            let found = true
+            let found = false
             voucherSvcs.forEach(vSvc => {
                 // Check that the service is within the service period - i.e. not from another year
-                if (dayjs().diff(vSvc.svcDT, 'days') < activeServiceType.svcInterval) {
+                if (dayjs().diff(vSvc.svcDT, 'days') <= activeServiceType.svcInterval) {
                     found = true
                 }
             })
