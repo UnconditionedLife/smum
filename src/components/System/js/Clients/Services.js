@@ -458,30 +458,30 @@ function getUsedServicesButtons(client, buttons, buttonData) {
     return buttonData[buttons]
 }
 
+// For service types that have a defined service interval, the service is available only
+// once within that number of days. Return true iff the service is available.
+// XXX Special case: Ignore the current day so that we can render the "undo" buttons
+// for the current day's services. Not clear why this isn't handled elsewhere.
 function validateSvcInterval(props) {
     const { client, activeServiceType, lastServedDays, intervals } = props
     const lastSvcDate = dayjs().subtract(lastServedDays.lowestDays, 'days')
     const targetDate = dayjs(lastSvcDate).add(14, 'days').endOf('day'); // removes time of day so calculation is from end of service day
     const nextSvcDate = calFindOpenDate(targetDate, 7);
-    const isSameOrAfter = dayjs().isSameOrAfter(nextSvcDate, 'day')
+    const isSameOrAfter = dayjs().isSameOrAfter(nextSvcDate, 'day') // XXX always true?
 
     // Ensure the service has not been served within its own svcInterval
     // We skip Food_Pantry because it uses global intervals by USDA type.
     if (activeServiceType.svcCat !== "Food_Pantry" && activeServiceType.svcInterval > 0) {
         const historySvcs = client.svcHistory.filter(hSvc => {
             return hSvc.svcTypeId == activeServiceType.svcTypeId &&
-                   !dayjs(hSvc.svcDT).isSame(dayjs(), "day") // Ignore same-day so UI can render "used" undo button
-        })
-
-        let foundRecentSvc = false
-        historySvcs.forEach(vSvc => {
-            if (dayjs().diff(vSvc.svcDT, 'days') <= activeServiceType.svcInterval) {
-                foundRecentSvc = true
-            }
-        })
-        if (foundRecentSvc) return false
+                   !dayjs(hSvc.svcDT).isSame(dayjs(), "day") && // Ignore same-day so UI can render "used" undo button
+                   dayjs().diff(hSvc.svcDT, 'days') <= activeServiceType.svcInterval;
+        });
+        if (length(historySvcs) >= 0)
+            return false;
     }
 
+    // XXX Special case for Food should not be necessary, but it's too scary to change it right now
     if (activeServiceType.svcBtns == "Primary") {
         const svcCat = activeServiceType.svcCat
         if (svcCat == "Food_Pantry") {
