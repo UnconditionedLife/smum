@@ -477,7 +477,7 @@ function validateSvcInterval(props) {
                    !dayjs(hSvc.svcDT).isSame(dayjs(), "day") && // Ignore same-day so UI can render "used" undo button
                    dayjs().diff(hSvc.svcDT, 'days') <= activeServiceType.svcInterval;
         });
-        if (length(historySvcs) >= 0)
+        if (historySvcs.length > 0)
             return false;
     }
 
