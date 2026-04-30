@@ -679,7 +679,9 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj = null) {
                     return null
                 }
             })
-        allData = allData.concat(dataPage);
+        if (dataPage !== null) {
+            allData = allData.concat(dataPage);
+        }
     } while (lastKey != null);
     return allData;
 }
