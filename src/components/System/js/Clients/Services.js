@@ -469,13 +469,15 @@ function validateSvcInterval(props) {
     const nextSvcDate = calFindOpenDate(targetDate, 7);
     const isSameOrAfter = dayjs().isSameOrAfter(nextSvcDate, 'day') // XXX always true?
 
-    // Ensure the service has not been served within its own svcInterval
-    // We skip Food_Pantry because it uses global intervals by USDA type.
+    // Ensure the service has not been served within its own svcInterval.
+    // If the svcInterval is N, service is available any time on the Nth day 
+    // after the previous service.
+    // XXX We skip Food_Pantry because it uses global intervals by USDA type.
     if (activeServiceType.svcCat !== "Food_Pantry" && activeServiceType.svcInterval > 0) {
         const historySvcs = client.svcHistory.filter(hSvc => {
             return hSvc.svcTypeId == activeServiceType.svcTypeId &&
                    !dayjs(hSvc.svcDT).isSame(dayjs(), "day") && // Ignore same-day so UI can render "used" undo button
-                   dayjs().diff(hSvc.svcDT, 'days') <= activeServiceType.svcInterval;
+                   dayjs().endOf('day').diff(hSvc.svcDT, 'days') < activeServiceType.svcInterval;
         });
         if (historySvcs.length > 0)
             return false;
