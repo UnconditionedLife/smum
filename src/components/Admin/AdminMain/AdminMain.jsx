@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { AppBar,Badge, Box, Tab, Tabs, Typography } from '@mui/material';
 import { useHistory, useLocation, matchPath } from "react-router-dom";
-import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport, People } from '@mui/icons-material';
+import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport, People, Storage } from '@mui/icons-material';
 import { AllUsersPage, CalendarPage, ReportsPage, ErrorPage,
-            ServiceTypePage, SettingsPage, VolunteersPage } from '..';
+            ServiceTypePage, SettingsPage, VolunteersPage, DataPage } from '..';
 import { globalMsgFunc, isAdmin, navigationAllowed } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 
@@ -14,7 +14,8 @@ const tabURL = [
     "/admin/users",
     "/admin/volunteers",
     "/admin/settings",
-    "/admin/error"
+    "/admin/error",
+    "/admin/data"
 ];
 
 export default function AdminMain(props) {
@@ -44,9 +45,9 @@ export default function AdminMain(props) {
         return <Typography>Not an admin user</Typography>
     }
 
-    let navLabels = [ 'Reports', 'Calendar', 'Service Types', 'Users', 'Volunteers', 'Settings', 'Errors' ];
+    let navLabels = [ 'Reports', 'Calendar', 'Service Types', 'Users', 'Volunteers', 'Settings', 'Errors', 'Data' ];
     if (UseWindowSize().width < 450) 
-        navLabels = [ '','','','','','','' ]
+        navLabels = [ '','','','','','','','' ]
 
     let selectedTab = sectionFromURL(url);
     if (selectedTab < 0) {
@@ -80,6 +81,7 @@ export default function AdminMain(props) {
                             <Badge badgeContent={ countErrors } color='error' max={999}>
                                 <BugReport/>
                             </Badge>}  />
+                        <Tab icon={<Storage/>} label={ navLabels[7] } style={{  minWidth:'62px' }} />
                     </Tabs>
                 </AppBar>
             </Box>
@@ -92,6 +94,7 @@ export default function AdminMain(props) {
                     {selectedTab === 4 && <VolunteersPage />}
                     {selectedTab === 5 && <SettingsPage />}
                     {selectedTab === 6 && <ErrorPage countUpdate={ setCountErrors } />}
+                    {selectedTab === 7 && <DataPage />}
                 </Box>
             </Box>
         </Box>
