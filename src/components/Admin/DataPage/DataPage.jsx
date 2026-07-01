@@ -19,7 +19,7 @@ export default function DataPage() {
     const [downloading, setDownloading] = useState(false);
     const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' | 'clients'
 
-    const loadClientData = () => {
+    function loadClientData() {
         setLoading(true);
         setActiveSection('clients');
         setError(null);
@@ -48,25 +48,25 @@ export default function DataPage() {
                 setError("Failed to load client data from the database. Please refresh and try again.");
                 setLoading(false);
             });
-    };
+    }
 
-    const handleBackToDashboard = () => {
+    function handleBackToDashboard() {
         setActiveSection('dashboard');
         // Keep clients cache in memory so returning doesn't require reloading
-    };
+    }
 
     // 1. Households CSV Mapper
-    const getHouseholdRows = (clientsList) => {
+    function getHouseholdRows(clientsList) {
+        let id = 1;
+
         return clientsList.map(c => {
-            const birthYear = c.dob ? dayjs(c.dob).format('YYYY') : '';
             return {
-                clientId: c.clientId || '',
+                clientId: id++,
                 isActive: c.isActive || '',
                 firstSeenDate: c.firstSeenDate || '',
                 familyIdCheckedDate: c.familyIdCheckedDate || '',
                 gender: c.gender || '',
                 ethnicGroup: c.ethnicGroup || '',
-                birthYear: birthYear,
                 age: c.age || '',
                 homeless: c.homeless || '',
                 city: c.city || '',
@@ -79,22 +79,23 @@ export default function DataPage() {
                 totalOtherDependents: c.family?.totalOtherDependents ?? ''
             };
         });
-    };
+    }
 
     // 2. Individuals CSV Mapper
-    const getIndividualRows = (clientsList) => {
+    function getIndividualRows(clientsList) {
         const rows = [];
+        let id = 1;
+
         clientsList.forEach(c => {
-            const birthYear = c.dob ? dayjs(c.dob).format('YYYY') : '';
-            
+            const householdId = id++;
+
             // Add primary head of household
             rows.push({
-                householdId: c.clientId || '',
+                householdId: householdId,
                 personType: 'Client (Head)',
                 status: c.isActive || '',
                 relationship: 'Self',
                 gender: c.gender || '',
-                birthYear: birthYear,
                 age: c.age || '',
                 grade: 'None',
                 homeless: c.homeless || '',
@@ -105,14 +106,12 @@ export default function DataPage() {
 
             // Add active dependents
             c.dependents.forEach(d => {
-                const depBirthYear = d.dob ? dayjs(d.dob).format('YYYY') : '';
                 rows.push({
-                    householdId: c.clientId || '',
+                    householdId: householdId,
                     personType: 'Dependent',
                     status: d.isActive || 'Active',
                     relationship: d.relationship || '',
                     gender: d.gender || '',
-                    birthYear: depBirthYear,
                     age: d.age || '',
                     grade: d.grade || 'None',
                     homeless: c.homeless || '',
@@ -123,10 +122,10 @@ export default function DataPage() {
             });
         });
         return rows;
-    };
+    }
 
     // CSV generator helper
-    const convertToCSV = (headers, data, keys) => {
+    function convertToCSV(headers, data, keys) {
         const csvRows = [headers.join(',')];
         
         data.forEach(row => {
@@ -145,10 +144,10 @@ export default function DataPage() {
         });
         
         return csvRows.join('\n');
-    };
+    }
 
     // Trigger file download
-    const handleDownload = () => {
+    function handleDownload() {
         setDownloading(true);
         setTimeout(() => {
             try {
@@ -156,14 +155,14 @@ export default function DataPage() {
 
                 if (exportType === 'households') {
                     headers = [
-                        "Client ID", "Status", "First Seen Date", "ID Checked Date", 
-                        "Gender", "Ethnicity", "Birth Year", "Age", "Homeless", 
+                        "ID", "Status", "First Seen Date", "ID Checked Date", 
+                        "Gender", "Ethnicity", "Age", "Homeless", 
                         "City", "State", "Zipcode", "Total Family Size", 
                         "Total Adults", "Total Children", "Total Seniors", "Total Other Dependents"
                     ];
                     keys = [
                         "clientId", "isActive", "firstSeenDate", "familyIdCheckedDate",
-                        "gender", "ethnicGroup", "birthYear", "age", "homeless",
+                        "gender", "ethnicGroup", "age", "homeless",
                         "city", "state", "zipcode", "totalSize",
                         "totalAdults", "totalChildren", "totalSeniors", "totalOtherDependents"
                     ];
@@ -172,12 +171,12 @@ export default function DataPage() {
                 } else {
                     headers = [
                         "Household ID", "Person Type", "Status", "Relationship", 
-                        "Gender", "Birth Year", "Age", "Grade", "Homeless", 
+                        "Gender", "Age", "Grade", "Homeless", 
                         "City", "State", "Zipcode"
                     ];
                     keys = [
                         "householdId", "personType", "status", "relationship",
-                        "gender", "birthYear", "age", "grade", "homeless",
+                        "gender", "age", "grade", "homeless",
                         "city", "state", "zipcode"
                     ];
                     data = getIndividualRows(clients);
@@ -201,7 +200,7 @@ export default function DataPage() {
                 setDownloading(false);
             }
         }, 300);
-    };
+    }
 
     // Calculate total count of individuals (clients + all dependents)
     const totalIndividualsCount = clients.reduce((acc, curr) => acc + 1 + curr.dependents.length, 0);
@@ -212,11 +211,10 @@ export default function DataPage() {
         : getIndividualRows(clients).slice(0, 5);
 
     const householdPreviewHeaders = [
-        { label: "Client ID", key: "clientId" },
+        { label: "ID", key: "clientId" },
         { label: "Status", key: "isActive" },
         { label: "Gender", key: "gender" },
         { label: "Ethnicity", key: "ethnicGroup" },
-        { label: "Birth Year", key: "birthYear" },
         { label: "Age", key: "age" },
         { label: "Homeless", key: "homeless" },
         { label: "Zipcode", key: "zipcode" },
@@ -228,7 +226,6 @@ export default function DataPage() {
         { label: "Person Type", key: "personType" },
         { label: "Relationship", key: "relationship" },
         { label: "Gender", key: "gender" },
-        { label: "Birth Year", key: "birthYear" },
         { label: "Age", key: "age" },
         { label: "Grade", key: "grade" },
         { label: "Zipcode", key: "zipcode" }
@@ -398,7 +395,7 @@ export default function DataPage() {
                             <Typography variant="body2" color="text.secondary" style={{ lineHeight: 1.6 }}>
                                 In compliance with data security and client privacy practices, all exports are fully anonymized.
                                 Personally Identifiable Information (PII) including <strong>Names (First/Last), Street Addresses, Phone Numbers, and Email Addresses</strong> are completely excluded.
-                                Dates of Birth are transformed to birth years and age categories, and zip codes are trimmed to their base 5-digit format.
+                                Street addresses are limited to city, state, and 5-digit zip code.
                             </Typography>
                         </CardContent>
                     </Card>
