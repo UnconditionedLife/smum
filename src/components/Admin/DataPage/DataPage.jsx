@@ -153,7 +153,7 @@ export default function DataPage() {
 
         if (exportType === 'households') {
             headers = [
-                "ID", "Status", "First Seen Date", "ID Checked Date", 
+                "Household ID", "Status", "First Seen Date", "ID Checked Date", 
                 "Gender", "Ethnicity", "Age", "Homeless", 
                 "City", "State", "Zipcode", "Total Family Size", 
                 "Total Adults", "Total Children", "Total Seniors", "Total Other Dependents"
@@ -203,7 +203,7 @@ export default function DataPage() {
         : getIndividualRows(clients).slice(0, 5);
 
     const householdPreviewHeaders = [
-        { label: "ID", key: "clientId" },
+        { label: "Household ID", key: "clientId" },
         { label: "Status", key: "isActive" },
         { label: "Gender", key: "gender" },
         { label: "Ethnicity", key: "ethnicGroup" },
