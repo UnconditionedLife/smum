@@ -178,6 +178,67 @@ export function utilRemoveDupClients(clients) {
 	return undupClients
 }
 
+// Replace control characters in JSON string fields.
+// The commented-out code is useful for identifying where
+// control characters are present in the data.
+function escapeControlCharsInJson(jsonString) {
+    let inString = false;
+    let escaped = false;
+    let result = '';
+    let escapes = 0;
+    for (let i = 0; i < jsonString.length; i++) {
+        let char = jsonString[i];
+        if (inString) {
+            if (escaped) {
+                result += char;
+                escaped = false;
+            } else if (char === '\\') {
+                result += char;
+                escaped = true;
+            } else if (char === '"') {
+                result += char;
+                inString = false;
+            } else {
+                const code = char.charCodeAt(0);
+                if (code < 32) {
+                    // console.log("Ctrl Char POS", i, "CODE", code);
+                    escapes++;
+
+                    if (char === '\n') result += '\\n';
+                    else if (char === '\r') result += '\\r';
+                    else if (char === '\t') result += '\\t';
+                    else {
+                        const hex = code.toString(16).padStart(4, '0');
+                        result += '\\u' + hex;
+                    }
+                } else {
+                    result += char;
+                }
+            }
+        } else {
+            result += char;
+            if (char === '"') {
+                inString = true;
+            }
+        }
+    }
+    // if (escapes > 0)
+    //     downloadFile(result, 'text/json;charset=utf-8;', 'escaped.json')
+    return result;
+}
+
+export function downloadFile(content, fileType, fileName) {
+    const blob = new Blob([content], { type: fileType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 // Sound effects
 
 export function beepError() {

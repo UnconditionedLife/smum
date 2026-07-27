@@ -9,6 +9,7 @@ import {
 import { Download, Storage, Shield, People, Home, ArrowBack, Assignment, VolunteerActivism } from '@mui/icons-material';
 import { dbGetAllClientsAsync } from '../../System/js/Database';
 import { utilCalcAge, calcDependentsAges, calcFamilyCounts } from '../../System/js/Clients/ClientUtils';
+import { downloadFile } from '../../System/js/GlobalUtils';
 import dayjs from 'dayjs';
 
 export default function DataPage() {
@@ -27,7 +28,7 @@ export default function DataPage() {
         dbGetAllClientsAsync()
             .then(data => {
                 if (data) {
-                    const prepared = JSON.parse(JSON.stringify(data)).map(c => {
+                    const prepared = data.map(c => {
                         // Ensure dependents is at least an empty array
                         c.dependents = c.dependents || [];
                         
@@ -148,58 +149,49 @@ export default function DataPage() {
 
     // Trigger file download
     function handleDownload() {
-        setDownloading(true);
-        setTimeout(() => {
-            try {
-                let headers, keys, data, fileName;
+        let headers, keys, data, fileName;
 
-                if (exportType === 'households') {
-                    headers = [
-                        "ID", "Status", "First Seen Date", "ID Checked Date", 
-                        "Gender", "Ethnicity", "Age", "Homeless", 
-                        "City", "State", "Zipcode", "Total Family Size", 
-                        "Total Adults", "Total Children", "Total Seniors", "Total Other Dependents"
-                    ];
-                    keys = [
-                        "clientId", "isActive", "firstSeenDate", "familyIdCheckedDate",
-                        "gender", "ethnicGroup", "age", "homeless",
-                        "city", "state", "zipcode", "totalSize",
-                        "totalAdults", "totalChildren", "totalSeniors", "totalOtherDependents"
-                    ];
-                    data = getHouseholdRows(clients);
-                    fileName = `anonymized_households_${dayjs().format('YYYY-MM-DD')}.csv`;
-                } else {
-                    headers = [
-                        "Household ID", "Person Type", "Status", "Relationship", 
-                        "Gender", "Age", "Grade", "Homeless", 
-                        "City", "State", "Zipcode"
-                    ];
-                    keys = [
-                        "householdId", "personType", "status", "relationship",
-                        "gender", "age", "grade", "homeless",
-                        "city", "state", "zipcode"
-                    ];
-                    data = getIndividualRows(clients);
-                    fileName = `anonymized_individuals_${dayjs().format('YYYY-MM-DD')}.csv`;
-                }
+        if (exportType === 'households') {
+            headers = [
+                "ID", "Status", "First Seen Date", "ID Checked Date", 
+                "Gender", "Ethnicity", "Age", "Homeless", 
+                "City", "State", "Zipcode", "Total Family Size", 
+                "Total Adults", "Total Children", "Total Seniors", "Total Other Dependents"
+            ];
+            keys = [
+                "clientId", "isActive", "firstSeenDate", "familyIdCheckedDate",
+                "gender", "ethnicGroup", "age", "homeless",
+                "city", "state", "zipcode", "totalSize",
+                "totalAdults", "totalChildren", "totalSeniors", "totalOtherDependents"
+            ];
+            data = getHouseholdRows(clients);
+            fileName = `anonymized_households_${dayjs().format('YYYY-MM-DD')}.csv`;
+        } else {
+            headers = [
+                "Household ID", "Person Type", "Status", "Relationship", 
+                "Gender", "Age", "Grade", "Homeless", 
+                "City", "State", "Zipcode"
+            ];
+            keys = [
+                "householdId", "personType", "status", "relationship",
+                "gender", "age", "grade", "homeless",
+                "city", "state", "zipcode"
+            ];
+            data = getIndividualRows(clients);
+            fileName = `anonymized_individuals_${dayjs().format('YYYY-MM-DD')}.csv`;
+        }
 
-                const csvContent = convertToCSV(headers, data, keys);
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.setAttribute('href', url);
-                link.setAttribute('download', fileName);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (err) {
-                console.error("Export failed: ", err);
-                alert("An error occurred during file generation. Please try again.");
-            } finally {
-                setDownloading(false);
-            }
-        }, 300);
+        try {
+            setDownloading(true);
+
+            const csvContent = convertToCSV(headers, data, keys);
+            downloadFile(csvContent, 'text/csv;charset=utf-8;', fileName)
+        } catch (err) {
+            console.error("Export failed: ", err);
+            alert("An error occurred during file generation. Please try again.");
+        } finally {
+            setDownloading(false);
+        }
     }
 
     // Calculate total count of individuals (clients + all dependents)

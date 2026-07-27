@@ -686,46 +686,6 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj = null) {
     return allData;
 }
 
-function escapeControlCharsInJson(jsonString) {
-    let inString = false;
-    let escaped = false;
-    let result = '';
-    for (let i = 0; i < jsonString.length; i++) {
-        let char = jsonString[i];
-        if (inString) {
-            if (escaped) {
-                result += char;
-                escaped = false;
-            } else if (char === '\\') {
-                result += char;
-                escaped = true;
-            } else if (char === '"') {
-                result += char;
-                inString = false;
-            } else {
-                const code = char.charCodeAt(0);
-                if (code < 32) {
-                    if (char === '\n') result += '\\n';
-                    else if (char === '\r') result += '\\r';
-                    else if (char === '\t') result += '\\t';
-                    else {
-                        const hex = code.toString(16).padStart(4, '0');
-                        result += '\\u' + hex;
-                    }
-                } else {
-                    result += char;
-                }
-            }
-        } else {
-            result += char;
-            if (char === '"') {
-                inString = true;
-            }
-        }
-    }
-    return result;
-}
-
 async function dbGetDataPageAsync(subUrl, paramObj) {
 
     if (cachedSession === null) return null
@@ -740,26 +700,7 @@ async function dbGetDataPageAsync(subUrl, paramObj) {
     })
         .then(response => {
             if (response.ok) {
-                return response.text().then(text => {
-                    const cleaned = escapeControlCharsInJson(text);
-                    try {
-                        return JSON.parse(cleaned);
-                    } catch (e) {
-                        const countIdxCleaned = cleaned.indexOf('"count":');
-                        const countIdxOrig = text.indexOf('"count":');
-                        let contextCleaned = "Not found";
-                        let contextOrig = "Not found";
-                        if (countIdxCleaned !== -1) {
-                            contextCleaned = cleaned.substring(Math.max(0, countIdxCleaned - 100), Math.min(cleaned.length, countIdxCleaned + 100));
-                        }
-                        if (countIdxOrig !== -1) {
-                            contextOrig = text.substring(Math.max(0, countIdxOrig - 100), Math.min(text.length, countIdxOrig + 100));
-                        }
-                        const combinedMsg = `${e.message} | Cleaned Context: [${contextCleaned}] | Original Context: [${contextOrig}]`;
-                        const newErr = new SyntaxError(combinedMsg);
-                        throw newErr;
-                    }
-                });
+                return Promise.resolve(response.json());
             } else {
                 const message = httpMessage(response.status);
                 return Promise.reject(message);
