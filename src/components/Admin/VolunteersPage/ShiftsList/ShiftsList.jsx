@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-    Autocomplete, Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Chip, FormControl, FormControlLabel, FormLabel, InputLabel, Radio, RadioGroup, Select, MenuItem,
-    TextField as MuiTextField, TableSortLabel, TextField, InputAdornment, IconButton, Tooltip, Switch,
+    Autocomplete, Box, Grid, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Chip, FormControl, FormControlLabel, InputLabel, Select, MenuItem, Alert,
+    TableSortLabel, TextField, InputAdornment, IconButton, Tooltip, Switch,
     createFilterOptions
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -13,9 +13,9 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { Search, Clear, Refresh } from '@mui/icons-material';
 import {
-    dbGetAllShiftsByDateAsync, dbGetShiftsByVolunteerAsync,
+    dbGetShiftsByVolunteerAsync, dbGetAllShiftsByDateAsync,
     dbGetAllVolunteersAsync, dbGetAllProgramsAsync,
-    dbGetAllActivitiesAsync, dbGetShiftsByProgramOrActivityAsync, dbGetShiftsByDateRangeAsync
+    dbGetAllActivitiesAsync, dbGetShiftsByDateRangeAsync
 } from '../../../System/js/Database';
 // import { TextField } from '../../../System'; // Removed custom TextField to avoid conflict with MUI TextField for search
 import ShiftEditDialog from './ShiftEditDialog.jsx';
@@ -64,13 +64,11 @@ const headCells = [
 
 export default function ShiftsList() {
     const [shifts, setShifts] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(dayjs());
-    const [filterType, setFilterType] = useState('date'); // 'date', 'volunteer', 'program', 'activity'
     const [selectedVolunteerId, setSelectedVolunteerId] = useState('');
     const [selectedProgramId, setSelectedProgramId] = useState('');
     const [selectedActivityId, setSelectedActivityId] = useState('');
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
+    const [startDate, setStartDate] = useState(dayjs().startOf('month'));
+    const [endDate, setEndDate] = useState(dayjs().endOf('month'));
     const [volunteers, setVolunteers] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [activities, setActivities] = useState([]);
@@ -80,14 +78,11 @@ export default function ShiftsList() {
     const [orderBy, setOrderBy] = useState('date');
     const [searchQuery, setSearchQuery] = useState('');
     const [showDeleted, setShowDeleted] = useState(false);
+    const [limitedResults, setLimitedResults] = useState(false);
 
     useEffect(() => {
         loadAll();
     }, []);
-
-    useEffect(() => {
-        loadShifts();
-    }, [filterType, selectedDate, selectedVolunteerId, selectedProgramId, selectedActivityId, startDate, endDate]);
 
     async function loadAll() {
         // Load volunteers, programs, and activities for the dropdowns and decoding
@@ -108,96 +103,80 @@ export default function ShiftsList() {
 
     async function loadShifts() {
         setLoading(true);
+        setLimitedResults(false);
         try {
             let shiftsData = [];
 
-            switch (filterType) {
-                case 'date':
-                    // Get all shifts for the selected date (using local time)
-                    const dateStr = dayjs(selectedDate).format('YYYY-MM-DD');
-                    shiftsData = await dbGetAllShiftsByDateAsync(dateStr);
+            // Decide how to query based on filters
+            if (selectedVolunteerId) {
+                // Fetch shifts for the volunteer. To bypass the backend dual-date query bug, 
+                // we fetch all volunteer shifts and then filter them locally.
+                shiftsData = await dbGetShiftsByVolunteerAsync(selectedVolunteerId);
+            } else {
+                // Fetch by date range (enforced or default)
+                const startStr = startDate && dayjs(startDate).isValid()
+                    ? dayjs(startDate).format('YYYY-MM-DD')
+                    : dayjs().startOf('month').format('YYYY-MM-DD');
+                const endStr = endDate && dayjs(endDate).isValid()
+                    ? dayjs(endDate).format('YYYY-MM-DD')
+                    : dayjs().endOf('month').format('YYYY-MM-DD');
 
-                    // Filter to only include shifts within the selected day
-                    const localDayStart = dayjs(selectedDate).startOf('day');
-                    const localDayEnd = dayjs(selectedDate).endOf('day');
-
-                    shiftsData = (shiftsData || []).filter(shift => {
-                        if (shift.TimestampIn) {
-                            const shiftTime = dayjs(shift.TimestampIn);
-                            return shiftTime.isSameOrAfter(localDayStart) && shiftTime.isSameOrBefore(localDayEnd);
-                        }
-                        return false;
-                    });
-                    break;
-
-                case 'volunteer':
-                    let localStart = null;
-                    let localEnd = null;
-
-                    if (startDate) {
-                        localStart = dayjs(startDate).format('YYYY-MM-DD');
-                    }
-
-                    if (endDate) {
-                        localEnd = dayjs(endDate).format('YYYY-MM-DD');
-                    }
-
-                    if (selectedVolunteerId) {
-                        shiftsData = await dbGetShiftsByVolunteerAsync(selectedVolunteerId, localStart, localEnd);
-                    } else if (localStart || localEnd) {
-                        let queryStart = dayjs(localStart || localEnd);
-                        const queryEnd = dayjs(localEnd || localStart);
-                        
-                        shiftsData = [];
-                        let daysCount = 0;
-                        
-                        // Limit to 31 days max to prevent API spamming
-                        while(queryStart.isSameOrBefore(queryEnd) && daysCount < 31) {
-                            const dateStr = queryStart.format('YYYY-MM-DD');
-                            const dayShifts = await dbGetAllShiftsByDateAsync(dateStr);
-                            if (dayShifts && Array.isArray(dayShifts)) {
-                                shiftsData = shiftsData.concat(dayShifts);
-                            }
-                            queryStart = queryStart.add(1, 'day');
-                            daysCount++;
-                        }
-                    } else {
-                        shiftsData = [];
-                    }
-
-                    // Filter results to ensure they fall within the local date range
-                    if (shiftsData && (startDate || endDate)) {
-                        const localStartBoundary = startDate ? dayjs(startDate).startOf('day') : null;
-                        const localEndBoundary = endDate ? dayjs(endDate).endOf('day') : null;
-
-                        shiftsData = shiftsData.filter(shift => {
-                            if (shift.TimestampIn) {
-                                const shiftTime = dayjs(shift.TimestampIn);
-                                if (localStartBoundary && shiftTime.isBefore(localStartBoundary)) return false;
-                                if (localEndBoundary && shiftTime.isAfter(localEndBoundary)) return false;
-                                return true;
-                            }
-                            return false;
-                        });
-                    }
-                    break;
-
-                case 'program':
-                    if (selectedProgramId) {
-                        const dateStr = selectedDate ? dayjs(selectedDate).format('YYYY-MM-DD') : null;
-                        shiftsData = await dbGetShiftsByProgramOrActivityAsync(selectedProgramId, null, dateStr);
-                    }
-                    break;
-
-                case 'activity':
-                    if (selectedActivityId) {
-                        const dateStr = selectedDate ? dayjs(selectedDate).format('YYYY-MM-DD') : null;
-                        shiftsData = await dbGetShiftsByProgramOrActivityAsync(null, selectedActivityId, dateStr);
-                    }
-                    break;
+                try {
+                    shiftsData = await dbGetShiftsByDateRangeAsync(startStr, endStr);
+                } catch (err) {
+                    console.error("Failed to fetch shifts:", err);
+                }
             }
 
-            setShifts(utilDecodeStrings(shiftsData) || []);
+            let decodedShifts = utilDecodeStrings(shiftsData) || [];
+
+            // Apply local post-filtering
+            const localStartBoundary = startDate && dayjs(startDate).isValid() ? dayjs(startDate).startOf('day') : null;
+            const localEndBoundary = endDate && dayjs(endDate).isValid() ? dayjs(endDate).endOf('day') : null;
+
+            let filtered = decodedShifts.filter(shift => {
+                // 1. Date Range filtering (mandatory local step if volunteer is selected)
+                if (shift.TimestampIn) {
+                    const shiftTime = dayjs(shift.TimestampIn);
+                    if (localStartBoundary && shiftTime.isBefore(localStartBoundary)) return false;
+                    if (localEndBoundary && shiftTime.isAfter(localEndBoundary)) return false;
+                } else if (selectedVolunteerId) {
+                    // If no timestamp and filtering by volunteer, check Date field if exists
+                    if (shift.Date) {
+                        const shiftDate = dayjs(shift.Date);
+                        if (localStartBoundary && shiftDate.isBefore(localStartBoundary)) return false;
+                        if (localEndBoundary && shiftDate.isAfter(localEndBoundary)) return false;
+                    }
+                }
+
+                // 2. Program ID filter
+                if (selectedProgramId) {
+                    const progId = shift.ProgramId || shift.programId;
+                    if (progId !== selectedProgramId && progId != selectedProgramId) return false;
+                }
+
+                // 3. Activity ID filter
+                if (selectedActivityId) {
+                    const actId = shift.ActivityId || shift.activityId;
+                    if (actId !== selectedActivityId && actId != selectedActivityId) return false;
+                }
+
+                return true;
+            });
+
+            // Implement initial result size limiting if too many records (e.g. 1000 limit for flexible queries)
+            if (filtered.length >= 1000) {
+                setLimitedResults(true);
+                // Sort raw list descending by timestamp first to keep the 1000 most recent records
+                filtered.sort((a, b) => {
+                    const timeA = a.TimestampIn ? dayjs(a.TimestampIn).valueOf() : 0;
+                    const timeB = b.TimestampIn ? dayjs(b.TimestampIn).valueOf() : 0;
+                    return timeB - timeA;
+                });
+                filtered = filtered.slice(0, 1000);
+            }
+
+            setShifts(filtered);
         } catch (error) {
             console.error('Error loading shifts:', error);
             setShifts([]);
@@ -342,60 +321,43 @@ export default function ShiftsList() {
         return stableSort(normalized, getComparator(order, orderBy));
     }, [shifts, volunteers, programs, activities, order, orderBy, searchQuery, showDeleted]);
 
+    function handleResetFilters() {
+        setStartDate(dayjs().startOf('month'));
+        setEndDate(dayjs().endOf('month'));
+        setSelectedVolunteerId('');
+        setSelectedProgramId('');
+        setSelectedActivityId('');
+        setSearchQuery('');
+        setTimeout(() => {
+            loadShifts();
+        }, 50);
+    }
+
     function renderFilterControls() {
         return (
-            <Box mb={3} p={2} sx={{ backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" sx={{ mb: 2 }}>
-                    <FormControl>
-                        <FormLabel>Filter By</FormLabel>
-                        <RadioGroup
-                            row
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                        >
-                            <FormControlLabel value="date" control={<Radio />} label="Date" />
-                            <FormControlLabel value="volunteer" control={<Radio />} label="Volunteer" />
-                            <FormControlLabel value="program" control={<Radio />} label="Program" />
-                            <FormControlLabel value="activity" control={<Radio />} label="Activity" />
-                        </RadioGroup>
-                    </FormControl>
-                    <FormControlLabel
-                        control={<Switch checked={showDeleted} onChange={(e) => setShowDeleted(e.target.checked)} color="error" />}
-                        label="Show Deleted"
-                    />
-                </Box>
-
-                {filterType === 'date' && (
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                            value={selectedDate}
-                            onChange={setSelectedDate}
-                            renderInput={(params) => <TextField {...params} fullWidth />}
-                            label="Select Date"
-                        />
-                    </LocalizationProvider>
-                )}
-
-                {filterType === 'volunteer' && (
-                    <Box>
-                        <Box display="flex" gap={2} sx={{ mb: 2 }}>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    value={startDate}
-                                    onChange={setStartDate}
-                                    renderInput={(params) => <TextField {...params} />}
-                                    label="Start Date (Optional)"
-                                />
-                            </LocalizationProvider>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    value={endDate}
-                                    onChange={setEndDate}
-                                    renderInput={(params) => <TextField {...params} />}
-                                    label="End Date (Optional)"
-                                />
-                            </LocalizationProvider>
-                        </Box>
+            <Box mb={3} p={3} sx={{ backgroundColor: '#fafafa', borderRadius: 2, border: '1px solid #e0e0e0' }}>
+                <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} sm={6} md={3}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                                value={startDate}
+                                onChange={setStartDate}
+                                renderInput={(params) => <TextField {...params} size="small" fullWidth />}
+                                label="Start Date"
+                            />
+                        </LocalizationProvider>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                                value={endDate}
+                                onChange={setEndDate}
+                                renderInput={(params) => <TextField {...params} size="small" fullWidth />}
+                                label="End Date"
+                            />
+                        </LocalizationProvider>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
                         <Autocomplete
                             options={volunteers}
                             getOptionLabel={(vol) =>
@@ -408,10 +370,10 @@ export default function ShiftsList() {
                             noOptionsText="Type to search..."
                             popupIcon={null}
                             renderOption={(props, option) => {
-                                const { key, ...restProps } = props;
                                 const name = `${option.FirstName || option.firstName || ''} ${option.LastName || option.lastName || ''}`.trim();
                                 return (
-                                    <li key={option.VolunteerId} {...restProps}>
+                                    /* eslint-disable-next-line react/prop-types */
+                                    <li {...props} key={props.key || option.VolunteerId}>
                                         {name}
                                     </li>
                                 );
@@ -422,6 +384,7 @@ export default function ShiftsList() {
                                     <TextField
                                         {...restParams}
                                         size="small"
+                                        label="Volunteer"
                                         placeholder="Search volunteers..."
                                         InputProps={{
                                             ...InputProps,
@@ -435,19 +398,16 @@ export default function ShiftsList() {
                                 );
                             }}
                         />
-                    </Box>
-                )}
-
-                {filterType === 'program' && (
-                    <Box>
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                            <InputLabel>Select Program</InputLabel>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <FormControl fullWidth size="small">
+                            <InputLabel>Program</InputLabel>
                             <Select
                                 value={selectedProgramId}
                                 onChange={(e) => setSelectedProgramId(e.target.value)}
-                                label="Select Program"
+                                label="Program"
                             >
-                                <MenuItem value="">None</MenuItem>
+                                <MenuItem value="">All Programs</MenuItem>
                                 {programs.map(prog => {
                                     const progId = prog.ProgramId || prog.programId || prog.Id || prog.id;
                                     const progName = prog.ProgramName || prog.Name || prog.name || `Program ${progId}`;
@@ -459,27 +419,16 @@ export default function ShiftsList() {
                                 })}
                             </Select>
                         </FormControl>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                value={selectedDate}
-                                onChange={setSelectedDate}
-                                renderInput={(params) => <TextField {...params} fullWidth />}
-                                label="Select Date"
-                            />
-                        </LocalizationProvider>
-                    </Box>
-                )}
-
-                {filterType === 'activity' && (
-                    <Box>
-                        <FormControl fullWidth sx={{ mb: 2 }}>
-                            <InputLabel>Select Activity</InputLabel>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <FormControl fullWidth size="small">
+                            <InputLabel>Activity</InputLabel>
                             <Select
                                 value={selectedActivityId}
                                 onChange={(e) => setSelectedActivityId(e.target.value)}
-                                label="Select Activity"
+                                label="Activity"
                             >
-                                <MenuItem value="">None</MenuItem>
+                                <MenuItem value="">All Activities</MenuItem>
                                 {activities.map(act => {
                                     const actId = act.ActivityId || act.activityId || act.Id || act.id;
                                     const actName = act.ActivityName_en || act.ActivityName || act.Name || act.name || `Activity ${actId}`;
@@ -491,16 +440,32 @@ export default function ShiftsList() {
                                 })}
                             </Select>
                         </FormControl>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                value={selectedDate}
-                                onChange={setSelectedDate}
-                                renderInput={(params) => <TextField {...params} fullWidth />}
-                                label="Select Date"
-                            />
-                        </LocalizationProvider>
-                    </Box>
-                )}
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <FormControlLabel
+                            control={<Switch checked={showDeleted} onChange={(e) => setShowDeleted(e.target.checked)} color="error" size="small" />}
+                            label="Show Deleted"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={12} md={6} display="flex" justifyContent="flex-end" gap={2}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleResetFilters}
+                            size="medium"
+                        >
+                            Reset
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={loadShifts}
+                            size="medium"
+                            startIcon={<Search />}
+                        >
+                            Search Shifts
+                        </Button>
+                    </Grid>
+                </Grid>
             </Box>
         );
     }
@@ -620,6 +585,13 @@ export default function ShiftsList() {
                 View volunteer check-in/check-out records. Use filters to search by date or by volunteer.
             </Typography>
             {renderFilterControls()}
+            {limitedResults && (
+                <Box mb={2}>
+                    <Alert severity="warning">
+                        Showing only the 1000 most recent shifts. Narrow your date range or apply filters to see more results.
+                    </Alert>
+                </Box>
+            )}
             {renderShiftsTable()}
 
             {/* Edit Dialog */}
