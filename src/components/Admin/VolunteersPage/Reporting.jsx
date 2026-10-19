@@ -46,6 +46,7 @@ const REPORT_CONFIGS = {
             { id: 'email', label: 'Email', getValue: v => v.Email, sortField: 'Email' },
             { id: 'telephone', label: 'Telephone', getValue: v => formatPhone(v.Telephone), sortable: false },
             { id: 'programName', label: 'Program', getValue: v => v.programName, sortField: 'programName' },
+            { id: 'activityName', label: 'Activity', getValue: v => v.activityName, sortField: 'activityName' },
             { id: 'shiftsCount', label: 'Shifts', getValue: v => v.shiftsCount || 0, sortField: 'shiftsCount' },
             { id: 'hours', label: 'Hours', getValue: v => v.displayDuration || `${v.totalHours || 0}h`, sortField: 'totalMinutes' },
             { id: 'date', label: 'Last Active', getValue: v => v.lastActiveDate, sortField: 'sortDate' },
@@ -298,6 +299,54 @@ export default function Reports() {
                         const programName = programMap.get(String(progId)) || 'N/A';
                         const status = vol.RegComplete ? 'Registered' : 'Not Registered';
 
+                        // Breakdown by unique activity for this volunteer
+                        const shiftsByAct = new Map();
+                        volShifts.forEach(shift => {
+                            const actId = String(shift.ActivityId || '0');
+                            if (!shiftsByAct.has(actId)) shiftsByAct.set(actId, []);
+                            shiftsByAct.get(actId).push(shift);
+                        });
+
+                        const activityBreakdown = [];
+                        shiftsByAct.forEach((actShifts, actId) => {
+                            let actMinutes = 0;
+                            let actLatestTimestamp = 0;
+                            let actLatestDisplayDate = '-';
+                            let actLatestDateObj = null;
+
+                            actShifts.forEach(s => {
+                                const timestampIn = s.TimestampIn ? dayjs(s.TimestampIn) : null;
+                                const timestampOut = s.TimestampOut ? dayjs(s.TimestampOut) : null;
+                                if (timestampIn && timestampOut) {
+                                    const diff = timestampOut.diff(timestampIn, 'minute');
+                                    if (diff > 0) actMinutes += diff;
+                                }
+                                const t = timestampIn ? timestampIn.valueOf() : (s.Date ? dayjs(s.Date).valueOf() : 0);
+                                if (t > actLatestTimestamp) {
+                                    actLatestTimestamp = t;
+                                    actLatestDisplayDate = timestampIn ? timestampIn.format('YYYY-MM-DD') : (s.Date || '-');
+                                    actLatestDateObj = timestampIn || (s.Date ? dayjs(s.Date) : null);
+                                }
+                            });
+
+                            const actName = activityMap.get(actId) || (actId === '0' ? 'None' : `Activity ${actId}`);
+                            activityBreakdown.push({
+                                activityId: actId,
+                                activityName: actName,
+                                shiftsCount: actShifts.length,
+                                totalMinutes: actMinutes,
+                                totalHours: (actMinutes / 60).toFixed(1),
+                                displayDuration: formatDuration(actMinutes),
+                                lastActiveDate: actLatestDisplayDate,
+                                dateObj: actLatestDateObj,
+                                sortDate: actLatestTimestamp
+                            });
+                        });
+
+                        const actIds = [...new Set(volShifts.map(s => s.ActivityId).filter(Boolean))];
+                        const activityNames = actIds.map(id => activityMap.get(String(id))).filter(Boolean);
+                        const activityName = activityNames.length > 0 ? activityNames.join(', ') : 'N/A';
+
                         const item = {
                             ...vol,
                             id: vol.VolunteerId || volId,
@@ -308,6 +357,8 @@ export default function Reports() {
                             lastActiveDate: latestDisplayDate,
                             dateObj: latestDateObj,
                             programName,
+                            activityName,
+                            activityBreakdown,
                             status,
                             sortDate: latestTimestamp
                         };
@@ -389,10 +440,37 @@ export default function Reports() {
 
     // Sort and Group Data
     const groupedData = useMemo(() => {
+        let itemsToGroup = reportData;
+
+        if (reportType === 'volunteers' && groupBy === 'activity') {
+            // Group by unique activity: volunteer appears under each activity they worked in
+            itemsToGroup = reportData.flatMap(item => {
+                if (item.activityBreakdown && item.activityBreakdown.length > 0) {
+                    return item.activityBreakdown.map(act => ({
+                        ...item,
+                        activityName: act.activityName,
+                        shiftsCount: act.shiftsCount,
+                        totalMinutes: act.totalMinutes,
+                        totalHours: act.totalHours,
+                        displayDuration: act.displayDuration,
+                        lastActiveDate: act.lastActiveDate,
+                        dateObj: act.dateObj,
+                        sortDate: act.sortDate,
+                        groupKey: act.activityName
+                    }));
+                }
+                return [{
+                    ...item,
+                    activityName: 'N/A',
+                    groupKey: 'N/A'
+                }];
+            });
+        }
+
         const colDef = currentConfig.columns.find(c => c.id === orderBy);
         const sortField = colDef?.sortField || orderBy;
 
-        const sorted = [...reportData].sort((a, b) => {
+        const sorted = [...itemsToGroup].sort((a, b) => {
             const valA = a[sortField];
             const valB = b[sortField];
             let compareResult = 0;
@@ -406,7 +484,9 @@ export default function Reports() {
 
         const groups = {};
         sorted.forEach(item => {
-            const key = item.groupKey || currentConfig.defaultGroupLabel;
+            const key = (reportType === 'volunteers' && groupBy === 'activity')
+                ? item.groupKey
+                : getGroupKey(item, groupBy, currentConfig.defaultGroupLabel);
             if (!groups[key]) groups[key] = [];
             groups[key].push(item);
         });
@@ -571,7 +651,9 @@ export default function Reports() {
                                     onChange={(e) => {
                                         const newType = e.target.value;
                                         setReportType(newType);
-                                        if ((newType === 'volunteers' || newType === 'new_volunteers') && (groupBy === 'activity' || groupBy === 'volunteer')) {
+                                        if (newType === 'new_volunteers' && (groupBy === 'activity' || groupBy === 'volunteer')) {
+                                            setGroupBy('month');
+                                        } else if (newType === 'volunteers' && groupBy === 'volunteer') {
                                             setGroupBy('month');
                                         }
                                     }}
@@ -594,7 +676,7 @@ export default function Reports() {
                                     <MenuItem value="month">Month</MenuItem>
                                     <MenuItem value="year">Year</MenuItem>
                                     <MenuItem value="program">Program</MenuItem>
-                                    {reportType === 'shifts' && <MenuItem value="activity">Activity</MenuItem>}
+                                    {(reportType === 'shifts' || reportType === 'volunteers') && <MenuItem value="activity">Activity</MenuItem>}
                                     {reportType === 'shifts' && <MenuItem value="volunteer">Volunteer</MenuItem>}
                                     {(reportType === 'volunteers' || reportType === 'new_volunteers') && <MenuItem value="status">Status</MenuItem>}
                                 </Select>
