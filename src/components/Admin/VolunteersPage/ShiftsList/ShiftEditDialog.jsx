@@ -22,8 +22,8 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                 TimestampIn: shift.TimestampIn ? dayjs(shift.TimestampIn) : null,
                 TimestampOut: shift.TimestampOut ? dayjs(shift.TimestampOut) : null,
                 VolunteerId: shift.VolunteerId || '',
-                ProgramId: shift.ProgramId || shift.programId || '',
-                ActivityId: shift.ActivityId || shift.activityId || '',
+                ProgramId: shift.ProgramId || '',
+                ActivityId: shift.ActivityId || '',
                 isDeleted: shift.isDeleted || false
             });
         }
@@ -151,7 +151,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                                 >
                                     {volunteers.map(vol => (
                                         <MenuItem key={vol.VolunteerId} value={vol.VolunteerId}>
-                                            {`${vol.FirstName || vol.firstName || ''} ${vol.LastName || vol.lastName || ''}`.trim()}
+                                            {`${vol.FirstName} ${vol.LastName}`.trim()}
                                         </MenuItem>
                                     ))}
                                 </Select>
@@ -191,15 +191,11 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                                     label="Program"
                                 >
                                     <MenuItem value="">None</MenuItem>
-                                    {programs.map(prog => {
-                                        const progId = prog.ProgramId || prog.programId || prog.Id || prog.id || prog.ID;
-                                        const progName = prog.ProgramName || prog.Name || prog.name || `Program ${progId}`;
-                                        return (
-                                            <MenuItem key={progId} value={progId}>
-                                                {progName}
-                                            </MenuItem>
-                                        );
-                                    })}
+                                    {programs.map(prog => (
+                                        <MenuItem key={prog.ProgramId} value={prog.ProgramId}>
+                                            {prog.ProgramName}
+                                        </MenuItem>
+                                    ))}
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -213,15 +209,11 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                                     label="Activity"
                                 >
                                     <MenuItem value="">None</MenuItem>
-                                    {activities.map(act => {
-                                        const actId = act.ActivityId || act.activityId || act.Id || act.id || act.ID;
-                                        const actName = act.ActivityName_en || act.ActivityName || act.Name || act.name || `Activity ${actId}`;
-                                        return (
-                                            <MenuItem key={actId} value={actId}>
-                                                {actName}
-                                            </MenuItem>
-                                        );
-                                    })}
+                                    {activities.map(act => (
+                                        <MenuItem key={act.ActivityId} value={act.ActivityId}>
+                                            {act.ActivityName || act.ActivityName_en}
+                                        </MenuItem>
+                                    ))}
                                 </Select>
                             </FormControl>
                         </Grid>

@@ -68,11 +68,6 @@ export default function VolunteerForm(props) {
     useEffect(() => {
         // Load programs on mount
         dbGetAllProgramsAsync().then(progs => {
-            console.log('Fetched programs for dropdown:', progs);
-            progs?.forEach(p => {
-                const id = p.ProgramId || p.programId || p.Id || p.id;
-                console.log(`Program: ${p.ProgramName || p.Name || p.name}, ID: ${id}, Type: ${typeof id}`);
-            });
             setPrograms(progs || []);
         }).catch(err => {
             console.error('Error loading programs:', err);
@@ -217,15 +212,11 @@ export default function VolunteerForm(props) {
                         rules={{ required: 'Required' }}
                     >
                         <MenuItem value="0">No Program</MenuItem>
-                        {programs.map((program) => {
-                            const progId = program.ProgramId || program.programId || program.Id || program.id;
-                            const progName = program.ProgramName || program.Name || program.name || 'Unknown';
-                            return (
-                                <MenuItem key={progId} value={String(progId)}>
-                                    {progName}
-                                </MenuItem>
-                            );
-                        })}
+                        {programs.map((program) => (
+                            <MenuItem key={program.ProgramId} value={program.ProgramId}>
+                                {program.ProgramName}
+                            </MenuItem>
+                        ))}
                     </FormSelect>
                 </Box>
 

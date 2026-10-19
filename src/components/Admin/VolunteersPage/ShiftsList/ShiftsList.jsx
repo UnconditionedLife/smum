@@ -13,7 +13,7 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { Search, Clear, Refresh } from '@mui/icons-material';
 import {
-    dbGetShiftsByVolunteerAsync, dbGetAllShiftsByDateAsync,
+    dbGetShiftsByVolunteerAsync,
     dbGetAllVolunteersAsync, dbGetAllProgramsAsync,
     dbGetAllActivitiesAsync, dbGetShiftsByDateRangeAsync
 } from '../../../System/js/Database';
@@ -272,20 +272,14 @@ export default function ShiftsList() {
             // Names
             const volunteer = volunteers.find(vol => vol.VolunteerId === volunteerId);
             const volunteerName = volunteer
-                ? `${volunteer.FirstName || volunteer.firstName || ''} ${volunteer.LastName || volunteer.lastName || ''}`.trim() || `Unknown (${volunteerId})`
+                ? `${volunteer.FirstName} ${volunteer.LastName}`.trim() || `Unknown (${volunteerId})`
                 : `Unknown (${volunteerId})`;
 
-            const program = programs.find(prog => {
-                const progId = prog.ProgramId || prog.programId || prog.Id || prog.id || prog.ID;
-                return progId === programId || progId == programId;
-            });
-            const programName = program ? (program.ProgramName || program.Name || program.name || 'N/A') : 'N/A';
+            const program = programs.find(prog => prog.ProgramId === programId);
+            const programName = program?.ProgramName || 'N/A';
 
-            const activity = activities.find(act => {
-                const actId = act.ActivityId || act.activityId || act.Id || act.id || act.ID;
-                return actId === activityId || actId == activityId;
-            });
-            const activityName = activity ? (activity.ActivityName_en || activity.ActivityName || activity.Name || activity.name || 'N/A') : 'N/A';
+            const activity = activities.find(act => act.ActivityId === activityId);
+            const activityName = activity?.ActivityName || activity?.ActivityName_en || 'N/A';
 
             return {
                 id: shiftId,
@@ -361,7 +355,7 @@ export default function ShiftsList() {
                         <Autocomplete
                             options={volunteers}
                             getOptionLabel={(vol) =>
-                                `${vol.FirstName || vol.firstName || ''} ${vol.LastName || vol.lastName || ''}`.trim()
+                                `${vol.FirstName} ${vol.LastName}`.trim()
                             }
                             filterOptions={createFilterOptions({ limit: 20 })}
                             value={volunteers.find(v => v.VolunteerId === selectedVolunteerId) || null}
@@ -370,7 +364,7 @@ export default function ShiftsList() {
                             noOptionsText="Type to search..."
                             popupIcon={null}
                             renderOption={(props, option) => {
-                                const name = `${option.FirstName || option.firstName || ''} ${option.LastName || option.lastName || ''}`.trim();
+                                const name = `${option.FirstName} ${option.LastName}`.trim();
                                 return (
                                     /* eslint-disable-next-line react/prop-types */
                                     <li {...props} key={props.key || option.VolunteerId}>
@@ -408,15 +402,11 @@ export default function ShiftsList() {
                                 label="Program"
                             >
                                 <MenuItem value="">All Programs</MenuItem>
-                                {programs.map(prog => {
-                                    const progId = prog.ProgramId || prog.programId || prog.Id || prog.id;
-                                    const progName = prog.ProgramName || prog.Name || prog.name || `Program ${progId}`;
-                                    return (
-                                        <MenuItem key={progId} value={progId}>
-                                            {progName}
-                                        </MenuItem>
-                                    );
-                                })}
+                                {programs.map(prog => (
+                                    <MenuItem key={prog.ProgramId} value={prog.ProgramId}>
+                                        {prog.ProgramName}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                     </Grid>
@@ -429,15 +419,11 @@ export default function ShiftsList() {
                                 label="Activity"
                             >
                                 <MenuItem value="">All Activities</MenuItem>
-                                {activities.map(act => {
-                                    const actId = act.ActivityId || act.activityId || act.Id || act.id;
-                                    const actName = act.ActivityName_en || act.ActivityName || act.Name || act.name || `Activity ${actId}`;
-                                    return (
-                                        <MenuItem key={actId} value={actId}>
-                                            {actName}
-                                        </MenuItem>
-                                    );
-                                })}
+                                {activities.map(act => (
+                                    <MenuItem key={act.ActivityId} value={act.ActivityId}>
+                                        {act.ActivityName || act.ActivityName_en}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                     </Grid>

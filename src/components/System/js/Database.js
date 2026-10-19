@@ -793,23 +793,16 @@ export async function dbGetAllVolunteersAsync() {
     // Normalize field names and decode strings
     return volunteers.map(vol => {
         const decoded = utilDecodeStrings(vol);
-
-        // Fix corrupted phone numbers (21XXXXXXXXXX should be +1XXXXXXXXXX)
-        let phone = decoded.telephone || '';
-        if (phone && phone.startsWith('21') && phone.length === 12) {
-            phone = '+1' + phone.substring(2);
-        }
-
         return {
             VolunteerId: decoded.VolunteerId,
-            FirstName: decoded.firstName,
-            LastName: decoded.lastName,
-            Email: decoded.email,
-            Telephone: phone,
-            ProgramId: decoded.ProgramId || '0',
-            RegComplete: decoded.RegComplete || false,
-            Time: decoded.time,
-            isDeleted: decoded.isDeleted || false
+            FirstName: decoded.firstName || '',
+            LastName: decoded.lastName || '',
+            Email: decoded.email || '',
+            Telephone: decoded.telephone || '',
+            ProgramId: String(decoded.ProgramId || '0'),
+            RegComplete: Boolean(decoded.RegComplete),
+            Time: decoded.time || decoded.Time,
+            isDeleted: Boolean(decoded.isDeleted)
         };
     });
 }
@@ -849,22 +842,15 @@ export async function dbGetSingleVolunteerAsync(volunteerId) {
 
     if (volunteer) {
         const decoded = utilDecodeStrings(volunteer);
-
-        // Fix corrupted phone numbers (21XXXXXXXXXX should be +1XXXXXXXXXX)
-        let phone = decoded.telephone || '';
-        if (phone && phone.startsWith('21') && phone.length === 12) {
-            phone = '+1' + phone.substring(2);
-        }
-
         return {
             VolunteerId: decoded.VolunteerId,
-            FirstName: decoded.firstName,
-            LastName: decoded.lastName,
-            Email: decoded.email,
-            Telephone: phone,
-            ProgramId: decoded.programId || '0',
-            RegComplete: decoded.regComplete || false,
-            Time: decoded.time
+            FirstName: decoded.firstName || '',
+            LastName: decoded.lastName || '',
+            Email: decoded.email || '',
+            Telephone: decoded.telephone || '',
+            ProgramId: String(decoded.ProgramId || decoded.programId || '0'),
+            RegComplete: Boolean(decoded.RegComplete || decoded.regComplete),
+            Time: decoded.time || decoded.Time
         };
     }
     return null;
@@ -942,22 +928,15 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
     // API response format: {VolunteerId, ProgramId, firstName, lastName, telephone, email, RegComplete}
     if (response) {
         const decoded = utilDecodeStrings(response);
-
-        // Fix corrupted phone numbers
-        let phone = decoded.telephone || '';
-        if (phone && phone.startsWith('21') && phone.length === 12) {
-            phone = '+1' + phone.substring(2);
-        }
-
         return {
             VolunteerId: decoded.VolunteerId,
-            FirstName: decoded.firstName,
-            LastName: decoded.lastName,
-            Telephone: phone,
-            Email: decoded.email,
-            ProgramId: decoded.ProgramId || '0',
-            RegComplete: decoded.RegComplete || false,
-            Time: decoded.time
+            FirstName: decoded.firstName || '',
+            LastName: decoded.lastName || '',
+            Telephone: decoded.telephone || '',
+            Email: decoded.email || '',
+            ProgramId: String(decoded.ProgramId || decoded.programId || '0'),
+            RegComplete: Boolean(decoded.RegComplete || decoded.regComplete),
+            Time: decoded.time || decoded.Time
         };
     }
     return response;

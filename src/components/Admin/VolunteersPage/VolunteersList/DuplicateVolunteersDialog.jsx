@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button,
     List, ListItem, ListItemText, Radio, RadioGroup, FormControlLabel,
-    Typography, Box, CircularProgress, Alert, Divider, IconButton, Tooltip, Chip
+    Typography, Box, CircularProgress, Alert, IconButton, Tooltip, Chip
 } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
 import { dbGetAllVolunteersAsync, dbMergeVolunteersAsync } from '../../../System/js/Database';
@@ -62,7 +62,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                     const unique = [];
                     const map = new Map();
                     for (const item of group) {
-                        const id = item.VolunteerId || item.volunteerId;
+                        const id = item.VolunteerId;
                         if (!map.has(id)) {
                             map.set(id, true);
                             unique.push(item);
@@ -77,7 +77,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
             // Let's stringify IDs to detect identical groups.
             const uniqueGroupsMap = new Map();
             duplicateGroups.forEach(group => {
-                const ids = group.map(v => v.VolunteerId || v.volunteerId).sort().join(',');
+                const ids = group.map(v => v.VolunteerId).sort().join(',');
                 if (!uniqueGroupsMap.has(ids)) {
                     uniqueGroupsMap.set(ids, group);
                 }
@@ -90,7 +90,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                 setSelectedGroupIndex(0);
                 // Default primary to the one with the most recent activity or registration?
                 // For now, just the first one.
-                setPrimaryId(finalGroups[0][0].VolunteerId || finalGroups[0][0].volunteerId);
+                setPrimaryId(finalGroups[0][0].VolunteerId);
             }
 
         } catch (err) {
@@ -105,7 +105,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
         if (!primaryId) return;
 
         const currentGroup = duplicates[selectedGroupIndex];
-        const duplicateVolunteers = currentGroup.filter(v => (v.VolunteerId || v.volunteerId) !== primaryId);
+        const duplicateVolunteers = currentGroup.filter(v => v.VolunteerId !== primaryId);
 
         if (duplicateVolunteers.length === 0) return;
 
@@ -117,7 +117,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
         setMerging(true);
         try {
             for (const dup of duplicateVolunteers) {
-                const dupId = dup.VolunteerId || dup.volunteerId;
+                const dupId = dup.VolunteerId;
                 await dbMergeVolunteersAsync(primaryId, dupId);
             }
 
@@ -132,7 +132,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                     setSelectedGroupIndex(newDuplicates.length - 1);
                 }
                 const nextGroup = newDuplicates[selectedGroupIndex >= newDuplicates.length ? newDuplicates.length - 1 : selectedGroupIndex];
-                setPrimaryId(nextGroup[0].VolunteerId || nextGroup[0].volunteerId);
+                setPrimaryId(nextGroup[0].VolunteerId);
             } else {
                 onMergeComplete(); // Refresh list
                 onClose();
@@ -149,11 +149,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
     const currentGroup = duplicates[selectedGroupIndex];
 
     const getGroupName = (group) => {
-        const names = group.map(v => {
-            const first = v.FirstName || v.firstName || '';
-            const last = v.LastName || v.lastName || '';
-            return `${first} ${last}`.trim();
-        }).filter(name => name.length > 0);
+        const names = group.map(v => `${v.FirstName} ${v.LastName}`.trim()).filter(name => name.length > 0);
 
         const uniqueNames = [...new Set(names)];
 
@@ -188,7 +184,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                                         selected={index === selectedGroupIndex}
                                         onClick={() => {
                                             setSelectedGroupIndex(index);
-                                            setPrimaryId(group[0].VolunteerId || group[0].volunteerId);
+                                            setPrimaryId(group[0].VolunteerId);
                                         }}
                                     >
                                         <ListItemText
@@ -214,7 +210,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                                 onChange={(e) => setPrimaryId(e.target.value)}
                             >
                                 {currentGroup && currentGroup.map((vol) => {
-                                    const vId = vol.VolunteerId || vol.volunteerId;
+                                    const vId = vol.VolunteerId;
                                     return (
                                         <Box key={vId} mb={2} p={1} border={1} borderColor={primaryId === vId ? 'primary.main' : 'divider'} borderRadius={1}>
                                             <FormControlLabel

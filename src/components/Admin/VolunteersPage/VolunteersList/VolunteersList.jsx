@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
-    Accordion, AccordionDetails, AccordionSummary, Box, Fab, Snackbar, Table, TableBody,
+    Box, Fab, Snackbar, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, Chip, TableSortLabel, TextField, InputAdornment, IconButton, Button
 } from '@mui/material';
-import { Add, ExpandMore, Search, Clear, Refresh } from '@mui/icons-material';
+import { Add, Search, Clear, Refresh } from '@mui/icons-material';
 import VolunteerPage from '../VolunteerPage/VolunteerPage.jsx';
 import DuplicateVolunteersDialog from './DuplicateVolunteersDialog.jsx';
 import { navigationAllowed, dbGetAllVolunteersAsync, dbGetAllProgramsAsync } from '../../../System/js/Database';
@@ -56,15 +56,9 @@ function VolunteerList(props) {
     };
 
     function getProgramName(programId) {
-        if (!programId || programId === '-') return 'N/A';
-        const program = props.programs.find(prog => {
-            // Check various possible ID field names
-            return prog.ProgramId == programId;
-        });
-        if (program) {
-            return program.ProgramName || 'N/A';
-        }
-        return 'N/A';
+        if (!programId || programId === '-' || programId === '0') return 'N/A';
+        const program = props.programs.find(prog => prog.ProgramId === String(programId));
+        return program ? program.ProgramName : 'N/A';
     }
 
     return (
@@ -93,8 +87,8 @@ function VolunteerList(props) {
                     <TableBody>
                         {props.list.map((row) => (
                             <TableRow
-                                key={row.VolunteerId || row.volunteerId}
-                                onClick={() => props.onEdit && props.onEdit(row.VolunteerId || row.volunteerId)}
+                                key={row.VolunteerId}
+                                onClick={() => props.onEdit && props.onEdit(row.VolunteerId)}
                                 sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f5f5f5' } }}
                             >
                                 <TableCell align="center">{row.FirstName || ''}</TableCell>
@@ -177,7 +171,7 @@ export default function VolunteersList() {
         // Normalize data for sorting
         let normalized = volunteers.map(v => {
             const programName = programs.find(p =>
-                p.ProgramId == v.ProgramId
+                p.ProgramId === v.ProgramId
             )?.ProgramName || 'N/A';
 
             return {
@@ -205,7 +199,7 @@ export default function VolunteersList() {
 
         return stableSort(normalized, getComparator(order, orderBy)).map(n => {
             // Map back to original object reference to preserve original casing/fields for display
-            return volunteers.find(v => (v.VolunteerId || v.volunteerId) === (n.VolunteerId || n.volunteerId));
+            return volunteers.find(v => v.VolunteerId === n.VolunteerId);
         });
     }, [volunteers, programs, order, orderBy, searchQuery]);
 

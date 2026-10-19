@@ -2,43 +2,153 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
     Box, Card, CardContent, Typography, FormControl, InputLabel, Select, MenuItem,
     Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    CircularProgress, Paper, TableSortLabel, Chip, Accordion, AccordionSummary, AccordionDetails
+    CircularProgress, TableSortLabel, Chip, Accordion, AccordionSummary, AccordionDetails
 } from '@mui/material';
 import { ExpandMore, Download } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
 import {
-    dbGetAllVolunteersAsync, dbGetShiftsByVolunteerAsync, dbGetShiftsByDateRangeAsync,
+    dbGetAllVolunteersAsync, dbGetShiftsByDateRangeAsync,
     dbGetAllProgramsAsync, dbGetAllActivitiesAsync
 } from '../../System/js/Database';
 import { utilDecodeStrings } from '../../System/js/GlobalUtils.js';
 import { formatPhone } from '../../System/js/Forms';
 
+// ==========================================
+// 1. Declarative Report Schema Configuration
+// ==========================================
+const REPORT_CONFIGS = {
+    shifts: {
+        title: 'Shifts Report',
+        defaultGroupLabel: 'All Shifts',
+        itemNoun: 'Shifts',
+        filePrefix: 'shifts',
+        showHours: true,
+        columns: [
+            { id: 'date', label: 'Date', getValue: s => s.displayDate, sortField: 'sortDate' },
+            { id: 'timeRange', label: 'Time Range', getValue: s => s.timeRange, sortable: false },
+            { id: 'duration', label: 'Duration', getValue: s => s.displayDuration, sortField: 'durationMinutes' },
+            { id: 'volunteerName', label: 'Volunteer', getValue: s => s.volunteerName, sortField: 'volunteerName' },
+            { id: 'programName', label: 'Program', getValue: s => s.programName, sortField: 'programName' },
+            { id: 'activityName', label: 'Activity', getValue: s => s.activityName, sortField: 'activityName' },
+            { id: 'status', label: 'Status', getValue: s => s.status, isChip: true, sortField: 'status' }
+        ]
+    },
+    volunteers: {
+        title: 'Active Volunteers Report',
+        defaultGroupLabel: 'All Active Volunteers',
+        itemNoun: 'Volunteers',
+        filePrefix: 'active_volunteers',
+        showHours: true,
+        columns: [
+            { id: 'firstName', label: 'First Name', getValue: v => v.FirstName, sortField: 'FirstName' },
+            { id: 'lastName', label: 'Last Name', getValue: v => v.LastName, sortField: 'LastName' },
+            { id: 'email', label: 'Email', getValue: v => v.Email, sortField: 'Email' },
+            { id: 'telephone', label: 'Telephone', getValue: v => formatPhone(v.Telephone), sortable: false },
+            { id: 'programName', label: 'Program', getValue: v => v.programName, sortField: 'programName' },
+            { id: 'shiftsCount', label: 'Shifts', getValue: v => v.shiftsCount || 0, sortField: 'shiftsCount' },
+            { id: 'hours', label: 'Hours', getValue: v => v.displayDuration || `${v.totalHours || 0}h`, sortField: 'totalMinutes' },
+            { id: 'date', label: 'Last Active', getValue: v => v.lastActiveDate, sortField: 'sortDate' },
+            { id: 'status', label: 'Status', getValue: v => v.status, isChip: true, sortField: 'status' }
+        ]
+    },
+    new_volunteers: {
+        title: 'New Volunteers Report',
+        defaultGroupLabel: 'All New Volunteers',
+        itemNoun: 'New Volunteers',
+        filePrefix: 'new_volunteers',
+        showHours: false,
+        columns: [
+            { id: 'firstName', label: 'First Name', getValue: v => v.FirstName, sortField: 'FirstName' },
+            { id: 'lastName', label: 'Last Name', getValue: v => v.LastName, sortField: 'LastName' },
+            { id: 'email', label: 'Email', getValue: v => v.Email, sortField: 'Email' },
+            { id: 'telephone', label: 'Telephone', getValue: v => formatPhone(v.Telephone), sortable: false },
+            { id: 'programName', label: 'Program', getValue: v => v.programName, sortField: 'programName' },
+            { id: 'date', label: 'Signed Up', getValue: v => v.signupDate, sortField: 'sortDate' },
+            { id: 'status', label: 'Status', getValue: v => v.status, isChip: true, sortField: 'status' }
+        ]
+    }
+};
+
+// ==========================================
+// 2. Pure Helper Functions
+// ==========================================
+function formatDuration(totalMinutes) {
+    if (!totalMinutes || totalMinutes <= 0) return '-';
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
+    if (hours > 0) return `${hours}h`;
+    return `${minutes}m`;
+}
+
+function parseDate(timeVal) {
+    if (!timeVal) return null;
+    let d = dayjs(timeVal);
+    if (d.isValid()) return d;
+    if (!isNaN(timeVal)) {
+        const num = Number(timeVal);
+        d = num < 10000000000 ? dayjs.unix(num) : dayjs(num);
+        if (d.isValid()) return d;
+    }
+    return null;
+}
+
+function getStatusColor(status) {
+    switch (status) {
+        case 'Scheduled': return 'primary';
+        case 'Completed': return 'success';
+        case 'Cancelled': return 'error';
+        case 'In Progress': return 'warning';
+        case 'Checked In': return 'info';
+        case 'Forgotten': return 'error';
+        case 'Registered': return 'success';
+        case 'Not Registered': return 'warning';
+        default: return 'default';
+    }
+}
+
+function getGroupKey(item, groupBy, defaultLabel) {
+    if (groupBy === 'none') return defaultLabel;
+    if (groupBy === 'month') return item.dateObj?.isValid() ? item.dateObj.format('MMMM YYYY') : 'Unknown';
+    if (groupBy === 'year') return item.dateObj?.isValid() ? item.dateObj.format('YYYY') : 'Unknown';
+    if (groupBy === 'program') return item.programName || 'N/A';
+    if (groupBy === 'status') return item.status || 'Unknown';
+    if (groupBy === 'activity') return item.activityName || 'N/A';
+    if (groupBy === 'volunteer') return item.volunteerName || 'N/A';
+    return defaultLabel;
+}
+
+// ==========================================
+// 3. Main Reports Component
+// ==========================================
 export default function Reports() {
-    const [reportType, setReportType] = useState('shifts'); // 'volunteers', 'shifts'
-    const [groupBy, setGroupBy] = useState('month'); // 'month', 'year', 'program', 'activity', 'volunteer', 'status'
+    const [reportType, setReportType] = useState('shifts');
+    const [groupBy, setGroupBy] = useState('month');
     const [yearFilter, setYearFilter] = useState(dayjs().year());
     const [monthFilter, setMonthFilter] = useState('All');
     const [orderBy, setOrderBy] = useState('date');
     const [order, setOrder] = useState('desc');
     const [loading, setLoading] = useState(false);
+    const [hasRun, setHasRun] = useState(false);
     const [reportData, setReportData] = useState([]);
+    const [expandedGroups, setExpandedGroups] = useState({});
 
     const [volunteers, setVolunteers] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [activities, setActivities] = useState([]);
 
-    // Generate year options (current year +/- 5 years)
     const currentYear = dayjs().year();
     const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i).reverse();
-
     const months = [
         'All', 'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
+    const currentConfig = REPORT_CONFIGS[reportType] || REPORT_CONFIGS.shifts;
+
+    // Load initial metadata on mount
     useEffect(() => {
-        // Load metadata
         Promise.all([
             dbGetAllVolunteersAsync(),
             dbGetAllProgramsAsync(),
@@ -52,143 +162,217 @@ export default function Reports() {
 
     const handleRunReport = async () => {
         setLoading(true);
+        setHasRun(true);
         setReportData([]);
 
         try {
-            if (reportType === 'volunteers') {
-                // For volunteers, filter and return the actual volunteer records
-                let filteredVols = volunteers;
-                if (yearFilter !== 'All') {
-                    filteredVols = volunteers.filter(v => {
-                        if (!v.Time) return false;
-                        const regDate = dayjs(v.Time);
-                        if (regDate.year() !== yearFilter) return false;
-                        if (monthFilter !== 'All') {
-                            return regDate.format('MMMM') === monthFilter;
-                        }
-                        return true;
-                    });
-                }
+            // Compute date range
+            let startDate, endDate;
+            if (yearFilter === 'All') {
+                startDate = '2000-01-01';
+                endDate = dayjs().add(5, 'year').endOf('year').format('YYYY-MM-DD');
+            } else if (monthFilter === 'All') {
+                startDate = `${yearFilter}-01-01`;
+                endDate = `${yearFilter}-12-31`;
+            } else {
+                const monthIndex = months.indexOf(monthFilter) - 1;
+                const start = dayjs().year(Number(yearFilter)).month(monthIndex).startOf('month');
+                const end = dayjs().year(Number(yearFilter)).month(monthIndex).endOf('month');
+                startDate = start.format('YYYY-MM-DD');
+                endDate = end.format('YYYY-MM-DD');
+            }
 
-                // Enrich volunteers with program names and other computed fields
-                const enrichedVols = filteredVols.map(v => {
-                    const prog = programs.find(p => (p.ProgramId || p.programId) === (v.ProgramId || v.programId));
-                    const programName = prog ? (prog.ProgramName || prog.Name || 'N/A') : 'N/A';
+            // Ensure fresh volunteers and metadata are loaded
+            let currentVolunteers = [];
+            try {
+                currentVolunteers = await dbGetAllVolunteersAsync() || [];
+                setVolunteers(currentVolunteers);
+            } catch (e) {
+                console.error('Error fetching volunteers:', e);
+                currentVolunteers = volunteers || [];
+            }
 
-                    return {
-                        ...v,
-                        programName,
-                        registrationDate: v.Time ? dayjs(v.Time).format('MMM D, YYYY h:mm A') : 'N/A',
-                        status: v.RegComplete ? 'Registered' : 'Not Registered',
-                        sortDate: v.Time ? dayjs(v.Time).valueOf() : 0,
-                        groupKey: getGroupKey(v, groupBy, programs)
-                    };
+            let currentPrograms = programs;
+            if (!currentPrograms || currentPrograms.length === 0) {
+                currentPrograms = await dbGetAllProgramsAsync() || [];
+                setPrograms(currentPrograms);
+            }
+
+            let currentActivities = activities;
+            if (!currentActivities || currentActivities.length === 0) {
+                currentActivities = await dbGetAllActivitiesAsync() || [];
+                setActivities(currentActivities);
+            }
+
+            // O(1) Index Maps for fast lookups
+            const volMap = new Map(currentVolunteers.map(v => [v.VolunteerId, v]));
+            const programMap = new Map(currentPrograms.map(p => [p.ProgramId, p.ProgramName]));
+            const activityMap = new Map(currentActivities.map(a => [a.ActivityId, a.ActivityName || a.ActivityName_en]));
+
+            if (reportType === 'new_volunteers') {
+                // New Volunteers Report
+                const startBoundary = dayjs(startDate).startOf('day');
+                const endBoundary = dayjs(endDate).endOf('day');
+
+                const newVols = currentVolunteers.filter(v => {
+                    if (!v || v.isDeleted) return false;
+                    const regDate = parseDate(v.Time);
+                    if (!regDate) return false;
+                    return (regDate.isAfter(startBoundary) || regDate.isSame(startBoundary)) &&
+                           (regDate.isBefore(endBoundary) || regDate.isSame(endBoundary));
                 });
 
-                setReportData(enrichedVols);
+                const enriched = newVols.map(vol => {
+                    const regDate = parseDate(vol.Time);
+                    const programName = programMap.get(String(vol.ProgramId)) || 'N/A';
+                    const status = vol.RegComplete ? 'Registered' : 'Not Registered';
 
-            } else if (reportType === 'shifts') {
-                // For shifts, fetch and return the actual shift records
-                let startDate, endDate;
+                    const item = {
+                        ...vol,
+                        id: vol.VolunteerId,
+                        signupDate: regDate?.isValid() ? regDate.format('YYYY-MM-DD h:mm A') : '-',
+                        dateObj: regDate,
+                        sortDate: regDate?.isValid() ? regDate.valueOf() : 0,
+                        programName,
+                        status
+                    };
+                    item.groupKey = getGroupKey(item, groupBy, 'All New Volunteers');
+                    return item;
+                });
 
-                if (monthFilter === 'All') {
-                    startDate = `${yearFilter}-01-01`;
-                    endDate = `${yearFilter}-12-31`;
-                } else {
-                    const monthIndex = months.indexOf(monthFilter);
-                    const monthNum = monthIndex - 1;
-                    const start = dayjs().year(yearFilter).month(monthNum).startOf('month');
-                    const end = dayjs().year(yearFilter).month(monthNum).endOf('month');
-                    startDate = start.format('YYYY-MM-DD');
-                    endDate = end.format('YYYY-MM-DD');
-                }
+                setReportData(enriched);
 
-                let shifts = [];
+            } else {
+                // Fetch shifts for Active Volunteers or Shifts Report
+                let rawShifts = [];
                 try {
-                    const rawShifts = await dbGetShiftsByDateRangeAsync(startDate, endDate);
-                    shifts = utilDecodeStrings(rawShifts) || [];
+                    rawShifts = await dbGetShiftsByDateRangeAsync(startDate, endDate) || [];
                 } catch (err) {
-                    console.error("Failed to fetch shifts by date range:", err);
+                    console.error('Failed to fetch shifts:', err);
                 }
+                const validShifts = (utilDecodeStrings(rawShifts) || []).filter(s => s && s.isDeleted !== true && s.isDeleted !== 'true');
 
-                // Enrich shifts with volunteer names, program names, activity names, etc.
-                const volMap = new Map(volunteers.map(v => [v.VolunteerId, v]));
-
-                const enrichedShifts = shifts.map(shift => {
-                    const timestampIn = shift.TimestampIn ? dayjs(shift.TimestampIn) : null;
-                    const timestampOut = shift.TimestampOut ? dayjs(shift.TimestampOut) : null;
-
-                    const displayDate = timestampIn ? timestampIn.format('YYYY-MM-DD') : (shift.Date || '-');
-                    const startTime = timestampIn ? timestampIn.format('h:mm A') : '-';
-                    const endTime = timestampOut ? timestampOut.format('h:mm A') : 'In Progress';
-
-                    // Calculate duration
-                    let durationMinutes = 0;
-                    let displayDuration = '-';
-                    if (timestampIn && timestampOut) {
-                        durationMinutes = timestampOut.diff(timestampIn, 'minute');
-                        const hours = Math.floor(durationMinutes / 60);
-                        const minutes = durationMinutes % 60;
-                        if (hours > 0) {
-                            displayDuration = `${hours}h ${minutes}m`;
-                        } else {
-                            displayDuration = `${minutes}m`;
-                        }
-                    } else if (timestampIn && !timestampOut) {
-                        displayDuration = 'Ongoing';
-                        durationMinutes = 999999;
-                    }
-
-                    // Determine status
-                    let status = 'Scheduled';
-                    if (timestampIn && timestampOut) {
-                        status = 'Completed';
-                    } else if (timestampIn && !timestampOut) {
-                        const today = dayjs().startOf('day');
-                        const shiftDate = timestampIn.startOf('day');
-                        if (shiftDate.isSame(today)) {
-                            status = 'Checked In';
-                        } else {
-                            status = 'Forgotten';
-                        }
-                    }
-
-                    // Get volunteer name
-                    const volunteer = volMap.get(shift.VolunteerId);
-                    const volunteerName = volunteer
-                        ? `${volunteer.FirstName || volunteer.firstName || ''} ${volunteer.LastName || volunteer.lastName || ''}`.trim() || `Unknown (${shift.VolunteerId})`
-                        : `Unknown (${shift.VolunteerId})`;
-
-                    // Get program name
-                    const program = programs.find(prog => {
-                        const progId = prog.ProgramId || prog.programId || prog.Id || prog.id || prog.ID;
-                        return progId === shift.ProgramId || progId == shift.ProgramId;
+                if (reportType === 'volunteers') {
+                    // Group shifts by volunteer ID to aggregate active volunteers
+                    const shiftsByVolId = new Map();
+                    validShifts.forEach(shift => {
+                        const volId = shift.VolunteerId;
+                        if (!volId) return;
+                        if (!shiftsByVolId.has(volId)) shiftsByVolId.set(volId, []);
+                        shiftsByVolId.get(volId).push(shift);
                     });
-                    const programName = program ? (program.ProgramName || program.Name || program.name || 'N/A') : 'N/A';
 
-                    // Get activity name
-                    const activity = activities.find(act => {
-                        const actId = act.ActivityId || act.activityId || act.Id || act.id || act.ID;
-                        return actId === shift.ActivityId || actId == shift.ActivityId;
+                    const activeVolunteers = [];
+                    shiftsByVolId.forEach((volShifts, volId) => {
+                        const vol = volMap.get(volId) || {
+                            VolunteerId: volId,
+                            FirstName: 'Unknown',
+                            LastName: `(${volId})`,
+                            Email: '',
+                            Telephone: '',
+                            ProgramId: volShifts[0]?.ProgramId || '0',
+                            RegComplete: false
+                        };
+
+                        let totalMinutes = 0;
+                        let latestTimestamp = 0;
+                        let latestDisplayDate = '-';
+                        let latestDateObj = null;
+
+                        volShifts.forEach(shift => {
+                            const timestampIn = shift.TimestampIn ? dayjs(shift.TimestampIn) : null;
+                            const timestampOut = shift.TimestampOut ? dayjs(shift.TimestampOut) : null;
+                            if (timestampIn && timestampOut) {
+                                const diff = timestampOut.diff(timestampIn, 'minute');
+                                if (diff > 0) totalMinutes += diff;
+                            }
+                            const t = timestampIn ? timestampIn.valueOf() : (shift.Date ? dayjs(shift.Date).valueOf() : 0);
+                            if (t > latestTimestamp) {
+                                latestTimestamp = t;
+                                latestDisplayDate = timestampIn ? timestampIn.format('YYYY-MM-DD') : (shift.Date || '-');
+                                latestDateObj = timestampIn || (shift.Date ? dayjs(shift.Date) : null);
+                            }
+                        });
+
+                        const progId = vol.ProgramId || vol.programId || volShifts[0]?.ProgramId;
+                        const programName = programMap.get(String(progId)) || 'N/A';
+                        const status = vol.RegComplete ? 'Registered' : 'Not Registered';
+
+                        const item = {
+                            ...vol,
+                            id: vol.VolunteerId || volId,
+                            shiftsCount: volShifts.length,
+                            totalMinutes,
+                            totalHours: (totalMinutes / 60).toFixed(1),
+                            displayDuration: formatDuration(totalMinutes),
+                            lastActiveDate: latestDisplayDate,
+                            dateObj: latestDateObj,
+                            programName,
+                            status,
+                            sortDate: latestTimestamp
+                        };
+                        item.groupKey = getGroupKey(item, groupBy, 'All Active Volunteers');
+                        activeVolunteers.push(item);
                     });
-                    const activityName = activity ? (activity.ActivityName_en || activity.ActivityName || activity.Name || activity.name || 'N/A') : 'N/A';
 
-                    return {
-                        ...shift,
-                        displayDate,
-                        timeRange: `${startTime} - ${endTime}`,
-                        durationMinutes,
-                        displayDuration,
-                        volunteerName,
-                        programName,
-                        activityName,
-                        status,
-                        sortDate: timestampIn ? timestampIn.valueOf() : 0,
-                        groupKey: getGroupKeyForShift(shift, groupBy, timestampIn, volunteerName, programName, activityName)
-                    };
-                });
+                    setReportData(activeVolunteers);
 
-                setReportData(enrichedShifts);
+                } else if (reportType === 'shifts') {
+                    // Enrich shifts
+                    const enrichedShifts = validShifts.map(shift => {
+                        const timestampIn = shift.TimestampIn ? dayjs(shift.TimestampIn) : null;
+                        const timestampOut = shift.TimestampOut ? dayjs(shift.TimestampOut) : null;
+                        const displayDate = timestampIn ? timestampIn.format('YYYY-MM-DD') : (shift.Date || '-');
+                        const startTime = timestampIn ? timestampIn.format('h:mm A') : '-';
+                        const endTime = timestampOut ? timestampOut.format('h:mm A') : 'In Progress';
+
+                        let durationMinutes = 0;
+                        let displayDuration = '-';
+                        if (timestampIn && timestampOut) {
+                            durationMinutes = timestampOut.diff(timestampIn, 'minute');
+                            displayDuration = formatDuration(durationMinutes);
+                        } else if (timestampIn && !timestampOut) {
+                            displayDuration = 'Ongoing';
+                            durationMinutes = 999999;
+                        }
+
+                        let status = 'Scheduled';
+                        if (timestampIn && timestampOut) {
+                            status = 'Completed';
+                        } else if (timestampIn && !timestampOut) {
+                            const today = dayjs().startOf('day');
+                            const shiftDate = timestampIn.startOf('day');
+                            status = shiftDate.isSame(today) ? 'Checked In' : 'Forgotten';
+                        }
+
+                        const volunteer = volMap.get(shift.VolunteerId);
+                        const volunteerName = volunteer
+                            ? `${volunteer.FirstName} ${volunteer.LastName}`.trim() || `Unknown (${shift.VolunteerId})`
+                            : `Unknown (${shift.VolunteerId})`;
+
+                        const programName = programMap.get(String(shift.ProgramId)) || 'N/A';
+                        const activityName = activityMap.get(String(shift.ActivityId)) || 'N/A';
+
+                        const item = {
+                            ...shift,
+                            id: shift.ShiftId,
+                            displayDate,
+                            timeRange: `${startTime} - ${endTime}`,
+                            durationMinutes,
+                            displayDuration,
+                            volunteerName,
+                            programName,
+                            activityName,
+                            status,
+                            dateObj: timestampIn,
+                            sortDate: timestampIn ? timestampIn.valueOf() : 0
+                        };
+                        item.groupKey = getGroupKey(item, groupBy, 'All Shifts');
+                        return item;
+                    });
+
+                    setReportData(enrichedShifts);
+                }
             }
         } catch (error) {
             console.error('Error running report:', error);
@@ -197,310 +381,178 @@ export default function Reports() {
         }
     };
 
-    // Helper function to get group key for volunteers
-    function getGroupKey(volunteer, groupBy, programs) {
-        if (groupBy === 'month') {
-            return volunteer.Time ? dayjs(volunteer.Time).format('MMMM YYYY') : 'Unknown';
-        } else if (groupBy === 'year') {
-            return volunteer.Time ? dayjs(volunteer.Time).format('YYYY') : 'Unknown';
-        } else if (groupBy === 'program') {
-            const prog = programs.find(p => (p.ProgramId || p.programId) === (volunteer.ProgramId || volunteer.programId));
-            return prog ? (prog.ProgramName || prog.Name || 'N/A') : 'N/A';
-        } else if (groupBy === 'status') {
-            return volunteer.RegComplete ? 'Registered' : 'Not Registered';
-        }
-        return 'Unknown';
-    }
-
-    // Helper function to get group key for shifts
-    function getGroupKeyForShift(shift, groupBy, timestampIn, volunteerName, programName, activityName) {
-        if (groupBy === 'month') {
-            return timestampIn ? timestampIn.format('MMMM YYYY') : 'Unknown';
-        } else if (groupBy === 'year') {
-            return timestampIn ? timestampIn.format('YYYY') : 'Unknown';
-        } else if (groupBy === 'program') {
-            return programName;
-        } else if (groupBy === 'activity') {
-            return activityName;
-        } else if (groupBy === 'volunteer') {
-            return volunteerName;
-        }
-        return 'Unknown';
-    }
-
     const handleRequestSort = (property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
     };
 
-    // Group and sort data
+    // Sort and Group Data
     const groupedData = useMemo(() => {
-        // First sort the data
+        const colDef = currentConfig.columns.find(c => c.id === orderBy);
+        const sortField = colDef?.sortField || orderBy;
+
         const sorted = [...reportData].sort((a, b) => {
+            const valA = a[sortField];
+            const valB = b[sortField];
             let compareResult = 0;
-
-            if (reportType === 'volunteers') {
-                if (orderBy === 'firstName') {
-                    compareResult = (a.FirstName || a.firstName || '').localeCompare(b.FirstName || b.firstName || '');
-                } else if (orderBy === 'lastName') {
-                    compareResult = (a.LastName || a.lastName || '').localeCompare(b.LastName || b.lastName || '');
-                } else if (orderBy === 'email') {
-                    compareResult = (a.Email || a.email || '').localeCompare(b.Email || b.email || '');
-                } else if (orderBy === 'programName') {
-                    compareResult = a.programName.localeCompare(b.programName);
-                } else if (orderBy === 'date') {
-                    compareResult = a.sortDate - b.sortDate;
-                } else if (orderBy === 'status') {
-                    compareResult = a.status.localeCompare(b.status);
-                }
-            } else if (reportType === 'shifts') {
-                if (orderBy === 'date') {
-                    compareResult = a.sortDate - b.sortDate;
-                } else if (orderBy === 'volunteerName') {
-                    compareResult = a.volunteerName.localeCompare(b.volunteerName);
-                } else if (orderBy === 'programName') {
-                    compareResult = a.programName.localeCompare(b.programName);
-                } else if (orderBy === 'activityName') {
-                    compareResult = a.activityName.localeCompare(b.activityName);
-                } else if (orderBy === 'duration') {
-                    compareResult = a.durationMinutes - b.durationMinutes;
-                } else if (orderBy === 'status') {
-                    compareResult = a.status.localeCompare(b.status);
-                }
+            if (typeof valA === 'number' || typeof valB === 'number') {
+                compareResult = (Number(valA) || 0) - (Number(valB) || 0);
+            } else {
+                compareResult = String(valA || '').localeCompare(String(valB || ''));
             }
-
             return order === 'asc' ? compareResult : -compareResult;
         });
 
-        // Group the sorted data
         const groups = {};
         sorted.forEach(item => {
-            const key = item.groupKey;
-            if (!groups[key]) {
-                groups[key] = [];
-            }
+            const key = item.groupKey || currentConfig.defaultGroupLabel;
+            if (!groups[key]) groups[key] = [];
             groups[key].push(item);
         });
 
-        // Convert to array and sort groups
         const groupArray = Object.entries(groups).map(([groupName, items]) => {
-            // Calculate group totals
-            const count = items.length;
             let hours = 0;
+            let registeredCount = 0;
+
             if (reportType === 'shifts') {
-                hours = items.reduce((sum, shift) => {
-                    if (shift.durationMinutes && shift.durationMinutes < 999999) {
-                        return sum + shift.durationMinutes / 60;
-                    }
-                    return sum;
-                }, 0);
+                hours = items.reduce((sum, s) => (s.durationMinutes && s.durationMinutes < 999999 ? sum + s.durationMinutes / 60 : sum), 0);
+            } else if (reportType === 'volunteers') {
+                hours = items.reduce((sum, v) => sum + (v.totalMinutes || 0) / 60, 0);
+            } else if (reportType === 'new_volunteers') {
+                registeredCount = items.filter(v => v.RegComplete === true || v.status === 'Registered').length;
             }
 
             return {
                 groupName,
                 items,
-                count,
-                hours: hours.toFixed(1)
+                count: items.length,
+                hours: hours.toFixed(1),
+                registeredCount
             };
         });
 
-        // Sort groups by name (with special handling for dates)
         groupArray.sort((a, b) => {
             if (groupBy === 'month') {
-                return dayjs(a.groupName, 'MMMM YYYY').valueOf() - dayjs(b.groupName, 'MMMM YYYY').valueOf();
+                const timeA = dayjs(a.groupName, 'MMMM YYYY').valueOf();
+                const timeB = dayjs(b.groupName, 'MMMM YYYY').valueOf();
+                if (!isNaN(timeA) && !isNaN(timeB)) return timeB - timeA;
             }
             return a.groupName.localeCompare(b.groupName);
         });
 
         return groupArray;
-    }, [reportData, reportType, orderBy, order, groupBy]);
+    }, [reportData, reportType, orderBy, order, groupBy, currentConfig]);
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'Scheduled': return 'primary';
-            case 'Completed': return 'success';
-            case 'Cancelled': return 'error';
-            case 'In Progress': return 'warning';
-            case 'Checked In': return 'info';
-            case 'Forgotten': return 'error';
-            case 'Registered': return 'success';
-            case 'Not Registered': return 'warning';
-            default: return 'default';
-        }
+    // Expand all groups by default when data changes
+    useEffect(() => {
+        const initial = {};
+        groupedData.forEach(g => { initial[g.groupName] = true; });
+        setExpandedGroups(initial);
+    }, [groupedData]);
+
+    const handleToggleGroup = (groupName) => {
+        setExpandedGroups(prev => ({
+            ...prev,
+            [groupName]: prev[groupName] === undefined ? false : !prev[groupName]
+        }));
     };
 
-    // Calculate totals
+    const handleExpandAll = () => {
+        const all = {};
+        groupedData.forEach(g => { all[g.groupName] = true; });
+        setExpandedGroups(all);
+    };
+
+    const handleCollapseAll = () => {
+        const none = {};
+        groupedData.forEach(g => { none[g.groupName] = false; });
+        setExpandedGroups(none);
+    };
+
+    // Calculate overall totals
     const totalCount = reportData.length;
     const totalHours = reportType === 'shifts'
-        ? reportData.reduce((sum, shift) => {
-            if (shift.durationMinutes && shift.durationMinutes < 999999) {
-                return sum + shift.durationMinutes / 60;
-            }
-            return sum;
-        }, 0).toFixed(1)
-        : 0;
+        ? reportData.reduce((sum, s) => (s.durationMinutes && s.durationMinutes < 999999 ? sum + s.durationMinutes / 60 : sum), 0).toFixed(1)
+        : reportData.reduce((sum, v) => sum + (v.totalMinutes || 0) / 60, 0).toFixed(1);
 
-    // Export functions
+    const registeredCount = useMemo(() => {
+        return reportData.filter(v => v.RegComplete === true || v.status === 'Registered').length;
+    }, [reportData]);
+
+    // Export Handlers powered by currentConfig.columns
     const exportToCSV = () => {
         if (reportData.length === 0) return;
+        const flatData = groupedData.flatMap(g => g.items.map(item => ({ Group: g.groupName, ...item })));
 
-        // Flatten grouped data for export
-        const flatData = groupedData.flatMap(group =>
-            group.items.map(item => ({
-                Group: group.groupName,
-                ...item
-            }))
-        );
+        let csvContent = `"${currentConfig.title}"\n`;
+        csvContent += `"Grouped by: ${groupBy === 'none' ? 'None' : (groupBy.charAt(0).toUpperCase() + groupBy.slice(1))}"\n`;
+        csvContent += `"Year: ${yearFilter === 'All' ? 'All Years' : yearFilter}"\n`;
+        if (monthFilter !== 'All') csvContent += `"Month: ${monthFilter}"\n`;
+        csvContent += `"Generated on: ${dayjs().format('MMMM D, YYYY [at] h:mm A')}"\n\n`;
 
-        let csvContent = '';
+        const headers = ['Group', ...currentConfig.columns.map(c => c.label)];
+        csvContent += headers.join(',') + '\n';
 
-        // Add report header information
-        const reportTitle = reportType === 'shifts' ? 'Shifts Report' : 'Volunteers Report';
-        csvContent += `"${reportTitle}"\n`;
-        csvContent += `"Grouped by: ${groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}"\n`;
-        csvContent += `"Year: ${yearFilter}"\n`;
-        if (monthFilter !== 'All') {
-            csvContent += `"Month: ${monthFilter}"\n`;
-        }
-        csvContent += `"Generated on: ${dayjs().format('MMMM D, YYYY [at] h:mm A')}"\n`;
+        flatData.forEach(item => {
+            const row = [item.Group, ...currentConfig.columns.map(c => c.getValue(item))];
+            csvContent += row.map(val => `"${val ?? ''}"`).join(',') + '\n';
+        });
+
         csvContent += '\n';
-
-        let headers = [];
-
-        if (reportType === 'volunteers') {
-            headers = ['Group', 'First Name', 'Last Name', 'Email', 'Telephone', 'Program', 'Registered', 'Status'];
-            csvContent += headers.join(',') + '\n';
-
-            flatData.forEach(volunteer => {
-                const row = [
-                    volunteer.Group,
-                    volunteer.FirstName || volunteer.firstName || '',
-                    volunteer.LastName || volunteer.lastName || '',
-                    volunteer.Email || volunteer.email || '',
-                    formatPhone(volunteer.Telephone || volunteer.telephone || ''),
-                    volunteer.programName,
-                    volunteer.registrationDate,
-                    volunteer.status
-                ];
-                csvContent += row.map(field => `"${field}"`).join(',') + '\n';
-            });
+        if (reportType === 'new_volunteers') {
+            csvContent += `"Total New Volunteers","${totalCount}"\n"Registered","${registeredCount}"\n"Not Registered","${totalCount - registeredCount}"\n`;
         } else {
-            headers = ['Group', 'Date', 'Time Range', 'Duration', 'Volunteer', 'Program', 'Activity', 'Status'];
-            csvContent += headers.join(',') + '\n';
-
-            flatData.forEach(shift => {
-                const row = [
-                    shift.Group,
-                    shift.displayDate,
-                    shift.timeRange,
-                    shift.displayDuration,
-                    shift.volunteerName,
-                    shift.programName,
-                    shift.activityName,
-                    shift.status
-                ];
-                csvContent += row.map(field => `"${field}"`).join(',') + '\n';
-            });
+            csvContent += `"${reportType === 'shifts' ? 'Total Shifts' : 'Total Active Volunteers'}","${totalCount}"\n"Total Hours","${totalHours}"\n`;
         }
 
-        // Add summary rows
-        csvContent += '\n';
-        csvContent += `"Total Count","${totalCount}"\n`;
-        if (reportType === 'shifts') {
-            csvContent += `"Total Hours","${totalHours}"\n`;
-        }
-
-        // Download
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        const filename = `${reportType}_report_${groupBy}_${yearFilter}${monthFilter !== 'All' ? '_' + monthFilter : ''}_${dayjs().format('YYYY-MM-DD')}.csv`;
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
+        link.href = URL.createObjectURL(blob);
+        link.download = `${currentConfig.filePrefix}_report_${groupBy}_${yearFilter}${monthFilter !== 'All' ? '_' + monthFilter : ''}_${dayjs().format('YYYY-MM-DD')}.csv`;
         link.click();
-        document.body.removeChild(link);
     };
 
     const exportToExcel = () => {
         if (reportData.length === 0) return;
+        const flatData = groupedData.flatMap(g => g.items.map(item => ({ Group: g.groupName, ...item })));
 
-        // Flatten grouped data for export
-        const flatData = groupedData.flatMap(group =>
-            group.items.map(item => ({
-                Group: group.groupName,
-                ...item
-            }))
-        );
-
-        let excelData = [];
-
-        // Add report header information
-        const reportTitle = reportType === 'shifts' ? 'Shifts Report' : 'Volunteers Report';
-        excelData.push({ 'A': reportTitle });
-        excelData.push({ 'A': `Grouped by: ${groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}` });
-        excelData.push({ 'A': `Year: ${yearFilter}` });
-        if (monthFilter !== 'All') {
-            excelData.push({ 'A': `Month: ${monthFilter}` });
-        }
+        const excelData = [
+            { 'A': currentConfig.title },
+            { 'A': `Grouped by: ${groupBy === 'none' ? 'None' : (groupBy.charAt(0).toUpperCase() + groupBy.slice(1))}` },
+            { 'A': `Year: ${yearFilter === 'All' ? 'All Years' : yearFilter}` }
+        ];
+        if (monthFilter !== 'All') excelData.push({ 'A': `Month: ${monthFilter}` });
         excelData.push({ 'A': `Generated on: ${dayjs().format('MMMM D, YYYY [at] h:mm A')}` });
         excelData.push({});
 
-        let dataRows = [];
-        if (reportType === 'volunteers') {
-            dataRows = flatData.map(volunteer => ({
-                'Group': volunteer.Group,
-                'First Name': volunteer.FirstName || volunteer.firstName || '',
-                'Last Name': volunteer.LastName || volunteer.lastName || '',
-                'Email': volunteer.Email || volunteer.email || '',
-                'Telephone': formatPhone(volunteer.Telephone || volunteer.telephone || ''),
-                'Program': volunteer.programName,
-                'Registered': volunteer.registrationDate,
-                'Status': volunteer.status
-            }));
-        } else {
-            dataRows = flatData.map(shift => ({
-                'Group': shift.Group,
-                'Date': shift.displayDate,
-                'Time Range': shift.timeRange,
-                'Duration': shift.displayDuration,
-                'Volunteer': shift.volunteerName,
-                'Program': shift.programName,
-                'Activity': shift.activityName,
-                'Status': shift.status
-            }));
-        }
+        const dataRows = flatData.map(item => {
+            const rowObj = { 'Group': item.Group };
+            currentConfig.columns.forEach(c => {
+                rowObj[c.label] = c.getValue(item) ?? '';
+            });
+            return rowObj;
+        });
+        excelData.push(...dataRows);
 
-        // Add data rows
-        excelData = excelData.concat(dataRows);
-
-        // Add summary rows
         excelData.push({});
-        excelData.push({ 'Group': 'Total Count', 'First Name': totalCount });
-        if (reportType === 'shifts') {
+        if (reportType === 'new_volunteers') {
+            excelData.push({ 'Group': 'Total New Volunteers', 'First Name': totalCount });
+            excelData.push({ 'Group': 'Registered', 'First Name': registeredCount });
+            excelData.push({ 'Group': 'Not Registered', 'First Name': totalCount - registeredCount });
+        } else {
+            excelData.push({ 'Group': reportType === 'shifts' ? 'Total Shifts' : 'Total Active Volunteers', 'First Name': totalCount });
             excelData.push({ 'Group': 'Total Hours', 'First Name': totalHours });
         }
 
-        // Create workbook and worksheet
         const ws = XLSX.utils.json_to_sheet(excelData, { skipHeader: true });
-
-        // Add proper headers for the data section
         const headerRowIndex = monthFilter !== 'All' ? 6 : 5;
-        if (reportType === 'volunteers') {
-            XLSX.utils.sheet_add_aoa(ws, [['Group', 'First Name', 'Last Name', 'Email', 'Telephone', 'Program', 'Registered', 'Status']], { origin: `A${headerRowIndex + 1}` });
-        } else {
-            XLSX.utils.sheet_add_aoa(ws, [['Group', 'Date', 'Time Range', 'Duration', 'Volunteer', 'Program', 'Activity', 'Status']], { origin: `A${headerRowIndex + 1}` });
-        }
+        const headers = ['Group', ...currentConfig.columns.map(c => c.label)];
+        XLSX.utils.sheet_add_aoa(ws, [headers], { origin: `A${headerRowIndex + 1}` });
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Report');
-
-        // Download
-        const filename = `${reportType}_report_${groupBy}_${yearFilter}${monthFilter !== 'All' ? '_' + monthFilter : ''}_${dayjs().format('YYYY-MM-DD')}.xlsx`;
-        XLSX.writeFile(wb, filename);
+        XLSX.writeFile(wb, `${currentConfig.filePrefix}_report_${groupBy}_${yearFilter}${monthFilter !== 'All' ? '_' + monthFilter : ''}_${dayjs().format('YYYY-MM-DD')}.xlsx`);
     };
 
     return (
@@ -516,10 +568,17 @@ export default function Reports() {
                                 <Select
                                     value={reportType}
                                     label="Report Type"
-                                    onChange={(e) => setReportType(e.target.value)}
+                                    onChange={(e) => {
+                                        const newType = e.target.value;
+                                        setReportType(newType);
+                                        if ((newType === 'volunteers' || newType === 'new_volunteers') && (groupBy === 'activity' || groupBy === 'volunteer')) {
+                                            setGroupBy('month');
+                                        }
+                                    }}
                                 >
                                     <MenuItem value="shifts">Shifts</MenuItem>
-                                    <MenuItem value="volunteers">Volunteers</MenuItem>
+                                    <MenuItem value="volunteers">Active Volunteers</MenuItem>
+                                    <MenuItem value="new_volunteers">New Volunteers</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -531,12 +590,13 @@ export default function Reports() {
                                     label="Group By"
                                     onChange={(e) => setGroupBy(e.target.value)}
                                 >
+                                    <MenuItem value="none">None (Single List)</MenuItem>
                                     <MenuItem value="month">Month</MenuItem>
                                     <MenuItem value="year">Year</MenuItem>
                                     <MenuItem value="program">Program</MenuItem>
                                     {reportType === 'shifts' && <MenuItem value="activity">Activity</MenuItem>}
                                     {reportType === 'shifts' && <MenuItem value="volunteer">Volunteer</MenuItem>}
-                                    {reportType === 'volunteers' && <MenuItem value="status">Status</MenuItem>}
+                                    {(reportType === 'volunteers' || reportType === 'new_volunteers') && <MenuItem value="status">Status</MenuItem>}
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -548,6 +608,7 @@ export default function Reports() {
                                     label="Year"
                                     onChange={(e) => setYearFilter(e.target.value)}
                                 >
+                                    <MenuItem value="All">All Years</MenuItem>
                                     {years.map(year => (
                                         <MenuItem key={year} value={year}>{year}</MenuItem>
                                     ))}
@@ -584,54 +645,54 @@ export default function Reports() {
 
             {reportData.length > 0 && (
                 <>
-                    {/* Report Header with Export Buttons */}
+                    {/* Header and Export Controls */}
                     <Card sx={{ mb: 3 }}>
                         <CardContent>
                             <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                                 <Box>
                                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                        {reportType === 'shifts' ? 'Shifts Report' : 'Volunteers Report'}
+                                        {currentConfig.title}
                                     </Typography>
                                     <Typography variant="body1" color="textSecondary">
-                                        Grouped by: <strong>{groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</strong>
+                                        Grouped by: <strong>{groupBy === 'none' ? 'None' : (groupBy.charAt(0).toUpperCase() + groupBy.slice(1))}</strong>
                                         {' • '}
-                                        Year: <strong>{yearFilter}</strong>
-                                        {monthFilter !== 'All' && (
-                                            <>
-                                                {' • '}
-                                                Month: <strong>{monthFilter}</strong>
-                                            </>
-                                        )}
+                                        Year: <strong>{yearFilter === 'All' ? 'All Years' : yearFilter}</strong>
+                                        {monthFilter !== 'All' && <> {' • '} Month: <strong>{monthFilter}</strong></>}
                                     </Typography>
                                     <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
                                         Generated on: {dayjs().format('MMMM D, YYYY [at] h:mm A')}
                                     </Typography>
                                 </Box>
                                 <Box display="flex" gap={1}>
-                                    <Button
-                                        variant="outlined"
-                                        startIcon={<Download />}
-                                        onClick={exportToCSV}
-                                        size="small"
-                                    >
+                                    <Button variant="outlined" startIcon={<Download />} onClick={exportToCSV} size="small">
                                         CSV
                                     </Button>
-                                    <Button
-                                        variant="outlined"
-                                        startIcon={<Download />}
-                                        onClick={exportToExcel}
-                                        size="small"
-                                    >
+                                    <Button variant="outlined" startIcon={<Download />} onClick={exportToExcel} size="small">
                                         Excel
                                     </Button>
                                 </Box>
                             </Box>
+
+                            {/* Summary Metrics */}
                             <Box display="flex" gap={4} mt={2}>
                                 <Box>
-                                    <Typography variant="body2" color="textSecondary">Total Count</Typography>
+                                    <Typography variant="body2" color="textSecondary">
+                                        {reportType === 'shifts' ? 'Total Shifts' : (reportType === 'new_volunteers' ? 'Total New Volunteers' : 'Active Volunteers')}
+                                    </Typography>
                                     <Typography variant="h4" color="primary">{totalCount}</Typography>
                                 </Box>
-                                {reportType === 'shifts' && (
+                                {reportType === 'new_volunteers' ? (
+                                    <>
+                                        <Box>
+                                            <Typography variant="body2" color="textSecondary">Registered</Typography>
+                                            <Typography variant="h4" color="success.main">{registeredCount}</Typography>
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="body2" color="textSecondary">Not Registered</Typography>
+                                            <Typography variant="h4" color="warning.main">{totalCount - registeredCount}</Typography>
+                                        </Box>
+                                    </>
+                                ) : (
                                     <Box>
                                         <Typography variant="body2" color="textSecondary">Total Hours</Typography>
                                         <Typography variant="h4" color="primary">{totalHours}</Typography>
@@ -641,17 +702,32 @@ export default function Reports() {
                         </CardContent>
                     </Card>
 
+                    {/* Group Accordions */}
                     <Box>
+                        {groupedData.length > 1 && (
+                            <Box display="flex" justifyContent="flex-end" gap={1} mb={1}>
+                                <Button size="small" variant="text" onClick={handleExpandAll}>Expand All</Button>
+                                <Button size="small" variant="text" onClick={handleCollapseAll}>Collapse All</Button>
+                            </Box>
+                        )}
                         {groupedData.map((group, groupIndex) => (
-                            <Accordion key={groupIndex} defaultExpanded={groupIndex === 0}>
+                            <Accordion
+                                key={group.groupName || groupIndex}
+                                expanded={expandedGroups[group.groupName] !== false}
+                                onChange={() => handleToggleGroup(group.groupName)}
+                            >
                                 <AccordionSummary expandIcon={<ExpandMore />}>
                                     <Box display="flex" justifyContent="space-between" width="100%" pr={2}>
                                         <Typography variant="h6">{group.groupName}</Typography>
                                         <Box display="flex" gap={3}>
                                             <Typography variant="body1">
-                                                <strong>Count:</strong> {group.count}
+                                                <strong>{currentConfig.itemNoun}:</strong> {group.count}
                                             </Typography>
-                                            {reportType === 'shifts' && (
+                                            {reportType === 'new_volunteers' ? (
+                                                <Typography variant="body1">
+                                                    <strong>Registered:</strong> {group.registeredCount}
+                                                </Typography>
+                                            ) : (
                                                 <Typography variant="body1">
                                                     <strong>Hours:</strong> {group.hours}
                                                 </Typography>
@@ -664,163 +740,40 @@ export default function Reports() {
                                         <Table size="small">
                                             <TableHead>
                                                 <TableRow>
-                                                    {reportType === 'volunteers' ? (
-                                                        <>
-                                                            <TableCell>
+                                                    {currentConfig.columns.map(col => (
+                                                        <TableCell key={col.id}>
+                                                            {col.sortable !== false ? (
                                                                 <TableSortLabel
-                                                                    active={orderBy === 'firstName'}
-                                                                    direction={orderBy === 'firstName' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('firstName')}
+                                                                    active={orderBy === col.id}
+                                                                    direction={orderBy === col.id ? order : 'asc'}
+                                                                    onClick={() => handleRequestSort(col.id)}
                                                                 >
-                                                                    First Name
+                                                                    {col.label}
                                                                 </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'lastName'}
-                                                                    direction={orderBy === 'lastName' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('lastName')}
-                                                                >
-                                                                    Last Name
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'email'}
-                                                                    direction={orderBy === 'email' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('email')}
-                                                                >
-                                                                    Email
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>Telephone</TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'programName'}
-                                                                    direction={orderBy === 'programName' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('programName')}
-                                                                >
-                                                                    Program
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'date'}
-                                                                    direction={orderBy === 'date' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('date')}
-                                                                >
-                                                                    Registered
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'status'}
-                                                                    direction={orderBy === 'status' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('status')}
-                                                                >
-                                                                    Status
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'date'}
-                                                                    direction={orderBy === 'date' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('date')}
-                                                                >
-                                                                    Date
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>Time Range</TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'duration'}
-                                                                    direction={orderBy === 'duration' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('duration')}
-                                                                >
-                                                                    Duration
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'volunteerName'}
-                                                                    direction={orderBy === 'volunteerName' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('volunteerName')}
-                                                                >
-                                                                    Volunteer
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'programName'}
-                                                                    direction={orderBy === 'programName' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('programName')}
-                                                                >
-                                                                    Program
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'activityName'}
-                                                                    direction={orderBy === 'activityName' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('activityName')}
-                                                                >
-                                                                    Activity
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <TableSortLabel
-                                                                    active={orderBy === 'status'}
-                                                                    direction={orderBy === 'status' ? order : 'asc'}
-                                                                    onClick={() => handleRequestSort('status')}
-                                                                >
-                                                                    Status
-                                                                </TableSortLabel>
-                                                            </TableCell>
-                                                        </>
-                                                    )}
+                                                            ) : (
+                                                                col.label
+                                                            )}
+                                                        </TableCell>
+                                                    ))}
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                                {reportType === 'volunteers' ? (
-                                                    group.items.map((volunteer, index) => (
-                                                        <TableRow key={volunteer.VolunteerId || volunteer.volunteerId || index}>
-                                                            <TableCell>{volunteer.FirstName || volunteer.firstName || ''}</TableCell>
-                                                            <TableCell>{volunteer.LastName || volunteer.lastName || ''}</TableCell>
-                                                            <TableCell>{volunteer.Email || volunteer.email || ''}</TableCell>
-                                                            <TableCell>{formatPhone(volunteer.Telephone || volunteer.telephone || '')}</TableCell>
-                                                            <TableCell>{volunteer.programName}</TableCell>
-                                                            <TableCell>{volunteer.registrationDate}</TableCell>
-                                                            <TableCell>
-                                                                <Chip
-                                                                    label={volunteer.status}
-                                                                    color={getStatusColor(volunteer.status)}
-                                                                    size="small"
-                                                                />
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))
-                                                ) : (
-                                                    group.items.map((shift, index) => (
-                                                        <TableRow key={shift.ShiftId || index}>
-                                                            <TableCell>{shift.displayDate}</TableCell>
-                                                            <TableCell>{shift.timeRange}</TableCell>
-                                                            <TableCell>{shift.displayDuration}</TableCell>
-                                                            <TableCell>{shift.volunteerName}</TableCell>
-                                                            <TableCell>{shift.programName}</TableCell>
-                                                            <TableCell>{shift.activityName}</TableCell>
-                                                            <TableCell>
-                                                                <Chip
-                                                                    label={shift.status}
-                                                                    color={getStatusColor(shift.status)}
-                                                                    size="small"
-                                                                />
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))
-                                                )}
+                                                {group.items.map((item, index) => (
+                                                    <TableRow key={item.id || index}>
+                                                        {currentConfig.columns.map(col => {
+                                                            const val = col.getValue(item);
+                                                            return (
+                                                                <TableCell key={col.id}>
+                                                                    {col.isChip ? (
+                                                                        <Chip label={val} color={getStatusColor(val)} size="small" />
+                                                                    ) : (
+                                                                        val
+                                                                    )}
+                                                                </TableCell>
+                                                            );
+                                                        })}
+                                                    </TableRow>
+                                                ))}
                                             </TableBody>
                                         </Table>
                                     </TableContainer>
@@ -829,35 +782,35 @@ export default function Reports() {
                         ))}
                     </Box>
 
-                    {/* Grand Total Section */}
+                    {/* Grand Total Card */}
                     <Card sx={{ mt: 3, backgroundColor: '#f5f5f5' }}>
                         <CardContent>
                             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
                                 Grand Total
                             </Typography>
                             <Grid container spacing={2}>
-                                <Grid item xs={12} md={reportType === 'shifts' ? 6 : 12}>
+                                <Grid item xs={12} md={6}>
                                     <Box display="flex" alignItems="center" gap={2}>
                                         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                                            Total Count:
+                                            {reportType === 'shifts'
+                                                ? 'Total Shifts:'
+                                                : (reportType === 'new_volunteers' ? 'Total New Volunteers:' : 'Total Active Volunteers:')}
+                                        </Typography>
+                                        <Typography variant="h5" color="primary">{totalCount}</Typography>
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <Box display="flex" alignItems="center" gap={2}>
+                                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                            {reportType === 'new_volunteers' ? 'Registered Volunteers:' : 'Total Hours:'}
                                         </Typography>
                                         <Typography variant="h5" color="primary">
-                                            {totalCount}
+                                            {reportType === 'new_volunteers'
+                                                ? `${registeredCount} (${totalCount > 0 ? Math.round((registeredCount / totalCount) * 100) : 0}%)`
+                                                : totalHours}
                                         </Typography>
                                     </Box>
                                 </Grid>
-                                {reportType === 'shifts' && (
-                                    <Grid item xs={12} md={6}>
-                                        <Box display="flex" alignItems="center" gap={2}>
-                                            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                                                Total Hours:
-                                            </Typography>
-                                            <Typography variant="h5" color="primary">
-                                                {totalHours}
-                                            </Typography>
-                                        </Box>
-                                    </Grid>
-                                )}
                             </Grid>
                         </CardContent>
                     </Card>
@@ -866,7 +819,13 @@ export default function Reports() {
 
             {!loading && reportData.length === 0 && (
                 <Typography variant="body1" color="textSecondary" align="center">
-                    Click "Run Report" to generate data.
+                    {hasRun
+                        ? (reportType === 'new_volunteers'
+                            ? 'No new volunteers signed up in the selected date range.'
+                            : (reportType === 'volunteers'
+                                ? 'No volunteers were active in the selected date range.'
+                                : 'No shifts found for the selected date range.'))
+                        : 'Click "Run Report" to generate data.'}
                 </Typography>
             )}
         </Box>
