@@ -5,7 +5,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
 import { Box, Typography } from '@mui/material';
 import PrintIcon from '@mui/icons-material/Print';
-import { addServiceAsync, getLastServedDays, getActiveSvcTypes } from '../../System/js/Clients/Services'
+import { addServiceAsync, getActiveSvcTypes } from '../../System/js/Clients/Services'
 import { PrimaryButtons, SecondaryButtons, ServiceNotes } from '..';
 import { prnPrintReminderReceipt } from '../../System/js/Clients/Receipts';
 import { removeSvcAsync } from '../../System/js/Clients/History';
@@ -135,7 +135,7 @@ export default function ServicesPage(props) {
 
     return (
         <Box key={ svcHistory } maxWidth='100%' display="flex" justifyContent="space-around" flexWrap="wrap">
-            <Box width='100%' maxWidth="800px" mt={ 4 } pt={ 0 }>
+            <Box width='100%' maxWidth="1100px" mt={ 4 } pt={ 0 }>
                 <Box p={ 1 } pl={ 2 } pr={ 2 } display='flex' justifyContent="space-between" flexWrap="wrap" 
                     style={{ borderRadius: "6px", backgroundColor:"#F3F3F3" }}>
                     <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />

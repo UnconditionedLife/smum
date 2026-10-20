@@ -25,22 +25,7 @@ export default function VolunteerForm(props) {
             ProgramId: '0'
         };
     } else {
-        console.log('Loading volunteer for edit:', props.volunteer);
-        console.log('Raw ProgramId from props:', props.volunteer.ProgramId);
-        console.log('Raw Telephone from props:', props.volunteer.Telephone);
-
-        // Decode phone if it's URL-encoded, then format for display
-        let rawPhone = props.volunteer.Telephone || '';
-        try {
-            // Try to decode in case it's still URL-encoded
-            rawPhone = decodeURIComponent(rawPhone);
-            console.log('Decoded telephone:', rawPhone);
-        } catch (e) {
-            console.log('Telephone not URL-encoded or decode failed:', e);
-        }
-
-        const formattedPhone = rawPhone ? formatPhone(rawPhone) : '';
-        console.log('Formatted telephone for display:', formattedPhone);
+        const formattedPhone = props.volunteer.Telephone ? formatPhone(props.volunteer.Telephone) : '';
 
         volunteerData = {
             VolunteerId: props.volunteer.VolunteerId || '',
@@ -51,8 +36,6 @@ export default function VolunteerForm(props) {
             ProgramId: String(props.volunteer.ProgramId || '0'),
             isDeleted: props.volunteer.isDeleted || false
         };
-
-        console.log('Processed volunteerData.ProgramId:', volunteerData.ProgramId);
     }
 
     const initValues = { ...volunteerData };
@@ -81,8 +64,7 @@ export default function VolunteerForm(props) {
             return dbSaveVolunteerAsync(volunteerData);
         } else {
             // Use UPDATE endpoint for existing volunteers
-            const volunteerId = JSON.parse(JSON.stringify(volunteerData.VolunteerId));
-            // const volunteerId = volunteerData.VolunteerId;
+            const volunteerId = volunteerData.VolunteerId;
             const updateData = { ...volunteerData };
             delete updateData.VolunteerId; // Don't send ID in the body
             return dbUpdateVolunteerAsync(volunteerId, updateData);
@@ -97,8 +79,6 @@ export default function VolunteerForm(props) {
         // The + will be URL-encoded by the fetch API automatically
         const formattedPhone = formatPhone(formValues.Telephone);
         submitData.Telephone = formattedPhone.replace(/[^+\d]/g, ''); // Keep + and digits, e.g. "+16509657150"
-
-        console.log('Submitting phone (before API):', submitData.Telephone);
 
         if (isNewVolunteer) {
             // Do not send VolunteerId for new volunteers

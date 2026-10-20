@@ -60,7 +60,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
         try {
             // Prepare data for API - only send fields that are being updated
             const dataToSave = {
-                ShiftId: editedShift.ShiftId || editedShift.shiftId,
+                ShiftId: editedShift.ShiftId,
                 VolunteerId: editedShift.VolunteerId,
                 ProgramId: editedShift.ProgramId || null,
                 ActivityId: editedShift.ActivityId || null,
@@ -70,9 +70,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                 isDeleted: editedShift.isDeleted
             };
 
-            console.log('Saving shift data:', dataToSave);
-            const result = await dbUpdateShiftAsync(dataToSave);
-            console.log('Shift save result:', result);
+            await dbUpdateShiftAsync(dataToSave);
             onClose(true); // Pass true to indicate save was successful
         } catch (error) {
             console.error('Error saving shift:', error);
@@ -95,7 +93,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                 <Box sx={{ mb: 3 }}>
                     <Box display="flex" alignItems="center" gap={2} flexWrap="wrap" sx={{ mb: 2 }}>
                         <Typography variant="body2" color="text.secondary">
-                            ID: <strong>{shift.ShiftId || shift.shiftId || 'Unknown'}</strong>
+                            ID: <strong>{shift.ShiftId || 'Unknown'}</strong>
                         </Typography>
                         <Typography variant="body2" color="text.secondary">•</Typography>
                         <Typography variant="body2" color="text.secondary">

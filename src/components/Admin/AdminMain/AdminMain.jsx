@@ -4,7 +4,7 @@ import { useHistory, useLocation, matchPath } from "react-router-dom";
 import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport, People, Storage } from '@mui/icons-material';
 import { AllUsersPage, CalendarPage, ReportsPage, ErrorPage,
             ServiceTypePage, SettingsPage, VolunteersPage, DataPage } from '..';
-import { globalMsgFunc, isAdmin, navigationAllowed } from '../../System/js/Database';
+import { isAdmin, navigationAllowed } from '../../System/js/Database';
 import UseWindowSize from '../../System/Hooks/UseWindowSize.jsx';
 
 const tabURL = [
@@ -18,7 +18,7 @@ const tabURL = [
     "/admin/data"
 ];
 
-export default function AdminMain(props) {
+export default function AdminMain() {
     const [countErrors, setCountErrors] = useState(0);
 
     const history = useHistory();
@@ -91,7 +91,7 @@ export default function AdminMain(props) {
                 </AppBar>
             </Box>
             <Box maxWidth="100%" display="flex" justifyContent="center" mt={0} pt={0}>
-                <Box maxWidth='1200px' width='100%' mt={0} pt={2}>
+                <Box maxWidth='1500px' width='100%' mt={0} pt={2}>
                     {selectedTab === 0 && <ReportsPage />}
                     {selectedTab === 1 && <CalendarPage />}
                     {selectedTab === 2 && <ServiceTypePage />}

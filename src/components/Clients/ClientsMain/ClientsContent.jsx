@@ -33,7 +33,7 @@ export default function ClientsContent(props) {
     )
 
     return (
-        <Box maxWidth='lg' mt={0} pt={0}>
+        <Box maxWidth='1500px' width='100%' mt={0} pt={0}>
             <Switch>
                 <Route path={`${match.path}/found/:term`}>
                     { showFound && 

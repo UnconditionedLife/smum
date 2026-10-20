@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     Autocomplete, Box, Grid, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Chip, FormControl, FormControlLabel, InputLabel, Select, MenuItem, Alert,
+    Chip, FormControl, FormControlLabel, InputLabel, Select, MenuItem,
     TableSortLabel, TextField, InputAdornment, IconButton, Tooltip, Switch,
     createFilterOptions
 } from '@mui/material';
@@ -19,7 +19,6 @@ import {
 } from '../../../System/js/Database';
 // import { TextField } from '../../../System'; // Removed custom TextField to avoid conflict with MUI TextField for search
 import ShiftEditDialog from './ShiftEditDialog.jsx';
-import { utilDecodeStrings } from '../../../System/js/GlobalUtils.js';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -78,7 +77,6 @@ export default function ShiftsList() {
     const [orderBy, setOrderBy] = useState('date');
     const [searchQuery, setSearchQuery] = useState('');
     const [showDeleted, setShowDeleted] = useState(false);
-    const [limitedResults, setLimitedResults] = useState(false);
 
     useEffect(() => {
         loadAll();
@@ -103,7 +101,6 @@ export default function ShiftsList() {
 
     async function loadShifts() {
         setLoading(true);
-        setLimitedResults(false);
         try {
             let shiftsData = [];
 
@@ -128,13 +125,13 @@ export default function ShiftsList() {
                 }
             }
 
-            let decodedShifts = utilDecodeStrings(shiftsData) || [];
+            const shiftsList = shiftsData || [];
 
             // Apply local post-filtering
             const localStartBoundary = startDate && dayjs(startDate).isValid() ? dayjs(startDate).startOf('day') : null;
             const localEndBoundary = endDate && dayjs(endDate).isValid() ? dayjs(endDate).endOf('day') : null;
 
-            let filtered = decodedShifts.filter(shift => {
+            const filtered = shiftsList.filter(shift => {
                 // 1. Date Range filtering (mandatory local step if volunteer is selected)
                 if (shift.TimestampIn) {
                     const shiftTime = dayjs(shift.TimestampIn);
@@ -150,31 +147,17 @@ export default function ShiftsList() {
                 }
 
                 // 2. Program ID filter
-                if (selectedProgramId) {
-                    const progId = shift.ProgramId || shift.programId;
-                    if (progId !== selectedProgramId && progId != selectedProgramId) return false;
+                if (selectedProgramId && shift.ProgramId !== selectedProgramId) {
+                    return false;
                 }
 
                 // 3. Activity ID filter
-                if (selectedActivityId) {
-                    const actId = shift.ActivityId || shift.activityId;
-                    if (actId !== selectedActivityId && actId != selectedActivityId) return false;
+                if (selectedActivityId && shift.ActivityId !== selectedActivityId) {
+                    return false;
                 }
 
                 return true;
             });
-
-            // Implement initial result size limiting if too many records (e.g. 1000 limit for flexible queries)
-            if (filtered.length >= 1000) {
-                setLimitedResults(true);
-                // Sort raw list descending by timestamp first to keep the 1000 most recent records
-                filtered.sort((a, b) => {
-                    const timeA = a.TimestampIn ? dayjs(a.TimestampIn).valueOf() : 0;
-                    const timeB = b.TimestampIn ? dayjs(b.TimestampIn).valueOf() : 0;
-                    return timeB - timeA;
-                });
-                filtered = filtered.slice(0, 1000);
-            }
 
             setShifts(filtered);
         } catch (error) {
@@ -216,11 +199,10 @@ export default function ShiftsList() {
 
     const visibleShifts = useMemo(() => {
         let normalized = shifts.map((shift, index) => {
-            // Handle the actual API response structure
             const shiftId = shift.ShiftId || `shift-${index}`;
             const volunteerId = shift.VolunteerId;
-            const programId = shift.ProgramId || shift.programId || null;
-            const activityId = shift.ActivityId || shift.activityId || null;
+            const programId = shift.ProgramId || null;
+            const activityId = shift.ActivityId || null;
 
             // Parse timestamps (already in local time)
             const timestampIn = shift.TimestampIn ? dayjs(shift.TimestampIn) : null;
@@ -571,13 +553,6 @@ export default function ShiftsList() {
                 View volunteer check-in/check-out records. Use filters to search by date or by volunteer.
             </Typography>
             {renderFilterControls()}
-            {limitedResults && (
-                <Box mb={2}>
-                    <Alert severity="warning">
-                        Showing only the 1000 most recent shifts. Narrow your date range or apply filters to see more results.
-                    </Alert>
-                </Box>
-            )}
             {renderShiftsTable()}
 
             {/* Edit Dialog */}

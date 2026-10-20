@@ -248,7 +248,7 @@ function SettingsSched(props) {
     }
 
     return (
-        <Box width={'100%'} maxWidth={'1200px'}>
+        <Box width={'100%'} maxWidth={'1500px'}>
             {/* <Popper open={true} anchorEl={foo}>
                 <Card>
                     <pre>{JSON.stringify(hover.event, 4, undefined)}</pre>

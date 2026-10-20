@@ -11,7 +11,6 @@ import {
     dbGetAllVolunteersAsync, dbGetShiftsByDateRangeAsync,
     dbGetAllProgramsAsync, dbGetAllActivitiesAsync
 } from '../../System/js/Database';
-import { utilDecodeStrings } from '../../System/js/GlobalUtils.js';
 import { formatPhone } from '../../System/js/Forms';
 
 // ==========================================
@@ -25,13 +24,13 @@ const REPORT_CONFIGS = {
         filePrefix: 'shifts',
         showHours: true,
         columns: [
-            { id: 'date', label: 'Date', getValue: s => s.displayDate, sortField: 'sortDate' },
-            { id: 'timeRange', label: 'Time Range', getValue: s => s.timeRange, sortable: false },
-            { id: 'duration', label: 'Duration', getValue: s => s.displayDuration, sortField: 'durationMinutes' },
-            { id: 'volunteerName', label: 'Volunteer', getValue: s => s.volunteerName, sortField: 'volunteerName' },
-            { id: 'programName', label: 'Program', getValue: s => s.programName, sortField: 'programName' },
-            { id: 'activityName', label: 'Activity', getValue: s => s.activityName, sortField: 'activityName' },
-            { id: 'status', label: 'Status', getValue: s => s.status, isChip: true, sortField: 'status' }
+            { id: 'date', label: 'Date', getValue: s => s.displayDate, sortField: 'sortDate', nowrap: true, minWidth: 105 },
+            { id: 'timeRange', label: 'Time Range', getValue: s => s.timeRange, sortable: false, nowrap: true, minWidth: 130 },
+            { id: 'duration', label: 'Duration', getValue: s => s.displayDuration, sortField: 'durationMinutes', nowrap: true, minWidth: 80 },
+            { id: 'volunteerName', label: 'Volunteer', getValue: s => s.volunteerName, sortField: 'volunteerName', nowrap: true, minWidth: 140 },
+            { id: 'programName', label: 'Program', getValue: s => s.programName, sortField: 'programName', minWidth: 100 },
+            { id: 'activityName', label: 'Activity', getValue: s => s.activityName, sortField: 'activityName', minWidth: 140 },
+            { id: 'status', label: 'Status', getValue: s => s.status, isChip: true, sortField: 'status', align: 'center', nowrap: true, minWidth: 105 }
         ]
     },
     volunteers: {
@@ -41,32 +40,32 @@ const REPORT_CONFIGS = {
         filePrefix: 'active_volunteers',
         showHours: true,
         columns: [
-            { id: 'firstName', label: 'First Name', getValue: v => v.FirstName, sortField: 'FirstName' },
-            { id: 'lastName', label: 'Last Name', getValue: v => v.LastName, sortField: 'LastName' },
-            { id: 'email', label: 'Email', getValue: v => v.Email, sortField: 'Email' },
-            { id: 'telephone', label: 'Telephone', getValue: v => formatPhone(v.Telephone), sortable: false },
-            { id: 'programName', label: 'Program', getValue: v => v.programName, sortField: 'programName' },
-            { id: 'activityName', label: 'Activity', getValue: v => v.activityName, sortField: 'activityName' },
-            { id: 'shiftsCount', label: 'Shifts', getValue: v => v.shiftsCount || 0, sortField: 'shiftsCount' },
-            { id: 'hours', label: 'Hours', getValue: v => v.displayDuration || `${v.totalHours || 0}h`, sortField: 'totalMinutes' },
-            { id: 'date', label: 'Last Active', getValue: v => v.lastActiveDate, sortField: 'sortDate' },
-            { id: 'status', label: 'Status', getValue: v => v.status, isChip: true, sortField: 'status' }
+            { id: 'firstName', label: 'First Name', getValue: v => v.FirstName, sortField: 'FirstName', nowrap: true, minWidth: 95 },
+            { id: 'lastName', label: 'Last Name', getValue: v => v.LastName, sortField: 'LastName', nowrap: true, minWidth: 95 },
+            { id: 'email', label: 'Email', getValue: v => v.Email, sortField: 'Email', minWidth: 160 },
+            { id: 'telephone', label: 'Telephone', getValue: v => formatPhone(v.Telephone), sortable: false, nowrap: true, minWidth: 130 },
+            { id: 'programName', label: 'Program', getValue: v => v.programName, sortField: 'programName', minWidth: 80 },
+            { id: 'activityName', label: 'Activity', getValue: v => v.activityName, sortField: 'activityName', minWidth: 140 },
+            { id: 'shiftsCount', label: 'Shifts', getValue: v => formatNumber(v.shiftsCount || 0), sortField: 'shiftsCount', align: 'center', nowrap: true, minWidth: 65 },
+            { id: 'hours', label: 'Hours', getValue: v => v.displayDuration || `${formatNumber(v.totalHours || 0)}h`, sortField: 'totalMinutes', align: 'right', nowrap: true, minWidth: 80 },
+            { id: 'date', label: 'Last Active', getValue: v => v.lastActiveDate, sortField: 'sortDate', nowrap: true, align: 'center', minWidth: 105 },
+            { id: 'status', label: 'Status', getValue: v => v.status, isChip: true, sortField: 'status', align: 'center', nowrap: true, minWidth: 105 }
         ]
     },
     new_volunteers: {
-        title: 'New Volunteers Report',
-        defaultGroupLabel: 'All New Volunteers',
-        itemNoun: 'New Volunteers',
-        filePrefix: 'new_volunteers',
+        title: 'New Signups Report',
+        defaultGroupLabel: 'All New Signups',
+        itemNoun: 'New Signups',
+        filePrefix: 'new_signups',
         showHours: false,
         columns: [
-            { id: 'firstName', label: 'First Name', getValue: v => v.FirstName, sortField: 'FirstName' },
-            { id: 'lastName', label: 'Last Name', getValue: v => v.LastName, sortField: 'LastName' },
-            { id: 'email', label: 'Email', getValue: v => v.Email, sortField: 'Email' },
-            { id: 'telephone', label: 'Telephone', getValue: v => formatPhone(v.Telephone), sortable: false },
-            { id: 'programName', label: 'Program', getValue: v => v.programName, sortField: 'programName' },
-            { id: 'date', label: 'Signed Up', getValue: v => v.signupDate, sortField: 'sortDate' },
-            { id: 'status', label: 'Status', getValue: v => v.status, isChip: true, sortField: 'status' }
+            { id: 'firstName', label: 'First Name', getValue: v => v.FirstName, sortField: 'FirstName', nowrap: true, minWidth: 95 },
+            { id: 'lastName', label: 'Last Name', getValue: v => v.LastName, sortField: 'LastName', nowrap: true, minWidth: 95 },
+            { id: 'email', label: 'Email', getValue: v => v.Email, sortField: 'Email', minWidth: 160 },
+            { id: 'telephone', label: 'Telephone', getValue: v => formatPhone(v.Telephone), sortable: false, nowrap: true, minWidth: 130 },
+            { id: 'programName', label: 'Program', getValue: v => v.programName, sortField: 'programName', minWidth: 100 },
+            { id: 'date', label: 'Signed Up', getValue: v => v.signupDate, sortField: 'sortDate', nowrap: true, align: 'center', minWidth: 130 },
+            { id: 'status', label: 'Status', getValue: v => v.status, isChip: true, sortField: 'status', align: 'center', nowrap: true, minWidth: 105 }
         ]
     }
 };
@@ -74,12 +73,27 @@ const REPORT_CONFIGS = {
 // ==========================================
 // 2. Pure Helper Functions
 // ==========================================
+function formatNumber(num) {
+    if (num === null || num === undefined || num === '') return '-';
+    const n = Number(num);
+    if (isNaN(n)) return String(num);
+    const str = String(num);
+    if (str.includes('.')) {
+        const decimals = str.split('.')[1].length;
+        return n.toLocaleString(undefined, {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+    }
+    return n.toLocaleString();
+}
+
 function formatDuration(totalMinutes) {
     if (!totalMinutes || totalMinutes <= 0) return '-';
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
-    if (hours > 0) return `${hours}h`;
+    if (hours > 0 && minutes > 0) return `${formatNumber(hours)}h ${minutes}m`;
+    if (hours > 0) return `${formatNumber(hours)}h`;
     return `${minutes}m`;
 }
 
@@ -161,6 +175,12 @@ export default function Reports() {
         }).catch(err => console.error('Error loading metadata:', err));
     }, []);
 
+    const clearReport = () => {
+        setReportData([]);
+        setHasRun(false);
+        setExpandedGroups({});
+    };
+
     const handleRunReport = async () => {
         setLoading(true);
         setHasRun(true);
@@ -206,9 +226,9 @@ export default function Reports() {
             }
 
             // O(1) Index Maps for fast lookups
-            const volMap = new Map(currentVolunteers.map(v => [v.VolunteerId, v]));
-            const programMap = new Map(currentPrograms.map(p => [p.ProgramId, p.ProgramName]));
-            const activityMap = new Map(currentActivities.map(a => [a.ActivityId, a.ActivityName || a.ActivityName_en]));
+            const volMap = new Map((currentVolunteers || []).filter(Boolean).map(v => [v.VolunteerId, v]));
+            const programMap = new Map((currentPrograms || []).filter(Boolean).map(p => [p.ProgramId, p.ProgramName]));
+            const activityMap = new Map((currentActivities || []).filter(Boolean).map(a => [a.ActivityId, a.ActivityName || a.ActivityName_en]));
 
             if (reportType === 'new_volunteers') {
                 // New Volunteers Report
@@ -237,7 +257,7 @@ export default function Reports() {
                         programName,
                         status
                     };
-                    item.groupKey = getGroupKey(item, groupBy, 'All New Volunteers');
+                    item.groupKey = getGroupKey(item, groupBy, 'All New Signups');
                     return item;
                 });
 
@@ -251,7 +271,7 @@ export default function Reports() {
                 } catch (err) {
                     console.error('Failed to fetch shifts:', err);
                 }
-                const validShifts = (utilDecodeStrings(rawShifts) || []).filter(s => s && s.isDeleted !== true && s.isDeleted !== 'true');
+                const validShifts = (rawShifts || []).filter(s => s && s.isDeleted !== true && s.isDeleted !== 'true');
 
                 if (reportType === 'volunteers') {
                     // Group shifts by volunteer ID to aggregate active volunteers
@@ -295,7 +315,7 @@ export default function Reports() {
                             }
                         });
 
-                        const progId = vol.ProgramId || vol.programId || volShifts[0]?.ProgramId;
+                        const progId = vol.ProgramId || volShifts[0]?.ProgramId;
                         const programName = programMap.get(String(progId)) || 'N/A';
                         const status = vol.RegComplete ? 'Registered' : 'Not Registered';
 
@@ -347,9 +367,53 @@ export default function Reports() {
                         const activityNames = actIds.map(id => activityMap.get(String(id))).filter(Boolean);
                         const activityName = activityNames.length > 0 ? activityNames.join(', ') : 'N/A';
 
+                        // Breakdown by month for this volunteer
+                        const shiftsByMonth = new Map();
+                        volShifts.forEach(shift => {
+                            const timestampIn = shift.TimestampIn ? dayjs(shift.TimestampIn) : null;
+                            const d = timestampIn || (shift.Date ? dayjs(shift.Date) : null);
+                            const monthKey = d && d.isValid() ? d.format('MMMM YYYY') : 'Unknown';
+                            if (!shiftsByMonth.has(monthKey)) shiftsByMonth.set(monthKey, []);
+                            shiftsByMonth.get(monthKey).push(shift);
+                        });
+
+                        const monthBreakdown = [];
+                        shiftsByMonth.forEach((mShifts, mKey) => {
+                            let mMinutes = 0;
+                            let mLatestTimestamp = 0;
+                            let mLatestDisplayDate = '-';
+                            let mLatestDateObj = null;
+
+                            mShifts.forEach(s => {
+                                const timestampIn = s.TimestampIn ? dayjs(s.TimestampIn) : null;
+                                const timestampOut = s.TimestampOut ? dayjs(s.TimestampOut) : null;
+                                if (timestampIn && timestampOut) {
+                                    const diff = timestampOut.diff(timestampIn, 'minute');
+                                    if (diff > 0) mMinutes += diff;
+                                }
+                                const t = timestampIn ? timestampIn.valueOf() : (s.Date ? dayjs(s.Date).valueOf() : 0);
+                                if (t > mLatestTimestamp) {
+                                    mLatestTimestamp = t;
+                                    mLatestDisplayDate = timestampIn ? timestampIn.format('YYYY-MM-DD') : (s.Date || '-');
+                                    mLatestDateObj = timestampIn || (s.Date ? dayjs(s.Date) : null);
+                                }
+                            });
+
+                            monthBreakdown.push({
+                                monthKey: mKey,
+                                shiftsCount: mShifts.length,
+                                totalMinutes: mMinutes,
+                                totalHours: (mMinutes / 60).toFixed(1),
+                                displayDuration: formatDuration(mMinutes),
+                                lastActiveDate: mLatestDisplayDate,
+                                dateObj: mLatestDateObj,
+                                sortDate: mLatestTimestamp
+                            });
+                        });
+
                         const item = {
                             ...vol,
-                            id: vol.VolunteerId || volId,
+                            id: vol.VolunteerId,
                             shiftsCount: volShifts.length,
                             totalMinutes,
                             totalHours: (totalMinutes / 60).toFixed(1),
@@ -359,6 +423,7 @@ export default function Reports() {
                             programName,
                             activityName,
                             activityBreakdown,
+                            monthBreakdown,
                             status,
                             sortDate: latestTimestamp
                         };
@@ -442,7 +507,28 @@ export default function Reports() {
     const groupedData = useMemo(() => {
         let itemsToGroup = reportData;
 
-        if (reportType === 'volunteers' && groupBy === 'activity') {
+        if (reportType === 'volunteers' && groupBy === 'month') {
+            // Group by month: volunteer appears under each month they worked in with that month's hours
+            itemsToGroup = reportData.flatMap(item => {
+                if (item.monthBreakdown && item.monthBreakdown.length > 0) {
+                    return item.monthBreakdown.map(m => ({
+                        ...item,
+                        shiftsCount: m.shiftsCount,
+                        totalMinutes: m.totalMinutes,
+                        totalHours: m.totalHours,
+                        displayDuration: m.displayDuration,
+                        lastActiveDate: m.lastActiveDate,
+                        dateObj: m.dateObj,
+                        sortDate: m.sortDate,
+                        groupKey: m.monthKey
+                    }));
+                }
+                return [{
+                    ...item,
+                    groupKey: item.dateObj?.isValid() ? item.dateObj.format('MMMM YYYY') : 'Unknown'
+                }];
+            });
+        } else if (reportType === 'volunteers' && groupBy === 'activity') {
             // Group by unique activity: volunteer appears under each activity they worked in
             itemsToGroup = reportData.flatMap(item => {
                 if (item.activityBreakdown && item.activityBreakdown.length > 0) {
@@ -484,7 +570,7 @@ export default function Reports() {
 
         const groups = {};
         sorted.forEach(item => {
-            const key = (reportType === 'volunteers' && groupBy === 'activity')
+            const key = (reportType === 'volunteers' && (groupBy === 'activity' || groupBy === 'month'))
                 ? item.groupKey
                 : getGroupKey(item, groupBy, currentConfig.defaultGroupLabel);
             if (!groups[key]) groups[key] = [];
@@ -581,7 +667,7 @@ export default function Reports() {
 
         csvContent += '\n';
         if (reportType === 'new_volunteers') {
-            csvContent += `"Total New Volunteers","${totalCount}"\n"Registered","${registeredCount}"\n"Not Registered","${totalCount - registeredCount}"\n`;
+            csvContent += `"Total New Signups","${totalCount}"\n"Registered","${registeredCount}"\n"Not Registered","${totalCount - registeredCount}"\n`;
         } else {
             csvContent += `"${reportType === 'shifts' ? 'Total Shifts' : 'Total Active Volunteers'}","${totalCount}"\n"Total Hours","${totalHours}"\n`;
         }
@@ -617,7 +703,7 @@ export default function Reports() {
 
         excelData.push({});
         if (reportType === 'new_volunteers') {
-            excelData.push({ 'Group': 'Total New Volunteers', 'First Name': totalCount });
+            excelData.push({ 'Group': 'Total New Signups', 'First Name': totalCount });
             excelData.push({ 'Group': 'Registered', 'First Name': registeredCount });
             excelData.push({ 'Group': 'Not Registered', 'First Name': totalCount - registeredCount });
         } else {
@@ -656,11 +742,12 @@ export default function Reports() {
                                         } else if (newType === 'volunteers' && groupBy === 'volunteer') {
                                             setGroupBy('month');
                                         }
+                                        clearReport();
                                     }}
                                 >
                                     <MenuItem value="shifts">Shifts</MenuItem>
                                     <MenuItem value="volunteers">Active Volunteers</MenuItem>
-                                    <MenuItem value="new_volunteers">New Volunteers</MenuItem>
+                                    <MenuItem value="new_volunteers">New Signups</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -670,7 +757,10 @@ export default function Reports() {
                                 <Select
                                     value={groupBy}
                                     label="Group By"
-                                    onChange={(e) => setGroupBy(e.target.value)}
+                                    onChange={(e) => {
+                                        setGroupBy(e.target.value);
+                                        clearReport();
+                                    }}
                                 >
                                     <MenuItem value="none">None (Single List)</MenuItem>
                                     <MenuItem value="month">Month</MenuItem>
@@ -688,7 +778,10 @@ export default function Reports() {
                                 <Select
                                     value={yearFilter}
                                     label="Year"
-                                    onChange={(e) => setYearFilter(e.target.value)}
+                                    onChange={(e) => {
+                                        setYearFilter(e.target.value);
+                                        clearReport();
+                                    }}
                                 >
                                     <MenuItem value="All">All Years</MenuItem>
                                     {years.map(year => (
@@ -703,7 +796,10 @@ export default function Reports() {
                                 <Select
                                     value={monthFilter}
                                     label="Month"
-                                    onChange={(e) => setMonthFilter(e.target.value)}
+                                    onChange={(e) => {
+                                        setMonthFilter(e.target.value);
+                                        clearReport();
+                                    }}
                                 >
                                     {months.map(month => (
                                         <MenuItem key={month} value={month}>{month}</MenuItem>
@@ -759,25 +855,25 @@ export default function Reports() {
                             <Box display="flex" gap={4} mt={2}>
                                 <Box>
                                     <Typography variant="body2" color="textSecondary">
-                                        {reportType === 'shifts' ? 'Total Shifts' : (reportType === 'new_volunteers' ? 'Total New Volunteers' : 'Active Volunteers')}
+                                        {reportType === 'shifts' ? 'Total Shifts' : (reportType === 'new_volunteers' ? 'Total New Signups' : 'Active Volunteers')}
                                     </Typography>
-                                    <Typography variant="h4" color="primary">{totalCount}</Typography>
+                                    <Typography variant="h4" color="primary">{formatNumber(totalCount)}</Typography>
                                 </Box>
                                 {reportType === 'new_volunteers' ? (
                                     <>
                                         <Box>
                                             <Typography variant="body2" color="textSecondary">Registered</Typography>
-                                            <Typography variant="h4" color="success.main">{registeredCount}</Typography>
+                                            <Typography variant="h4" color="success.main">{formatNumber(registeredCount)}</Typography>
                                         </Box>
                                         <Box>
                                             <Typography variant="body2" color="textSecondary">Not Registered</Typography>
-                                            <Typography variant="h4" color="warning.main">{totalCount - registeredCount}</Typography>
+                                            <Typography variant="h4" color="warning.main">{formatNumber(totalCount - registeredCount)}</Typography>
                                         </Box>
                                     </>
                                 ) : (
                                     <Box>
                                         <Typography variant="body2" color="textSecondary">Total Hours</Typography>
-                                        <Typography variant="h4" color="primary">{totalHours}</Typography>
+                                        <Typography variant="h4" color="primary">{formatNumber(totalHours)}</Typography>
                                     </Box>
                                 )}
                             </Box>
@@ -803,27 +899,37 @@ export default function Reports() {
                                         <Typography variant="h6">{group.groupName}</Typography>
                                         <Box display="flex" gap={3}>
                                             <Typography variant="body1">
-                                                <strong>{currentConfig.itemNoun}:</strong> {group.count}
+                                                <strong>{currentConfig.itemNoun}:</strong> {formatNumber(group.count)}
                                             </Typography>
                                             {reportType === 'new_volunteers' ? (
                                                 <Typography variant="body1">
-                                                    <strong>Registered:</strong> {group.registeredCount}
+                                                    <strong>Registered:</strong> {formatNumber(group.registeredCount)}
                                                 </Typography>
                                             ) : (
                                                 <Typography variant="body1">
-                                                    <strong>Hours:</strong> {group.hours}
+                                                    <strong>Hours:</strong> {formatNumber(group.hours)}
                                                 </Typography>
                                             )}
                                         </Box>
                                     </Box>
                                 </AccordionSummary>
-                                <AccordionDetails>
-                                    <TableContainer>
-                                        <Table size="small">
+                                <AccordionDetails sx={{ p: { xs: 1, sm: 2 } }}>
+                                    <TableContainer sx={{ overflowX: 'auto', width: '100%' }}>
+                                        <Table size="small" sx={{ minWidth: 1020 }}>
                                             <TableHead>
-                                                <TableRow>
+                                                <TableRow sx={{ backgroundColor: '#e8f5e9' }}>
                                                     {currentConfig.columns.map(col => (
-                                                        <TableCell key={col.id}>
+                                                        <TableCell
+                                                            key={col.id}
+                                                            align={col.align || 'left'}
+                                                            sx={{
+                                                                whiteSpace: 'nowrap',
+                                                                fontWeight: 'bold',
+                                                                py: 1,
+                                                                px: 1.5,
+                                                                minWidth: col.minWidth
+                                                            }}
+                                                        >
                                                             {col.sortable !== false ? (
                                                                 <TableSortLabel
                                                                     active={orderBy === col.id}
@@ -841,11 +947,19 @@ export default function Reports() {
                                             </TableHead>
                                             <TableBody>
                                                 {group.items.map((item, index) => (
-                                                    <TableRow key={item.id || index}>
+                                                    <TableRow key={item.id || index} hover>
                                                         {currentConfig.columns.map(col => {
                                                             const val = col.getValue(item);
                                                             return (
-                                                                <TableCell key={col.id}>
+                                                                <TableCell
+                                                                    key={col.id}
+                                                                    align={col.align || 'left'}
+                                                                    sx={{
+                                                                        whiteSpace: col.nowrap ? 'nowrap' : 'normal',
+                                                                        py: 0.75,
+                                                                        px: 1.5
+                                                                    }}
+                                                                >
                                                                     {col.isChip ? (
                                                                         <Chip label={val} color={getStatusColor(val)} size="small" />
                                                                     ) : (
@@ -876,9 +990,9 @@ export default function Reports() {
                                         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                                             {reportType === 'shifts'
                                                 ? 'Total Shifts:'
-                                                : (reportType === 'new_volunteers' ? 'Total New Volunteers:' : 'Total Active Volunteers:')}
+                                                : (reportType === 'new_volunteers' ? 'Total New Signups:' : 'Total Active Volunteers:')}
                                         </Typography>
-                                        <Typography variant="h5" color="primary">{totalCount}</Typography>
+                                        <Typography variant="h5" color="primary">{formatNumber(totalCount)}</Typography>
                                     </Box>
                                 </Grid>
                                 <Grid item xs={12} md={6}>
@@ -888,8 +1002,8 @@ export default function Reports() {
                                         </Typography>
                                         <Typography variant="h5" color="primary">
                                             {reportType === 'new_volunteers'
-                                                ? `${registeredCount} (${totalCount > 0 ? Math.round((registeredCount / totalCount) * 100) : 0}%)`
-                                                : totalHours}
+                                                ? `${formatNumber(registeredCount)} (${totalCount > 0 ? Math.round((registeredCount / totalCount) * 100) : 0}%)`
+                                                : formatNumber(totalHours)}
                                         </Typography>
                                     </Box>
                                 </Grid>
@@ -903,7 +1017,7 @@ export default function Reports() {
                 <Typography variant="body1" color="textSecondary" align="center">
                     {hasRun
                         ? (reportType === 'new_volunteers'
-                            ? 'No new volunteers signed up in the selected date range.'
+                            ? 'No new signups in the selected date range.'
                             : (reportType === 'volunteers'
                                 ? 'No volunteers were active in the selected date range.'
                                 : 'No shifts found for the selected date range.'))

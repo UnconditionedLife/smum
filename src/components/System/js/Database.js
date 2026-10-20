@@ -676,9 +676,9 @@ async function dbGetDataAsync(arrayName, subUrl, paramObj = null) {
                     else
                         return utilDecodeStrings(data);
                 } else {
-                    return null
+                    return null;
                 }
-            })
+            });
         if (dataPage !== null) {
             allData = allData.concat(dataPage);
         }
@@ -724,6 +724,7 @@ async function simulatedSave(prob) {
         return Promise.resolve();
 }
 
+// eslint-disable-next-line no-unused-vars
 function makeOldServices(svcs) {
     const svcTypes = getSvcTypes()
 
@@ -776,84 +777,35 @@ function makeOldServices(svcs) {
 
 export async function dbGetAllVolunteersAsync() {
     // GET /prod/volunteers (auth required)
-    const response = await dbGetDataPageAsync("/volunteers");
-    let data = response;
-    // If the response has a 'body' property, parse it
-    if (data && typeof data.body === 'string') {
-        try {
-            data = JSON.parse(data.body);
-        } catch (e) {
-            data = {};
-        }
-    }
-    // Get volunteers array from various possible response formats
-    let volunteers = Array.isArray(data.volunteers) ? data.volunteers :
-        Array.isArray(data) ? data : [];
-
-    // Normalize field names and decode strings
-    return volunteers.map(vol => {
-        const decoded = utilDecodeStrings(vol);
-        return {
-            VolunteerId: decoded.VolunteerId,
-            FirstName: decoded.firstName || '',
-            LastName: decoded.lastName || '',
-            Email: decoded.email || '',
-            Telephone: decoded.telephone || '',
-            ProgramId: String(decoded.ProgramId || '0'),
-            RegComplete: Boolean(decoded.RegComplete),
-            Time: decoded.time || decoded.Time,
-            isDeleted: Boolean(decoded.isDeleted)
-        };
-    });
+    const volunteers = await dbGetDataAsync("volunteers", "/volunteers") || [];
+    return volunteers.map(vol => ({
+        VolunteerId: vol.VolunteerId,
+        FirstName: vol.firstName || '',
+        LastName: vol.lastName || '',
+        Email: vol.email || '',
+        Telephone: vol.telephone || '',
+        ProgramId: String(vol.ProgramId || '0'),
+        RegComplete: Boolean(vol.RegComplete),
+        Time: vol.time || vol.Time,
+        isDeleted: Boolean(vol.isDeleted)
+    }));
 }
 
 export async function dbGetSingleVolunteerAsync(volunteerId) {
     // GET /prod/volunteers/{id} (auth required)
-
-    console.log("Get Volunteer:", volunteerId)
-
-    const response = await dbGetDataPageAsync(`/volunteers/${volunteerId}`);
-    console.log("RAW API RESPONSE:", response)
-    let data = response;
-    if (data && typeof data.body === 'string') {
-        try {
-            data = JSON.parse(data.body);
-            console.log("PARSED RESPONSE:", data)
-        } catch (e) {
-            data = {};
-        }
-    }
-    let volunteer = null;
-    // If the API returns an array, return the first item
-    if (Array.isArray(data.volunteers) && data.volunteers.length > 0) {
-        volunteer = data.volunteers[0];
-        console.log("Got volunteer from data.volunteers[0]:", volunteer);
-    }
-    // If wrapped in volunteer property, return that
-    else if (data.volunteer) {
-        volunteer = data.volunteer;
-        console.log("Got volunteer from data.volunteer:", volunteer);
-    }
-    // If the data itself is a volunteer object
-    else if (data && (data.VolunteerId || data.volunteerId || data.id || data.firstName || data.lastName)) {
-        volunteer = data;
-        console.log("Got volunteer from data itself:", volunteer);
-    }
-
-    if (volunteer) {
-        const decoded = utilDecodeStrings(volunteer);
-        return {
-            VolunteerId: decoded.VolunteerId,
-            FirstName: decoded.firstName || '',
-            LastName: decoded.lastName || '',
-            Email: decoded.email || '',
-            Telephone: decoded.telephone || '',
-            ProgramId: String(decoded.ProgramId || decoded.programId || '0'),
-            RegComplete: Boolean(decoded.RegComplete || decoded.regComplete),
-            Time: decoded.time || decoded.Time
-        };
-    }
-    return null;
+    const volunteer = await dbGetDataPageAsync(`/volunteers/${volunteerId}`);
+    if (!volunteer) return null;
+    const decoded = utilDecodeStrings(volunteer);
+    return {
+        VolunteerId: decoded.VolunteerId,
+        FirstName: decoded.firstName || '',
+        LastName: decoded.lastName || '',
+        Email: decoded.email || '',
+        Telephone: decoded.telephone || '',
+        ProgramId: String(decoded.ProgramId || '0'),
+        RegComplete: Boolean(decoded.RegComplete),
+        Time: decoded.time || decoded.Time
+    };
 }
 
 export async function dbSaveVolunteerAsync(data) {
@@ -897,35 +849,20 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
         RegComplete: data.RegComplete !== undefined ? data.RegComplete : true
     };
 
-    console.log("Updating volunteer with apiData:", apiData);
-
-    console.log("VID", volunteerId)
-
     // Only include fields that are being updated
-    if (data.FirstName !== undefined || data.firstName !== undefined)
-        apiData.firstName = data.FirstName || data.firstName;
-    if (data.LastName !== undefined || data.lastName !== undefined)
-        apiData.lastName = data.LastName || data.lastName;
-    if (data.Telephone !== undefined || data.telephone !== undefined)
-        apiData.telephone = data.Telephone || data.telephone;
-    if (data.Email !== undefined || data.email !== undefined)
-        apiData.email = data.Email || data.email;
-    if (data.ProgramId !== undefined || data.programId !== undefined)
-        apiData.ProgramId = data.ProgramId || data.programId || '0';
-    if (data.RegComplete !== undefined)
-        apiData.RegComplete = data.RegComplete;
-    if (data.isDeleted !== undefined)
-        apiData.isDeleted = data.isDeleted;
-    if (data.RedirectTo !== undefined)
-        apiData.RedirectTo = data.RedirectTo;
+    if (data.FirstName !== undefined) apiData.firstName = data.FirstName;
+    if (data.LastName !== undefined) apiData.lastName = data.LastName;
+    if (data.Telephone !== undefined) apiData.telephone = data.Telephone;
+    if (data.Email !== undefined) apiData.email = data.Email;
+    if (data.ProgramId !== undefined) apiData.programId = data.ProgramId;
+    if (data.RegComplete !== undefined) apiData.RegComplete = data.RegComplete;
+    if (data.isDeleted !== undefined) apiData.isDeleted = data.isDeleted;
+    if (data.RedirectTo !== undefined) apiData.RedirectTo = data.RedirectTo;
 
     // Use POST method for updates (API doesn't support PATCH or PUT for updates)
     const response = await dbPostDataAsync(`/volunteers/${volunteerId}`, apiData, 'PATCH');
 
-    console.log("Update volunteer response:", response);
-
     // Map response back to internal format
-    // API response format: {VolunteerId, ProgramId, firstName, lastName, telephone, email, RegComplete}
     if (response) {
         const decoded = utilDecodeStrings(response);
         return {
@@ -934,51 +871,22 @@ export async function dbUpdateVolunteerAsync(volunteerId, data) {
             LastName: decoded.lastName || '',
             Telephone: decoded.telephone || '',
             Email: decoded.email || '',
-            ProgramId: String(decoded.ProgramId || decoded.programId || '0'),
-            RegComplete: Boolean(decoded.RegComplete || decoded.regComplete),
+            ProgramId: String(decoded.ProgramId || '0'),
+            RegComplete: Boolean(decoded.RegComplete),
             Time: decoded.time || decoded.Time
         };
     }
     return response;
 }
 
-//******************** PROGRAMS & ACTIVITIES ********************
-//*************************************************
-
 export async function dbGetAllProgramsAsync() {
     // GET /prod/programs (auth NOT required)
-    const response = await dbGetDataPageAsync("/programs");
-    let data = response;
-    // If the response has a 'body' property, parse it
-    if (data && typeof data.body === 'string') {
-        try {
-            data = JSON.parse(data.body);
-        } catch (e) {
-            data = {};
-        }
-    }
-    // Get programs array from various possible response formats
-    return Array.isArray(data.programs) ? data.programs :
-        Array.isArray(data.items) ? data.items :
-            Array.isArray(data) ? data : [];
+    return await dbGetDataAsync("", "/programs");
 }
 
 export async function dbGetAllActivitiesAsync() {
     // GET /prod/activities (auth required)
-    const response = await dbGetDataPageAsync("/activities");
-    let data = response;
-    // If the response has a 'body' property, parse it
-    if (data && typeof data.body === 'string') {
-        try {
-            data = JSON.parse(data.body);
-        } catch (e) {
-            data = {};
-        }
-    }
-    // Get activities array from various possible response formats
-    return Array.isArray(data.activities) ? data.activities :
-        Array.isArray(data.items) ? data.items :
-            Array.isArray(data) ? data : [];
+    return await dbGetDataAsync("", "/activities");
 }
 
 //******************** SHIFTS ********************
@@ -986,87 +894,58 @@ export async function dbGetAllActivitiesAsync() {
 
 export async function dbGetAllShiftsByDateAsync(date) {
     // GET /prod/shiftsByDate?date=YYYY-MM-DD (auth required)
-    const response = await dbGetDataPageAsync(`/shiftsByDate?date=${encodeURIComponent(date)}`);
-    let data = response;
-    // If the response has a 'body' property, parse it
-    if (data && typeof data.body === 'string') {
-        try {
-            data = JSON.parse(data.body);
-        } catch (e) {
-            data = {};
-        }
-    }
-    // Handle both 'shifts' and 'items' array names
-    return Array.isArray(data.shifts) ? data.shifts :
-        Array.isArray(data.items) ? data.items :
-            Array.isArray(data) ? data : [];
+    return await dbGetDataAsync("shifts", "/shiftsByDate", { date });
 }
 
 export async function dbGetShiftsByDateRangeAsync(startDate, endDate) {
     // GET /prod/shiftsByDateRange?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD (auth required)
-    const response = await dbGetDataPageAsync(`/shiftsByDateRange?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);
-    let data = response;
-    // If the response has a 'body' property, parse it
-    if (data && typeof data.body === 'string') {
-        try {
-            data = JSON.parse(data.body);
-        } catch (e) {
-            data = {};
+    const start = dayjs(startDate);
+    const end = dayjs(endDate);
+
+    // If date range spans more than 31 days (e.g. a full year), chunk queries month-by-month
+    // to bypass the backend's single-query 1,000 item ceiling
+    if (end.isValid() && start.isValid() && end.diff(start, 'day') > 31) {
+        let current = start.startOf('month');
+        const endMonth = end.endOf('month');
+        const promises = [];
+
+        while (current.isBefore(endMonth)) {
+            const chunkStart = current.isBefore(start) ? start.format('YYYY-MM-DD') : current.startOf('month').format('YYYY-MM-DD');
+            const chunkEnd = current.endOf('month').isAfter(end) ? end.format('YYYY-MM-DD') : current.endOf('month').format('YYYY-MM-DD');
+
+            promises.push(dbGetDataAsync("shifts", "/shiftsByDateRange", { startDate: chunkStart, endDate: chunkEnd }));
+            current = current.add(1, 'month').startOf('month');
         }
+
+        const results = await Promise.all(promises);
+        const allShifts = results.flat();
+        const seen = new Set();
+        return allShifts.filter(s => {
+            if (!s || seen.has(s.ShiftId)) return false;
+            seen.add(s.ShiftId);
+            return true;
+        });
     }
-    if (!data) return [];
-    // Handle both 'shifts' and 'items' array names
-    return Array.isArray(data.shifts) ? data.shifts :
-        Array.isArray(data.items) ? data.items :
-            Array.isArray(data) ? data : [];
+
+    return await dbGetDataAsync("shifts", "/shiftsByDateRange", { startDate, endDate });
 }
 
 export async function dbGetShiftsByVolunteerAsync(volunteerId, startDate = null, endDate = null) {
     // GET /prod/shiftByVolunteer?volunteerId=...&startDate=...&endDate=... (auth required)
-    let url = `/shiftByVolunteer?volunteerId=${encodeURIComponent(volunteerId)}`;
-    if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`;
-    if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`;
-    const response = await dbGetDataPageAsync(url);
-    let data = response;
-    if (data && typeof data.body === 'string') {
-        try {
-            data = JSON.parse(data.body);
-        } catch (e) {
-            data = {};
-        }
-    }
-    // Handle both 'shifts' and 'items' array names
-    return Array.isArray(data.shifts) ? data.shifts :
-        Array.isArray(data.items) ? data.items :
-            Array.isArray(data) ? data : [];
+    const paramObj = { volunteerId };
+    if (startDate) paramObj.startDate = startDate;
+    if (endDate) paramObj.endDate = endDate;
+    return await dbGetDataAsync("shifts", "/shiftByVolunteer", paramObj);
 }
 
 export async function dbGetShiftsByProgramOrActivityAsync(programId, activityId, date = null) {
     // GET /prod/shiftsByProgramOrActivity (auth required)
     // Supports filtering by program, activity, and optional date (defaults to today)
-    const params = [];
-    if (programId) params.push(`programId=${encodeURIComponent(programId)}`);
-    if (activityId) params.push(`activityId=${encodeURIComponent(activityId)}`);
-
-    // Default to today's date if not provided
     const queryDate = date || dayjs().format('YYYY-MM-DD');
-    params.push(`date=${encodeURIComponent(queryDate)}`);
-
-    const url = '/shiftsByProgramOrActivity' + (params.length > 0 ? '?' + params.join('&') : '');
-
-    const response = await dbGetDataPageAsync(url);
-    let data = response;
-    if (data && typeof data.body === 'string') {
-        try {
-            data = JSON.parse(data.body);
-        } catch (e) {
-            data = {};
-        }
-    }
-    // Handle both 'shifts' and 'items' array names
-    return Array.isArray(data.shifts) ? data.shifts :
-        Array.isArray(data.items) ? data.items :
-            Array.isArray(data) ? data : [];
+    const paramObj = { date: queryDate };
+    if (programId) paramObj.programId = programId;
+    if (activityId) paramObj.activityId = activityId;
+    return await dbGetDataAsync("shifts", "/shiftsByProgramOrActivity", paramObj);
 }
 
 export async function dbSaveShiftActionAsync(data) {
@@ -1092,7 +971,7 @@ export async function dbSaveShiftActionAsync(data) {
 export async function dbUpdateShiftAsync(shiftData) {
     // PATCH /prod/shiftAction/{id} (auth required)
     // Extract the shift ID
-    const shiftId = shiftData.ShiftId || shiftData.shiftId || shiftData.Id || shiftData.id;
+    const shiftId = shiftData.ShiftId;
     if (!shiftId) {
         return Promise.reject('Shift ID is required for update');
     }
@@ -1151,7 +1030,7 @@ export async function dbMergeVolunteersAsync(primaryId, duplicateId) {
     const updatePromises = shifts.map(shift => {
         // Construct update object
         const updateData = {
-            ShiftId: shift.ShiftId || shift.shiftId || shift.Id || shift.id,
+            ShiftId: shift.ShiftId,
             VolunteerId: primaryId,
             // Keep other fields as is, but dbUpdateShiftAsync only needs what changes
         };
