@@ -77,7 +77,7 @@ export function navigationAllowed() {
 export function initCache() {
     dbGetSettingsAsync()
         .then(settings => {
-            cachedSettings = settings;
+            if (settings) cachedSettings = settings;
         });
 
     dbGetSvcTypesAsync()
@@ -165,25 +165,28 @@ export async function dbSaveSettingsAsync(settings) {
         });
 }
 
+// The getters below can run before initCache() has loaded the settings
+// (e.g. when the app is opened directly on a client URL), so they fall back
+// to safe defaults instead of throwing.
 export function SettingsSound() {
-    return (cachedSettings.sounds == 'YES');
+    return (cachedSettings?.sounds == 'YES');
 }
 
 export function SettingsSeniorAge() {
-    return (parseInt(cachedSettings.seniorAge, 10));
+    return (parseInt(cachedSettings?.seniorAge ?? 60, 10));
 }
 
 export function SettingsServiceCats() {
-    return (cachedSettings.serviceCat);
+    return (cachedSettings?.serviceCat ?? []);
 }
 
 export function SettingsZipcodes() {
-    return (cachedSettings.serviceZip);
+    return (cachedSettings?.serviceZip ?? []);
 }
 
 export function SettingsSchedule() {
     return {
-        calClosed: cachedSettings.calClosed,
+        calClosed: cachedSettings?.calClosed ?? [],
     };
 }
 
