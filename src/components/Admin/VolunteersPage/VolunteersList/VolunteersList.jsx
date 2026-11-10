@@ -70,8 +70,8 @@ function VolunteerList(props) {
     }
 
     return (
-        <Box sx={{ width: '100%' }}>
-            <TableContainer sx={{ borderRadius: 0 }}>
+        <Box sx={{ width: '100%', px: 2.5, pb: 2.5, pt: 1 }}>
+            <TableContainer>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -98,12 +98,12 @@ function VolunteerList(props) {
                                 onClick={() => props.onEdit && props.onEdit(row.VolunteerId)}
                                 sx={{ cursor: 'pointer', '&:last-child td': { borderBottom: 0 } }}
                             >
-                                <TableCell sx={{ fontWeight: 600 }}>{row.FirstName || ''}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{row.LastName || ''}</TableCell>
-                                <TableCell sx={{ color: 'text.secondary' }}>{row.Email || ''}</TableCell>
-                                <TableCell sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>{formatPhone(row.Telephone || '')}</TableCell>
+                                <TableCell>{row.FirstName || ''}</TableCell>
+                                <TableCell>{row.LastName || ''}</TableCell>
+                                <TableCell>{row.Email || ''}</TableCell>
+                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatPhone(row.Telephone || '')}</TableCell>
                                 <TableCell>{getProgramName(row.ProgramId)}</TableCell>
-                                <TableCell sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                                <TableCell sx={{ whiteSpace: 'nowrap' }}>
                                     {row.Time ? dayjs(row.Time).format('MMM D, YYYY h:mm A') : 'N/A'}
                                 </TableCell>
                                 <TableCell>
@@ -253,9 +253,8 @@ export default function VolunteersList() {
                     flexWrap: "wrap",
                     gap: 2,
                     px: 2.5,
-                    py: 2,
-                    borderBottom: 1,
-                    borderColor: 'divider',
+                    pt: 2,
+                    pb: 1,
                 }}>
                 <Box
                     sx={{

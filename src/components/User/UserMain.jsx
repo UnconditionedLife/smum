@@ -17,8 +17,9 @@ export default function UserMain() {
             sx={{
                 width: '100%',
             }}>
-            <Container maxWidth={ false } disableGutters sx={{ mt: 2, maxWidth: 900, mx: 0 }}>
-                <Card sx={{ mb: 2 }}>
+            <Container maxWidth={ false } disableGutters sx={{ mt: 2, display: 'grid', gap: 2, alignItems: 'start',
+                gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 3fr) minmax(0, 2fr)' } }}>
+                <Card>
                     <CardHeader title="User Profile" />
                     <CardContent>
                         <UserForm user={ userObj } selfEdit />

@@ -68,14 +68,14 @@ export default function DependentsDisplay(props) {
                         <TableHead>
                             <TableRow>
                                 {/* <TableCell>ID #</TableCell> */}
-                                <TableCell align="center">Given Name</TableCell>
-                                <TableCell align="center">Family Name</TableCell>
-                                <TableCell align="center">Relationship</TableCell>
-                                <TableCell align="center">Gender</TableCell>
-                                <TableCell align="center">DOB</TableCell>
-                                <TableCell align="center">Age</TableCell>
-                                <TableCell align="center">Grade</TableCell>
-                                <TableCell align="center">Status</TableCell>
+                                <TableCell>Given Name</TableCell>
+                                <TableCell>Family Name</TableCell>
+                                <TableCell>Relationship</TableCell>
+                                <TableCell>Gender</TableCell>
+                                <TableCell>DOB</TableCell>
+                                <TableCell>Age</TableCell>
+                                <TableCell>Grade</TableCell>
+                                <TableCell>Status</TableCell>
                             </TableRow>
                         </TableHead>
                         { (!isEmpty(dependents)) &&
@@ -90,14 +90,14 @@ export default function DependentsDisplay(props) {
                                             selected= { row.depId == selectedDependent } 
                                             >
                                             {/* <TableCell component="th" scope="row">{row.depId}</TableCell>*/}
-                                            <TableCell component="th" scope="row" align="center">{ row.givenName }</TableCell>
-                                            <TableCell align="center">{ row.familyName }</TableCell>
-                                            <TableCell align="center">{ row.relationship }</TableCell>
-                                            <TableCell align="center">{ row.gender }</TableCell>
-                                            <TableCell align="center">{ row.dob }</TableCell>
-                                            <TableCell align="center">{ row.age }</TableCell>
-                                            <TableCell align="center">{ row.grade }</TableCell>
-                                            <TableCell align="center">{ row.isActive }</TableCell>
+                                            <TableCell component="th" scope="row">{ row.givenName }</TableCell>
+                                            <TableCell>{ row.familyName }</TableCell>
+                                            <TableCell>{ row.relationship }</TableCell>
+                                            <TableCell>{ row.gender }</TableCell>
+                                            <TableCell>{ row.dob }</TableCell>
+                                            <TableCell>{ row.age }</TableCell>
+                                            <TableCell>{ row.grade }</TableCell>
+                                            <TableCell>{ row.isActive }</TableCell>
                                         </TableRow>
                     
 

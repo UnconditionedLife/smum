@@ -61,10 +61,10 @@ function ServiceTypeList(props) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="center">ID</TableCell>
-                            <TableCell align="center">Name</TableCell>
-                            <TableCell align="center">Category</TableCell>
-                            <TableCell align="center">Description</TableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Category</TableCell>
+                            <TableCell>Description</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

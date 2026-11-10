@@ -126,7 +126,6 @@ let theme = createTheme(base, {
                     minHeight: 60,
                     padding: base.spacing(0, 2.5),
                     borderBottom: `1px solid ${base.palette.divider}`,
-                    marginBottom: base.spacing(1),
                 },
             }
         },

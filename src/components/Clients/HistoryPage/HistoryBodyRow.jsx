@@ -36,7 +36,7 @@ export default function HistoryBodyRow(props) {
                             key={ svc.svcId }
                             onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
                             selected= { svc.svcId == selectedService }>
-                            <TableCell align="center" 
+                            <TableCell 
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { (svc.svcValid) ? 
                                         <span style={{ fontSize: '0.8125rem'}}>
@@ -66,39 +66,39 @@ export default function HistoryBodyRow(props) {
                                         </Box>
                                     }
                             </TableCell>
-                            <TableCell align="center" 
+                            <TableCell 
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.svcName }
                             </TableCell>
-                            <TableCell align="center"
+                            <TableCell
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.cStatus }
                             </TableCell>
-                            <TableCell align="center" 
+                            <TableCell 
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { (svc.homeless) ? "YES" : "NO" }
                             </TableCell>
-                            <TableCell align="center" 
+                            <TableCell 
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.svcItems }
                             </TableCell>
-                            <TableCell align="center"
+                            <TableCell
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.adults }
                             </TableCell>
-                            <TableCell align="center"
+                            <TableCell
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.children }
                             </TableCell>
-                            <TableCell align="center"
+                            <TableCell
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.individuals }
                             </TableCell>
-                            <TableCell align="center"
+                            <TableCell
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.seniors }
                             </TableCell>
-                            <TableCell align="center"
+                            <TableCell
                                 sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.svcBy }
                             </TableCell>

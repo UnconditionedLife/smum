@@ -525,12 +525,11 @@ export default function ShiftsList() {
         }
 
         return (
-            <TableContainer sx={{ borderRadius: 0 }}>
+            <TableContainer sx={{ px: 2.5, pb: 2.5 }}>
                 <Box
                     sx={{
                         display: "flex",
                         justifyContent: "flex-end",
-                        px: 2.5,
                         py: 1.5,
                     }}>
                     <TextField

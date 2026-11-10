@@ -109,12 +109,12 @@ export default function ErrorPage(props) {
                     </Box>
                 </Box>
 
-                <TableContainer sx={{ borderRadius: 0 }}> 
+                <TableContainer sx={{ px: 2.5, py: 2.5 }}> 
                     <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="center" width='35%'>Time Stamp</TableCell>
-                            <TableCell align="center" width='65%'>Message</TableCell>
+                            <TableCell width='35%'>Time Stamp</TableCell>
+                            <TableCell width='65%'>Message</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

@@ -57,10 +57,10 @@ export default function FoundPage(props) {
                     <TableHead>
                         <TableRow>
                         <TableCell>ID #</TableCell>
-                        <TableCell align="center">Given Name</TableCell>
-                        <TableCell align="center">Family Name</TableCell>
-                        <TableCell align="center">DOB</TableCell>
-                        <TableCell align="center">Street Address</TableCell>
+                        <TableCell>Given Name</TableCell>
+                        <TableCell>Family Name</TableCell>
+                        <TableCell>DOB</TableCell>
+                        <TableCell>Street Address</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -71,10 +71,10 @@ export default function FoundPage(props) {
                                 selected= { row.clientId == clientId }
                                 >
                                 <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} component="th" scope="row">{row.clientId}</TableCell>
-                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.givenName}</TableCell>
-                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.familyName}</TableCell>
-                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{dayjs(row.dob).format("MMM DD, YYYY")}</TableCell>
-                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.street}</TableCell>
+                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow}>{row.givenName}</TableCell>
+                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow}>{row.familyName}</TableCell>
+                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow}>{dayjs(row.dob).format("MMM DD, YYYY")}</TableCell>
+                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow}>{row.street}</TableCell>
                             </TableRow>
                             ))}
                     </TableBody> 
