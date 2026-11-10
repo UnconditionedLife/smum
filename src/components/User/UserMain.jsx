@@ -16,9 +16,9 @@ export default function UserMain() {
             key={ userObj }
             sx={{
                 width: '100%',
-                p: 2
             }}>
-            <Container maxWidth='md'>
+            <Container maxWidth={ false } disableGutters sx={{ mt: 2, display: 'grid', gap: 2, alignItems: 'start',
+                gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 3fr) minmax(0, 2fr)' } }}>
                 <Card>
                     <CardHeader title="User Profile" />
                     <CardContent>

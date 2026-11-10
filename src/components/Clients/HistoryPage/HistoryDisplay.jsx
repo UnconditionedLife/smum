@@ -111,8 +111,8 @@ export default function HistoryDisplay(props) {
 
     const menuOpen = Boolean(anchorEl);
     const id = menuOpen ? 'simple-popper' : undefined;
-    const validRow = {color: 'black' }
-    const invalidRow = { color: 'red', cursor:'default' }
+    const validRow = { color: 'text.primary' }
+    const invalidRow = { color: 'secondary.main', cursor:'default' }
 
     return (
         <Fragment>
@@ -124,20 +124,27 @@ export default function HistoryDisplay(props) {
                         {/* delay={ delay } */}
                 </Card>
             </Popper>
-        <TableContainer > 
+        <TableContainer sx={ displayMobile ? {} : {
+            mx: 'auto',
+            mt: 2,
+            width: 'calc(100% - 32px)',
+            bgcolor: 'background.paper',
+            border: 1,
+            borderColor: 'divider',
+        }}> 
             <Table >
             {!displayMobile ? <TableHead>
                 <TableRow>
-                    <TableCell align="center">Updated <br/> Served</TableCell>
-                    <TableCell align="center">Service</TableCell>
-                    <TableCell align="center">Client Status</TableCell>
-                    <TableCell align="center">Homeless</TableCell>
-                    <TableCell align="center"># Items</TableCell>
-                    <TableCell align="center"># Adults</TableCell>
-                    <TableCell align="center"># Children</TableCell>
-                    <TableCell align="center"># Individuals</TableCell>
-                    <TableCell align="center"># Seniors</TableCell>
-                    <TableCell align="center">Serviced By</TableCell>
+                    <TableCell>Updated <br/> Served</TableCell>
+                    <TableCell>Service</TableCell>
+                    <TableCell>Client Status</TableCell>
+                    <TableCell>Homeless</TableCell>
+                    <TableCell># Items</TableCell>
+                    <TableCell># Adults</TableCell>
+                    <TableCell># Children</TableCell>
+                    <TableCell># Individuals</TableCell>
+                    <TableCell># Seniors</TableCell>
+                    <TableCell>Serviced By</TableCell>
                 </TableRow>
             </TableHead> : null}
             {!displayMobile ? <HistoryBodyRow svcHistory = { svcHistory } selectedService = { selectedService } handleSelectedService = { handleSelectedService } /> : 

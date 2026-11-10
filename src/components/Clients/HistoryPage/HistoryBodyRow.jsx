@@ -24,8 +24,8 @@ export default function HistoryBodyRow(props) {
     
     if (isEmpty(svcHistory)) return null
 
-    const validRow = {color: 'black' }
-    const invalidRow = { color: 'red', cursor:'default' }
+    const validRow = { color: 'text.primary' }
+    const invalidRow = { color: 'secondary.main', cursor:'default' }
 
     return (
         <TableBody>
@@ -36,10 +36,10 @@ export default function HistoryBodyRow(props) {
                             key={ svc.svcId }
                             onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
                             selected= { svc.svcId == selectedService }>
-                            <TableCell align="center" 
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell 
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { (svc.svcValid) ? 
-                                        <span style={{ fontSize: '85%'}}>
+                                        <span style={{ fontSize: '0.8125rem'}}>
                                             { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? 
                                                 dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
                                             <br/>
@@ -56,7 +56,7 @@ export default function HistoryBodyRow(props) {
                                                 { (svc.svcValid) ? "" : <DoNotDisturbOnIcon fontSize="small" /> }
                                             </Box>
                                             <Box>
-                                                <span style={{ fontSize: '69%'}}>
+                                                <span style={{ fontSize: '0.75rem'}}>
                                                     { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? 
                                                         dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
                                                     <br/>
@@ -66,40 +66,40 @@ export default function HistoryBodyRow(props) {
                                         </Box>
                                     }
                             </TableCell>
-                            <TableCell align="center" 
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell 
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.svcName }
                             </TableCell>
-                            <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.cStatus }
                             </TableCell>
-                            <TableCell align="center" 
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell 
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { (svc.homeless) ? "YES" : "NO" }
                             </TableCell>
-                            <TableCell align="center" 
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell 
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.svcItems }
                             </TableCell>
-                            <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.adults }
                             </TableCell>
-                            <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.children }
                             </TableCell>
-                            <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.individuals }
                             </TableCell>
-                            <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.seniors }
                             </TableCell>
-                            <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <TableCell
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.svcBy }
                             </TableCell>
                         </TableRow>

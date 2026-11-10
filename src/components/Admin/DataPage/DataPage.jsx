@@ -6,7 +6,7 @@ import {
     FormControl, FormLabel, RadioGroup, FormControlLabel, Radio,
     Grid, Divider
 } from '@mui/material';
-import { Download, Storage, Shield, People, Home, ArrowBack, Assignment, VolunteerActivism } from '@mui/icons-material';
+import { Download, Shield, People, Home, ArrowBack, Assignment, VolunteerActivism } from '@mui/icons-material';
 import { dbGetAllClientsAsync } from '../../System/js/Database';
 import { utilCalcAge, calcDependentsAges, calcFamilyCounts } from '../../System/js/Clients/ClientUtils';
 import { downloadFile } from '../../System/js/GlobalUtils';
@@ -228,19 +228,7 @@ export default function DataPage() {
     // RENDER: Modules Dashboard List
     if (activeSection === 'dashboard') {
         return (
-            <Container maxWidth="lg" style={{ paddingBottom: '32px' }}>
-                <Box
-                    sx={{
-                        mb: 3,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.5
-                    }}>
-                    <Storage color="primary" fontSize="large" />
-                    <Typography variant="h4" component="h1" sx={{
-                        fontWeight: "bold"
-                    }}>Data Administration</Typography>
-                </Box>
+            <Container maxWidth={ false } disableGutters sx={{ mt: 2, pb: 4, px: { xs: 1, sm: 0 } }}>
 
                 <Grid container spacing={3}>
                     {/* Anonymization Note */}

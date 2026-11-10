@@ -73,7 +73,7 @@ export default function NotesDisplay(props) {
     return (
         <Fragment>
             { client.notes.map((row) => ( 
-                <Card key={ row.noteId } width="300px" mb={ 1 } pb={ 1.25 } variant="elevation" elevation={ 4 }> 
+                <Card key={ row.noteId } mb={ 1 } pb={ 1.25 } variant="elevation" elevation={ 4 }> 
                     { display('note', row.noteId) &&
                         <CardContent>
                             <Box

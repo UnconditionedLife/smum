@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
-import { Box, Snackbar } from '@mui/material';
+import { Box, CssBaseline, Snackbar } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { CookiesProvider } from 'react-cookie';
 import { HeaderRouter } from ".";
@@ -36,23 +36,24 @@ function HeaderMain(){
     }
 
     return (
-        <Box style={{ width: '100%', maxHeight: '100vh', overflowY: 'none', marginTop: 64, }}>
-            <StyledEngineProvider injectFirst>
-                <ThemeProvider theme={ theme }>
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={ theme }>
+                <CssBaseline />
+                <Box style={{ width: '100%', maxHeight: '100vh', overflowY: 'none', marginTop: 64, }}>
                     <Router>
                         <CookiesProvider>
                             <HeaderRouter />
                         </CookiesProvider>
                     </Router>
-                </ThemeProvider>
-            </StyledEngineProvider>
 
-            <Snackbar open={open} autoHideDuration={9000} onClose={closeGlobalMsg}>
-                <Alert onClose={closeGlobalMsg} severity={ globalMsg.severity } >
-                       { globalMsg.msg }
-                </Alert>
-            </Snackbar>
-        </Box>
+                    <Snackbar open={open} autoHideDuration={9000} onClose={closeGlobalMsg}>
+                        <Alert onClose={closeGlobalMsg} severity={ globalMsg.severity } >
+                               { globalMsg.msg }
+                        </Alert>
+                    </Snackbar>
+                </Box>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 }
 

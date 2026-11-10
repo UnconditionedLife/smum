@@ -722,13 +722,15 @@ export default function Reports() {
     };
 
     return (
-        <Box sx={{
-            p: 3
-        }}>
-            <Typography variant="h5" gutterBottom>Reports</Typography>
-
-            <Card sx={{ mb: 3 }}>
-                <CardContent>
+        <Box sx={{ pb: 2.5, '& > :not(:first-of-type)': { mx: 2.5 } }}>
+            <Card sx={{ m: 0, border: 0, borderRadius: 0, boxShadow: 'none', borderBottom: 1, borderColor: 'divider' }}>
+                <Box sx={{ px: 2.5, py: 2, borderBottom: 1, borderColor: 'divider' }}>
+                    <Typography variant="subtitle1">Volunteer Reports</Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Shifts, hours and sign-ups by month or year. Run a report, then export it to Excel.
+                    </Typography>
+                </Box>
+                <CardContent sx={{ px: 2.5 }}>
                     <Grid container spacing={2} sx={{
                         alignItems: "center"
                     }}>
@@ -858,7 +860,7 @@ export default function Reports() {
                                     mb: 2
                                 }}>
                                 <Box>
-                                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                    <Typography variant="h6" gutterBottom>
                                         {currentConfig.title}
                                     </Typography>
                                     <Typography variant="body1" color="textSecondary">
@@ -1038,7 +1040,7 @@ export default function Reports() {
                     </Box>
 
                     {/* Grand Total Card */}
-                    <Card sx={{ mt: 3, backgroundColor: '#f5f5f5' }}>
+                    <Card sx={{ mt: 3, bgcolor: 'rgba(67, 160, 71, 0.06)' }}>
                         <CardContent>
                             <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
                                 Grand Total
@@ -1060,7 +1062,7 @@ export default function Reports() {
                                                 ? 'Total Shifts:'
                                                 : (reportType === 'new_volunteers' ? 'Total New Signups:' : 'Total Active Volunteers:')}
                                         </Typography>
-                                        <Typography variant="h5" color="primary">{formatNumber(totalCount)}</Typography>
+                                        <Typography variant="h4" color="primary">{formatNumber(totalCount)}</Typography>
                                     </Box>
                                 </Grid>
                                 <Grid
@@ -1077,7 +1079,7 @@ export default function Reports() {
                                         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                                             {reportType === 'new_volunteers' ? 'Registered Volunteers:' : 'Total Hours:'}
                                         </Typography>
-                                        <Typography variant="h5" color="primary">
+                                        <Typography variant="h4" color="primary">
                                             {reportType === 'new_volunteers'
                                                 ? `${formatNumber(registeredCount)} (${totalCount > 0 ? Math.round((registeredCount / totalCount) * 100) : 0}%)`
                                                 : formatNumber(totalHours)}
@@ -1091,7 +1093,7 @@ export default function Reports() {
             )}
 
             {!loading && reportData.length === 0 && (
-                <Typography variant="body1" color="textSecondary" align="center">
+                <Typography variant="body1" align="center" sx={{ color: 'text.secondary', pt: 5, pb: 3, px: 3 }}>
                     {hasRun
                         ? (reportType === 'new_volunteers'
                             ? 'No new signups in the selected date range.'
