@@ -230,6 +230,8 @@ export default function HeaderBar(props) {
 
     const userName = getUserName();
 
+    const menuId = 'primary-search-account-menu';
+
     const appbarControls = (
         <Fragment>
             <Box
@@ -299,7 +301,6 @@ export default function HeaderBar(props) {
         </Fragment >
     );
 
-    const menuId = 'primary-search-account-menu';
     const renderMenu = (
         <Menu anchorEl={userMenuAnchor} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         id={menuId} keepMounted transformOrigin={{ vertical: 'top', horizontal: 'right' }}
