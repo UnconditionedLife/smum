@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { Search, Clear, Refresh } from '@mui/icons-material';
+import { Search, Clear, Refresh, EventBusy } from '@mui/icons-material';
 import {
     dbGetShiftsByVolunteerAsync,
     dbGetAllVolunteersAsync, dbGetAllProgramsAsync,
@@ -313,11 +313,11 @@ export default function ShiftsList() {
         return (
             <Box
                 sx={{
-                    mb: 3,
-                    p: 3,
-                    backgroundColor: '#fafafa',
-                    borderRadius: 2,
-                    border: '1px solid #e0e0e0'
+                    px: 2.5,
+                    py: 2.5,
+                    bgcolor: 'rgba(28, 36, 33, 0.02)',
+                    borderBottom: 1,
+                    borderColor: 'divider',
                 }}>
                 <Grid container spacing={2} sx={{
                     alignItems: "center"
@@ -471,6 +471,7 @@ export default function ShiftsList() {
                             variant="outlined"
                             onClick={handleResetFilters}
                             size="medium"
+                            sx={{ m: 0 }}
                         >
                             Reset
                         </Button>
@@ -480,6 +481,7 @@ export default function ShiftsList() {
                             onClick={loadShifts}
                             size="medium"
                             startIcon={<Search />}
+                            sx={{ m: 0 }}
                         >
                             Search Shifts
                         </Button>
@@ -506,23 +508,30 @@ export default function ShiftsList() {
             return (
                 <Box
                     sx={{
-                        p: 3,
+                        py: 7,
+                        px: 3,
                         textAlign: "center"
                     }}>
-                    <Typography variant="body2" color="textSecondary">
-                        No shifts found for the selected filter criteria
+                    <Box sx={{ width: 56, height: 56, mx: 'auto', mb: 1.5, borderRadius: '50%', display: 'grid', placeItems: 'center',
+                        color: 'primary.main', bgcolor: 'rgba(67, 160, 71, 0.12)' }}>
+                        <EventBusy />
+                    </Box>
+                    <Typography variant="subtitle1">No shifts found</Typography>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+                        Try a different date range, volunteer, program or activity.
                     </Typography>
                 </Box>
             );
         }
 
         return (
-            <TableContainer>
+            <TableContainer sx={{ borderRadius: 0 }}>
                 <Box
                     sx={{
                         display: "flex",
                         justifyContent: "flex-end",
-                        mb: 2
+                        px: 2.5,
+                        py: 1.5,
                     }}>
                     <TextField
                         size="small"
@@ -605,27 +614,33 @@ export default function ShiftsList() {
     };
 
     return (
-        <Box sx={{
-            width: "100%"
-        }}>
+        <Box sx={{ width: "100%" }}>
             <Box
                 sx={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 2,
-                    mb: 2
+                    gap: 1.5,
+                    px: 2.5,
+                    py: 2,
+                    borderBottom: 1,
+                    borderColor: 'divider',
                 }}>
-                <Typography variant="h6">Shift Records</Typography>
-                <Chip label={visibleShifts.length} color="secondary" size="small" />
-                <Tooltip title="Refresh List">
-                    <IconButton size="small" onClick={loadAll} color="success">
-                        <Refresh />
-                    </IconButton>
-                </Tooltip>
+                <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Typography variant="subtitle1">Shift Records</Typography>
+                        <Chip label={visibleShifts.length} size="small"
+                            sx={{ bgcolor: 'rgba(67, 160, 71, 0.12)', color: 'primary.dark' }} />
+                        <Tooltip title="Refresh List">
+                            <IconButton size="small" onClick={loadAll}>
+                                <Refresh />
+                            </IconButton>
+                        </Tooltip>
+                    </Box>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Volunteer check-in and check-out records. Filter by date, volunteer, program or activity.
+                    </Typography>
+                </Box>
             </Box>
-            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                View volunteer check-in/check-out records. Use filters to search by date or by volunteer.
-            </Typography>
             {renderFilterControls()}
             {renderShiftsTable()}
 

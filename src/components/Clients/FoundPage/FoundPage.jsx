@@ -51,7 +51,6 @@ export default function FoundPage(props) {
                 bgcolor: 'background.paper',
                 border: 1,
                 borderColor: 'divider',
-                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.08)',
             }}> 
                 {!displayMobile ?
                     <Table >

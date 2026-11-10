@@ -53,7 +53,7 @@ export default function HistoryHeader(props) {
                     flexWrap: "wrap"
                 }}>
                 <Chip icon={<House />} label={client.clientId} color="primary"
-                    style={{ width: '118px', fontSize: 'x-large', justifyContent: 'left', marginRight: '12px' }} />
+                    style={{ width: '118px', fontSize: '1.125rem', fontWeight: 700, justifyContent: 'left', marginRight: '12px' }} />
                 <Box sx={{ display: 'flex', justifyContent: 'left', alignItems: 'center' }}>
                     <Typography color='primary' variant='h6' noWrap>
                         <b>{client.givenName} {client.familyName}</b>
@@ -75,7 +75,6 @@ export default function HistoryHeader(props) {
                     border: 1,
                     borderColor: 'divider',
                     borderRadius: '12px',
-                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.08)',
                 }}>
                 <Box sx={{ px: 2.5, py: 1 }}>
                     <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block' }}>Created</Typography>

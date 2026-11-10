@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Card, CardContent, CardHeader, Container, Dialog, DialogTitle } from '@mui/material';
+import { Box, Card, CardContent, Container, Dialog, DialogTitle } from '@mui/material';
 import { dbGetSettingsAsync, dbSaveSettingsAsync, dbSetModifiedTime, setEditingState } from '../../System/js/Database';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -30,9 +30,8 @@ export default function CalendarPage() {
 
     if (settings)
         return (
-            <Container maxWidth='lg'>
+            <Container maxWidth={ false } disableGutters sx={{ mt: 2 }}>
                 <Card>
-                    <CardHeader title="Calendar" />
                     <CardContent>
                         <SettingsSched settings={ settings } />
                     </CardContent>
@@ -281,6 +280,8 @@ function SettingsSched(props) {
                 dayMaxEvents={true}
                 weekends={true}
                 fixedWeekCount={false}
+                aspectRatio={ 2.5 }
+                buttonText={{ today: 'Today' }}
                 timeZone="US/Pacific"
                 events={ calToEvents(rules) }
                 dateClick={ doEdit }

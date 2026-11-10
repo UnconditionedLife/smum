@@ -17,7 +17,7 @@ export default function SettingsPage() {
 
     if (settings)
         return (
-            <Container maxWidth='lg'>
+            <Container maxWidth={ false } disableGutters sx={{ mt: 2 }}>
                 <Card>
                     <CardHeader title="Application Settings" />
                     <CardContent>
@@ -117,7 +117,7 @@ function SettingsForm(props) {
                         display: "flex",
                         flexDirection: "row",
                         flexWrap: "wrap"
-                    }}><Typography>Interface</Typography></Box>
+                    }}><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Interface</Typography></Box>
                 <Box
                     sx={{
                         display: "flex",
@@ -136,7 +136,7 @@ function SettingsForm(props) {
                         display: "flex",
                         flexDirection: "row",
                         flexWrap: "wrap"
-                    }}><Typography>Services</Typography></Box>
+                    }}><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Services</Typography></Box>
                 <MuiChipsInput value={ serviceZip }
                     label='Service Zip Codes'
                     onAddChip={ addZipcode } 
@@ -159,7 +159,7 @@ function SettingsForm(props) {
                         display: "flex",
                         flexDirection: "row",
                         flexWrap: "wrap"
-                    }}><Typography>Clients</Typography></Box>
+                    }}><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Clients</Typography></Box>
                 <Box
                     sx={{
                         display: "flex",

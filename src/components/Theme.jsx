@@ -11,31 +11,82 @@ const base = createTheme({
     palette: {
         primary: { main: PRIMARY },
         secondary: { main: SECONDARY },
-        background: { default: '#f5f7f5', paper: '#ffffff' },
+        background: { default: '#f4f6f5', paper: '#ffffff' },
         text: { primary: '#1c2421', secondary: '#5f6b66' },
         divider: 'rgba(28, 36, 33, 0.10)',
     },
     shape: { borderRadius: 10 },
     typography: {
         fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-        h4: { fontWeight: 700, letterSpacing: '-0.02em' },
-        h5: { fontWeight: 700, letterSpacing: '-0.01em' },
-        h6: { fontWeight: 600, letterSpacing: '-0.01em' },
-        subtitle1: { fontWeight: 600 },
-        subtitle2: { fontWeight: 600 },
-        button: { textTransform: 'none', fontWeight: 600, letterSpacing: 0 },
-        overline: { fontWeight: 600, letterSpacing: '0.06em' },
+        // One compact scale so headings on different pages stay close in size
+        h1: { fontSize: '2rem', fontWeight: 700, lineHeight: 1.2, letterSpacing: '-0.02em' },
+        h2: { fontSize: '1.75rem', fontWeight: 700, lineHeight: 1.25, letterSpacing: '-0.02em' },
+        h3: { fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.015em' },
+        h4: { fontSize: '1.375rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.01em' },
+        h5: { fontSize: '1.25rem', fontWeight: 700, lineHeight: 1.35, letterSpacing: '-0.01em' },
+        h6: { fontSize: '1.0625rem', fontWeight: 600, lineHeight: 1.4, letterSpacing: '-0.005em' },
+        subtitle1: { fontSize: '0.9375rem', fontWeight: 600, lineHeight: 1.5 },
+        subtitle2: { fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.5 },
+        body1: { fontSize: '0.9375rem', lineHeight: 1.55 },
+        body2: { fontSize: '0.875rem', lineHeight: 1.5 },
+        caption: { fontSize: '0.75rem', lineHeight: 1.45 },
+        button: { fontSize: '0.875rem', textTransform: 'none', fontWeight: 600, letterSpacing: 0 },
+        overline: { fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.07em' },
     },
 })
 
-const softShadow = '0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.08)';
+// Panels sit flat on the white section sheet; only floating surfaces get shadows
 const raisedShadow = '0 8px 24px rgba(16, 24, 40, 0.12)';
 
 let theme = createTheme(base, {
     components: {
         MuiCssBaseline: {
             styleOverrides: {
-                body: { backgroundColor: base.palette.background.default },
+                body: {
+                    backgroundColor: base.palette.background.default,
+                    overflowX: 'clip',
+                },
+                // FullCalendar (Admin > Calendar) in the app's style
+                '.fc': {
+                    '--fc-border-color': base.palette.divider,
+                    '--fc-today-bg-color': alpha(PRIMARY, 0.08),
+                    '--fc-button-bg-color': PRIMARY,
+                    '--fc-button-border-color': PRIMARY,
+                    '--fc-button-hover-bg-color': green[700],
+                    '--fc-button-hover-border-color': green[700],
+                    '--fc-button-active-bg-color': green[800],
+                    '--fc-button-active-border-color': green[800],
+                    fontFamily: base.typography.fontFamily,
+                },
+                '.fc .fc-toolbar-title': {
+                    fontWeight: 700, fontSize: '1.2rem', letterSpacing: '-0.01em',
+                    [base.breakpoints.down('sm')]: { fontSize: '1.1rem' },
+                },
+                '.fc .fc-button': {
+                    borderRadius: 8, textTransform: 'capitalize', fontWeight: 600, boxShadow: 'none !important',
+                    padding: '6px 14px',
+                },
+                '.fc .fc-button-primary:disabled': {
+                    backgroundColor: 'transparent !important', borderColor: `${base.palette.divider} !important`,
+                    color: `${base.palette.text.secondary} !important`, opacity: '1 !important',
+                },
+                '.fc .fc-daygrid-day-top': { flexDirection: 'row !important' },
+                '.fc .fc-toolbar.fc-header-toolbar': { marginBottom: base.spacing(2) },
+                '.fc .fc-scrollgrid': { borderRadius: 12, overflow: 'hidden', backgroundColor: base.palette.background.paper },
+                '.fc .fc-col-header-cell': {
+                    backgroundColor: alpha(PRIMARY, 0.08), color: base.palette.primary.dark,
+                    fontWeight: 600, padding: '8px 0',
+                },
+                '.fc .fc-daygrid-day-number': { color: base.palette.text.secondary, fontWeight: 600, padding: '6px 8px' },
+                '.fc .fc-day-today .fc-daygrid-day-number': {
+                    color: '#fff', backgroundColor: PRIMARY, borderRadius: 999, minWidth: 26, textAlign: 'center',
+                    margin: 4, padding: '2px 6px',
+                },
+                '.fc .fc-daygrid-event': {
+                    borderRadius: 6, border: 'none', padding: '2px 6px', fontWeight: 600, fontSize: '0.78rem',
+                    boxShadow: '0 1px 2px rgba(16, 24, 40, 0.12)',
+                },
+                '.fc .fc-daygrid-day:hover': { backgroundColor: alpha(PRIMARY, 0.04), cursor: 'pointer' },
             }
         },
         MuiButton: {
@@ -60,9 +111,20 @@ let theme = createTheme(base, {
                     margin: base.spacing(1),
                     borderRadius: 12,
                     border: `1px solid ${base.palette.divider}`,
-                    boxShadow: softShadow,
+                    boxShadow: 'none',
                 }
             },
+        },
+        // Card titles look like the panel header bars used elsewhere
+        MuiCardHeader: {
+            defaultProps: { slotProps: { title: { variant: 'h6' } } },
+            styleOverrides: {
+                root: {
+                    padding: base.spacing(1.75, 2.5),
+                    borderBottom: `1px solid ${base.palette.divider}`,
+                    marginBottom: base.spacing(1),
+                },
+            }
         },
         MuiPaper: {
             styleOverrides: {
@@ -76,7 +138,7 @@ let theme = createTheme(base, {
         },
         MuiDialogTitle: {
             styleOverrides: {
-                root: { fontWeight: 700, fontSize: '1.15rem' },
+                root: { fontWeight: 600, fontSize: '1.0625rem' },
             }
         },
         MuiMenu: {
@@ -159,7 +221,7 @@ let theme = createTheme(base, {
                 root: {
                     border: `1px solid ${base.palette.divider}`,
                     borderRadius: 12,
-                    boxShadow: softShadow,
+                    boxShadow: 'none',
                     marginBottom: base.spacing(1.5),
                     '&:before': { display: 'none' },
                     '&:first-of-type, &:last-of-type': { borderRadius: 12 },
@@ -195,12 +257,18 @@ let theme = createTheme(base, {
             defaultProps: { elevation: 0 },
             styleOverrides: {
                 colorPrimary: {
-                    boxShadow: '0 1px 0 rgba(0, 0, 0, 0.08), 0 2px 8px rgba(16, 24, 40, 0.10)',
+                    // Same green, with a gentle left-to-right sheen
+                    backgroundImage: `linear-gradient(90deg, ${green[700]} 0%, ${PRIMARY} 55%, ${green[500]} 100%)`,
+                    boxShadow: '0 1px 0 rgba(0, 0, 0, 0.08), 0 4px 16px rgba(46, 125, 50, 0.25)',
                 },
+                // Sub-navigation bars are a full-width white strip attached under the header
                 colorDefault: {
                     backgroundColor: base.palette.background.paper,
                     borderBottom: `1px solid ${base.palette.divider}`,
                     boxShadow: 'none',
+                    // !important: the tab bars set an inline width of 100%
+                    width: '100vw !important',
+                    marginLeft: 'calc(50% - 50vw)',
                 },
             }
         },

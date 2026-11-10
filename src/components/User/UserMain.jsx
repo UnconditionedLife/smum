@@ -18,7 +18,7 @@ export default function UserMain() {
                 width: '100%',
                 p: 2
             }}>
-            <Container maxWidth='md'>
+            <Container maxWidth={ false } disableGutters sx={{ mt: 2, maxWidth: 900, mx: 0 }}>
                 <Card>
                     <CardHeader title="User Profile" />
                     <CardContent>

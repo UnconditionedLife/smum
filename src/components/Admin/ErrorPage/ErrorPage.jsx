@@ -50,17 +50,30 @@ export default function ErrorPage(props) {
     } else {
         const displayMessages = filterMessages();
         return (
-            <Box
-                sx={{
-                    width: '95%',
-                    mx: 2
-                }}>
+            <Box sx={{
+                mt: 2,
+                mx: { xs: 1, sm: 0 },
+                mb: 2,
+                bgcolor: 'background.paper',
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: '16px',
+                overflow: 'hidden',
+            }}>
+                <Box sx={{ px: 2.5, py: 1.75, borderBottom: 1, borderColor: 'divider' }}>
+                    <Typography variant='h6'>Error Log</Typography>
+                </Box>
                 <Box
-                    style={{ marginTop: '15px' }}
                     sx={{
                         display: "flex",
                         flexDirection: "row",
-                        flexWrap: "wrap"
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: 2,
+                        px: 2.5,
+                        py: 2,
+                        borderBottom: 1,
+                        borderColor: 'divider',
                     }}>
                     <LocalizationProvider dateAdapter={ AdapterDayjs }>
                         <DatePicker
@@ -84,16 +97,19 @@ export default function ErrorPage(props) {
                         sx={{
                             display: "flex",
                             flexDirection: "row",
-                            ml: 1,
-                            mr: 1
+                            alignItems: "center",
+                            ml: { xs: 0, sm: 'auto' },
+                            px: 1.5,
+                            borderRadius: 999,
+                            bgcolor: 'action.hover',
                         }}>
-                        <Typography>Error</Typography>
+                        <Typography variant='body2' sx={{ fontWeight: 600 }}>Error</Typography>
                         <Switch checked={ showTrace } onChange={(event) => setShowTrace(event.target.checked)} /> 
-                        <Typography>Trace</Typography>
+                        <Typography variant='body2' sx={{ fontWeight: 600 }}>Trace</Typography>
                     </Box>
                 </Box>
 
-                <TableContainer> 
+                <TableContainer sx={{ borderRadius: 0 }}> 
                     <Table>
                     <TableHead>
                         <TableRow>
@@ -114,10 +130,10 @@ export default function ErrorPage(props) {
                     </Table>
                 </TableContainer>
                 { dayjs(startDate) > dayjs(endDate) && (
-                    <Alert severity="error">End date must be after start date</Alert>
+                    <Alert severity="error" sx={{ m: 2 }}>End date must be after start date</Alert>
                 )}
                 {displayMessages.length == 0 && (
-                    <Alert severity="info">There are no messages in this time frame</Alert>
+                    <Alert severity="info" sx={{ m: 2 }}>There are no messages in this time frame</Alert>
                 )}
             </Box>
         );

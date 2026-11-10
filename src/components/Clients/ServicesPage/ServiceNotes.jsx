@@ -82,7 +82,7 @@ export default function ServiceNotes(props) {
             </Card>
             { editMode === 'add' &&
             <Fade in= { editMode === 'add' }  timeout={ 1500 }>
-                <Card width='300px'mb={ 1 } variant="elevation" elevation={ 8 }>
+                <Card mb={ 1 } variant="elevation" elevation={ 8 }>
                     <CardContent>
                         <NoteForm
                             client = { client } 

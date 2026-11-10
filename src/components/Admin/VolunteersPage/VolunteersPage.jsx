@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Tabs, Tab } from '@mui/material';
+import { Box, Tabs, Tab, Typography } from '@mui/material';
 import { People, Schedule, Assessment } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router';
 import VolunteersList from './VolunteersList/VolunteersList.jsx';
@@ -63,22 +63,42 @@ export default function VolunteersPage() {
 
     return (
         <Box sx={{
-            width: "100%"
+            width: "100%",
+            mt: 2,
+            mb: 2,
+            bgcolor: 'background.paper',
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: '16px',
+            overflow: 'hidden',
         }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+            <Box sx={{ px: 2.5, py: 1.5, borderBottom: 1, borderColor: 'divider', display: 'flex',
+                alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+                <Typography variant='h6'>Volunteers</Typography>
+                {/* Segmented switcher between the three volunteer views */}
                 <Tabs
                     value={selectedTab}
                     onChange={handleTabChange}
-                    indicatorColor="primary"
                     textColor="primary"
-                    variant="fullWidth"
+                    slotProps={{ indicator: { sx: { display: 'none' } } }}
                     sx={{
+                        minHeight: 0,
+                        p: 0.5,
+                        borderRadius: 999,
+                        bgcolor: 'rgba(28, 36, 33, 0.06)',
                         '& .MuiTab-root': {
-                            minHeight: 52,
+                            minHeight: 40,
+                            px: 2,
+                            borderRadius: 999,
                             fontSize: '0.875rem',
-                            fontWeight: 500,
+                            fontWeight: 600,
                             textTransform: 'none',
-                        }
+                            transition: 'background-color 120ms ease, box-shadow 120ms ease',
+                        },
+                        '& .MuiTab-root.Mui-selected': {
+                            bgcolor: 'background.paper',
+                            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.10), 0 1px 3px rgba(16, 24, 40, 0.10)',
+                        },
                     }}
                 >
                     <Tab

@@ -22,9 +22,8 @@ const styles = {
     }),
     title: (theme) => ({
         display: 'none',
-        [theme.breakpoints.up('sm')]: { display: 'block', fontSize: '10px' },
-        [theme.breakpoints.up('md')]: { display: 'block', fontSize: '15px' },
-        [theme.breakpoints.up('lg')]: { display: 'block', fontSize: '20px' },
+        [theme.breakpoints.up('sm')]: { display: 'block', fontSize: '1rem' },
+        [theme.breakpoints.up('lg')]: { display: 'block', fontSize: '1.125rem' },
     }),
     search: (theme) => ({
         borderRadius: theme.shape.borderRadius,

@@ -145,14 +145,14 @@ export default function ServicesPage(props) {
             key={ svcHistory }
             sx={{
                 maxWidth: '100%',
-                display: "flex",
-                justifyContent: "space-around",
-                flexWrap: "wrap"
+                display: "grid",
+                gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 340px' },
+                columnGap: 3,
+                alignItems: 'start',
             }}>
             <Box
                 sx={{
                     width: '100%',
-                    maxWidth: "1100px",
                     mt: 4,
                     pt: 0
                 }}>
@@ -169,7 +169,6 @@ export default function ServicesPage(props) {
                         border: 1,
                         borderColor: 'divider',
                         borderRadius: '12px',
-                        boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.08)',
                     }}>
                     <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
                     {/* <LastServed lastServed={ lastServed } nextService={ nextService } /> */}
@@ -249,9 +248,10 @@ export default function ServicesPage(props) {
             </Box>
             <Box
                 sx={{
-                    maxWidth: "500px",
+                    width: '100%',
+                    maxWidth: { xs: 500, lg: 'none' },
+                    mx: 'auto',
                     mt: 3,
-                    justifyContent: "center"
                 }}>
                 <ServiceNotes { ...props } />
             </Box>

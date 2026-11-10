@@ -79,6 +79,8 @@ export default function PrimaryButtons(props) {
             bottom: 0,
             backgroundSize: 'cover',
             backgroundPosition: 'center 40%',
+            // Shown behind the photo, and on its own for services without one
+            backgroundColor: '#2e7d32',
         },
         imageBackdrop: (theme) => ({
             position: 'absolute',
@@ -166,7 +168,7 @@ export default function PrimaryButtons(props) {
                                                         (svc.svcCat === "Administration") ? "/images/Administration.jpg" :
                                                             (svc.svcCat === "Back_To_School") ? "/images/Back_To_School.jpg" :
                                                                 (svc.svcCat === "Thanksgiving") ? "/images/Thanksgiving.jpg" :
-                                                                    (svc.svcCat === "Christmas") ? "/images/Christmas.jpg" : ""})`
+                                                                    (svc.svcCat === "Christmas") ? "/images/Christmas.jpg" : ""}), linear-gradient(135deg, #2e7d32 0%, #43a047 60%, #66bb6a 100%)`
                                         }} />
                                     <Box component="span" className="imageBackdrop" sx={styles.imageBackdrop} />
                                     <Box component="span" className="imageButton" sx={styles.imageButton}>
@@ -196,7 +198,7 @@ export default function PrimaryButtons(props) {
                                                 (svc.svcCat === "Administration") ? "/images/Administration.jpg" :
                                                     (svc.svcCat === "Back_To_School") ? "/images/Back_To_School.jpg" :
                                                         (svc.svcCat === "Thanksgiving") ? "/images/Thanksgiving.jpg" :
-                                                            (svc.svcCat === "Christmas") ? "/images/Christmas.jpg" : ""})`
+                                                            (svc.svcCat === "Christmas") ? "/images/Christmas.jpg" : ""}), linear-gradient(135deg, #2e7d32 0%, #43a047 60%, #66bb6a 100%)`
                                     }} />
                                 <Box component="span" className="imageBackdrop" sx={styles.imageBackdrop} />
                                 <Box component="span" className="imageButton" sx={styles.imageButton}>

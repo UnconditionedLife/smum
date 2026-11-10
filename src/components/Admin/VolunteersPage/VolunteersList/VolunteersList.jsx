@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { alpha } from '@mui/material/styles';
 import {
     Box, Fab, Snackbar, Table, TableBody,
     TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, Chip, TableSortLabel, TextField, InputAdornment, IconButton, Button
@@ -39,6 +40,13 @@ function stableSort(array, comparator) {
     return stabilizedThis.map((el) => el[0]);
 }
 
+// Tinted, borderless status chip
+const softChip = (color) => ({
+    border: 0,
+    bgcolor: (theme) => alpha(theme.palette[color].main, 0.12),
+    color: (theme) => theme.palette[color].dark,
+})
+
 const headCells = [
     { id: 'FirstName', label: 'First Name' },
     { id: 'LastName', label: 'Last Name' },
@@ -62,19 +70,14 @@ function VolunteerList(props) {
     }
 
     return (
-        <Box
-            sx={{
-                width: '100%',
-                mx: 2
-            }}>
-            <TableContainer>
+        <Box sx={{ width: '100%' }}>
+            <TableContainer sx={{ borderRadius: 0 }}>
                 <Table>
                     <TableHead>
                         <TableRow>
                             {headCells.map((headCell) => (
                                 <TableCell
                                     key={headCell.id}
-                                    align="center"
                                     sortDirection={orderBy === headCell.id ? order : false}
                                 >
                                     <TableSortLabel
@@ -93,22 +96,22 @@ function VolunteerList(props) {
                             <TableRow
                                 key={row.VolunteerId}
                                 onClick={() => props.onEdit && props.onEdit(row.VolunteerId)}
-                                sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f5f5f5' } }}
+                                sx={{ cursor: 'pointer', '&:last-child td': { borderBottom: 0 } }}
                             >
-                                <TableCell align="center">{row.FirstName || ''}</TableCell>
-                                <TableCell align="center">{row.LastName || ''}</TableCell>
-                                <TableCell align="center">{row.Email || ''}</TableCell>
-                                <TableCell align="center">{formatPhone(row.Telephone || '')}</TableCell>
-                                <TableCell align="center">{getProgramName(row.ProgramId)}</TableCell>
-                                <TableCell align="center">
+                                <TableCell sx={{ fontWeight: 600 }}>{row.FirstName || ''}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{row.LastName || ''}</TableCell>
+                                <TableCell sx={{ color: 'text.secondary' }}>{row.Email || ''}</TableCell>
+                                <TableCell sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>{formatPhone(row.Telephone || '')}</TableCell>
+                                <TableCell>{getProgramName(row.ProgramId)}</TableCell>
+                                <TableCell sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
                                     {row.Time ? dayjs(row.Time).format('MMM D, YYYY h:mm A') : 'N/A'}
                                 </TableCell>
-                                <TableCell align="center">
+                                <TableCell>
                                     {row.RegComplete !== undefined && (
                                         row.RegComplete ? (
-                                            <Chip label="Registered" size="small" color="success" />
+                                            <Chip label="Registered" size="small" color="success" variant="outlined" sx={ softChip('success') } />
                                         ) : (
-                                            <Chip label="Not Registered" size="small" color="warning" />
+                                            <Chip label="Not Registered" size="small" color="warning" variant="outlined" sx={ softChip('warning') } />
                                         )
                                     )}
                                 </TableCell>
@@ -209,10 +212,7 @@ export default function VolunteersList() {
 
     return (
         <Box
-            sx={{
-                mt: 2,
-                mb: 2
-            }}>
+            sx={{}}>
 
             <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={true}>
                 <Tooltip title='Add Volunteer'>
@@ -250,8 +250,12 @@ export default function VolunteersList() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    mb: 2,
-                    mx: 2
+                    flexWrap: "wrap",
+                    gap: 2,
+                    px: 2.5,
+                    py: 2,
+                    borderBottom: 1,
+                    borderColor: 'divider',
                 }}>
                 <Box
                     sx={{
@@ -259,10 +263,10 @@ export default function VolunteersList() {
                         alignItems: "center",
                         gap: 2
                     }}>
-                    <Typography variant='h6'>Volunteers</Typography>
-                    <Chip label={visibleVolunteers.length} color="secondary" size="small" />
+                    <Typography variant='subtitle1'>All Volunteers</Typography>
+                    <Chip label={visibleVolunteers.length} size="small" sx={ softChip('primary') } />
                     <Tooltip title="Refresh List">
-                        <IconButton size="small" onClick={getVolunteerList} color="success">
+                        <IconButton size="small" onClick={getVolunteerList}>
                             <Refresh />
                         </IconButton>
                     </Tooltip>
@@ -270,6 +274,7 @@ export default function VolunteersList() {
                         variant="outlined"
                         size="small"
                         onClick={() => setShowDuplicatesDialog(true)}
+                        sx={{ m: 0 }}
                     >
                         Find Duplicates
                     </Button>
