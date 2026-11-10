@@ -58,9 +58,11 @@ let theme = createTheme(base, {
                     '--fc-button-active-border-color': green[800],
                     fontFamily: base.typography.fontFamily,
                 },
+                // The legacy /css/style.css sets tables to Arial; keep the calendar grid in the app font
+                '.fc table': { fontFamily: 'inherit' },
+                // Same size as every other panel title (FullCalendar's own CSS loads later, hence !important)
                 '.fc .fc-toolbar-title': {
-                    fontWeight: 700, fontSize: '1.2rem', letterSpacing: '-0.01em',
-                    [base.breakpoints.down('sm')]: { fontSize: '1.1rem' },
+                    fontWeight: '600 !important', fontSize: '1.0625rem !important', letterSpacing: '-0.005em',
                 },
                 '.fc .fc-button': {
                     borderRadius: 8, textTransform: 'capitalize', fontWeight: 600, boxShadow: 'none !important',
