@@ -62,8 +62,15 @@ export default function AdminMain() {
     }
 
     return (
-        <Box width="100%">
-            <Box width={ 1 } display="flex" flexWrap="wrap-reverse">
+        <Box sx={{
+            width: "100%"
+        }}>
+            <Box
+                sx={{
+                    width: 1,
+                    display: "flex",
+                    flexWrap: "wrap-reverse"
+                }}>
                 <ErrorPage norender countUpdate={setCountErrors} />
                 <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'72px',
                     justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>                    
@@ -90,8 +97,21 @@ export default function AdminMain() {
                     </Tabs>
                 </AppBar>
             </Box>
-            <Box maxWidth="100%" display="flex" justifyContent="center" mt={0} pt={0}>
-                <Box maxWidth='1500px' width='100%' mt={0} pt={2}>
+            <Box
+                sx={{
+                    maxWidth: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    mt: 0,
+                    pt: 0
+                }}>
+                <Box
+                    sx={{
+                        maxWidth: '1500px',
+                        width: '100%',
+                        mt: 0,
+                        pt: 2
+                    }}>
                     {selectedTab === 0 && <ReportsPage />}
                     {selectedTab === 1 && <CalendarPage />}
                     {selectedTab === 2 && <ServiceTypePage />}

@@ -62,7 +62,11 @@ function VolunteerList(props) {
     }
 
     return (
-        <Box width='100%' mx={2}>
+        <Box
+            sx={{
+                width: '100%',
+                mx: 2
+            }}>
             <TableContainer>
                 <Table>
                     <TableHead>
@@ -204,7 +208,11 @@ export default function VolunteersList() {
     }, [volunteers, programs, order, orderBy, searchQuery]);
 
     return (
-        <Box mt={2} mb={2}>
+        <Box
+            sx={{
+                mt: 2,
+                mb: 2
+            }}>
 
             <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={true}>
                 <Tooltip title='Add Volunteer'>
@@ -237,8 +245,20 @@ export default function VolunteersList() {
                 }}
             />
 
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} mx={2}>
-                <Box display="flex" alignItems="center" gap={2}>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                    mx: 2
+                }}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2
+                    }}>
                     <Typography variant='h6'>Volunteers</Typography>
                     <Chip label={visibleVolunteers.length} color="secondary" size="small" />
                     <Tooltip title="Refresh List">
@@ -259,19 +279,21 @@ export default function VolunteersList() {
                     placeholder="Search volunteers..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <Search />
-                            </InputAdornment>
-                        ),
-                        endAdornment: searchQuery && (
-                            <InputAdornment position="end">
-                                <IconButton size="small" onClick={() => setSearchQuery('')}>
-                                    <Clear />
-                                </IconButton>
-                            </InputAdornment>
-                        )
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <Search />
+                                </InputAdornment>
+                            ),
+                            endAdornment: searchQuery && (
+                                <InputAdornment position="end">
+                                    <IconButton size="small" onClick={() => setSearchQuery('')}>
+                                        <Clear />
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }
                     }}
                 />
             </Box>

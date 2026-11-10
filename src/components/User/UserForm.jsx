@@ -36,10 +36,11 @@ export default function UserForm(props) {
     initValues = { ...userData };
     initValues.zipcode = packZipcode(userData.zipcode, userData.zipSuffix);
 
-    const { handleSubmit, reset, control, errors, setError, formState } = useForm({
+    const { handleSubmit, reset, control, setError, formState } = useForm({
         mode: 'onBlur',
         defaultValues: initValues, 
     });
+    const { errors } = formState;
 
     if (formState.isDirty) 
         setEditingState(true);
@@ -126,9 +127,20 @@ export default function UserForm(props) {
     return (
         <Fragment>
             <form>
-                <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Account Holder</Typography></Box>
+                <Box
+                    sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}><Typography>Account Holder</Typography></Box>
                 { !props.selfEdit && 
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField name="userName" label="Username" disabled={ !isNewUser } error={ errors.userName } 
                         control={ control } rules={ {required: 'Required', validate: value => validUsername(value)} }/>
                     <FormSelect name="userRole" label="Role" error={ errors.userRole } 
@@ -144,7 +156,12 @@ export default function UserForm(props) {
                     </FormSelect>
                 </Box>
                 }
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField name="givenName" label="Given Name" error={ errors.givenName } 
                         control={ control } rules={ {required: 'Required'}} />
                     <FormTextField name="familyName" label="Family Name" error={ errors.familyName } 
@@ -153,8 +170,19 @@ export default function UserForm(props) {
                         control={ control } />
                 </Box>
 
-                <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Address</Typography></Box>
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}><Typography>Address</Typography></Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField fieldsize="xl" name="street" label="Street" error={ errors.street }
                         control={ control } rules={ {required: 'Required'}} />
                     <FormTextField name="city" label="City" error={ errors.city }
@@ -167,8 +195,19 @@ export default function UserForm(props) {
                         pattern: {value: /^\d{5}$|^\d{5}-\d{4}$/, message: 'Invalid zip code'}} } />
                 </Box>
 
-                <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Contact Info</Typography></Box>
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}><Typography>Contact Info</Typography></Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField name="telephone" label="Telephone" disabled={ !isNewUser && !props.selfEdit } error={ errors.telephone }
                         control={ control } rules={ {required: 'Required',
                             validate: value => validPhone(value) || 'Enter a US phone number with area code'} } />

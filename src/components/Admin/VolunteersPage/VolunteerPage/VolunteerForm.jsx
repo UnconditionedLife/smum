@@ -117,12 +117,25 @@ export default function VolunteerForm(props) {
             <form>
                 {!isNewVolunteer && (
                     <Box sx={{ mb: 3 }}>
-                        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap" sx={{ mb: 2 }}>
-                            <Typography variant="body2" color="text.secondary">
+                        <Box
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                                flexWrap: "wrap",
+                                mb: 2
+                            }}>
+                            <Typography variant="body2" sx={{
+                                color: "text.secondary"
+                            }}>
                                 ID: <strong>{volunteerData.VolunteerId}</strong>
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">•</Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" sx={{
+                                color: "text.secondary"
+                            }}>•</Typography>
+                            <Typography variant="body2" sx={{
+                                color: "text.secondary"
+                            }}>
                                 {props.volunteer?.RegComplete ?
                                     `Registered: ${registrationTime || 'N/A'}` :
                                     'Not Registered'
@@ -134,7 +147,14 @@ export default function VolunteerForm(props) {
                 )}
 
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>Personal Information</Typography>
-                <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap" sx={{ mb: 3 }}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 2,
+                        flexWrap: "wrap",
+                        mb: 3
+                    }}>
                     <FormTextField
                         name="FirstName"
                         label="First Name"
@@ -154,7 +174,14 @@ export default function VolunteerForm(props) {
                 </Box>
 
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>Contact Information</Typography>
-                <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap" sx={{ mb: 3 }}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 2,
+                        flexWrap: "wrap",
+                        mb: 3
+                    }}>
                     <FormTextField
                         name="Email"
                         label="Email"
@@ -182,7 +209,13 @@ export default function VolunteerForm(props) {
                 </Box>
 
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>Program Assignment</Typography>
-                <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap">
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 2,
+                        flexWrap: "wrap"
+                    }}>
                     <FormSelect
                         name="ProgramId"
                         label="Program"
@@ -203,7 +236,18 @@ export default function VolunteerForm(props) {
                 {!isNewVolunteer && (
                     <>
                         <Typography variant="subtitle1" sx={{ mt: 3, mb: 1, color: 'error.main' }}>Danger Zone</Typography>
-                        <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap" sx={{ mb: 3, p: .5, border: '1px solid', borderColor: 'error.main', borderRadius: 1 }}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                gap: 2,
+                                flexWrap: "wrap",
+                                mb: 3,
+                                p: .5,
+                                border: '1px solid',
+                                borderColor: 'error.main',
+                                borderRadius: 1
+                            }}>
                             <FormControlLabel
                                 control={
                                     <Controller
@@ -231,7 +275,11 @@ export default function VolunteerForm(props) {
                 )}
 
                 {saveMessage.result && (
-                    <Box mt={3} mb={1}>
+                    <Box
+                        sx={{
+                            mt: 3,
+                            mb: 1
+                        }}>
                         <Typography
                             color={saveMessage.result === 'success' ? 'success.main' : 'error.main'}
                             align="center"

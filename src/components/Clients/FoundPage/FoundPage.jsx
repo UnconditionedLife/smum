@@ -40,7 +40,9 @@ export default function FoundPage(props) {
     const invalidRow = { color: 'red' }
 
     return (
-        <Box mt={ 7 }>
+        <Box sx={{
+            mt: 7
+        }}>
             <TableContainer > 
                 {!displayMobile ?
                     <Table >
@@ -69,8 +71,13 @@ export default function FoundPage(props) {
                             ))}
                     </TableBody> 
                     </Table> :
-                    <Box display="flex" flexWrap="wrap" justifyContent="center"
-                    alignItems="center">
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            justifyContent: "center",
+                            alignItems: "center"
+                        }}>
                         { clientsFound.map((row) => (
                                 <Card 
                                     key={ row.clientId }
@@ -84,16 +91,26 @@ export default function FoundPage(props) {
                                     style={{backgroundColor: "#7FC187"}}>
                                 </CardHeader>
                                 <CardContent style={row.isActive == "Inactive" ?  invalidRow : validRow}>
-                                    <Box display='flex' flexDirection={row}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            flexDirection: row
+                                        }}>
                                         <Box>
-                                            <Typography fontSize='90%'>
+                                            <Typography sx={{
+                                                fontSize: '90%'
+                                            }}>
                                                 <strong>ID</strong> <br />
                                                 <strong>DOB</strong> <br />
                                                 <strong>Street</strong>
                                             </Typography>
                                         </Box>
-                                        <Box ml={ 2 }>
-                                            <Typography fontSize='90%'>
+                                        <Box sx={{
+                                            ml: 2
+                                        }}>
+                                            <Typography sx={{
+                                                fontSize: '90%'
+                                            }}>
                                                 {row.clientId} <br />
                                                 {dayjs(row.dob).format("MMM DD, YYYY")} <br />
                                                 {row.street}

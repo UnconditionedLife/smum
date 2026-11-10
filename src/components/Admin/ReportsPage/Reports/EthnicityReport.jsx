@@ -61,46 +61,50 @@ export default function EthnicityReport(props) {
 
 
     return (
-        <Box m={ 1 } maxWidth="100%">
-        <TableContainer align="center"> 
-        <Table className='fontFamily' size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportType="MONTHLY REPORT" 
-                    reportDate={ reportMonth }
-                    reportCategory="CLIENTS BY ETHNICITY" 
-                    columns={["Ethnicity", "Total", "Homeless"]} />
-                <TableBody>
-                    {loading ? (<TableRow>
-                        <TableCell className='centerText' align="center" colSpan={13}>
-                            <CircularProgress color="secondary" />
-                        </TableCell>
-                    </TableRow>) : null}
-                    {Object.keys(counts).map(key => {
-                        return (
-                            <TableRow key={ key } >
-                                <TableCell align="center">{ key }</TableCell>
-                                <TableCell align="center"><strong>{ counts[key].total }</strong> { "  (" + Math.round(counts[key].total / totalClients * 100) + "%)" }</TableCell>
-                                <TableCell align="center"><strong>{ counts[key].homeless }</strong> { "  (" + Math.round(counts[key].homeless / totalHomeless * 100) + "%)" }</TableCell>
-                            </TableRow>
-                        )
-                    })}
-                </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TableCell align="center"><Typography variant='h6' align='center'>TOTAL</Typography></TableCell>
-                        <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalClients }</strong>  (100%)</Typography></TableCell>
-                        <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalHomeless }</strong> {"  (" + Math.round(totalHomeless / totalClients * 100) + "%)" }</Typography></TableCell>
-                    </TableRow>
-                </TableFooter>
-            </Table>
-        </TableContainer> 
+        <Box
+            sx={{
+                m: 1,
+                maxWidth: "100%"
+            }}>
+            <TableContainer align="center"> 
+            <Table className='fontFamily' size="small" align="center">
+                    <style>
+                        {`@media print { 
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
+                                }
+                            }`
+                        }
+                    </style>
+                    <ReportsHeader reportType="MONTHLY REPORT" 
+                        reportDate={ reportMonth }
+                        reportCategory="CLIENTS BY ETHNICITY" 
+                        columns={["Ethnicity", "Total", "Homeless"]} />
+                    <TableBody>
+                        {loading ? (<TableRow>
+                            <TableCell className='centerText' align="center" colSpan={13}>
+                                <CircularProgress color="secondary" />
+                            </TableCell>
+                        </TableRow>) : null}
+                        {Object.keys(counts).map(key => {
+                            return (
+                                <TableRow key={ key } >
+                                    <TableCell align="center">{ key }</TableCell>
+                                    <TableCell align="center"><strong>{ counts[key].total }</strong> { "  (" + Math.round(counts[key].total / totalClients * 100) + "%)" }</TableCell>
+                                    <TableCell align="center"><strong>{ counts[key].homeless }</strong> { "  (" + Math.round(counts[key].homeless / totalHomeless * 100) + "%)" }</TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TableCell align="center"><Typography variant='h6' align='center'>TOTAL</Typography></TableCell>
+                            <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalClients }</strong>  (100%)</Typography></TableCell>
+                            <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalHomeless }</strong> {"  (" + Math.round(totalHomeless / totalClients * 100) + "%)" }</Typography></TableCell>
+                        </TableRow>
+                    </TableFooter>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

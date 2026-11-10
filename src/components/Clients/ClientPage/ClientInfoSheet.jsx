@@ -13,9 +13,11 @@ const ClientInfoSheet = React.forwardRef((props, ref) => {
     const client = props.client;
 
     return (
-        <Box m={2} ref={ref}>
+        <Box ref={ref} sx={{
+            m: 2
+        }}>
             <Typography variant="h2" align="center">Santa Maria Urban Ministry</Typography>
-            
+
             <table width="100%">
                 <tbody>
                     <tr>
@@ -44,7 +46,7 @@ const ClientInfoSheet = React.forwardRef((props, ref) => {
                 </tbody>
             </table>
             <Typography><b>Family Members</b></Typography>
-            
+
             <table width="100%">
             <thead>
                 <tr>
@@ -87,15 +89,15 @@ const ClientInfoSheet = React.forwardRef((props, ref) => {
                 polizas del Ministerio Urbano de Santa Maria. Firmar esto no es necesario para recibir la distribución de 
                 alimentos del USDA.</i>
                 <br/><br/><br/>     
-            </Typography>       
-                <table width="100%">
-                <tbody>
-                    <tr>
-                        <td><Typography>Signature (Firma) ____________________________________</Typography></td>
-                        <td><Typography>Date (Fecha) {dayjs().format('YYYY-MM-DD')}</Typography></td>
-                    </tr>
-                </tbody>
-                </table>
+            </Typography>
+            <table width="100%">
+            <tbody>
+                <tr>
+                    <td><Typography>Signature (Firma) ____________________________________</Typography></td>
+                    <td><Typography>Date (Fecha) {dayjs().format('YYYY-MM-DD')}</Typography></td>
+                </tr>
+            </tbody>
+            </table>
             <Typography>Last update: {client.updatedDateTime}</Typography>
         </Box>
     );

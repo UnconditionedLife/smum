@@ -124,12 +124,17 @@ export default function PrimaryButtons(props) {
 
     if (buttons.length === 0) {
         return (
-            <Box height="168px" display="flex" alignItems="center" >
+            <Box
+                sx={{
+                    height: "168px",
+                    display: "flex",
+                    alignItems: "center"
+                }}>
                 <Box>
                     <Typography color="secondary"><strong>NO FOOD SERVICE AVAILABLE TODAY</strong></Typography>
                 </Box>
             </Box>
-        )
+        );
     }
 
     return (
@@ -196,7 +201,15 @@ export default function PrimaryButtons(props) {
                     }
 
                     {(svc.btnType === 'used') &&
-                        <Box m={.5} p={0} width={buttonSizes[2]} height={buttonSizes[2]} bgcolor='#FFF' display='flex' >
+                        <Box
+                            sx={{
+                                m: .5,
+                                p: 0,
+                                width: buttonSizes[2],
+                                height: buttonSizes[2],
+                                bgcolor: '#FFF',
+                                display: 'flex'
+                            }}>
                             <Button m={0} width={buttonSizes[2]} height={buttonSizes[2]} color='primary' style={{ borderRadius: '15px', border: '5px dashed #ddd' }}
                                 onClick={() => handleUndoSvc(svc)} startIcon={<ReplayIcon />}>
                                 <strong> {svc.svcName.toUpperCase()}</strong>

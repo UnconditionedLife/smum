@@ -52,7 +52,11 @@ function ServiceTypeList(props) {
     }
 
     return (
-        <Box width='95%' mx={2}>
+        <Box
+            sx={{
+                width: '95%',
+                mx: 2
+            }}>
             <TableContainer>
                 <Table>
                     <TableHead>
@@ -111,7 +115,11 @@ export default function ServiceTypePage() {
     console.log("svcTypes:", svcTypes)
 
     return (
-        <Box mt={2} mb={2}>
+        <Box
+            sx={{
+                mt: 2,
+                mb: 2
+            }}>
             <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={true} >
                 <Tooltip title='Add Service Type'>
                     <Fab onClick={() => handleNewClick()} size="small" color='default' >
@@ -146,5 +154,5 @@ export default function ServiceTypePage() {
                 </AccordionDetails>
             </Accordion>
         </Box>
-    )
+    );
 }

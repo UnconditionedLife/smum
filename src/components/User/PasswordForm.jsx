@@ -6,10 +6,11 @@ import { getUserName, setEditingState } from '../System/js/Database';
 import { cogChangePasswordAsync } from '../System/js/Cognito';
 
 export default function PasswordForm() {
-    const { reset, handleSubmit, control, formState, errors, setError } = useForm({
+    const { reset, handleSubmit, control, formState, setError } = useForm({
         mode: 'OnBlur',
         defaultValues: {userName: getUserName(), oldPassword: '', newPassword1: '', newPassword2: ''},
     });
+    const { errors } = formState;
     const [ saveMessage, setSaveMessage ] = useState({});
 
     function onSubmit(data) {
@@ -39,7 +40,12 @@ export default function PasswordForm() {
     return (
         <Fragment>
             <form>
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField name="userName" label="Username" disabled={ true } error={ errors.userName } 
                         autoComplete="username" hidden={ true }
                         control={ control } />
@@ -47,7 +53,12 @@ export default function PasswordForm() {
                         type="password" autoComplete="current-password"
                         control={ control } rules={ {required: 'Current password is required'} }/>
                 </Box>
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField name="newPassword1" label="New Password" 
                         type="password" autoComplete="new-password"
                         control={ control } error= {errors.newPassword1} rules={ {required: 'New password is required'} }/>
@@ -66,5 +77,5 @@ export default function PasswordForm() {
             <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? doSubmit() : doCancel() } } 
                 message={ saveMessage } />
         </Fragment>
-    )
+    );
 }

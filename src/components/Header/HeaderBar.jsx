@@ -1,11 +1,9 @@
 import React, { useState, useEffect, Fragment, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { alpha, ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles';
 import { AppBar, Box, Dialog, Toolbar, Tooltip, Typography, InputBase, MenuItem, Menu  } from '@mui/material';
 import { Search, AccountCircle, ExitToApp, Settings, People, Today} from '@mui/icons-material';
 import { Button } from '../System';
-import { Hidden } from '@mui/material';
 import { LoginForm, SectionsContent }  from '.';
 import theme from '../Theme.jsx';
 import DbSwitch from './DbSwitch.jsx';
@@ -18,70 +16,70 @@ import { cacheSessionVar, clearCache, initCache, showCache, getSession, getAppVe
     getUserName, isAdmin, navigationAllowed, setEditingState, dbSetUrl  } from '../System/js/Database';
 import UseWindowSize from '../System/Hooks/UseWindowSize.jsx'
 
-const useStyles = makeStyles((theme) => ({
-    appName: {
+const styles = {
+    appName: (theme) => ({
         display: 'none',
         [theme.breakpoints.up('lg')]: { display: 'flex', justifyContent: 'flex-start', flexDirection: 'column', flexwrap: 'wrap' },
-    },
-  
-    title: {
-    display: 'none',
-    [theme.breakpoints.up('sm')]: { display: 'block', fontSize: '10px' },
-    [theme.breakpoints.up('md')]: { display: 'block', fontSize: '15px' },
-    [theme.breakpoints.up('lg')]: { display: 'block', fontSize: '20px' },
-  },
-  search: {
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.common.white, 0.25),
-    },
-    [theme.breakpoints.down('md')]: {
-      marginLeft: theme.spacing(3),
-    },
-    [theme.breakpoints.down('sm')]: {
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
-        minWidth:'170px',
-    },
-  },
-  inputRoot: {
-    color: 'inherit',
-    width: '100%',
-    paddingRight: theme.spacing(1),
-  },
-  inputInput: {
-    padding: theme.spacing(1, 0, 1, 1),
-    // vertical padding + font size from searchIcon
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.down(425)]: {
-        maxWidth: "15ch",
-    },
-    [theme.breakpoints.up('sm')]: {
-        paddingLeft: theme.spacing(1),
-    },
-    [theme.breakpoints.up('md')]: {
-        paddingLeft: theme.spacing(2),
-    },
-    [theme.breakpoints.up('lg')]: {
-        paddingLeft: theme.spacing(2),
-    }
-  },
-  sectionDesktop: {
-  },
-  buttonContainer: {
-    [theme.breakpoints.down('sm')]: {
-        marginRight: theme.spacing(0.5),
-        marginLeft: theme.spacing(0.5),
-    },
-  },
-  icon: {
-    [theme.breakpoints.down('md')]: {
-        marginRight: theme.spacing(-1),
-    },
-  },
-}));
+    }),
+    title: (theme) => ({
+        display: 'none',
+        [theme.breakpoints.up('sm')]: { display: 'block', fontSize: '10px' },
+        [theme.breakpoints.up('md')]: { display: 'block', fontSize: '15px' },
+        [theme.breakpoints.up('lg')]: { display: 'block', fontSize: '20px' },
+    }),
+    search: (theme) => ({
+        borderRadius: theme.shape.borderRadius,
+        backgroundColor: alpha(theme.palette.common.white, 0.15),
+        '&:hover': {
+            backgroundColor: alpha(theme.palette.common.white, 0.25),
+        },
+        [theme.breakpoints.down('md')]: {
+            marginLeft: theme.spacing(3),
+        },
+        [theme.breakpoints.down('sm')]: {
+            marginLeft: theme.spacing(1),
+            marginRight: theme.spacing(1),
+            minWidth:'170px',
+        },
+    }),
+    input: (theme) => ({
+        color: 'inherit',
+        width: '100%',
+        paddingRight: theme.spacing(1),
+        '& .MuiInputBase-input': {
+            padding: theme.spacing(1, 0, 1, 1),
+            // vertical padding + font size from searchIcon
+            transition: theme.transitions.create('width'),
+            width: '100%',
+            [theme.breakpoints.down(425)]: {
+                maxWidth: "15ch",
+            },
+            [theme.breakpoints.up('sm')]: {
+                paddingLeft: theme.spacing(1),
+            },
+            [theme.breakpoints.up('md')]: {
+                paddingLeft: theme.spacing(2),
+            },
+            [theme.breakpoints.up('lg')]: {
+                paddingLeft: theme.spacing(2),
+            },
+        },
+    }),
+    buttonContainer: (theme) => ({
+        [theme.breakpoints.down('sm')]: {
+            marginRight: theme.spacing(0.5),
+            marginLeft: theme.spacing(0.5),
+        },
+    }),
+    icon: (theme) => ({
+        [theme.breakpoints.down('md')]: {
+            marginRight: theme.spacing(-1),
+        },
+    }),
+    // Replaces <Hidden mdDown> / <Hidden smDown>
+    hideBelowMd: { display: { xs: 'none', md: 'inline' } },
+    hideBelowSm: { display: { xs: 'none', sm: 'block' } },
+};
 
 HeaderBar.propTypes = {
     checkSectionURL: PropTypes.func.isRequired,
@@ -95,7 +93,6 @@ function tokenTimeRemaining(token) {
 }
 
 export default function HeaderBar(props) {
-    const classes = useStyles();
     const [userMenuAnchor, setUserMenuAnchor] = useState(null);
     const [selectedSection, setSelectedSection] = useState(-1);
     const [searchTerm, setSearchTerm] = useState('');
@@ -235,15 +232,26 @@ export default function HeaderBar(props) {
 
     const appbarControls = (
         <Fragment>
-            <Box display='flex' className={classes.search} mr={2} ml={2.5} flexGrow={1.5} justifyContent="flex-start">
-                <Box alignItems='flex-start' pointerEvents='none' display='flex' pl={1} pt={0.75}>
+            <Box
+                sx={[{
+                    display: 'flex',
+                    mr: 2,
+                    ml: 2.5,
+                    flexGrow: 1.5,
+                    justifyContent: "flex-start"
+                }, styles.search]}>
+                <Box
+                    pointerEvents='none'
+                    sx={{
+                        alignItems: 'flex-start',
+                        display: 'flex',
+                        pl: 1,
+                        pt: 0.75
+                    }}>
                     <Search />
                 </Box>
                 <InputBase id='searchField' placeholder="Search clients"
-                    classes={{
-                        root: classes.inputRoot,
-                        input: classes.inputInput,
-                    }}
+                    sx={styles.input}
                     inputRef={ inputRef }
                     type="text"
                     inputProps={{ 'aria-label': 'search' }}
@@ -257,33 +265,35 @@ export default function HeaderBar(props) {
                     }}
                 />
             </Box>
-            <Box className={classes.sectionDesktop} justifyContent="flex-end">
-                <Button  className={classes.buttonContainer} onClick={() => handleSectionChange(0)} startIcon={ <People className={classes.icon} />  }
+            <Box sx={{
+                justifyContent: "flex-end"
+            }}>
+                <Button  sx={styles.buttonContainer} onClick={() => handleSectionChange(0)} startIcon={ <People sx={styles.icon} />  }
                     variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" style={{ minWidth:"30px" }}>
                     {/* flexShrink={2} */}
-                    <Hidden mdDown> Clients </Hidden>
+                    <Box component="span" sx={styles.hideBelowMd}> Clients </Box>
                 </Button>
                     
-                <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(2)} startIcon={<Today className={classes.icon}/>}
+                <Button sx={styles.buttonContainer} ml= '0' onClick={() => handleSectionChange(2)} startIcon={<Today sx={styles.icon}/>}
                     variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" style={{ minWidth:"30px" }} >
                         {/* flexShrink={1} */}
-                    <Hidden mdDown> Today </Hidden>
+                    <Box component="span" sx={styles.hideBelowMd}> Today </Box>
                 </Button>
 
-                <Button className={classes.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} startIcon={<Settings className={classes.icon}/>}
+                <Button sx={styles.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} startIcon={<Settings sx={styles.icon}/>}
                     disabled={!isAdmin()} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" style={{ minWidth:"30px" }} >
                         {/* flexShrink={1} */}
-                    <Hidden mdDown> Admin </Hidden>
+                    <Box component="span" sx={styles.hideBelowMd}> Admin </Box>
                 </Button>
 
-                <Button className={classes.buttonContainer} ml= '0' startIcon={<AccountCircle className={classes.icon}/>} 
+                <Button sx={styles.buttonContainer} ml= '0' startIcon={<AccountCircle sx={styles.icon}/>} 
                     style={{ textTransform: 'none', minWidth:"30px" }}
                     aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
                     onClick={ handleUserMenuOpen }
                     color="inherit"
                     variant={ (selectedSection === 3) ? 'outlined' : 'text' } >
                         {/* flexShrink={1} */}
-                    <Hidden mdDown>  { userName ? userName : ''} </Hidden>
+                    <Box component="span" sx={styles.hideBelowMd}>  { userName ? userName : ''} </Box>
                 </Button>
             </Box>
         </Fragment >
@@ -309,18 +319,32 @@ export default function HeaderBar(props) {
                 {!(userName) && <Dialog open={true} style={{ margin:0, width:'100%' }}>
                     <LoginForm onLogin={ (x) => setSession(x, true) } />
                 </Dialog>}
-                <Box flexGrow={1} >
+                <Box sx={{
+                    flexGrow: 1
+                }} >
                     <AppBar position="fixed">
                         <Toolbar>
-                            <Hidden smDown> 
+                            <Box sx={styles.hideBelowSm}>
                                 <Tooltip title={ appVersion }>
-                                    <Box width='50px' height='50px' bgcolor="#fff" mr={ 2 } p='3px' borderRadius='25px'>
+                                    <Box
+                                        sx={{
+                                            width: '50px',
+                                            height: '50px',
+                                            bgcolor: "#fff",
+                                            mr: 2,
+                                            p: '3px',
+                                            borderRadius: '25px'
+                                        }}>
                                         <SmumLogo width='44px' height='44px' display="solid" /> 
                                     </Box>
                                 </Tooltip>
-                            </Hidden> 
-                            <Box mr={ 4 } mt={ 1 } className={ classes.appName } >
-                                <Typography variant='h6' noWrap className={ classes.title } >
+                            </Box>
+                            <Box
+                                sx={[{
+                                    mr: 4,
+                                    mt: 1
+                                }, styles.appName]}>
+                                <Typography variant='h6' noWrap sx={ styles.title } >
                                     Santa Maria Urban Ministry
                                 </Typography>
                                 <HeaderDateTime color='textPrimary' size='overline' />

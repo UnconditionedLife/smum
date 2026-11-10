@@ -32,14 +32,20 @@ export default function ClientsHeader(props) {
 
     return (
         <Fragment>
-            
+
             <Snackbar  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
                 <Tooltip title= 'Add Client' placement="left-end">
                     <Fab  float='right' onClick={() => handleNewClient()} size='small' color='default' ><Add /></Fab> 
                 </Tooltip>
             </Snackbar>
 
-            <Box mt={ -2 } width={ 1 } display="flex" flexWrap="wrap-reverse">
+            <Box
+                sx={{
+                    mt: -2,
+                    width: 1,
+                    display: "flex",
+                    flexWrap: "wrap-reverse"
+                }}>
                 <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'60px',
                     justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>
                     <Tabs
@@ -59,5 +65,5 @@ export default function ClientsHeader(props) {
                 </AppBar>
             </Box>
         </Fragment>
-    )
+    );
 }

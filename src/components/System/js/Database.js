@@ -777,7 +777,7 @@ function makeOldServices(svcs) {
 
 export async function dbGetAllVolunteersAsync() {
     // GET /prod/volunteers (auth required)
-    const volunteers = await dbGetDataAsync("volunteers", "/volunteers") || [];
+    const volunteers = (await dbGetDataAsync("volunteers", "/volunteers")) || [];
     return volunteers.map(vol => ({
         VolunteerId: vol.VolunteerId,
         FirstName: vol.firstName || '',

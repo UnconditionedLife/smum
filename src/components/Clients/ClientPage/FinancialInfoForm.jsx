@@ -14,10 +14,11 @@ FinancialInfoForm.propTypes = {
 export default function FinancialInfoForm(props) {
 
     let defValues = { ...props.client };
-    const { handleSubmit, reset, control, errors, formState } = useForm({
+    const { handleSubmit, reset, control, formState } = useForm({
         mode: 'onBlur',
         defaultValues: defValues,
     });
+    const { errors } = formState;
 
     if (formState.isDirty) setEditingState(true)
 
@@ -38,19 +39,26 @@ export default function FinancialInfoForm(props) {
     return (
         <Fragment>
             <form>
-                <Box mt={ 2 } ><Typography>Monthly Amounts</Typography></Box>
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box sx={{
+                    mt: 2
+                }} ><Typography>Monthly Amounts</Typography></Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField name="financials.income" label="Income" control={control} fieldsize="sm"
-                        InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> } } 
+                        slotProps={{ input: { startAdornment: <InputAdornment position="start">$</InputAdornment> } }} 
                         rules={ {required: 'Required'}} />
                     <FormTextField name="financials.rent" label="Rent"  control={control} fieldsize="sm"
-                        InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> } } 
+                        slotProps={{ input: { startAdornment: <InputAdornment position="start">$</InputAdornment> } }} 
                         rules={ {required: 'Required'}} />
                     <FormTextField name="financials.foodStamps" label="Food Stamps" control={control} fieldsize="sm"
-                        InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> } } 
+                        slotProps={{ input: { startAdornment: <InputAdornment position="start">$</InputAdornment> } }} 
                         rules={ {required: 'Required'}} />
                     <FormTextField name="financials.govtAssistance" label="Govt. Assist" control={control} fieldsize="sm"
-                        InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> } } 
+                        slotProps={{ input: { startAdornment: <InputAdornment position="start">$</InputAdornment> } }} 
                         rules={ {required: 'Required'}} />
                 </Box>
             </form>

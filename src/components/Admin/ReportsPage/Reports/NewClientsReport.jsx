@@ -111,52 +111,62 @@ export default function NewClientsReport(props) {
     console.log("IDs", clientIds);
 
     return (
-        <Box m={ 1 } maxWidth="100%">
-        <TableContainer align="center"> 
-        <Table className='fontFamily' size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportType="MONTHLY REPORT" 
-                    reportDate={ reportMonth }
-                    reportCategory="NEW CLIENTS BY ZIP" 
-                    columns={["Zipcode", "Total", "Homeless"]} />
-                <TableBody>
-                    {loading ? (<TableRow>
-                        <TableCell className='centerText' align="center" colSpan={13}>
-                            <CircularProgress color="secondary" />
-                        </TableCell>
-                    </TableRow>) : null}
-                    { counts.map((item) => (
-                        <TableRow key={ item.area } >
-                            <TableCell align="center">{ item.area }</TableCell>
-                            <TableCell align="center"><strong>{ item.total }</strong> { " (" + Math.round(item.total/totalNewClients * 100) + "%)" }</TableCell>
-                            <TableCell align="center"><strong>{ item.homeless }</strong> { " (" + Math.round(item.homeless/totalNewHomeless * 100)  + "%)" }</TableCell>
+        <Box
+            sx={{
+                m: 1,
+                maxWidth: "100%"
+            }}>
+            <TableContainer align="center"> 
+            <Table className='fontFamily' size="small" align="center">
+                    <style>
+                        {`@media print { 
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
+                                }
+                            }`
+                        }
+                    </style>
+                    <ReportsHeader reportType="MONTHLY REPORT" 
+                        reportDate={ reportMonth }
+                        reportCategory="NEW CLIENTS BY ZIP" 
+                        columns={["Zipcode", "Total", "Homeless"]} />
+                    <TableBody>
+                        {loading ? (<TableRow>
+                            <TableCell className='centerText' align="center" colSpan={13}>
+                                <CircularProgress color="secondary" />
+                            </TableCell>
+                        </TableRow>) : null}
+                        { counts.map((item) => (
+                            <TableRow key={ item.area } >
+                                <TableCell align="center">{ item.area }</TableCell>
+                                <TableCell align="center"><strong>{ item.total }</strong> { " (" + Math.round(item.total/totalNewClients * 100) + "%)" }</TableCell>
+                                <TableCell align="center"><strong>{ item.homeless }</strong> { " (" + Math.round(item.homeless/totalNewHomeless * 100)  + "%)" }</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TableCell align="center"><Typography variant='h6' align='center'>TOTAL</Typography></TableCell>
+                            <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalNewClients }</strong> { " (100%)" }</Typography></TableCell>
+                            <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalNewHomeless }</strong> { " (" + Math.round(totalNewHomeless/totalNewClients * 100)  + "%)" }</Typography></TableCell>
                         </TableRow>
-                    ))}
-                </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TableCell align="center"><Typography variant='h6' align='center'>TOTAL</Typography></TableCell>
-                        <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalNewClients }</strong> { " (100%)" }</Typography></TableCell>
-                        <TableCell align="center"><Typography variant='h6' align='center'><strong>{ totalNewHomeless }</strong> { " (" + Math.round(totalNewHomeless/totalNewClients * 100)  + "%)" }</Typography></TableCell>
-                    </TableRow>
-                </TableFooter>
-            </Table>
-        </TableContainer> 
-        <Box mt={ 3 } maxWidth="100%">
-            <Typography variant='h6'>NEW CLIENT IDs</Typography>
-            <Box mt={ 1 } style={{ fontSize: "15px", lineHeight: "25px" }}>
-                { clientIds.map((id) =>(
-                    <strong key={ id }>{ id }&nbsp;&nbsp; </strong>
-                )) }
-            </Box>
-            </Box>
-        </Box> 
-    )
+                    </TableFooter>
+                </Table>
+            </TableContainer>
+            <Box
+                sx={{
+                    mt: 3,
+                    maxWidth: "100%"
+                }}>
+                <Typography variant='h6'>NEW CLIENT IDs</Typography>
+                <Box style={{ fontSize: "15px", lineHeight: "25px" }} sx={{
+                    mt: 1
+                }}>
+                    { clientIds.map((id) =>(
+                        <strong key={ id }>{ id }&nbsp;&nbsp; </strong>
+                    )) }
+                </Box>
+                </Box>
+        </Box>
+    );
 }

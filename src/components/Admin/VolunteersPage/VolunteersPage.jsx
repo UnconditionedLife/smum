@@ -62,7 +62,9 @@ export default function VolunteersPage() {
     };
 
     return (
-        <Box width="100%">
+        <Box sx={{
+            width: "100%"
+        }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
                 <Tabs
                     value={selectedTab}

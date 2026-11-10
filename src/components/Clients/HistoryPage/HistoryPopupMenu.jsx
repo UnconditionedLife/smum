@@ -12,8 +12,22 @@ HistoryPopupMenu.propTypes = {
 export default function HistoryPopupMenu(props) {
     
     return (
-        <Box display="flex" alignItems='center' justifyContent='center' flexDirection='column'>
-            <Box display="flex" width="240px" m={ 0 } p={ 0 } alignItems='center' justifyContent='space-between'>
+        <Box
+            sx={{
+                display: "flex",
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column'
+            }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    width: "240px",
+                    m: 0,
+                    p: 0,
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                }}>
             
                 { props.editMode === 'none' && 
                     <Fragment>
@@ -54,5 +68,5 @@ export default function HistoryPopupMenu(props) {
                 
             </Box>
         </Box>
-    )
+    );
 }

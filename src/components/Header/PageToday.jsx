@@ -20,32 +20,36 @@ export default function PageToday() {
 
     return (
         <React.Fragment>
-        <Card>
-            <CardContent>
-                <Box ref={ref}>
-                    <Box mb={4}><DailyDistributionReport/></Box>
-                    <style>
-                        {`@media print { 
-                            .break { 
-                                break-before: avoid-page;
-                                break-after: avoid-page;
-                                page-break-before: always;
-                                }
-                            }`
-                        }
-                    </style>
-                    <Box mb={4} className="break">
-                        <DailyFoodBankReport />
+            <Card>
+                <CardContent>
+                    <Box ref={ref}>
+                        <Box sx={{
+                            mb: 4
+                        }}><DailyDistributionReport/></Box>
+                        <style>
+                            {`@media print { 
+                                .break { 
+                                    break-before: avoid-page;
+                                    break-after: avoid-page;
+                                    page-break-before: always;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <Box className="break" sx={{
+                            mb: 4
+                        }}>
+                            <DailyFoodBankReport />
+                        </Box>
+                        <Box className="break">
+                            <DailyFoodBankReportNonUSDA />
+                        </Box>
                     </Box>
-                    <Box className="break">
-                        <DailyFoodBankReportNonUSDA />
-                    </Box>
-                </Box>
-            </CardContent>
-            <CardActions style={{display:"flex", justifyContent:"flex-end"}}>
-                <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right' onClick={ () => printReport() }><Print /></Fab></Tooltip>
-            </CardActions>
-        </Card>
+                </CardContent>
+                <CardActions style={{display:"flex", justifyContent:"flex-end"}}>
+                    <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right' onClick={ () => printReport() }><Print /></Fab></Tooltip>
+                </CardActions>
+            </Card>
         </React.Fragment>
     );
 }   

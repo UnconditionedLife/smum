@@ -25,14 +25,27 @@ export default function ClientsContent(props) {
         lastServedFoodDate, clientInactive, changeClient, updateClient, updateClientsURL, showAlert } = props
 
     const logoBox = (
-        <Box display="flex" width="100%" height="100%" justifyContent="center" paddingLeft="0px">
+        <Box
+            sx={{
+                display: "flex",
+                width: "100%",
+                height: "100%",
+                justifyContent: "center",
+                paddingLeft: "0px"
+            }}>
             <SmumLogo width='20vh' display="watermark" 
                 style={{ marginTop: '27vh', paddingLeft:'0px' }}/>
         </Box>
     )
 
     return (
-        <Box maxWidth='1500px' width='100%' mt={0} pt={0}>
+        <Box
+            sx={{
+                maxWidth: '1500px',
+                width: '100%',
+                mt: 0,
+                pt: 0
+            }}>
             <Routes>
                 <Route path="found/:term" element={ <>
                     { showFound && 

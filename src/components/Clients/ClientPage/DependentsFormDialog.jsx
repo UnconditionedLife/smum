@@ -26,10 +26,11 @@ export default function DependentsFormDialog(props) {
     const [ dialogOpen, setDialogOpen ] = useState(true);
     const dependent = getDependent(selectedDependent)
     const defValues = dependent;
-    const { handleSubmit, reset, watch, setValue, control, errors, formState } = useForm({
+    const { handleSubmit, reset, watch, setValue, control, formState } = useForm({
         mode: 'onBlur',
         defaultValues: defValues,
     });
+    const { errors } = formState;
 
     const dob = watch("dob")
 
@@ -128,7 +129,7 @@ export default function DependentsFormDialog(props) {
                     </FormSelect>
 
                     <FormTextField name="dob" type="date" label="Date of Birth" fieldsize="md" control={control}
-                        InputLabelProps={{ shrink: true }} error={ errors.dob } rules={ {required: 'Required'}} />
+                        slotProps={{ inputLabel: { shrink: true } }} error={ errors.dob } rules={ {required: 'Required'}} />
 
                     <FormTextField name="age" label="Age" fieldsize="xs" control={ control } disabled={ true } />
 

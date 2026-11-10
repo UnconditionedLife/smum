@@ -40,14 +40,23 @@ export default function ClientPage(props) {
                 </Box>
             </Snackbar>
 
-            <Box mt={ 6 } width={ 1 } style={{ overflowY: 'scroll' }}>
+            <Box
+                style={{ overflowY: 'scroll' }}
+                sx={{
+                    mt: 6,
+                    width: 1
+                }}>
                 <Accordion key="ClientInfo" defaultExpanded={ true } onChange={handleChange('panel1')}>
                     <AccordionSummary style={{justifyContent: "center"}} expandIcon={<ExpandMore />} id="panel1bh-header" >
                         {/* <Typography  variant='button'>Client #{client.clientId}</Typography> */}
                         <Typography  variant='button'>{ clientLable }</Typography>
                     </AccordionSummary>
                     <AccordionDetails style={{justifyContent: "center"}}> 
-                        <Box ml={ 3 } mr={ 3 }>
+                        <Box
+                            sx={{
+                                ml: 3,
+                                mr: 3
+                            }}>
                             <ClientInfoForm client={ client } updateClient={ updateClient } updateClientsURL={ updateClientsURL } dependentsDirty={ dependentsDirty } setDependentsDirty={ setDependentsDirty } handleCancelParent={handleCancel} />
                         </Box>
                     </AccordionDetails>
@@ -63,7 +72,12 @@ export default function ClientPage(props) {
                         </Box>
                     </AccordionSummary>
                     <AccordionDetails  style={{ justifyContent: "center" }} >
-                        <Box display="flex" flexDirection="column" alignItems="flex-end">
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-end"
+                            }}>
                             {/* <Box mb={ 2 }>
                                 <Tooltip title= 'Add Dependent' placement="left-end">
                                     <Fab  float='right' onClick={() => handleNewDependent()} size='small' color='primary' ><Add /></Fab> 

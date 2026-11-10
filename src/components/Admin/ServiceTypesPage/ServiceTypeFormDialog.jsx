@@ -33,12 +33,12 @@ export default function ServiceTypeFormDialog(props) {
     const ITEM_HEIGHT = 48;
     const ITEM_PADDING_TOP = 8;
     const MenuProps = {
-        PaperProps: {
+        slotProps: { paper: {
             style: {
                 maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
                 width: 250,
             },
-        },
+        } },
     };
 
     useEffect(() => {
@@ -114,10 +114,11 @@ export default function ServiceTypeFormDialog(props) {
 
     let defValues = { ...data };
 
-    const { handleSubmit, reset, watch, control, errors, formState } = useForm({
+    const { handleSubmit, reset, watch, control, formState } = useForm({
         mode: 'onBlur',
         defaultValues: defValues,
     })
+    const { errors } = formState;
 
     function getTargetServices() {
         return serviceTypes.filter(function (obj) {
@@ -225,8 +226,19 @@ export default function ServiceTypeFormDialog(props) {
             <DialogContent>
                 <Box>
                     <form>
-                        <Box mt={0} display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>General Info</strong></Typography></Box>
-                        <Box display="flex" flexDirection="row" flexWrap="wrap">
+                        <Box
+                            sx={{
+                                mt: 0,
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}><Typography><strong>General Info</strong></Typography></Box>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}>
 
                             <FormTextField name="svcName" label="Service Name" fieldsize="lg" error={errors.svcName}
                                 control={control} rules={{ required: 'Required' }} />
@@ -280,19 +292,50 @@ export default function ServiceTypeFormDialog(props) {
                             </FormSelect>
                         </Box>
 
-                        <Box mt={0} display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Service Qualifications</strong></Typography></Box>
-                        <Box display="flex" flexDirection="row" flexWrap="wrap" alignItems="bottom">
-                            <Box py={1.9} ml={1}><Typography>Minimum food visits:</Typography></Box>
+                        <Box
+                            sx={{
+                                mt: 0,
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}><Typography><strong>Service Qualifications</strong></Typography></Box>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+                                alignItems: "bottom"
+                            }}>
+                            <Box
+                                sx={{
+                                    py: 1.9,
+                                    ml: 1
+                                }}><Typography>Minimum food visits:</Typography></Box>
                             <FormTextField fieldsize="xs" name="svcFrequency" label="" error={errors.svcFrequency}
                                 control={control} />
-                            <Box py={1.9}><Typography>times in</Typography></Box>
+                            <Box sx={{
+                                py: 1.9
+                            }}><Typography>times in</Typography></Box>
                             <FormTextField fieldsize="xs" name="svcPeriod" label="" error={errors.svcPeriod}
                                 control={control} />
-                            <Box py={1.9}><Typography>days.</Typography></Box>
+                            <Box sx={{
+                                py: 1.9
+                            }}><Typography>days.</Typography></Box>
                         </Box>
 
-                        <Box mt={2} display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Service Available</strong></Typography></Box>
-                        <Box display="flex" flexDirection="row" flexWrap="wrap">
+                        <Box
+                            sx={{
+                                mt: 2,
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}><Typography><strong>Service Available</strong></Typography></Box>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}>
                             <FormTextField fieldsize="md" name="fromdate" rules={{
                                 required: "Required",
                                 validate: (value) => value <= toDate || 'From date must be before or same as to date'
@@ -302,8 +345,19 @@ export default function ServiceTypeFormDialog(props) {
                                 control={control} />
                         </Box>
 
-                        <Box mt={2} display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Target Recipient</strong></Typography></Box>
-                        <Box display="flex" flexDirection="row" flexWrap="wrap">
+                        <Box
+                            sx={{
+                                mt: 2,
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}><Typography><strong>Target Recipient</strong></Typography></Box>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}>
                             <FormSelect fieldsize="sm" name="target.homeless" label="Homeless" control={control} error={errors.target?.homeless}
                                 rules={{ required: 'Required' }} >
                                 <MenuItem value="">&nbsp;</MenuItem>
@@ -334,7 +388,9 @@ export default function ServiceTypeFormDialog(props) {
                                 <MenuItem value="YES">Yes</MenuItem>
                                 <MenuItem value="NO">No</MenuItem>
                             </FormSelect>
-                            <Box width="100%" />
+                            <Box sx={{
+                                width: "100%"
+                            }} />
                             {childSelected == "YES" &&
                                 <React.Fragment>
                                     <FormTextField fieldsize="sm" name="target.childMinAge" label="Min Age" error={errors.target?.childMinAge}
@@ -380,14 +436,27 @@ export default function ServiceTypeFormDialog(props) {
                                 </React.Fragment>
 
                             }
-                            <Box width="100%" />
+                            <Box sx={{
+                                width: "100%"
+                            }} />
                             <FormTextField fieldsize="sm" name="target.familyMinSize" label="Min Family Size" error={errors.target?.familyMinSize}
                                 control={control} />
                             <FormTextField fieldsize="sm" name="target.familyMaxSize" label="Max Family Size" error={errors.target?.familyMaxSize}
                                 control={control} />
                         </Box>
-                        <Box mt={2} display="flex" flexDirection="row" flexWrap="wrap"><Typography><strong>Fulfillment</strong></Typography></Box>
-                        <Box display="flex" flexDirection="row" flexWrap="wrap">
+                        <Box
+                            sx={{
+                                mt: 2,
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}><Typography><strong>Fulfillment</strong></Typography></Box>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}>
                             <FormSelect
                                 fieldsize="md"
                                 name="fulfillment.type"
@@ -403,9 +472,9 @@ export default function ServiceTypeFormDialog(props) {
                             </FormSelect>
                             {fulfillType == "Voucher" &&
                                 <React.Fragment>
-                                    <FormTextField fieldsize="xl" InputLabelProps={{ shrink: true }} rules={{ validate: (value) => value <= toTime || 'From date must be before or same as to date' }} name="fulfillment.fromDateTime" label="From" type="datetime-local" error={errors.fulfillment?.fromDateTime}
+                                    <FormTextField fieldsize="xl" slotProps={{ inputLabel: { shrink: true } }} rules={{ validate: (value) => value <= toTime || 'From date must be before or same as to date' }} name="fulfillment.fromDateTime" label="From" type="datetime-local" error={errors.fulfillment?.fromDateTime}
                                         control={control} />
-                                    <FormTextField fieldsize="xl" InputLabelProps={{ shrink: true }} rules={{ validate: (value) => value >= fromTime || 'To date must be later or same as from date' }} name="fulfillment.toDateTime" label="To" type="datetime-local" error={errors.fulfillment?.toDateTime}
+                                    <FormTextField fieldsize="xl" slotProps={{ inputLabel: { shrink: true } }} rules={{ validate: (value) => value >= fromTime || 'To date must be later or same as from date' }} name="fulfillment.toDateTime" label="To" type="datetime-local" error={errors.fulfillment?.toDateTime}
                                         control={control} />
                                 </React.Fragment>}
                             {fulfillType == "Voucher_Fulfill" &&
@@ -418,7 +487,13 @@ export default function ServiceTypeFormDialog(props) {
                                     ))}
                                 </FormSelect>}
                         </Box>
-                        <Box mt={2} display="flex" flexDirection="row" flexWrap="wrap">
+                        <Box
+                            sx={{
+                                mt: 2,
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap"
+                            }}>
                             <Typography><strong>Print Receipts</strong></Typography>
                         </Box>
                         {/* <InputLabel id="print-receipts-label"></InputLabel> */}
@@ -455,5 +530,5 @@ export default function ServiceTypeFormDialog(props) {
                 </Box>
             </DialogContent>
         </Dialog>
-    )
+    );
 }
