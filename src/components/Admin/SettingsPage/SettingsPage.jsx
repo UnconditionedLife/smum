@@ -41,6 +41,8 @@ function SettingsForm(props) {
     const [saveMessage, setSaveMessage] = useState({result: 'success', time: initValues.updatedDateTime});
     const [fieldsDirty, setFieldsDirty] = useState(false);
     const { handleSubmit, reset, control, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: initValues,
     });
@@ -141,6 +143,7 @@ function SettingsForm(props) {
                     onDeleteChip={ deleteZipcode }
                     hideClearAll 
                     disableDeleteOnBackspace 
+                    disableEdition 
                 />
                 <MuiChipsInput value={ serviceCat }
                     label='Service Categories'
@@ -148,6 +151,7 @@ function SettingsForm(props) {
                     onDeleteChip={ deleteServiceCat }
                     hideClearAll 
                     disableDeleteOnBackspace 
+                    disableEdition 
                 />
                 <Box
                     sx={{

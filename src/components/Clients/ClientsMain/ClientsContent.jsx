@@ -80,6 +80,7 @@ export default function ClientsContent(props) {
                     }
                     { !showClient && logoBox }
                 </> } />
+                <Route path="*" element={ null } />
             </Routes>
 
             { !showClient && !showServices && !showFound && logoBox }

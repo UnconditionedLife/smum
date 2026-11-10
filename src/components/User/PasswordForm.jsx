@@ -7,6 +7,8 @@ import { cogChangePasswordAsync } from '../System/js/Cognito';
 
 export default function PasswordForm() {
     const { reset, handleSubmit, control, formState, setError } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'OnBlur',
         defaultValues: {userName: getUserName(), oldPassword: '', newPassword1: '', newPassword2: ''},
     });

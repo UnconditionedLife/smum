@@ -15,6 +15,8 @@ export default function FinancialInfoForm(props) {
 
     let defValues = { ...props.client };
     const { handleSubmit, reset, control, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: defValues,
     });

@@ -525,7 +525,7 @@ export default function DataPage() {
                         <CardHeader 
                             title="Export Settings" 
                             slotProps={{
-                                title: { variant: 'h6', fontWeight: 'bold' }
+                                title: { variant: 'h6', sx: { fontWeight: 'bold' } }
                             }}
                         />
                         <Divider />
@@ -659,7 +659,7 @@ export default function DataPage() {
                             title="Anonymized Data Preview"
                             subheader="Showing the first 5 records of the selected export structure"
                             slotProps={{
-                                title: { variant: 'h6', fontWeight: 'bold' },
+                                title: { variant: 'h6', sx: { fontWeight: 'bold' } },
                                 subheader: { variant: 'caption' }
                             }} />
                         <Divider />

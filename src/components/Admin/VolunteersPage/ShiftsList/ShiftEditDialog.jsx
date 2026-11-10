@@ -48,6 +48,12 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
             return;
         }
 
+        // The pickers pass an invalid date while a time is only partly typed
+        if (!editedShift.TimestampIn.isValid() || (editedShift.TimestampOut && !editedShift.TimestampOut.isValid())) {
+            alert('Please enter a complete date and time');
+            return;
+        }
+
         // If check-out time exists, it must be after check-in time
         if (editedShift.TimestampOut && editedShift.TimestampIn) {
             if (editedShift.TimestampOut.isBefore(editedShift.TimestampIn)) {

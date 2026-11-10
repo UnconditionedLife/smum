@@ -69,7 +69,7 @@ export default function ErrorPage(props) {
                             format="MMM DD YYYY"
                             slotProps={{ textField: { size: "small", sx: { width: 240, m: 0 },
                                 slotProps: { inputLabel: { shrink: true } } } }}
-                            onChange={(newValue) => setStartDate(newValue)}
+                            onChange={(newValue) => { if (newValue === null || newValue.isValid()) setStartDate(newValue) }}
                         />
                         <DatePicker
                             label="End Date"
@@ -77,7 +77,7 @@ export default function ErrorPage(props) {
                             format="MMM DD YYYY"
                             slotProps={{ textField: { size: "small", sx: { width: 240, m: 0 },
                                 slotProps: { inputLabel: { shrink: true } } } }}
-                            onChange={(newValue) => setEndDate(newValue)}
+                            onChange={(newValue) => { if (newValue === null || newValue.isValid()) setEndDate(newValue) }}
                         />
                     </LocalizationProvider>
                     <Box

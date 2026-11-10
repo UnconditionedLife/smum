@@ -26,6 +26,8 @@ export default function ClientInfoForm(props) {
     let defValues = { ...client };
     defValues.zipcode = packZipcode(defValues.zipcode, defValues.zipSuffix);
     const { handleSubmit, reset, watch, control, setValue, getValues, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: defValues,
     });

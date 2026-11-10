@@ -27,6 +27,8 @@ export default function DependentsFormDialog(props) {
     const dependent = getDependent(selectedDependent)
     const defValues = dependent;
     const { handleSubmit, reset, watch, setValue, control, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: defValues,
     });

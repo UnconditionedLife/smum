@@ -32,6 +32,8 @@ export default function HistoryFormDialog(props) {
 
     const initValues = editRecord
     const { handleSubmit, control, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: initValues,
     })

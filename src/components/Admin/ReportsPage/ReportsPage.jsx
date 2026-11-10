@@ -177,19 +177,23 @@ export default function ReportsPage() {
     }
 
     const handleReportDayChangeUpdated = (event) => {
-        handleReportDayChange(dayjs(event.$d).format('YYYYMMDD'))
+        // Pickers pass null or an invalid date while the user is typing
+        if (event?.isValid()) handleReportDayChange(event.format('YYYYMMDD'))
     }
 
     const handleFoodYearMonthChangeUpdated = (event) => {
-        handleFoodYearMonthChange(dayjs(event.$d).format("YYYYMM"))
+        // Pickers pass null or an invalid date while the user is typing
+        if (event?.isValid()) handleFoodYearMonthChange(event.format("YYYYMM"))
     }
 
     const handleReportYearChangeUpdated = (event) => {
-        handleReportYearChange(dayjs(event.$d).format("YYYY"))
+        // Pickers pass null or an invalid date while the user is typing
+        if (event?.isValid()) handleReportYearChange(event.format("YYYY"))
     }
 
     const handleReportVoucherYearChangeUpdated = (event) => {
-        handleReportVoucherYearChange(dayjs(event.$d).format("YYYY"))
+        // Pickers pass null or an invalid date while the user is typing
+        if (event?.isValid()) handleReportVoucherYearChange(event.format("YYYY"))
     }
 
     const handleDays = (value) => {
@@ -235,7 +239,7 @@ export default function ReportsPage() {
                             <LocalizationProvider dateAdapter={ AdapterDayjs } >
                                 <DatePicker 
                                     label="Day" 
-                                    value={ reportDay } 
+                                    value={ dayjs(reportDay) } 
                                     slotProps={{ textField: { size: 'small', sx: { width: 240, m: 0 },
                                         slotProps: { inputLabel: { shrink: true } } } }}
                                     onChange={ handleReportDayChangeUpdated }
@@ -272,7 +276,7 @@ export default function ReportsPage() {
                             </FormControl>
                             <LocalizationProvider dateAdapter={ AdapterDayjs } >
                                 <DatePicker 
-                                    label='Year and Month' name="yearMonth" views={["month", "year"]} value={ foodYearMonth } 
+                                    label='Year and Month' name="yearMonth" views={["month", "year"]} value={ dayjs(foodYearMonth) } 
                                     slotProps={{ textField: { size: 'small', sx: { width: 240, m: 0 } } }}
                                     onChange={ handleFoodYearMonthChangeUpdated }
                                     minDate={dayjs("2017-01-01")}
@@ -302,7 +306,7 @@ export default function ReportsPage() {
                             </FormControl>
                             <LocalizationProvider dateAdapter={ AdapterDayjs } >
                                 <DatePicker 
-                                    label='Year' name="year" views={["year"]} value={ reportYear } 
+                                    label='Year' name="year" views={["year"]} value={ dayjs(reportYear) } 
                                     slotProps={{ textField: { size: 'small', sx: { width: 240 } } }}
                                     onChange={ handleReportYearChangeUpdated }
                                     minDate={dayjs("2017-01-01")}
@@ -336,7 +340,7 @@ export default function ReportsPage() {
                             </FormControl>
                             <LocalizationProvider dateAdapter={ AdapterDayjs } >
                                 <DatePicker
-                                    label='Year' name="year" views={["year"]} value={ reportVoucherYear } 
+                                    label='Year' name="year" views={["year"]} value={ dayjs(reportVoucherYear) } 
                                     slotProps={{ textField: { size: 'small', sx: { width: 240 } } }}
                                     onChange={ handleReportVoucherYearChangeUpdated }
                                     minDate={dayjs("2017-01-01")}

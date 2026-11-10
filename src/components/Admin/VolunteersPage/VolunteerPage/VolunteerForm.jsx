@@ -41,6 +41,8 @@ export default function VolunteerForm(props) {
     const initValues = { ...volunteerData };
 
     const { control, handleSubmit, formState: { errors, dirtyFields }, reset } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         defaultValues: initValues,
         mode: 'onChange'
     });
@@ -281,7 +283,7 @@ export default function VolunteerForm(props) {
                             mb: 1
                         }}>
                         <Typography
-                            color={saveMessage.result === 'success' ? 'success.main' : 'error.main'}
+                            sx={{ color: saveMessage.result === 'success' ? 'success.main' : 'error.main' }}
                             align="center"
                         >
                             {saveMessage.result === 'success'

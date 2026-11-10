@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button,
-    List, ListItem, ListItemText, Radio, RadioGroup, FormControlLabel,
+    List, ListItemButton, ListItemText, Radio, RadioGroup, FormControlLabel,
     Typography, Box, CircularProgress, Alert, IconButton, Tooltip, Chip
 } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
@@ -194,8 +194,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                             </Typography>
                             <List dense>
                                 {duplicates.map((group, index) => (
-                                    <ListItem
-                                        button
+                                    <ListItemButton
                                         key={index}
                                         selected={index === selectedGroupIndex}
                                         onClick={() => {
@@ -207,7 +206,7 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                                             primary={getGroupName(group)}
                                             secondary={`${group.length} records`}
                                         />
-                                    </ListItem>
+                                    </ListItemButton>
                                 ))}
                             </List>
                         </Box>

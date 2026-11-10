@@ -115,6 +115,8 @@ export default function ServiceTypeFormDialog(props) {
     let defValues = { ...data };
 
     const { handleSubmit, reset, watch, control, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: defValues,
     })
@@ -158,12 +160,14 @@ export default function ServiceTypeFormDialog(props) {
                 setSaveMessage({ result: 'error', text: message });
             });
     }
+    // formState is read-only in react-hook-form v7, so track receipt edits separately
+    const [receiptsDirty, setReceiptsDirty] = useState(false);
     const updateReceipts = (event) => {
         const { target: { value } } = event;
         setReceipts(value);
         // On autofill we get a stringified value.
         // typeof value === 'string' ? value.split(',') : value,
-        formState.isDirty = true
+        setReceiptsDirty(true)
     };
 
 
@@ -526,7 +530,7 @@ export default function ServiceTypeFormDialog(props) {
                             </Select>
                         </FormControl>
                     </form>
-                    <SaveCancel key={saveMessage.text} saveDisabled={!formState.isDirty} message={saveMessage} onClick={(isSave) => { isSave ? submitForm() : handleDialog(false) }} />
+                    <SaveCancel key={saveMessage.text} saveDisabled={!formState.isDirty && !receiptsDirty} message={saveMessage} onClick={(isSave) => { isSave ? submitForm() : handleDialog(false) }} />
                 </Box>
             </DialogContent>
         </Dialog>
