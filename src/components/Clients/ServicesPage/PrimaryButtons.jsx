@@ -118,9 +118,19 @@ export default function PrimaryButtons(props) {
         if (JSON.stringify(buttons) !== JSON.stringify(buttonData)) setButtons(buttonData)
     }, [JSON.stringify(client.svcHistory)])
 
-    const buttonStyleNormal = { padding: '0', margin: '4px', border: 'solid Gainsboro 5px', borderRadius: '15px', overflow: 'hidden' }
-    const buttonStyleHighlight = Object.assign({}, buttonStyleNormal)
-    buttonStyleHighlight.border = 'solid red 5px'
+    const tileStyle = {
+        p: 0,
+        m: 0.75,
+        borderRadius: '16px',
+        overflow: 'hidden',
+        boxShadow: '0 1px 2px rgba(16, 24, 40, 0.08), 0 2px 6px rgba(16, 24, 40, 0.10)',
+        transition: 'transform 120ms ease, box-shadow 120ms ease',
+        '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 20px rgba(16, 24, 40, 0.18)' },
+    }
+    const buttonStyleNormal = tileStyle
+    // Highlighted services keep their red ring
+    const buttonStyleHighlight = { ...tileStyle, outline: '4px solid', outlineColor: 'secondary.main', outlineOffset: '-4px',
+        boxShadow: '0 0 0 4px rgba(204, 0, 0, 0.15), 0 2px 6px rgba(16, 24, 40, 0.10)' }
 
     if (buttons.length === 0) {
         return (
@@ -142,7 +152,7 @@ export default function PrimaryButtons(props) {
             {buttons.map((svc) => (
                 <Fragment key={svc.svcTypeId + "-" + svc.btnType}>
                     {(svc.btnType === 'normal') &&
-                        <Box style={buttonStyleNormal}>
+                        <Box sx={buttonStyleNormal}>
                             <ButtonBase
                                 focusRipple
                                 key={svc.svcTypeId}
@@ -172,7 +182,7 @@ export default function PrimaryButtons(props) {
                     }
 
                     {(svc.btnType === 'highlight') &&
-                        <Box style={buttonStyleHighlight}>
+                        <Box sx={buttonStyleHighlight}>
                             <ButtonBase
                                 focusRipple
                                 key={svc.svcTypeId}
@@ -210,7 +220,7 @@ export default function PrimaryButtons(props) {
                                 bgcolor: '#FFF',
                                 display: 'flex'
                             }}>
-                            <Button m={0} width={buttonSizes[2]} height={buttonSizes[2]} color='primary' style={{ borderRadius: '15px', border: '5px dashed #ddd' }}
+                            <Button m={0} width={buttonSizes[2]} height={buttonSizes[2]} color='primary' style={{ borderRadius: '16px', border: '2px dashed rgba(28, 36, 33, 0.18)' }}
                                 onClick={() => handleUndoSvc(svc)} startIcon={<ReplayIcon />}>
                                 <strong> {svc.svcName.toUpperCase()}</strong>
                             </Button>

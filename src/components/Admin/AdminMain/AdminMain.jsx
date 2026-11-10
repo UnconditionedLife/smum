@@ -77,23 +77,23 @@ export default function AdminMain() {
                     <Tabs
                         value={ selectedTab }
                         onChange={(event, newValue) => { selectTab(newValue) }}
-                        indicatorColor="secondary"
+                        indicatorColor="primary"
                         textColor="primary"
                         centered                    
                         selectionFollowsFocus
                         style={{ justifyContent: 'space-between' }}
                     >
-                        <Tab icon={<Assessment/>} label={ navLabels[0] } style={{  minWidth:'62px' }} />
-                        <Tab icon={<DateRange/>} label={ navLabels[1] } style={{  minWidth:'62px' }} />
-                        <Tab icon={<RoomService/>} label={ navLabels[2] } style={{  minWidth:'62px' }} />
-                        <Tab icon={<AccountBox/>} label={ navLabels[3] } style={{  minWidth:'62px' }} />
-                        <Tab icon={<People/>} label={ navLabels[4] } style={{  minWidth:'62px' }} />
-                        <Tab icon={<SettingsApplications/>} label={ navLabels[5] } style={{  minWidth:'62px' }} />
-                        <Tab label={ navLabels[6] } style={{  minWidth:'62px' }} icon={
+                        <Tab iconPosition="start" icon={<Assessment/>} label={ navLabels[0] } style={{  minWidth:'62px' }} />
+                        <Tab iconPosition="start" icon={<DateRange/>} label={ navLabels[1] } style={{  minWidth:'62px' }} />
+                        <Tab iconPosition="start" icon={<RoomService/>} label={ navLabels[2] } style={{  minWidth:'62px' }} />
+                        <Tab iconPosition="start" icon={<AccountBox/>} label={ navLabels[3] } style={{  minWidth:'62px' }} />
+                        <Tab iconPosition="start" icon={<People/>} label={ navLabels[4] } style={{  minWidth:'62px' }} />
+                        <Tab iconPosition="start" icon={<SettingsApplications/>} label={ navLabels[5] } style={{  minWidth:'62px' }} />
+                        <Tab iconPosition="start" label={ navLabels[6] } style={{  minWidth:'62px' }} icon={
                             <Badge badgeContent={ countErrors } color='error' max={999}>
                                 <BugReport/>
                             </Badge>}  />
-                        <Tab icon={<Storage/>} label={ navLabels[7] } style={{  minWidth:'62px' }} />
+                        <Tab iconPosition="start" icon={<Storage/>} label={ navLabels[7] } style={{  minWidth:'62px' }} />
                     </Tabs>
                 </AppBar>
             </Box>

@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
 import { Box, CardActions, CardContent, Fab, Tooltip } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
+import { reportTheme } from '../Theme.jsx';
 import { Card } from '../System';
 import DailyDistributionReport from '../Admin/ReportsPage/Reports/DailyDistributionReport.jsx';
 import DailyFoodBankReport from '../Admin/ReportsPage/Reports/DailyFoodBankReport.jsx';
@@ -22,6 +24,7 @@ export default function PageToday() {
         <React.Fragment>
             <Card>
                 <CardContent>
+                    <ThemeProvider theme={ reportTheme }>
                     <Box ref={ref}>
                         <Box sx={{
                             mb: 4
@@ -45,6 +48,7 @@ export default function PageToday() {
                             <DailyFoodBankReportNonUSDA />
                         </Box>
                     </Box>
+                    </ThemeProvider>
                 </CardContent>
                 <CardActions style={{display:"flex", justifyContent:"flex-end"}}>
                     <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right' onClick={ () => printReport() }><Print /></Fab></Tooltip>

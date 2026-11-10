@@ -1,11 +1,10 @@
 import React, { useState, useEffect, Fragment, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { alpha, ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import { AppBar, Box, Dialog, Toolbar, Tooltip, Typography, InputBase, MenuItem, Menu  } from '@mui/material';
 import { Search, AccountCircle, ExitToApp, Settings, People, Today} from '@mui/icons-material';
 import { Button } from '../System';
 import { LoginForm, SectionsContent }  from '.';
-import theme from '../Theme.jsx';
 import DbSwitch from './DbSwitch.jsx';
 import { useCookies } from 'react-cookie';
 import { cogSetupUser } from '../System/js/Cognito.js';
@@ -75,6 +74,16 @@ const styles = {
         [theme.breakpoints.down('md')]: {
             marginRight: theme.spacing(-1),
         },
+    }),
+    navButton: (active) => ({
+        color: 'common.white',
+        borderRadius: 999,
+        px: { xs: 0.75, md: 1.75 },
+        minWidth: 0,
+        '& .MuiButton-startIcon': { mr: { xs: 0, md: 1 } },
+        bgcolor: active ? 'rgba(255, 255, 255, 0.20)' : 'transparent',
+        '&:hover': { bgcolor: active ? 'rgba(255, 255, 255, 0.26)' : 'rgba(255, 255, 255, 0.12)' },
+        '&.Mui-disabled': { color: 'rgba(255, 255, 255, 0.45)' },
     }),
     // Replaces <Hidden mdDown> / <Hidden smDown>
     hideBelowMd: { display: { xs: 'none', md: 'inline' } },
@@ -270,30 +279,30 @@ export default function HeaderBar(props) {
             <Box sx={{
                 justifyContent: "flex-end"
             }}>
-                <Button  sx={styles.buttonContainer} onClick={() => handleSectionChange(0)} startIcon={ <People sx={styles.icon} />  }
-                    variant={ (selectedSection === 0) ? 'outlined' : 'text' } color="inherit" style={{ minWidth:"30px" }}>
+                <Button sx={[styles.buttonContainer, styles.navButton(selectedSection === 0)]} onClick={() => handleSectionChange(0)} startIcon={ <People sx={styles.icon} />  }
+                    variant='text' color="inherit" style={{ minWidth:"30px" }}>
                     {/* flexShrink={2} */}
                     <Box component="span" sx={styles.hideBelowMd}> Clients </Box>
                 </Button>
                     
-                <Button sx={styles.buttonContainer} ml= '0' onClick={() => handleSectionChange(2)} startIcon={<Today sx={styles.icon}/>}
-                    variant={ (selectedSection === 2) ? 'outlined' : 'text' } color="inherit" style={{ minWidth:"30px" }} >
+                <Button sx={[styles.buttonContainer, styles.navButton(selectedSection === 2)]} ml= '0' onClick={() => handleSectionChange(2)} startIcon={<Today sx={styles.icon}/>}
+                    variant='text' color="inherit" style={{ minWidth:"30px" }} >
                         {/* flexShrink={1} */}
                     <Box component="span" sx={styles.hideBelowMd}> Today </Box>
                 </Button>
 
-                <Button sx={styles.buttonContainer} ml= '0' onClick={() => handleSectionChange(1)} startIcon={<Settings sx={styles.icon}/>}
-                    disabled={!isAdmin()} variant={ (selectedSection === 1) ? 'outlined' : 'text' } color="inherit" style={{ minWidth:"30px" }} >
+                <Button sx={[styles.buttonContainer, styles.navButton(selectedSection === 1)]} ml= '0' onClick={() => handleSectionChange(1)} startIcon={<Settings sx={styles.icon}/>}
+                    disabled={!isAdmin()} variant='text' color="inherit" style={{ minWidth:"30px" }} >
                         {/* flexShrink={1} */}
                     <Box component="span" sx={styles.hideBelowMd}> Admin </Box>
                 </Button>
 
-                <Button sx={styles.buttonContainer} ml= '0' startIcon={<AccountCircle sx={styles.icon}/>} 
+                <Button sx={[styles.buttonContainer, styles.navButton(selectedSection === 3)]} ml= '0' startIcon={<AccountCircle sx={styles.icon}/>} 
                     style={{ textTransform: 'none', minWidth:"30px" }}
                     aria-label="account of current user" aria-controls={menuId} aria-haspopup="true"
                     onClick={ handleUserMenuOpen }
                     color="inherit"
-                    variant={ (selectedSection === 3) ? 'outlined' : 'text' } >
+                    variant='text' >
                         {/* flexShrink={1} */}
                     <Box component="span" sx={styles.hideBelowMd}>  { userName ? userName : ''} </Box>
                 </Button>
@@ -315,8 +324,7 @@ export default function HeaderBar(props) {
     );
 
     return (
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={theme}>
+        <>
                 {!(userName) && <Dialog open={true} style={{ margin:0, width:'100%' }}>
                     <LoginForm onLogin={ (x) => setSession(x, true) } />
                 </Dialog>}
@@ -348,7 +356,7 @@ export default function HeaderBar(props) {
                                 <Typography variant='h6' noWrap sx={ styles.title } >
                                     Santa Maria Urban Ministry
                                 </Typography>
-                                <HeaderDateTime color='textPrimary' size='overline' />
+                                <HeaderDateTime color='inherit' size='overline' />
                             </Box>
                             {userName ? appbarControls : null}
                         </Toolbar>
@@ -359,7 +367,6 @@ export default function HeaderBar(props) {
                     { (process.env.dbSetUrl === "dev" && notMobile ) && <DbSwitch /> } 
                     <SectionsContent searchTerm={ searchTerm } handleSearchTermChange={ handleSearchTermChange } />
                 </Box>
-            </ThemeProvider>
-        </StyledEngineProvider>
+        </>
     );
 }

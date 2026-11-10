@@ -68,7 +68,7 @@ export default function ServiceNotes(props) {
                     }}>
                     <Badge badgeContent={ noteCount } color="secondary">
                         <Typography variant='h6' noWrap>
-                            SERVICE NOTES&nbsp;
+                            Service Notes&nbsp;
                         </Typography>
                     </Badge>  
 

@@ -20,8 +20,8 @@ export default function HistoryBodyCard(props) {
     
     if (isEmpty(svcHistory)) return null
 
-    const validRow = {color: 'black' }
-    const invalidRow = { color: 'red', cursor:'default' }
+    const validRow = { color: 'text.primary' }
+    const invalidRow = { color: 'secondary.main', cursor:'default' }
 
     return (
         <Box
@@ -41,7 +41,7 @@ export default function HistoryBodyCard(props) {
                             onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
                             selected= { svc.svcId == selectedService }
                         >
-                            <CardContent style={ (svc.svcValid) ? validRow : invalidRow }>
+                            <CardContent sx={ (svc.svcValid) ? validRow : invalidRow }>
                                 <Box
                                     sx={{
                                         display: 'flex',

@@ -35,15 +35,22 @@ export default function DbSwitch() {
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "flex-end",
-                bgcolor: switchOn ? 'warning.main' : 'gray'
+                alignItems: "center",
+                minHeight: 40,
+                px: 1,
+                bgcolor: switchOn ? 'warning.light' : 'grey.100',
+                borderBottom: 1,
+                borderColor: 'divider',
+                '& .MuiTypography-root': { fontSize: '0.8125rem' },
             }}>
+            <Typography ml={ 1 } mr="auto" sx={{ color: 'text.secondary', fontWeight: 600 }}>Developer tools</Typography>
             <Box>
             <Button key="print1" m={ .5 } variant="outlined" color="secondary" size="small" 
            onClick={ () => prnTest('minimal') } >
                    Min Printer Test
            </Button>
            <Button key="print2" m={ .5 } variant="outlined" color="secondary" size="small"
-           style = {{ marginRight: '100px' }} 
+           style = {{ marginRight: '32px' }} 
            onClick={ () => prnTest('full') } >
                    Full Printer Test
            </Button>
@@ -84,6 +91,7 @@ export default function DbSwitch() {
                 sx={{
                     display: "flex",
                     flexDirection: "row",
+                    alignItems: "center",
                     ml: 1,
                     mr: 1
                 }}>

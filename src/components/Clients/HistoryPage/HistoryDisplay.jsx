@@ -111,8 +111,8 @@ export default function HistoryDisplay(props) {
 
     const menuOpen = Boolean(anchorEl);
     const id = menuOpen ? 'simple-popper' : undefined;
-    const validRow = {color: 'black' }
-    const invalidRow = { color: 'red', cursor:'default' }
+    const validRow = { color: 'text.primary' }
+    const invalidRow = { color: 'secondary.main', cursor:'default' }
 
     return (
         <Fragment>
@@ -124,7 +124,15 @@ export default function HistoryDisplay(props) {
                         {/* delay={ delay } */}
                 </Card>
             </Popper>
-        <TableContainer > 
+        <TableContainer sx={ displayMobile ? {} : {
+            mx: 'auto',
+            mt: 2,
+            width: 'calc(100% - 32px)',
+            bgcolor: 'background.paper',
+            border: 1,
+            borderColor: 'divider',
+            boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.08)',
+        }}> 
             <Table >
             {!displayMobile ? <TableHead>
                 <TableRow>

@@ -69,12 +69,12 @@ export default function VolunteersPage() {
                 <Tabs
                     value={selectedTab}
                     onChange={handleTabChange}
-                    indicatorColor="secondary"
+                    indicatorColor="primary"
                     textColor="primary"
                     variant="fullWidth"
                     sx={{
                         '& .MuiTab-root': {
-                            minHeight: 64,
+                            minHeight: 52,
                             fontSize: '0.875rem',
                             fontWeight: 500,
                             textTransform: 'none',

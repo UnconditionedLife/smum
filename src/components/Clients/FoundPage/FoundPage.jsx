@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { alpha } from '@mui/material/styles';
 import { Box, CardContent, CardHeader, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { isEmpty, isMobile } from '../../System/js/GlobalUtils.js';
 import dayjs from 'dayjs'
@@ -36,14 +37,22 @@ export default function FoundPage(props) {
             changeClient(newClient[0], 1)
         }
     }
-    const validRow = {color: 'black' }
-    const invalidRow = { color: 'red' }
+    const validRow = { color: 'text.primary', cursor: 'pointer' }
+    const invalidRow = { color: 'secondary.main', cursor: 'pointer' }
 
     return (
         <Box sx={{
-            mt: 7
+            mt: 3,
+            px: { xs: 0, sm: 2 },
+            mx: 'auto',
+            maxWidth: 1500,
         }}>
-            <TableContainer > 
+            <TableContainer sx={ displayMobile ? {} : {
+                bgcolor: 'background.paper',
+                border: 1,
+                borderColor: 'divider',
+                boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.08)',
+            }}> 
                 {!displayMobile ?
                     <Table >
                     <TableHead>
@@ -62,11 +71,11 @@ export default function FoundPage(props) {
                                 onClick= { (event) => handleSelectedClient(event, row.clientId)}
                                 selected= { row.clientId == clientId }
                                 >
-                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} component="th" scope="row">{row.clientId}</TableCell>
-                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.givenName}</TableCell>
-                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.familyName}</TableCell>
-                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{dayjs(row.dob).format("MMM DD, YYYY")}</TableCell>
-                                <TableCell style={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.street}</TableCell>
+                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} component="th" scope="row">{row.clientId}</TableCell>
+                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.givenName}</TableCell>
+                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.familyName}</TableCell>
+                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{dayjs(row.dob).format("MMM DD, YYYY")}</TableCell>
+                                <TableCell sx={row.isActive == "Inactive" ?  invalidRow : validRow} align="center">{row.street}</TableCell>
                             </TableRow>
                             ))}
                     </TableBody> 
@@ -84,13 +93,13 @@ export default function FoundPage(props) {
                                     width={320}
                                     onClick= { (event) => handleSelectedClient(event, row.clientId)}
                                     selected= { row.clientId == clientId } 
-                                    style={{backgroundColor: "#E0F0E2"}}
+                                    sx={{ bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06) }}
                                 >
                                 <CardHeader 
                                     title={row.givenName + " " + row.familyName} 
-                                    style={{backgroundColor: "#7FC187"}}>
+                                    sx={{ bgcolor: (theme) => alpha(theme.palette.primary.main, 0.18) }}>
                                 </CardHeader>
-                                <CardContent style={row.isActive == "Inactive" ?  invalidRow : validRow}>
+                                <CardContent sx={row.isActive == "Inactive" ?  invalidRow : validRow}>
                                     <Box
                                         sx={{
                                             display: 'flex',

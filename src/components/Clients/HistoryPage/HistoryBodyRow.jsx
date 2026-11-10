@@ -24,8 +24,8 @@ export default function HistoryBodyRow(props) {
     
     if (isEmpty(svcHistory)) return null
 
-    const validRow = {color: 'black' }
-    const invalidRow = { color: 'red', cursor:'default' }
+    const validRow = { color: 'text.primary' }
+    const invalidRow = { color: 'secondary.main', cursor:'default' }
 
     return (
         <TableBody>
@@ -37,7 +37,7 @@ export default function HistoryBodyRow(props) {
                             onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
                             selected= { svc.svcId == selectedService }>
                             <TableCell align="center" 
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { (svc.svcValid) ? 
                                         <span style={{ fontSize: '85%'}}>
                                             { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? 
@@ -67,39 +67,39 @@ export default function HistoryBodyRow(props) {
                                     }
                             </TableCell>
                             <TableCell align="center" 
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.svcName }
                             </TableCell>
                             <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.cStatus }
                             </TableCell>
                             <TableCell align="center" 
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { (svc.homeless) ? "YES" : "NO" }
                             </TableCell>
                             <TableCell align="center" 
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.svcItems }
                             </TableCell>
                             <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.adults }
                             </TableCell>
                             <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.children }
                             </TableCell>
                             <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.individuals }
                             </TableCell>
                             <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.seniors }
                             </TableCell>
                             <TableCell align="center"
-                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                sx={ (svc.svcValid) ? validRow : invalidRow }>
                                     { svc.svcBy }
                             </TableCell>
                         </TableRow>

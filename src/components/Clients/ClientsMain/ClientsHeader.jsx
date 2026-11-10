@@ -51,16 +51,16 @@ export default function ClientsHeader(props) {
                     <Tabs
                         value={ selectedTab }
                         onChange={(event, newValue) => { updateClientsURL(client.clientId, newValue) }}
-                        indicatorColor="secondary"
+                        indicatorColor="primary"
                         textColor="primary"
                         selectionFollowsFocus
                         centered
                         style={{ justifyContent: 'space-between' }}
                     >
-                        <Tab icon={<Pageview />} disabled={ !showFound } label={ navLabels[0] } style={{  minWidth:'64px' }} />
-                        <Tab icon={<RoomService />} disabled={ !showServices } label={ navLabels[1] } style={{  minWidth:'64px' }} />
-                        <Tab icon={<House />} disabled={ !showClient } label={ navLabels[2] } style={{  minWidth:'64px' }} />
-                        <Tab icon={<History />} disabled={ !showClient } label={ navLabels[3] } style={{  minWidth:'64px' }} />
+                        <Tab iconPosition="start" icon={<Pageview />} disabled={ !showFound } label={ navLabels[0] } style={{  minWidth:'64px' }} />
+                        <Tab iconPosition="start" icon={<RoomService />} disabled={ !showServices } label={ navLabels[1] } style={{  minWidth:'64px' }} />
+                        <Tab iconPosition="start" icon={<House />} disabled={ !showClient } label={ navLabels[2] } style={{  minWidth:'64px' }} />
+                        <Tab iconPosition="start" icon={<History />} disabled={ !showClient } label={ navLabels[3] } style={{  minWidth:'64px' }} />
                     </Tabs>
                 </AppBar>
             </Box>

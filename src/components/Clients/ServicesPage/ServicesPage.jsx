@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { alpha } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { isEmpty } from '../../System/js/GlobalUtils.js';
@@ -156,14 +157,19 @@ export default function ServicesPage(props) {
                     pt: 0
                 }}>
                 <Box
-                    style={{ borderRadius: "6px", backgroundColor:"#F3F3F3" }}
                     sx={{
-                        p: 1,
+                        p: 1.5,
                         pl: 2,
                         pr: 2,
                         display: 'flex',
+                        alignItems: 'center',
                         justifyContent: "space-between",
-                        flexWrap: "wrap"
+                        flexWrap: "wrap",
+                        bgcolor: 'background.paper',
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: '12px',
+                        boxShadow: '0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.08)',
                     }}>
                     <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
                     {/* <LastServed lastServed={ lastServed } nextService={ nextService } /> */}
@@ -180,7 +186,7 @@ export default function ServicesPage(props) {
                                 justifyContent: 'center'
                             }}>
                             <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
-                                <span style={{ color:"#ccc" }}>SERVED:&nbsp;</span>{ lastServedText }
+                                <Box component="span" sx={{ color: 'text.secondary', fontWeight: 500 }}>Served&nbsp;</Box>{ lastServedText }
                             </Typography>
                         </Box>
                         { !isAfter && 
@@ -191,14 +197,17 @@ export default function ServicesPage(props) {
                                     ml: 1.5,
                                     px: 1,
                                     display: 'flex',
-                                    border: '1px solid #1976d2',
-                                    borderRadius: '4px',
-                                    backgroundColor: '#ddd',
-                                    justifyContent: 'center'
+                                    alignItems: 'center',
+                                    border: 1,
+                                    borderColor: (theme) => alpha(theme.palette.secondary.main, 0.35),
+                                    borderRadius: 999,
+                                    bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.06),
+                                    justifyContent: 'center',
+                                    '&:hover': { bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.12) },
                                 }}>
                                 <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
-                                    <span style={{ color:"#555" }}>NEXT:&nbsp;</span><span style={{ color:"#CC0000" }}>{ nextServiceText } &nbsp; </span> 
-                                </Typography><PrintIcon color='error' mt={1}/>
+                                    <Box component="span" sx={{ color: 'text.secondary', fontWeight: 500 }}>Next&nbsp;</Box><span>{ nextServiceText } &nbsp;</span> 
+                                </Typography><PrintIcon color='secondary' fontSize='small' />
                             </Box>
                         }
                         { isAfter &&
@@ -209,7 +218,7 @@ export default function ServicesPage(props) {
                                 justifyContent: 'center'
                             }}>
                             <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
-                                <span style={{ color:"#ccc" }}>NEXT:&nbsp;</span>{ nextServiceText }
+                                <Box component="span" sx={{ color: 'text.secondary', fontWeight: 500 }}>Next&nbsp;</Box>{ nextServiceText }
                             </Typography>
                         </Box>
                         }
