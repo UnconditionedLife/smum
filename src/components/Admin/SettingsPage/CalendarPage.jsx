@@ -32,7 +32,7 @@ export default function CalendarPage() {
         return (
             <Container maxWidth={ false } disableGutters sx={{ mt: 2 }}>
                 <Card>
-                    <CardContent>
+                    <CardContent sx={{ p: 2.5 }}>
                         <SettingsSched settings={ settings } />
                     </CardContent>
                 </Card>

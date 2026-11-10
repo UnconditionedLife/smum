@@ -16,10 +16,9 @@ export default function UserMain() {
             key={ userObj }
             sx={{
                 width: '100%',
-                p: 2
             }}>
             <Container maxWidth={ false } disableGutters sx={{ mt: 2, maxWidth: 900, mx: 0 }}>
-                <Card>
+                <Card sx={{ mb: 2 }}>
                     <CardHeader title="User Profile" />
                     <CardContent>
                         <UserForm user={ userObj } selfEdit />

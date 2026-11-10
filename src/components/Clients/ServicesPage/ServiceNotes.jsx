@@ -56,7 +56,7 @@ export default function ServiceNotes(props) {
 
     return (
         <Fragment>
-            <Card height='72px'>
+            <Card height='72px' mb={ 1 }>
                 <Box
                     sx={{
                         display: 'flex',

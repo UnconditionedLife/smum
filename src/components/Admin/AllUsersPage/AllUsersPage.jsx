@@ -108,7 +108,7 @@ export default function AllUsersPage(props) {
 
             <Accordion defaultExpanded={ true }>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
-                    <Typography variant='button' >Active Users</Typography>
+                    <Typography variant='h6'>Active Users</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <UserList 
@@ -118,7 +118,7 @@ export default function AllUsersPage(props) {
             </Accordion>
             <Accordion>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
-                    <Typography variant='button' >Inactive Users</Typography>
+                    <Typography variant='h6'>Inactive Users</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <UserList 

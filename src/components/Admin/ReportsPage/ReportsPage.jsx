@@ -219,7 +219,7 @@ export default function ReportsPage() {
         <Box sx={{ mt: 2, px: { xs: 1, sm: 0 } }}>
             <LocalizationProvider dateAdapter={ AdapterDayjs } >
             <Card sx={{ m: 0 }}>
-                <Box sx={{ px: 2.5, py: 1.75, borderBottom: 1, borderColor: 'divider' }}>
+                <Box sx={{ px: 2.5, minHeight: 60, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
                     <Typography variant='h6'>Distribution Reports</Typography>
                 </Box>
                 <ReportCard icon={ <Today /> } title='Daily' onRun={ runDailyReport }>
@@ -378,7 +378,7 @@ function ReportCard({ icon, title, onRun, children }) {
                     '& svg': { fontSize: 18 } }}>
                     { icon }
                 </Box>
-                <Typography variant='subtitle2'>{ title }</Typography>
+                <Typography variant='subtitle1'>{ title }</Typography>
             </Box>
             { children }
             <Button onClick={ onRun } variant="contained" color="primary" size="small" startIcon={ <PlayArrow /> }

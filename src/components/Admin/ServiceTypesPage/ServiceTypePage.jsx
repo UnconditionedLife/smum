@@ -133,7 +133,7 @@ export default function ServiceTypePage() {
             }
             <Accordion defaultExpanded={true}>
                 <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Typography variant='button' >Active Service Types</Typography>
+                    <Typography variant='h6'>Active Service Types</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <ServiceTypeList
@@ -144,7 +144,7 @@ export default function ServiceTypePage() {
             </Accordion>
             <Accordion>
                 <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Typography variant='button' >Inactive Service Types</Typography>
+                    <Typography variant='h6'>Inactive Service Types</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <ServiceTypeList

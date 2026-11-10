@@ -110,7 +110,8 @@ let theme = createTheme(base, {
             defaultProps: { elevation: 0 },
             styleOverrides:{
                 root: {
-                    margin: base.spacing(1),
+                    // No outer margin, so every panel lines up on the same edge
+                    margin: 0,
                     borderRadius: 12,
                     border: `1px solid ${base.palette.divider}`,
                     boxShadow: 'none',
@@ -122,7 +123,8 @@ let theme = createTheme(base, {
             defaultProps: { slotProps: { title: { variant: 'h6' } } },
             styleOverrides: {
                 root: {
-                    padding: base.spacing(1.75, 2.5),
+                    minHeight: 60,
+                    padding: base.spacing(0, 2.5),
                     borderBottom: `1px solid ${base.palette.divider}`,
                     marginBottom: base.spacing(1),
                 },
@@ -184,8 +186,10 @@ let theme = createTheme(base, {
         },
         MuiTableCell: {
             styleOverrides:{
+                // Same size as body text everywhere else (MUI tables default to a smaller size)
                 root: {
                     borderBottom: `1px solid ${base.palette.divider}`,
+                    fontSize: base.typography.body1.fontSize,
                 },
                 head: {
                     fontWeight: 600,
@@ -217,6 +221,11 @@ let theme = createTheme(base, {
                 },
             }
         },
+        MuiAccordionDetails: {
+            styleOverrides: {
+                root: { padding: base.spacing(1, 2.5, 2.5) },
+            }
+        },
         MuiAccordion: {
             defaultProps: { disableGutters: true, elevation: 0 },
             styleOverrides: {
@@ -232,7 +241,8 @@ let theme = createTheme(base, {
         },
         MuiAccordionSummary: {
             styleOverrides: {
-                root: { minHeight: 56, fontWeight: 600 },
+                // Same height and side padding as every other panel header
+                root: { minHeight: 60, padding: base.spacing(0, 2.5) },
             }
         },
         MuiChip: {

@@ -251,7 +251,7 @@ export default function ServicesPage(props) {
                     width: '100%',
                     maxWidth: { xs: 500, lg: 'none' },
                     mx: 'auto',
-                    mt: 3,
+                    mt: 4,
                 }}>
                 <ServiceNotes { ...props } />
             </Box>

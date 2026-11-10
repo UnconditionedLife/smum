@@ -72,7 +72,7 @@ export default function VolunteersPage() {
             borderRadius: '16px',
             overflow: 'hidden',
         }}>
-            <Box sx={{ px: 2.5, py: 1.5, borderBottom: 1, borderColor: 'divider', display: 'flex',
+            <Box sx={{ px: 2.5, py: 1, minHeight: 60, borderBottom: 1, borderColor: 'divider', display: 'flex',
                 alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
                 <Typography variant='h6'>Volunteers</Typography>
                 {/* Segmented switcher between the three volunteer views */}
@@ -87,7 +87,8 @@ export default function VolunteersPage() {
                         borderRadius: 999,
                         bgcolor: 'rgba(28, 36, 33, 0.06)',
                         '& .MuiTab-root': {
-                            minHeight: 40,
+                            minHeight: 36,
+                            py: 0.5,
                             px: 2,
                             borderRadius: 999,
                             fontSize: '0.875rem',

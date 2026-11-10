@@ -60,7 +60,7 @@ export default function ErrorPage(props) {
                 borderRadius: '16px',
                 overflow: 'hidden',
             }}>
-                <Box sx={{ px: 2.5, py: 1.75, borderBottom: 1, borderColor: 'divider' }}>
+                <Box sx={{ px: 2.5, minHeight: 60, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
                     <Typography variant='h6'>Error Log</Typography>
                 </Box>
                 <Box

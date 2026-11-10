@@ -24,7 +24,7 @@ export default function PageToday() {
     return (
         <React.Fragment>
             <Card sx={{ mt: 2 }}>
-                <Box sx={{ px: 2.5, py: 1.75, borderBottom: 1, borderColor: 'divider', display: 'flex',
+                <Box sx={{ px: 2.5, py: 1, minHeight: 60, borderBottom: 1, borderColor: 'divider', display: 'flex',
                     alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
                     <Box>
                         <Typography variant='h6'>Today&apos;s Reports</Typography>
