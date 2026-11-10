@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button,
-    List, ListItem, ListItemText, Radio, RadioGroup, FormControlLabel,
+    List, ListItemButton, ListItemText, Radio, RadioGroup, FormControlLabel,
     Typography, Box, CircularProgress, Alert, IconButton, Tooltip, Chip
 } from '@mui/material';
 import { ContentCopy } from '@mui/icons-material';
@@ -162,7 +162,12 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
             <DialogTitle>Find Duplicate Volunteers</DialogTitle>
             <DialogContent dividers>
                 {loading ? (
-                    <Box display="flex" justifyContent="center" p={3}>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            p: 3
+                        }}>
                         <CircularProgress />
                     </Box>
                 ) : error ? (
@@ -170,16 +175,26 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                 ) : duplicates.length === 0 ? (
                     <Typography>No potential duplicates found based on phone number or email.</Typography>
                 ) : (
-                    <Box display="flex" height="400px">
+                    <Box
+                        sx={{
+                            display: "flex",
+                            height: "400px"
+                        }}>
                         {/* Left sidebar: List of duplicate groups */}
-                        <Box width="30%" borderRight={1} borderColor="divider" pr={2} overflow="auto">
+                        <Box
+                            sx={{
+                                width: "30%",
+                                borderRight: 1,
+                                borderColor: "divider",
+                                pr: 2,
+                                overflow: "auto"
+                            }}>
                             <Typography variant="subtitle2" gutterBottom>
                                 Found {duplicates.length} sets of duplicates
                             </Typography>
                             <List dense>
                                 {duplicates.map((group, index) => (
-                                    <ListItem
-                                        button
+                                    <ListItemButton
                                         key={index}
                                         selected={index === selectedGroupIndex}
                                         onClick={() => {
@@ -191,17 +206,24 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                                             primary={getGroupName(group)}
                                             secondary={`${group.length} records`}
                                         />
-                                    </ListItem>
+                                    </ListItemButton>
                                 ))}
                             </List>
                         </Box>
 
                         {/* Right content: Details of selected group */}
-                        <Box width="70%" pl={2} overflow="auto">
+                        <Box
+                            sx={{
+                                width: "70%",
+                                pl: 2,
+                                overflow: "auto"
+                            }}>
                             <Typography variant="h6" gutterBottom>
                                 Select Primary Record
                             </Typography>
-                            <Typography variant="body2" color="textSecondary" paragraph>
+                            <Typography variant="body2" color="textSecondary" sx={{
+                                marginBottom: "16px"
+                            }}>
                                 The selected record will be kept. All shifts from other records in this group will be reassigned to it, and the other records will be DELETED.
                             </Typography>
 
@@ -212,15 +234,34 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                                 {currentGroup && currentGroup.map((vol) => {
                                     const vId = vol.VolunteerId;
                                     return (
-                                        <Box key={vId} mb={2} p={1} border={1} borderColor={primaryId === vId ? 'primary.main' : 'divider'} borderRadius={1}>
+                                        <Box
+                                            key={vId}
+                                            sx={{
+                                                mb: 2,
+                                                p: 1,
+                                                border: 1,
+                                                borderColor: primaryId === vId ? 'primary.main' : 'divider',
+                                                borderRadius: 1
+                                            }}>
                                             <FormControlLabel
                                                 value={vId}
                                                 control={<Radio sx={{ mt: 0.5 }} />} // Adjust radio vertical alignment
                                                 sx={{ width: '100%', alignItems: 'flex-start', ml: 0, mr: 0 }} // Ensure label takes full width and aligns to top
                                                 label={
-                                                    <Box width="100%" textAlign="left">
-                                                        <Box display="flex" alignItems="center" gap={1}>
-                                                            <Typography variant="subtitle1" fontWeight="bold">
+                                                    <Box
+                                                        sx={{
+                                                            width: "100%",
+                                                            textAlign: "left"
+                                                        }}>
+                                                        <Box
+                                                            sx={{
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                gap: 1
+                                                            }}>
+                                                            <Typography variant="subtitle1" sx={{
+                                                                fontWeight: "bold"
+                                                            }}>
                                                                 {vol.FirstName} {vol.LastName}
                                                             </Typography>
                                                             {vol.RegComplete !== undefined && (
@@ -240,7 +281,11 @@ export default function DuplicateVolunteersDialog({ open, onClose, onMergeComple
                                                         <Typography variant="body2">
                                                             Registered: {vol.Time ? dayjs(vol.Time).format('MMM D, YYYY h:mm A') : 'N/A'}
                                                         </Typography>
-                                                        <Box display="flex" alignItems="center">
+                                                        <Box
+                                                            sx={{
+                                                                display: "flex",
+                                                                alignItems: "center"
+                                                            }}>
                                                             <Typography variant="caption" color="textSecondary">
                                                                 ID: {vId}
                                                             </Typography>

@@ -236,48 +236,52 @@ export default function PopulationChildrenByAgeReportClientInfo(props) {
     }
 
     return (
-        <Box m={ 1 } maxWidth="100%">
-        <TableContainer align="center"> 
-            <Table className='fontFamily' size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportDate={ "" }
-                    reportType="CURRENT POPULATION" 
-                    reportCategory="CHILDREN BY AGE GROUP (FULL)"
-                    groupColumns={[{"name": "Client", "length": 5},{"name": "Age Group", "length": 7}]}
-                    columns={["ID", "Family", "Given", "Zip", "Phone #", "0-1", "2-3", "4-6", "7-8", "9-10", "11-12", "13-17"]} />
-            <TableBody>
-            {loading ? (
-                <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={13}>
-                        <CircularProgress color="secondary" />
-                    </TableCell>
-                </TableRow>) : null}
-            {RenderClientsList(clients)}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={11}>
+        <Box
+            sx={{
+                m: 1,
+                maxWidth: "100%"
+            }}>
+            <TableContainer align="center"> 
+                <Table className='fontFamily' size="small" align="center">
                     <style>
                         {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
                                 }
                             }`
                         }
                     </style>
-                    <strong>Voucher Totals</strong>
-                </TableCell>
-            </TableRow>
-            {RenderListTotals(totals)}
-            </TableBody>
-            </Table>
-        </TableContainer>
+                    <ReportsHeader reportDate={ "" }
+                        reportType="CURRENT POPULATION" 
+                        reportCategory="CHILDREN BY AGE GROUP (FULL)"
+                        groupColumns={[{"name": "Client", "length": 5},{"name": "Age Group", "length": 7}]}
+                        columns={["ID", "Family", "Given", "Zip", "Phone #", "0-1", "2-3", "4-6", "7-8", "9-10", "11-12", "13-17"]} />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={13}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
+                {RenderClientsList(clients)}
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={11}>
+                        <style>
+                            {`@media print { 
+                                .centerText { 
+                                    text-align: center;
+                                    font-size: 14px;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <strong>Voucher Totals</strong>
+                    </TableCell>
+                </TableRow>
+                {RenderListTotals(totals)}
+                </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

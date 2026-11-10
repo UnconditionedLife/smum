@@ -40,10 +40,13 @@ function SettingsForm(props) {
     const [serviceCat, setServiceCat] = useState(initValues.serviceCat);
     const [saveMessage, setSaveMessage] = useState({result: 'success', time: initValues.updatedDateTime});
     const [fieldsDirty, setFieldsDirty] = useState(false);
-    const { handleSubmit, reset, control, errors, formState } = useForm({
+    const { handleSubmit, reset, control, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: initValues,
     });
+    const { errors } = formState;
 
     if (formState.isDirty || fieldsDirty) 
         setEditingState(true);
@@ -108,21 +111,39 @@ function SettingsForm(props) {
     return (
         <Fragment>
             <form>
-                <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Interface</Typography></Box>
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}><Typography>Interface</Typography></Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormSelect fieldsize="sm" name="sounds" label="Enable Sounds" error={ errors.sounds } 
                         control={ control } rules={ {required: 'Required'}} >
                             <MenuItem value="YES">Yes</MenuItem>
                             <MenuItem value="NO">No</MenuItem>
                     </FormSelect>
                 </Box>
-                <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Services</Typography></Box>
+                <Box
+                    sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}><Typography>Services</Typography></Box>
                 <MuiChipsInput value={ serviceZip }
                     label='Service Zip Codes'
                     onAddChip={ addZipcode } 
                     onDeleteChip={ deleteZipcode }
                     hideClearAll 
                     disableDeleteOnBackspace 
+                    disableEdition 
                 />
                 <MuiChipsInput value={ serviceCat }
                     label='Service Categories'
@@ -130,9 +151,21 @@ function SettingsForm(props) {
                     onDeleteChip={ deleteServiceCat }
                     hideClearAll 
                     disableDeleteOnBackspace 
+                    disableEdition 
                 />
-                <Box mt={ 2 } display="flex" flexDirection="row" flexWrap="wrap"><Typography>Clients</Typography></Box>
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}><Typography>Clients</Typography></Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField fieldsize="sm" name="seniorAge" label="Senior Age" error={ errors.seniorAge } 
                             control={ control } rules={ {required: 'Required'}} />
                 </Box>

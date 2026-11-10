@@ -234,50 +234,54 @@ export default function ChristmasGiftCardReport(props) {
     }
 
     return (
-        <Box m={ 1 } maxWidth="100%">
-        <TableContainer align="center"> 
-            <Table className='fontFamily' size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportDate={ reportYear }
-                    reportType="GIFT CARD REPORT" 
-                    reportCategory="CHRISTMAS"
-                    groupColumns={[{"name": "Client", "length": 4},{"name": "Age Group", "length": 7}, 
-                    {"name": "Clients Served", "length": 5}, 
-                    {"name":"Status", "length": 1}]}
-                    columns={["ID", "Family", "Given", "Zip", "0-1", "2-3", "4-6", "7-8", "9-10", "11-12", "13-17", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Picked Up?"]} />
-            <TableBody>
-            {loading ? (
-                <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={13}>
-                        <CircularProgress color="secondary" />
-                    </TableCell>
-                </TableRow>) : null}
-            {RenderSvcList(giftCardServices)}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={20}>
+        <Box
+            sx={{
+                m: 1,
+                maxWidth: "100%"
+            }}>
+            <TableContainer align="center"> 
+                <Table className='fontFamily' size="small" align="center">
                     <style>
                         {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
                                 }
                             }`
                         }
                     </style>
-                    <strong>Voucher Totals</strong>
-                </TableCell>
-            </TableRow>
-            {RenderListTotals(giftCardTotals)}
-            </TableBody>
-            </Table>
-        </TableContainer>
+                    <ReportsHeader reportDate={ reportYear }
+                        reportType="GIFT CARD REPORT" 
+                        reportCategory="CHRISTMAS"
+                        groupColumns={[{"name": "Client", "length": 4},{"name": "Age Group", "length": 7}, 
+                        {"name": "Clients Served", "length": 5}, 
+                        {"name":"Status", "length": 1}]}
+                        columns={["ID", "Family", "Given", "Zip", "0-1", "2-3", "4-6", "7-8", "9-10", "11-12", "13-17", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Picked Up?"]} />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={13}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
+                {RenderSvcList(giftCardServices)}
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={20}>
+                        <style>
+                            {`@media print { 
+                                .centerText { 
+                                    text-align: center;
+                                    font-size: 14px;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <strong>Voucher Totals</strong>
+                    </TableCell>
+                </TableRow>
+                {RenderListTotals(giftCardTotals)}
+                </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

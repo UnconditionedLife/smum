@@ -28,78 +28,84 @@ export default function HistoryBodyRow(props) {
     const invalidRow = { color: 'red', cursor:'default' }
 
     return (
-            <TableBody>
-                <Fragment>
-                    { svcHistory.map((svc) => (
-                        <Fragment key={svc.svcId} >
-                            <TableRow 
-                                key={ svc.svcId }
-                                onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
-                                selected= { svc.svcId == selectedService }>
-                                <TableCell align="center" 
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { (svc.svcValid) ? 
-                                            <span style={{ fontSize: '85%'}}>
-                                                { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? 
-                                                    dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
-                                                <br/>
-                                                { dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
-                                            </span> : 
-                                            <Box display="flex">
-                                                <Box mr={ .25 } mt={ 1.4 }>
-                                                    { (svc.svcValid) ? "" : <DoNotDisturbOnIcon fontSize="small" /> }
-                                                </Box>
-                                                <Box>
-                                                    <span style={{ fontSize: '69%'}}>
-                                                        { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? 
-                                                            dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
-                                                        <br/>
-                                                        { dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
-                                                    </span>
-                                                </Box>
+        <TableBody>
+            <Fragment>
+                { svcHistory.map((svc) => (
+                    <Fragment key={svc.svcId} >
+                        <TableRow 
+                            key={ svc.svcId }
+                            onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
+                            selected= { svc.svcId == selectedService }>
+                            <TableCell align="center" 
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { (svc.svcValid) ? 
+                                        <span style={{ fontSize: '85%'}}>
+                                            { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? 
+                                                dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                            <br/>
+                                            { dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                        </span> : 
+                                        <Box sx={{
+                                            display: "flex"
+                                        }}>
+                                            <Box
+                                                sx={{
+                                                    mr: .25,
+                                                    mt: 1.4
+                                                }}>
+                                                { (svc.svcValid) ? "" : <DoNotDisturbOnIcon fontSize="small" /> }
                                             </Box>
-                                        }
-                                </TableCell>
-                                <TableCell align="center" 
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.svcName }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.cStatus }
-                                </TableCell>
-                                <TableCell align="center" 
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { (svc.homeless) ? "YES" : "NO" }
-                                </TableCell>
-                                <TableCell align="center" 
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.svcItems }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.adults }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.children }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.individuals }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.seniors }
-                                </TableCell>
-                                <TableCell align="center"
-                                    style={ (svc.svcValid) ? validRow : invalidRow }>
-                                        { svc.svcBy }
-                                </TableCell>
-                            </TableRow>
-                        </Fragment>
-                    ))}
-                </Fragment>
-            </TableBody>
-    )
+                                            <Box>
+                                                <span style={{ fontSize: '69%'}}>
+                                                    { (dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? 
+                                                        dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                                    <br/>
+                                                    { dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma") }
+                                                </span>
+                                            </Box>
+                                        </Box>
+                                    }
+                            </TableCell>
+                            <TableCell align="center" 
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { svc.svcName }
+                            </TableCell>
+                            <TableCell align="center"
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { svc.cStatus }
+                            </TableCell>
+                            <TableCell align="center" 
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { (svc.homeless) ? "YES" : "NO" }
+                            </TableCell>
+                            <TableCell align="center" 
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { svc.svcItems }
+                            </TableCell>
+                            <TableCell align="center"
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { svc.adults }
+                            </TableCell>
+                            <TableCell align="center"
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { svc.children }
+                            </TableCell>
+                            <TableCell align="center"
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { svc.individuals }
+                            </TableCell>
+                            <TableCell align="center"
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { svc.seniors }
+                            </TableCell>
+                            <TableCell align="center"
+                                style={ (svc.svcValid) ? validRow : invalidRow }>
+                                    { svc.svcBy }
+                            </TableCell>
+                        </TableRow>
+                    </Fragment>
+                ))}
+            </Fragment>
+        </TableBody>
+    );
 }

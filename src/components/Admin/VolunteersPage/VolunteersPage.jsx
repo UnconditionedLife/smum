@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { Box, Tabs, Tab } from '@mui/material';
 import { People, Schedule, Assessment } from '@mui/icons-material';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import VolunteersList from './VolunteersList/VolunteersList.jsx';
 import ShiftsList from './ShiftsList/ShiftsList.jsx';
 import Reports from './Reporting.jsx';
 import { navigationAllowed } from '../../System/js/Database';
 
 export default function VolunteersPage() {
-    const history = useHistory();
+    const navigate = useNavigate();
     const location = useLocation();
     const pathname = location.pathname;
 
@@ -25,25 +25,25 @@ export default function VolunteersPage() {
     // Redirect /admin/volunteers or /admin/volunteers/ to /admin/volunteers/volunteers
     useEffect(() => {
         if (pathname === '/admin/volunteers' || pathname === '/admin/volunteers/') {
-            history.replace('/admin/volunteers/volunteers');
+            navigate('/admin/volunteers/volunteers', { replace: true });
         }
-    }, [pathname, history]);
+    }, [pathname, navigate]);
 
     const handleTabChange = (event, newValue) => {
         if (!navigationAllowed()) return;
 
         switch (newValue) {
             case 0:
-                history.push('/admin/volunteers/volunteers');
+                navigate('/admin/volunteers/volunteers');
                 break;
             case 1:
-                history.push('/admin/volunteers/shifts');
+                navigate('/admin/volunteers/shifts');
                 break;
             case 2:
-                history.push('/admin/volunteers/reports');
+                navigate('/admin/volunteers/reports');
                 break;
             default:
-                history.push('/admin/volunteers/volunteers');
+                navigate('/admin/volunteers/volunteers');
                 break;
         }
     };
@@ -62,7 +62,9 @@ export default function VolunteersPage() {
     };
 
     return (
-        <Box width="100%">
+        <Box sx={{
+            width: "100%"
+        }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
                 <Tabs
                     value={selectedTab}

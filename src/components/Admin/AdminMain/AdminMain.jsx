@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppBar,Badge, Box, Tab, Tabs, Typography } from '@mui/material';
-import { useHistory, useLocation, matchPath } from "react-router-dom";
+import { useNavigate, useLocation, matchPath } from "react-router";
 import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport, People, Storage } from '@mui/icons-material';
 import { AllUsersPage, CalendarPage, ReportsPage, ErrorPage,
             ServiceTypePage, SettingsPage, VolunteersPage, DataPage } from '..';
@@ -21,14 +21,14 @@ const tabURL = [
 export default function AdminMain() {
     const [countErrors, setCountErrors] = useState(0);
 
-    const history = useHistory();
+    const navigate = useNavigate();
     const route = useLocation();
     const url = route.pathname;
 
     function sectionFromURL(url) {   
         for (let i = 0; i < tabURL.length; i++) {
             const isVolunteersTab = tabURL[i] === "/admin/volunteers";
-            if (matchPath(url, { path: tabURL[i], exact: !isVolunteersTab, strict: false }))
+            if (matchPath({ path: tabURL[i], end: !isVolunteersTab }, url))
                 return i;
         }
         return -1;
@@ -37,9 +37,9 @@ export default function AdminMain() {
     function selectTab(newTab) {
         if (navigationAllowed()) {
             if (newTab === 4) {
-                history.push("/admin/volunteers/volunteers");
+                navigate("/admin/volunteers/volunteers");
             } else {
-                history.push(tabURL[newTab]);
+                navigate(tabURL[newTab]);
             }
         }
     }
@@ -57,13 +57,20 @@ export default function AdminMain() {
     let selectedTab = sectionFromURL(url);
     if (selectedTab < 0) {
         // State change cannot happen from within the render context.
-        setTimeout(() => { history.push(tabURL[0]); }, 0);
+        setTimeout(() => { navigate(tabURL[0]); }, 0);
         return null;
     }
 
     return (
-        <Box width="100%">
-            <Box width={ 1 } display="flex" flexWrap="wrap-reverse">
+        <Box sx={{
+            width: "100%"
+        }}>
+            <Box
+                sx={{
+                    width: 1,
+                    display: "flex",
+                    flexWrap: "wrap-reverse"
+                }}>
                 <ErrorPage norender countUpdate={setCountErrors} />
                 <AppBar position="static" color="default" style={{ display:'flex', width: '100%', maxHeight:'72px',
                     justifyContent: 'center', alignItems: 'center', flexDirection:'row', overflow: 'hidden', zIndex:'1075' }}>                    
@@ -90,8 +97,21 @@ export default function AdminMain() {
                     </Tabs>
                 </AppBar>
             </Box>
-            <Box maxWidth="100%" display="flex" justifyContent="center" mt={0} pt={0}>
-                <Box maxWidth='1500px' width='100%' mt={0} pt={2}>
+            <Box
+                sx={{
+                    maxWidth: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    mt: 0,
+                    pt: 0
+                }}>
+                <Box
+                    sx={{
+                        maxWidth: '1500px',
+                        width: '100%',
+                        mt: 0,
+                        pt: 2
+                    }}>
                     {selectedTab === 0 && <ReportsPage />}
                     {selectedTab === 1 && <CalendarPage />}
                     {selectedTab === 2 && <ServiceTypePage />}

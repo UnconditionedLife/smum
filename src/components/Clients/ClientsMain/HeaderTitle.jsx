@@ -47,7 +47,14 @@ export default function HeaderTitle(props) {
     return (
         <Fragment>
             { titleType === 'nonclient' &&   
-                <Box display='flex' minHeight='100%' width={ 1 } pt={ .5 } justifyContent='center'>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        minHeight: '100%',
+                        width: 1,
+                        pt: .5,
+                        justifyContent: 'center'
+                    }}>
                     <Typography color='primary' align='center' variant='h5' noWrap >
                         { headerMessage }
                     </Typography>
@@ -55,10 +62,25 @@ export default function HeaderTitle(props) {
             }
             {/* { headerState === 'new-client' && { "NEW CLIENT" } } //TODO WIRE TO NEW CLIENT PAGE */}
             { titleType === 'client' && 
-                <Box mt={ .75 } display='flex' flexDirection='row' height='44px' justifyContent='center' alignContent='center' flexWrap="wrap">
+                <Box
+                    sx={{
+                        mt: .75,
+                        display: 'flex',
+                        flexDirection: 'row',
+                        height: '44px',
+                        justifyContent: 'center',
+                        alignContent: 'center',
+                        flexWrap: "wrap"
+                    }}>
                     <Chip icon={ <House /> } label={ client.clientId } color="primary"
                         style={{ width:'118px', fontSize:'x-large', justifyContent:'left', marginRight: '12px' }} /> 
-                    <Box sx={{ display: 'flex', justifyContent: 'left', alignItems: 'center' }} mt={ 0 }>
+                    <Box
+                        sx={{
+                            mt: 0,
+                            display: 'flex',
+                            justifyContent: 'left',
+                            alignItems: 'center'
+                        }}>
                         <Typography color='primary' variant='h6' noWrap>
                            <b>{ client.givenName } { client.familyName }</b>
                         </Typography>
@@ -68,6 +90,6 @@ export default function HeaderTitle(props) {
                     </Box>
                 </Box> 
             }
-        </Fragment>   
-    )
+        </Fragment>
+    );
 }

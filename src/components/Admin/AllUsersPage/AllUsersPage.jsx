@@ -28,7 +28,11 @@ function UserList(props) {
     }
 
     return (
-        <Box width='100%' mx={ 2 }>
+        <Box
+            sx={{
+                width: '100%',
+                mx: 2
+            }}>
             <TableContainer> 
                 <Table>
                 <TableHead>
@@ -80,8 +84,12 @@ export default function AllUsersPage(props) {
     if (users === null) return null
 
     return (
-        <Box mt={ 2 } mb={ 2 }>
-            
+        <Box
+            sx={{
+                mt: 2,
+                mb: 2
+            }}>
+
             <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={ true }>
                 <Tooltip title= 'Add User'>
                     <Fab onClick={()=>{

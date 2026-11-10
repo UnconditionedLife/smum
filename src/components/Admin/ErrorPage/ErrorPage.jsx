@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import utc from "dayjs/plugin/utc";     
 dayjs.extend(utc); 
-import { TextField } from '../../System'
 import { Alert, Box, Switch, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -51,47 +50,43 @@ export default function ErrorPage(props) {
     } else {
         const displayMessages = filterMessages();
         return (
-            <Box width='95%' mx={ 2 }>
-                <Box display="flex" flexDirection="row" flexWrap="wrap" style={{ marginTop: '15px' }}>
+            <Box
+                sx={{
+                    width: '95%',
+                    mx: 2
+                }}>
+                <Box
+                    style={{ marginTop: '15px' }}
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <LocalizationProvider dateAdapter={ AdapterDayjs }>
                         <DatePicker
-                            inputProps={{
-                                style: {
-                                    paddingTop: "10px",
-                                    paddingBottom: "10px",
-                                },
-                            }}
-                            width={240}
-                            m={0}
-                            size="small"
-                            InputLabelProps={{ shrink: true }}
-                            inputFormat="MMM DD YYYY"
                             label="Start Date"
                             value={startDate}
-                            renderInput={(params) => <TextField {...params} />}
-                            onChange={(newValue) => setStartDate(newValue)}
-                            disableMaskedInput
+                            format="MMM DD YYYY"
+                            slotProps={{ textField: { size: "small", sx: { width: 240, m: 0 },
+                                slotProps: { inputLabel: { shrink: true } } } }}
+                            onChange={(newValue) => { if (newValue === null || newValue.isValid()) setStartDate(newValue) }}
                         />
                         <DatePicker
-                            inputProps={{
-                                style: {
-                                    paddingTop: "10px",
-                                    paddingBottom: "10px",
-                                },
-                            }}
-                            width={240}
-                            m={0}
-                            size="small"
-                            InputLabelProps={{ shrink: true }}
-                            inputFormat="MMM DD YYYY"
                             label="End Date"
                             value={endDate}
-                            renderInput={(params) => <TextField {...params} />}
-                            onChange={(newValue) => setEndDate(newValue)}
-                            disableMaskedInput
+                            format="MMM DD YYYY"
+                            slotProps={{ textField: { size: "small", sx: { width: 240, m: 0 },
+                                slotProps: { inputLabel: { shrink: true } } } }}
+                            onChange={(newValue) => { if (newValue === null || newValue.isValid()) setEndDate(newValue) }}
                         />
                     </LocalizationProvider>
-                    <Box display="flex" flexDirection="row" ml={ 1 } mr={ 1 }>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            ml: 1,
+                            mr: 1
+                        }}>
                         <Typography>Error</Typography>
                         <Switch checked={ showTrace } onChange={(event) => setShowTrace(event.target.checked)} /> 
                         <Typography>Trace</Typography>

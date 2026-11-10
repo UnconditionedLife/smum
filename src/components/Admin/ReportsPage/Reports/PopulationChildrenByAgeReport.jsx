@@ -257,50 +257,54 @@ export default function PopulationChildrenAgeReport(props) {
     }
 
     return (
-        <Box m={ 1 } maxWidth="100%">
-        <TableContainer align="center"> 
-            <Table className='fontFamily' size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportDate={ "" }
-                    reportType="CURRENT POPULATION" 
-                    reportCategory="CHILDREN BY AGE GROUP"
-                    groupColumns={[{"name": "Age Group Totals", "length": 2}, 
-                    {"name": "Food Services in Last " + days + " Days", "length": counts.length}]}
-                    columns={ columnTitles } />
-            <TableBody>
-            {loading ? (
-                <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={13}>
-                        <CircularProgress color="secondary" />
-                    </TableCell>
-                </TableRow>) : null}
-            {RenderSvcList(ageGroups)}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
+        <Box
+            sx={{
+                m: 1,
+                maxWidth: "100%"
+            }}>
+            <TableContainer align="center"> 
+                <Table className='fontFamily' size="small" align="center">
                     <style>
                         {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
                                 }
                             }`
                         }
                     </style>
-                    <strong>Voucher Totals</strong>
-                </TableCell>
-            </TableRow>
-            {loading ? null :
-                (RenderListTotals(totals))}
-            </TableBody>
-            </Table>
-        </TableContainer>
+                    <ReportsHeader reportDate={ "" }
+                        reportType="CURRENT POPULATION" 
+                        reportCategory="CHILDREN BY AGE GROUP"
+                        groupColumns={[{"name": "Age Group Totals", "length": 2}, 
+                        {"name": "Food Services in Last " + days + " Days", "length": counts.length}]}
+                        columns={ columnTitles } />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={13}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
+                {RenderSvcList(ageGroups)}
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <style>
+                            {`@media print { 
+                                .centerText { 
+                                    text-align: center;
+                                    font-size: 14px;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <strong>Voucher Totals</strong>
+                    </TableCell>
+                </TableRow>
+                {loading ? null :
+                    (RenderListTotals(totals))}
+                </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

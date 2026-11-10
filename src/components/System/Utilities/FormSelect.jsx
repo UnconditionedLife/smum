@@ -15,20 +15,22 @@ FormSelect.propTypes = {
     error: PropTypes.object,                // error - Error object for this field (i.e. errors.<name>)
     fieldsize: PropTypes.string,            // defines the width of the text field
 }
-// Additional props are passed through to the Controller component. 
-// See the API documentation for Controller for full details.
+// Additional props are passed through to the Select component.
 
 export default function FormSelect(props) {
-    let selectProps = { ...props };
-    selectProps.error = Boolean(props.error);
-    const width = getFormFieldSize(props.fieldsize) // xs, sm, md, lg, xl
+    const { name, control, rules, defaultValue, error, fieldsize, ...selectProps } = props;
+    const width = getFormFieldSize(fieldsize) // xs, sm, md, lg, xl
 
     return (
         <FormControl size='small'>
             <InputLabel>{ props.label }</InputLabel>
-            <Controller as={ Select } width={ width } { ...selectProps }   />
+            <Controller name={ name } control={ control } rules={ rules } defaultValue={ defaultValue }
+                render={ ({ field: { ref, ...field } }) => (
+                    <Select width={ width } { ...selectProps } { ...field }
+                        inputRef={ ref } error={ Boolean(error) } />
+                ) } />
             <Typography ml={ 0.5 } variant='body2' color='error'>
-                { props.error ? props.error.message : '' }
+                { error ? error.message : '' }
             </Typography>
         </FormControl>
     )

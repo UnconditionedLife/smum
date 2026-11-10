@@ -24,54 +24,69 @@ export default function HistoryBodyCard(props) {
     const invalidRow = { color: 'red', cursor:'default' }
 
     return (
-                <Box display="flex" flexWrap="wrap" justifyContent="center"
-                    alignItems="center">
-                        <Fragment>
-                            { svcHistory.map((svc) => (
-                                <Fragment key={svc.svcId} >
-                                    <Card 
-                                        key={ svc.svcId }
-                                        width={320}
-                                        style={{cursor: "pointer", backgroundColor: "#E0F0E2"}}
-                                        onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
-                                        selected= { svc.svcId == selectedService }
-                                    >
-                                        <CardContent style={ (svc.svcValid) ? validRow : invalidRow }>
-                                            <Box display='flex' flexDirection='row'>
-                                                <Box>
-                                                    <Typography fontSize='90%'>
-                                                        <strong>Service</strong> <br />
-                                                        <strong>Status</strong> <br />
-                                                        <strong>Homeless</strong> <br />
-                                                        <strong># Items</strong> <br />
-                                                        <strong># Adults</strong> <br />
-                                                        <strong># Children</strong> <br />
-                                                        <strong># Individuals</strong> <br />
-                                                        <strong># Seniors</strong> <br />
-                                                        <strong>Updated By</strong> <br />
-                                                        <strong>Created</strong> <br />
-                                                    </Typography>
-                                                </Box>
-                                                <Box marginLeft={ 2 }>
-                                                    <Typography fontSize='90%'>
-                                                        {svc.svcName}<br />
-                                                        {svc.cStatus} <br /> 
-                                                        {svc.homeless ? "Yes" : "No"} <br /> 
-                                                        {svc.svcItems} <br /> 
-                                                        {svc.adults} <br /> 
-                                                        {svc.children} <br /> 
-                                                        {svc.individuals} <br />
-                                                        {svc.seniors} <br />
-                                                        {svc.svcBy} <br />
-                                                        {(dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma")}
-                                                    </Typography>
-                                                </Box>
-                                            </Box>
-                                        </CardContent>                                    
-                                    </Card>
-                                </Fragment>
-                            ))}
-                        </Fragment>
-                    </Box>
-    )
+        <Box
+            sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                alignItems: "center"
+            }}>
+            <Fragment>
+                { svcHistory.map((svc) => (
+                    <Fragment key={svc.svcId} >
+                        <Card 
+                            key={ svc.svcId }
+                            width={320}
+                            style={{cursor: "pointer", backgroundColor: "#E0F0E2"}}
+                            onClick= { (event) => { if (isAdmin() && svc.svcValid) handleSelectedService(event, svc)} }
+                            selected= { svc.svcId == selectedService }
+                        >
+                            <CardContent style={ (svc.svcValid) ? validRow : invalidRow }>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'row'
+                                    }}>
+                                    <Box>
+                                        <Typography sx={{
+                                            fontSize: '90%'
+                                        }}>
+                                            <strong>Service</strong> <br />
+                                            <strong>Status</strong> <br />
+                                            <strong>Homeless</strong> <br />
+                                            <strong># Items</strong> <br />
+                                            <strong># Adults</strong> <br />
+                                            <strong># Children</strong> <br />
+                                            <strong># Individuals</strong> <br />
+                                            <strong># Seniors</strong> <br />
+                                            <strong>Updated By</strong> <br />
+                                            <strong>Created</strong> <br />
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{
+                                        marginLeft: 2
+                                    }}>
+                                        <Typography sx={{
+                                            fontSize: '90%'
+                                        }}>
+                                            {svc.svcName}<br />
+                                            {svc.cStatus} <br /> 
+                                            {svc.homeless ? "Yes" : "No"} <br /> 
+                                            {svc.svcItems} <br /> 
+                                            {svc.adults} <br /> 
+                                            {svc.children} <br /> 
+                                            {svc.individuals} <br />
+                                            {svc.seniors} <br />
+                                            {svc.svcBy} <br />
+                                            {(dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") !== 'Invalid Date') ? dayjs(svc.svcUpdatedDT).format("MMM DD, YYYY - h:mma") : dayjs(svc.svcDT).format("MMM DD, YYYY - h:mma")}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </CardContent>                                    
+                        </Card>
+                    </Fragment>
+                ))}
+            </Fragment>
+        </Box>
+    );
 }

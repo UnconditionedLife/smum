@@ -12,7 +12,12 @@ export default function UserMain() {
     }, []);
 
     return (
-        <Box width='100%' p={ 2 } key={ userObj }>
+        <Box
+            key={ userObj }
+            sx={{
+                width: '100%',
+                p: 2
+            }}>
             <Container maxWidth='md'>
                 <Card>
                     <CardHeader title="User Profile" />
@@ -28,5 +33,5 @@ export default function UserMain() {
                 </Card>
             </Container>
         </Box>
-    )
+    );
 }

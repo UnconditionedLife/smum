@@ -3,7 +3,7 @@ import { Box, CardActions, CardContent, Fab, Tooltip } from '@mui/material';
 import { Card } from '../System';
 import DailyDistributionReport from '../Admin/ReportsPage/Reports/DailyDistributionReport.jsx';
 import DailyFoodBankReport from '../Admin/ReportsPage/Reports/DailyFoodBankReport.jsx';
-import ReactToPrint from 'react-to-print';
+import { useReactToPrint } from 'react-to-print';
 import { Print } from '@mui/icons-material';
 import DailyFoodBankReportNonUSDA from '../Admin/ReportsPage/Reports/DailyFoodBankReportNonUSDA.jsx';
 
@@ -12,40 +12,44 @@ export default function PageToday() {
     const getPageMargins = () => {
         return `@page { margin: 20px 20px 40px 20px; }`;
       };
+    const printReport = useReactToPrint({
+        contentRef: ref,
+        ignoreGlobalStyles: true,
+        pageStyle: getPageMargins(),
+    })
 
     return (
         <React.Fragment>
-        <Card>
-            <CardContent>
-                <Box ref={ref}>
-                    <Box mb={4}><DailyDistributionReport/></Box>
-                    <style>
-                        {`@media print { 
-                            .break { 
-                                break-before: avoid-page;
-                                break-after: avoid-page;
-                                page-break-before: always;
-                                }
-                            }`
-                        }
-                    </style>
-                    <Box mb={4} className="break">
-                        <DailyFoodBankReport />
+            <Card>
+                <CardContent>
+                    <Box ref={ref}>
+                        <Box sx={{
+                            mb: 4
+                        }}><DailyDistributionReport/></Box>
+                        <style>
+                            {`@media print { 
+                                .break { 
+                                    break-before: avoid-page;
+                                    break-after: avoid-page;
+                                    page-break-before: always;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <Box className="break" sx={{
+                            mb: 4
+                        }}>
+                            <DailyFoodBankReport />
+                        </Box>
+                        <Box className="break">
+                            <DailyFoodBankReportNonUSDA />
+                        </Box>
                     </Box>
-                    <Box className="break">
-                        <DailyFoodBankReportNonUSDA />
-                    </Box>
-                </Box>
-            </CardContent>
-            <CardActions style={{display:"flex", justifyContent:"flex-end"}}>
-                <ReactToPrint
-                    trigger={() => <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
-                    content={() => ref.current}
-                    copyStyles={ false }
-                    pageStyle={ getPageMargins() }
-                />
-            </CardActions>
-        </Card>
+                </CardContent>
+                <CardActions style={{display:"flex", justifyContent:"flex-end"}}>
+                    <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right' onClick={ () => printReport() }><Print /></Fab></Tooltip>
+                </CardActions>
+            </Card>
         </React.Fragment>
     );
 }   

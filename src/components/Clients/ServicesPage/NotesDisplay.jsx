@@ -76,9 +76,16 @@ export default function NotesDisplay(props) {
                 <Card key={ row.noteId } width="300px" mb={ 1 } pb={ 1.25 } variant="elevation" elevation={ 4 }> 
                     { display('note', row.noteId) &&
                         <CardContent>
-                            <Box display='flex' mb={ 2 } justifyContent='space-between'>                            
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    mb: 2,
+                                    justifyContent: 'space-between'
+                                }}>                            
                                 { row.isImportant === "true" && 
-                                    <Box mr={ 1.25 }>
+                                    <Box sx={{
+                                        mr: 1.25
+                                    }}>
                                         <Fab color="secondary" size="small" ><NotificationImportant /></Fab>
                                     </Box> 
                                 }        
@@ -132,5 +139,5 @@ export default function NotesDisplay(props) {
                 </Card>
             ))}
         </Fragment>
-    )
+    );
 }

@@ -51,8 +51,18 @@ export default function DependentsDisplay(props) {
     }
 
     return (
-        <Box display="flex" flexDirection="column" style={{ overflow: "hidden auto", width: "100%" }}>
-            <Box display="flex" flexDirection="column" alignItems="center">
+        <Box
+            style={{ overflow: "hidden auto", width: "100%" }}
+            sx={{
+                display: "flex",
+                flexDirection: "column"
+            }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center"
+                }}>
                     <TableContainer align="center"> 
                         <Table align="center">
                         <TableHead>
@@ -101,7 +111,13 @@ export default function DependentsDisplay(props) {
                         <DependentsFormDialog { ...dialogProps } />
                     }
             </Box>
-            <Box display="flex" justifyContent="flex-end" style={{ width: "100%" }} p={ 2 }>
+            <Box
+                style={{ width: "100%" }}
+                sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    p: 2
+                }}>
                 <Tooltip title= 'Add Dependent' placement="left-end">
                     <Fab onClick={() => handleNewDependent()} size='small' color='default' ><Add /></Fab> 
                 </Tooltip>

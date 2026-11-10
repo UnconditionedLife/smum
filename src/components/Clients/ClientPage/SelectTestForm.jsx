@@ -6,10 +6,13 @@ import { FormTextField, FormSelect, SaveCancel } from '../../System';
 
 export default function TestForm(props) {
     let defValues = { ...props.client };
-    const { handleSubmit, reset, control, errors, formState } = useForm({
+    const { handleSubmit, reset, control, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: defValues, 
     });
+    const { errors } = formState;
 
     function doSave(values) {
         // let userData = Object.assign({}, props.user);
@@ -27,7 +30,12 @@ export default function TestForm(props) {
     return (
         <Fragment>
             <form>
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField name="givenName" label="Given Name" error={ errors.givenName } 
                         control={ control } rules={ {required: 'Given name is required'}} />
                     <FormTextField name="familyName" label="Family Name" error={ errors.familyName } 

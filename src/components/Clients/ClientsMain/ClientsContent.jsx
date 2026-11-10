@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box } from '@mui/material';
 import { FoundPage, ServicesPage, ClientPage, HistoryPage } from '..';
-import { useRouteMatch, Route, Switch } from "react-router-dom";
+import { Routes, Route } from "react-router";
 import SmumLogo from "../../Assets/SmumLogo";
 
 ClientsContent.propTypes = {
@@ -23,19 +23,31 @@ ClientsContent.propTypes = {
 export default function ClientsContent(props) {
     const { clientsFound, client, showFound, showServices, showClient, lastServedDays, 
         lastServedFoodDate, clientInactive, changeClient, updateClient, updateClientsURL, showAlert } = props
-    const match = useRouteMatch();
 
     const logoBox = (
-        <Box display="flex" width="100%" height="100%" justifyContent="center" paddingLeft="0px">
+        <Box
+            sx={{
+                display: "flex",
+                width: "100%",
+                height: "100%",
+                justifyContent: "center",
+                paddingLeft: "0px"
+            }}>
             <SmumLogo width='20vh' display="watermark" 
                 style={{ marginTop: '27vh', paddingLeft:'0px' }}/>
         </Box>
     )
 
     return (
-        <Box maxWidth='1500px' width='100%' mt={0} pt={0}>
-            <Switch>
-                <Route path={`${match.path}/found/:term`}>
+        <Box
+            sx={{
+                maxWidth: '1500px',
+                width: '100%',
+                mt: 0,
+                pt: 0
+            }}>
+            <Routes>
+                <Route path="found/:term" element={ <>
                     { showFound && 
                         <FoundPage
                             clientsFound={ clientsFound }
@@ -43,8 +55,8 @@ export default function ClientsContent(props) {
                             updateClientsURL={ updateClientsURL } showAlert={ showAlert } />
                     }
                     { !showFound && logoBox }
-                </Route>              
-                <Route path={`${match.path}/services/:clientId`}>
+                </> } />
+                <Route path="services/:clientId" element={ <>
                     { showServices && 
                         <ServicesPage 
                             clientsFound={ clientsFound }
@@ -53,22 +65,23 @@ export default function ClientsContent(props) {
                             lastServedDays={ lastServedDays } clientInactive={ clientInactive }/>
                     }
                     { !showServices && logoBox }
-                </Route>
-                <Route path={`${match.path}/client/:clientId`}>
+                </> } />
+                <Route path="client/:clientId" element={ <>
                     { showClient && 
                         <ClientPage client={client} updateClient={ updateClient }
                         updateClientsURL={ updateClientsURL } showAlert={ showAlert } />
                     }
                     { !showClient && logoBox }
-                </Route>
-                <Route path={`${match.path}/history/:clientId`}>
+                </> } />
+                <Route path="history/:clientId" element={ <>
                     { showClient && 
                         <HistoryPage client={client} updateClient={ updateClient }
                             showAlert={ showAlert } lastServedFoodDate={ lastServedFoodDate } />
                     }
                     { !showClient && logoBox }
-                </Route>
-            </Switch>
+                </> } />
+                <Route path="*" element={ null } />
+            </Routes>
 
             { !showClient && !showServices && !showFound && logoBox }
         </Box>

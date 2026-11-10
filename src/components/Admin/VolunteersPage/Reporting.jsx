@@ -206,7 +206,7 @@ export default function Reports() {
             // Ensure fresh volunteers and metadata are loaded
             let currentVolunteers = [];
             try {
-                currentVolunteers = await dbGetAllVolunteersAsync() || [];
+                currentVolunteers = (await dbGetAllVolunteersAsync()) || [];
                 setVolunteers(currentVolunteers);
             } catch (e) {
                 console.error('Error fetching volunteers:', e);
@@ -215,13 +215,13 @@ export default function Reports() {
 
             let currentPrograms = programs;
             if (!currentPrograms || currentPrograms.length === 0) {
-                currentPrograms = await dbGetAllProgramsAsync() || [];
+                currentPrograms = (await dbGetAllProgramsAsync()) || [];
                 setPrograms(currentPrograms);
             }
 
             let currentActivities = activities;
             if (!currentActivities || currentActivities.length === 0) {
-                currentActivities = await dbGetAllActivitiesAsync() || [];
+                currentActivities = (await dbGetAllActivitiesAsync()) || [];
                 setActivities(currentActivities);
             }
 
@@ -267,7 +267,7 @@ export default function Reports() {
                 // Fetch shifts for Active Volunteers or Shifts Report
                 let rawShifts = [];
                 try {
-                    rawShifts = await dbGetShiftsByDateRangeAsync(startDate, endDate) || [];
+                    rawShifts = (await dbGetShiftsByDateRangeAsync(startDate, endDate)) || [];
                 } catch (err) {
                     console.error('Failed to fetch shifts:', err);
                 }
@@ -722,13 +722,21 @@ export default function Reports() {
     };
 
     return (
-        <Box p={3}>
+        <Box sx={{
+            p: 3
+        }}>
             <Typography variant="h5" gutterBottom>Reports</Typography>
 
             <Card sx={{ mb: 3 }}>
                 <CardContent>
-                    <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={12} md={2}>
+                    <Grid container spacing={2} sx={{
+                        alignItems: "center"
+                    }}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 2
+                            }}>
                             <FormControl fullWidth size="small">
                                 <InputLabel>Report Type</InputLabel>
                                 <Select
@@ -751,7 +759,11 @@ export default function Reports() {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12} md={2}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 2
+                            }}>
                             <FormControl fullWidth size="small">
                                 <InputLabel>Group By</InputLabel>
                                 <Select
@@ -772,7 +784,11 @@ export default function Reports() {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12} md={2}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 2
+                            }}>
                             <FormControl fullWidth size="small">
                                 <InputLabel>Year</InputLabel>
                                 <Select
@@ -790,7 +806,11 @@ export default function Reports() {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12} md={2}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 2
+                            }}>
                             <FormControl fullWidth size="small">
                                 <InputLabel>Month</InputLabel>
                                 <Select
@@ -807,7 +827,11 @@ export default function Reports() {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12} md={2}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                md: 2
+                            }}>
                             <Button
                                 variant="contained"
                                 fullWidth
@@ -826,7 +850,13 @@ export default function Reports() {
                     {/* Header and Export Controls */}
                     <Card sx={{ mb: 3 }}>
                         <CardContent>
-                            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "flex-start",
+                                    mb: 2
+                                }}>
                                 <Box>
                                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
                                         {currentConfig.title}
@@ -841,7 +871,11 @@ export default function Reports() {
                                         Generated on: {dayjs().format('MMMM D, YYYY [at] h:mm A')}
                                     </Typography>
                                 </Box>
-                                <Box display="flex" gap={1}>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        gap: 1
+                                    }}>
                                     <Button variant="outlined" startIcon={<Download />} onClick={exportToCSV} size="small">
                                         CSV
                                     </Button>
@@ -852,7 +886,12 @@ export default function Reports() {
                             </Box>
 
                             {/* Summary Metrics */}
-                            <Box display="flex" gap={4} mt={2}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    gap: 4,
+                                    mt: 2
+                                }}>
                                 <Box>
                                     <Typography variant="body2" color="textSecondary">
                                         {reportType === 'shifts' ? 'Total Shifts' : (reportType === 'new_volunteers' ? 'Total New Signups' : 'Active Volunteers')}
@@ -863,11 +902,15 @@ export default function Reports() {
                                     <>
                                         <Box>
                                             <Typography variant="body2" color="textSecondary">Registered</Typography>
-                                            <Typography variant="h4" color="success.main">{formatNumber(registeredCount)}</Typography>
+                                            <Typography variant="h4" sx={{
+                                                color: "success.main"
+                                            }}>{formatNumber(registeredCount)}</Typography>
                                         </Box>
                                         <Box>
                                             <Typography variant="body2" color="textSecondary">Not Registered</Typography>
-                                            <Typography variant="h4" color="warning.main">{formatNumber(totalCount - registeredCount)}</Typography>
+                                            <Typography variant="h4" sx={{
+                                                color: "warning.main"
+                                            }}>{formatNumber(totalCount - registeredCount)}</Typography>
                                         </Box>
                                     </>
                                 ) : (
@@ -883,7 +926,13 @@ export default function Reports() {
                     {/* Group Accordions */}
                     <Box>
                         {groupedData.length > 1 && (
-                            <Box display="flex" justifyContent="flex-end" gap={1} mb={1}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "flex-end",
+                                    gap: 1,
+                                    mb: 1
+                                }}>
                                 <Button size="small" variant="text" onClick={handleExpandAll}>Expand All</Button>
                                 <Button size="small" variant="text" onClick={handleCollapseAll}>Collapse All</Button>
                             </Box>
@@ -895,9 +944,19 @@ export default function Reports() {
                                 onChange={() => handleToggleGroup(group.groupName)}
                             >
                                 <AccordionSummary expandIcon={<ExpandMore />}>
-                                    <Box display="flex" justifyContent="space-between" width="100%" pr={2}>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            width: "100%",
+                                            pr: 2
+                                        }}>
                                         <Typography variant="h6">{group.groupName}</Typography>
-                                        <Box display="flex" gap={3}>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                gap: 3
+                                            }}>
                                             <Typography variant="body1">
                                                 <strong>{currentConfig.itemNoun}:</strong> {formatNumber(group.count)}
                                             </Typography>
@@ -985,8 +1044,17 @@ export default function Reports() {
                                 Grand Total
                             </Typography>
                             <Grid container spacing={2}>
-                                <Grid item xs={12} md={6}>
-                                    <Box display="flex" alignItems="center" gap={2}>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 6
+                                    }}>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 2
+                                        }}>
                                         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                                             {reportType === 'shifts'
                                                 ? 'Total Shifts:'
@@ -995,8 +1063,17 @@ export default function Reports() {
                                         <Typography variant="h5" color="primary">{formatNumber(totalCount)}</Typography>
                                     </Box>
                                 </Grid>
-                                <Grid item xs={12} md={6}>
-                                    <Box display="flex" alignItems="center" gap={2}>
+                                <Grid
+                                    size={{
+                                        xs: 12,
+                                        md: 6
+                                    }}>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 2
+                                        }}>
                                         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                                             {reportType === 'new_volunteers' ? 'Registered Volunteers:' : 'Total Hours:'}
                                         </Typography>
