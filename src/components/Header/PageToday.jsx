@@ -3,7 +3,7 @@ import { Box, CardActions, CardContent, Fab, Tooltip } from '@mui/material';
 import { Card } from '../System';
 import DailyDistributionReport from '../Admin/ReportsPage/Reports/DailyDistributionReport.jsx';
 import DailyFoodBankReport from '../Admin/ReportsPage/Reports/DailyFoodBankReport.jsx';
-import ReactToPrint from 'react-to-print';
+import { useReactToPrint } from 'react-to-print';
 import { Print } from '@mui/icons-material';
 import DailyFoodBankReportNonUSDA from '../Admin/ReportsPage/Reports/DailyFoodBankReportNonUSDA.jsx';
 
@@ -12,6 +12,11 @@ export default function PageToday() {
     const getPageMargins = () => {
         return `@page { margin: 20px 20px 40px 20px; }`;
       };
+    const printReport = useReactToPrint({
+        contentRef: ref,
+        ignoreGlobalStyles: true,
+        pageStyle: getPageMargins(),
+    })
 
     return (
         <React.Fragment>
@@ -38,12 +43,7 @@ export default function PageToday() {
                 </Box>
             </CardContent>
             <CardActions style={{display:"flex", justifyContent:"flex-end"}}>
-                <ReactToPrint
-                    trigger={() => <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
-                    content={() => ref.current}
-                    copyStyles={ false }
-                    pageStyle={ getPageMargins() }
-                />
+                <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right' onClick={ () => printReport() }><Print /></Fab></Tooltip>
             </CardActions>
         </Card>
         </React.Fragment>

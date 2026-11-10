@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppBar,Badge, Box, Tab, Tabs, Typography } from '@mui/material';
-import { useHistory, useLocation, matchPath } from "react-router-dom";
+import { useNavigate, useLocation, matchPath } from "react-router";
 import { RoomService, AccountBox, Assessment, DateRange, SettingsApplications, BugReport, People, Storage } from '@mui/icons-material';
 import { AllUsersPage, CalendarPage, ReportsPage, ErrorPage,
             ServiceTypePage, SettingsPage, VolunteersPage, DataPage } from '..';
@@ -21,14 +21,14 @@ const tabURL = [
 export default function AdminMain() {
     const [countErrors, setCountErrors] = useState(0);
 
-    const history = useHistory();
+    const navigate = useNavigate();
     const route = useLocation();
     const url = route.pathname;
 
     function sectionFromURL(url) {   
         for (let i = 0; i < tabURL.length; i++) {
             const isVolunteersTab = tabURL[i] === "/admin/volunteers";
-            if (matchPath(url, { path: tabURL[i], exact: !isVolunteersTab, strict: false }))
+            if (matchPath({ path: tabURL[i], end: !isVolunteersTab }, url))
                 return i;
         }
         return -1;
@@ -37,9 +37,9 @@ export default function AdminMain() {
     function selectTab(newTab) {
         if (navigationAllowed()) {
             if (newTab === 4) {
-                history.push("/admin/volunteers/volunteers");
+                navigate("/admin/volunteers/volunteers");
             } else {
-                history.push(tabURL[newTab]);
+                navigate(tabURL[newTab]);
             }
         }
     }
@@ -57,7 +57,7 @@ export default function AdminMain() {
     let selectedTab = sectionFromURL(url);
     if (selectedTab < 0) {
         // State change cannot happen from within the render context.
-        setTimeout(() => { history.push(tabURL[0]); }, 0);
+        setTimeout(() => { navigate(tabURL[0]); }, 0);
         return null;
     }
 

@@ -9,7 +9,7 @@ import { utilArrayToObject, utilCleanDate, utilChangeWordCase, utilDecodeStrings
 import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 
 dayjs.extend(customParseFormat);
 
@@ -53,7 +53,7 @@ export function cacheSessionVar(newSession) {
 }
 
 export function sessionTimeRemaining() {
-    let decodedTkn = jwt_decode(cachedSession.auth.idToken);
+    let decodedTkn = jwtDecode(cachedSession.auth.idToken);
     return decodedTkn.exp * 1000 - new Date().getTime();
 }
 

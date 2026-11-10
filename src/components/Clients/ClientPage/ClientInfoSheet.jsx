@@ -114,7 +114,7 @@ PrintClientInfo.propTypes = {
 function PrintClientInfo(props) {
     const ref = useRef();
     const printComponent = useReactToPrint({
-        content: () => ref.current,
+        contentRef: ref,
     })
 
     const handlePrint = () => {

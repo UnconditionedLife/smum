@@ -11,7 +11,7 @@ import theme from '../Theme.jsx';
 import DbSwitch from './DbSwitch.jsx';
 import { useCookies } from 'react-cookie';
 import { cogSetupUser } from '../System/js/Cognito.js';
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import SmumLogo from "../Assets/SmumLogo";
 import { HeaderDateTime } from '../Clients'
 import { cacheSessionVar, clearCache, initCache, showCache, getSession, getAppVersion,
@@ -90,7 +90,7 @@ HeaderBar.propTypes = {
 }
 
 function tokenTimeRemaining(token) {
-    let decodedTkn = jwt_decode(token)
+    let decodedTkn = jwtDecode(token)
     return decodedTkn.exp*1000 - new Date().getTime() - 30000;
 }
 

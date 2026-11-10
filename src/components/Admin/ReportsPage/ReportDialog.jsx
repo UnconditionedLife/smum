@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Table, TableContainer, TableFooter, Tooltip } from '@mui/material';
 import { Button,  } from '../../System';
-import ReactToPrint from 'react-to-print';
+import { useReactToPrint } from 'react-to-print';
 import { useRef } from 'react';
 import { Print } from '@mui/icons-material';
 
@@ -18,6 +18,11 @@ export default function ReportDialog(props) {
     const getPageMargins = () => {
         return `@page { margin: 20px 20px 40px 20px; }`;
       };
+    const printReport = useReactToPrint({
+        contentRef: ref,
+        ignoreGlobalStyles: true,
+        pageStyle: getPageMargins(),
+    })
     return (
         <Dialog fullWidth={true} maxWidth={'xl'} open={ props.dialogOpen } aria-labelledby="form-dialog-title"> 
             <DialogTitle id="form-dialog-title">{props.heading}</DialogTitle>
@@ -26,12 +31,7 @@ export default function ReportDialog(props) {
             </DialogContent>
             <DialogActions>
             {props.actions}
-            <ReactToPrint
-                trigger={() => <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right'><Print /></Fab></Tooltip> }
-                content={() => ref.current}
-                copyStyles={ false }
-                pageStyle={ getPageMargins() }
-            />
+            <Tooltip title='Print Report' placement="left-start" ><Fab size="medium" align='right' onClick={ () => printReport() }><Print /></Fab></Tooltip>
             </DialogActions>
         </Dialog>
     )
