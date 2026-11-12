@@ -27,8 +27,7 @@ export default function AdminMain() {
 
     function sectionFromURL(url) {   
         for (let i = 0; i < tabURL.length; i++) {
-            const isVolunteersTab = tabURL[i] === "/admin/volunteers";
-            if (matchPath(url, { path: tabURL[i], exact: !isVolunteersTab, strict: false }))
+            if (matchPath(url, { path: tabURL[i], exact: false, strict: false }))
                 return i;
         }
         return -1;
@@ -36,11 +35,7 @@ export default function AdminMain() {
     
     function selectTab(newTab) {
         if (navigationAllowed()) {
-            if (newTab === 4) {
-                history.push("/admin/volunteers/volunteers");
-            } else {
-                history.push(tabURL[newTab]);
-            }
+            history.push(tabURL[newTab]);
         }
     }
     
