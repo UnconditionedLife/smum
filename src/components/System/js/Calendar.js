@@ -1,6 +1,6 @@
 import { RRule } from 'rrule';
 import dayjs from 'dayjs';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import { SettingsSchedule } from './Database';
 import theme from '../../Theme.jsx';
 
@@ -15,7 +15,7 @@ export function calClone(orig) {
     const subset = {
         calClosed: [... orig.calClosed],
     };
-    return _.cloneDeep(subset);
+    return cloneDeep(subset);
 }
 
 // Add a rule that matches a single date

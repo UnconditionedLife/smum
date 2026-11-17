@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { hot } from 'react-hot-loader'
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { Box, Snackbar } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import { CookiesProvider } from 'react-cookie';
 import { HeaderRouter } from ".";
 import theme from '../Theme.jsx'
-import { BrowserRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router";
 import { setGlobalMsgFunc } from "../System/js/Database";
 import { beepError } from '../System/js/GlobalUtils';
 
@@ -57,4 +56,4 @@ function HeaderMain(){
     );
 }
 
-export default hot(module)(HeaderMain);
+export default HeaderMain;

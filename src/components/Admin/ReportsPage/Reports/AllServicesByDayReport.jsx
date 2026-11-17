@@ -87,69 +87,73 @@ export default function AllServicesByDayReport(props) {
     }
 
     return (
-        <Box m={ 1 } maxWidth="100%">
-        <TableContainer align="center"> 
-            <Table className='fontFamily' size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportDate={ reportMonth }
-                    reportType="MONTHLY REPORT"
-                    reportCategory="ALL SERVICES BY DAY"
-                    groupColumns={[{"name": "Service", "length": 1}, 
-                    {"name": "Households", "length": 1}, 
-                    {"name":"Individuals", "length": 1},
-                    {"name":"Items", "length": 1}]}
-                    columns={["", "", "", ""]} />
-            <TableBody>
-            {loading ? (
-                <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={13}>
-                        <CircularProgress color="secondary" />
-                    </TableCell>
-                </TableRow>) : null}
-            {Object.keys(aggregatedTotals).map(day => {
-                return (
-                    <React.Fragment key={day}>
-                        <TableRow style={{ backgroundColor: theme.palette.primary.light }}>
-                            <TableCell className='centerText greenBackground' align="center" colSpan={4}>
-                                <style>
-                                    {`@media print { 
-                                        .greenBackground { 
-                                            background-color: rgb(104, 179, 107);
-                                            text-align: right;
-                                            -webkit-print-color-adjust: exact;
-                                            break-before: avoid-page;
-                                            break-after: avoid-page;
-                                            }
-                                        }`
-                                    }
-                                </style>
-                                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
-                                <strong>{ dayjs(day).format('MMM DD YYYY') }</strong>
-                            </TableCell>
-                        </TableRow>
-                        {Object.keys(aggregatedTotals[day]).map(svcName => {
-                        return (
-                            <TableRow key={svcName+day}>
-                                <TableCell>{svcName}</TableCell>
-                                <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
-                                <TableCell className="centerText" align="center">{aggregatedTotals[day][svcName].households}</TableCell>
-                                <TableCell className="centerText" align="center">{aggregatedTotals[day][svcName].individuals}</TableCell>
-                                <TableCell className="centerText" align="center">{aggregatedTotals[day][svcName].itemsServed}</TableCell>
+        <Box
+            sx={{
+                m: 1,
+                maxWidth: "100%"
+            }}>
+            <TableContainer align="center"> 
+                <Table className='fontFamily' size="small" align="center">
+                    <style>
+                        {`@media print { 
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
+                                }
+                            }`
+                        }
+                    </style>
+                    <ReportsHeader reportDate={ reportMonth }
+                        reportType="MONTHLY REPORT"
+                        reportCategory="ALL SERVICES BY DAY"
+                        groupColumns={[{"name": "Service", "length": 1}, 
+                        {"name": "Households", "length": 1}, 
+                        {"name":"Individuals", "length": 1},
+                        {"name":"Items", "length": 1}]}
+                        columns={["", "", "", ""]} />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={13}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
+                {Object.keys(aggregatedTotals).map(day => {
+                    return (
+                        <React.Fragment key={day}>
+                            <TableRow style={{ backgroundColor: theme.palette.primary.light }}>
+                                <TableCell className='centerText greenBackground' align="center" colSpan={4}>
+                                    <style>
+                                        {`@media print { 
+                                            .greenBackground { 
+                                                background-color: rgb(104, 179, 107);
+                                                text-align: right;
+                                                -webkit-print-color-adjust: exact;
+                                                break-before: avoid-page;
+                                                break-after: avoid-page;
+                                                }
+                                            }`
+                                        }
+                                    </style>
+                                    <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
+                                    <strong>{ dayjs(day).format('MMM DD YYYY') }</strong>
+                                </TableCell>
                             </TableRow>
-                        )})}
-                    </React.Fragment>
-                )
-            })}
-            </TableBody>
-            </Table>
-        </TableContainer>
+                            {Object.keys(aggregatedTotals[day]).map(svcName => {
+                            return (
+                                <TableRow key={svcName+day}>
+                                    <TableCell>{svcName}</TableCell>
+                                    <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
+                                    <TableCell className="centerText" align="center">{aggregatedTotals[day][svcName].households}</TableCell>
+                                    <TableCell className="centerText" align="center">{aggregatedTotals[day][svcName].individuals}</TableCell>
+                                    <TableCell className="centerText" align="center">{aggregatedTotals[day][svcName].itemsServed}</TableCell>
+                                </TableRow>
+                            )})}
+                        </React.Fragment>
+                    )
+                })}
+                </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

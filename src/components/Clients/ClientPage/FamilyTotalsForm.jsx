@@ -7,10 +7,13 @@ import { useForm } from "react-hook-form";
 export default function FamilyTotalsForm(props) {
 
     let defValues = { ...props.client };
-    const { handleSubmit, reset, control, errors, formState } = useForm({
+    const { handleSubmit, reset, control, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: defValues,
     });
+    const { errors } = formState;
 
     function doSave(values) {
     }
@@ -18,7 +21,12 @@ export default function FamilyTotalsForm(props) {
     const submitForm = handleSubmit(doSave);
 
     return (
-        <Box display="flex" flexDirection="row" flexWrap="wrap">
+        <Box
+            sx={{
+                display: "flex",
+                flexDirection: "row",
+                flexWrap: "wrap"
+            }}>
             <form>
             <FormTextField name="family.totalAdults" disabled={ true } label="Adults" fieldsize="xs" type= "number" control={control} />
             <FormTextField name="family.totalChildren" disabled={ true } label="Children" fieldsize="xs" type= "number" control={control} />

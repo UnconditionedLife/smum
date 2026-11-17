@@ -139,12 +139,20 @@ function SettingsSched(props) {
                 // <Dialog open={ Boolean(props.date) } onClose={ () => finish()) }>
                 <Dialog open={ true } onClose={ () => finish(false) }>
                     <DialogTitle>{ fullDate }: { title }</DialogTitle>
-                    {freq == DAILY && <Box display="flex" flexDirection="column">
+                    {freq == DAILY && <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column"
+                        }}>
                         <Button color="primary" onClick={ () => { calDeleteRule(rules, rule); finish(true); }} >
                             Remove daily rule
                         </Button>
                     </Box>}
-                    {freq == WEEKLY && <Box display="flex" flexDirection="column">
+                    {freq == WEEKLY && <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column"
+                        }}>
                         {/* <Button color="primary" onClick={ () => { calAddException(rule, date); finish(true); }} >
                             Open { fullDate } only
                         </Button> */}
@@ -152,7 +160,11 @@ function SettingsSched(props) {
                             Remove weekly rule
                         </Button>
                     </Box>}
-                    {freq == MONTHLY && <Box display="flex" flexDirection="column">
+                    {freq == MONTHLY && <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column"
+                        }}>
                         {/* <Button color="primary" onClick={ () => { calAddException(rule, date); finish(true); }} >
                             Open { fullDate } only
                         </Button> */}
@@ -187,7 +199,11 @@ function SettingsSched(props) {
             return (
                 <Dialog open={ true } onClose={ () => finish(false) }>
                     <DialogTitle>{ fullDate }: Add Closure Event</DialogTitle>
-                    <Box display="flex" flexDirection="column">
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column"
+                        }}>
                         <Button color="primary" onClick={ () => { calAddSingleRule(rules, props.date); finish(true); }} >
                             Close { fullDate } only
                         </Button>
@@ -248,7 +264,11 @@ function SettingsSched(props) {
     }
 
     return (
-        <Box width={'100%'} maxWidth={'1500px'}>
+        <Box
+            sx={{
+                width: '100%',
+                maxWidth: '1500px'
+            }}>
             {/* <Popper open={true} anchorEl={foo}>
                 <Card>
                     <pre>{JSON.stringify(hover.event, 4, undefined)}</pre>

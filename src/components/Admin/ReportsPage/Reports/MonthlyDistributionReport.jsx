@@ -204,50 +204,54 @@ export default function MonthlyDistributionReport(props) {
     }
 
     return (
-        <Box m={ 1 } maxWidth="100%">
-        <TableContainer align="center"> 
-            <Table className='fontFamily' size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
+        <Box
+            sx={{
+                m: 1,
+                maxWidth: "100%"
+            }}>
+            <TableContainer align="center"> 
+                <Table className='fontFamily' size="small" align="center">
+                    <style>
+                        {`@media print { 
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
+                                }
+                            }`
+                        }
+                    </style>
+                    <ReportsHeader reportDate={ reportMonth }
+                        reportType="MONTHLY REPORT"
+                        reportCategory="FOOD PANTRY"
+                        groupColumns={[{"name": "Type", "length": 1}, 
+                            {"name": "Clients Serviced", "length": 5}, 
+                            {"name": "Homeless", "length": 2}, 
+                            {"name":"NonClients", "length": 2}]}
+                        columns={["USDA/Non USDA", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Families", "Indiv", "Families", "Indiv"]} />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={13}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
+                {daysGrid.map(day => {
+                    if (day["totals"]["households"] > 0) { 
+                        return RenderDay(day)
                     }
-                </style>
-                <ReportsHeader reportDate={ reportMonth }
-                    reportType="MONTHLY REPORT"
-                    reportCategory="FOOD PANTRY"
-                    groupColumns={[{"name": "Type", "length": 1}, 
-                        {"name": "Clients Serviced", "length": 5}, 
-                        {"name": "Homeless", "length": 2}, 
-                        {"name":"NonClients", "length": 2}]}
-                    columns={["USDA/Non USDA", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Families", "Indiv", "Families", "Indiv"]} />
-            <TableBody>
-            {loading ? (
+                })}
                 <TableRow>
                     <TableCell className='centerText' align="center" colSpan={13}>
-                        <CircularProgress color="secondary" />
+                        <style> { `@media print { .centerText { text-align: center; font-size: 14px; } }` } </style>
+                        <strong>Monthly Totals</strong>
                     </TableCell>
-                </TableRow>) : null}
-            {daysGrid.map(day => {
-                if (day["totals"]["households"] > 0) { 
-                    return RenderDay(day)
-                }
-            })}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
-                    <style> { `@media print { .centerText { text-align: center; font-size: 14px; } }` } </style>
-                    <strong>Monthly Totals</strong>
-                </TableCell>
-            </TableRow>
-            {RenderListTotals(usdaTotals, "USDA Totals", true)}
-            {RenderListTotals(nonUsdaTotals, "Non USDA Totals", true)}
-            {RenderListTotals(monthTotals, "Grand Totals", true)}
-            {RenderListTotals(uniqueTotals, "Unique Totals", true)}
-            </TableBody>
-            </Table>
-        </TableContainer>
+                </TableRow>
+                {RenderListTotals(usdaTotals, "USDA Totals", true)}
+                {RenderListTotals(nonUsdaTotals, "Non USDA Totals", true)}
+                {RenderListTotals(monthTotals, "Grand Totals", true)}
+                {RenderListTotals(uniqueTotals, "Unique Totals", true)}
+                </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

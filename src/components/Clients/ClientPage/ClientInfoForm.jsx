@@ -25,10 +25,13 @@ export default function ClientInfoForm(props) {
     const validZips = SettingsZipcodes()
     let defValues = { ...client };
     defValues.zipcode = packZipcode(defValues.zipcode, defValues.zipSuffix);
-    const { handleSubmit, reset, watch, control, errors, setValue, getValues, formState } = useForm({
+    const { handleSubmit, reset, watch, control, setValue, getValues, formState } = useForm({
+        // v6 behavior: submit only the fields that are on screen
+        shouldUnregister: true,
         mode: 'onBlur',
         defaultValues: defValues,
     });
+    const { errors } = formState;
     // const [dob, setDob] = useState(defValues.dob)
 
     const dob = watch("dob")
@@ -96,8 +99,15 @@ export default function ClientInfoForm(props) {
     return (
         <Fragment>
             <form>
-                <Box mt={ 0 } ><Typography>Account Holder</Typography></Box>
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box sx={{
+                    mt: 0
+                }} ><Typography>Account Holder</Typography></Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField name="firstSeenDate" label="First Seen" type="date" disabled={ true } control={ control } error={ errors.firstSeenDate } />
 
                     <FormTextField name="familyIdCheckedDate" label="ID Checked" type="date" disabled={ true } control={ control } error={ errors.familyIdCheckedDate } />
@@ -112,7 +122,7 @@ export default function ClientInfoForm(props) {
 
                     <FormTextField name="familyName" label="Family Name" fieldsize="md" control={ control } error={ errors.familyName } rules={ {required: 'Required'}} />
 
-                    <FormTextField name="dob" label="Date of Birth" InputLabelProps={{ shrink: true }} control={ control } 
+                    <FormTextField name="dob" label="Date of Birth" slotProps={{ inputLabel: { shrink: true } }} control={ control } 
                         error={ errors.dob } type="date" rules={ {required: 'Required'}}/>
                 
                     <FormSelect name="gender" label="Gender" fieldsize="sm" control={ control } error={ errors.gender } rules={ {required: 'Required'}} >
@@ -136,9 +146,16 @@ export default function ClientInfoForm(props) {
                 </Box>
 
                 {/* ADDRESS */ }
-                <Box mt={ 2 } ><Typography>Address</Typography></Box>
+                <Box sx={{
+                    mt: 2
+                }} ><Typography>Address</Typography></Box>
         
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormSelect name="homeless" label="Homeless" fieldsize="sm" control={ control } error={ errors.homeless } rules={ {required: 'Required'}} >
                         <MenuItem value="">&nbsp;</MenuItem>
                         <MenuItem value="YES">Yes&nbsp;</MenuItem>
@@ -157,9 +174,16 @@ export default function ClientInfoForm(props) {
                 </Box>
 
                 {/* CONTACT */ }
-                <Box mt={ 2 } ><Typography>Contact Info</Typography></Box>
+                <Box sx={{
+                    mt: 2
+                }} ><Typography>Contact Info</Typography></Box>
 
-                <Box display="flex" flexDirection="row" flexWrap="wrap">
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        flexWrap: "wrap"
+                    }}>
                     <FormTextField name="telephone" label="Phone" control={ control } error={ errors.telephone }
                         rules={ {validate: value => validPhone(value) || 'Enter a US phone number with area code'} } />
                     <FormTextField name="email" label="Email" fieldsize="xl" control={ control } error={ errors.email } 

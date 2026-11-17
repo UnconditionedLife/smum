@@ -231,54 +231,58 @@ export default function AnnualDistributionReport(props) {
     }
 
     return (
-        <Box m={ 1 } maxWidth="100%">
-        <TableContainer align="center"> 
-            <Table className='fontFamily' size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportDate={ reportYear }
-                    reportType="ANNUAL REPORT" 
-                    reportCategory="FOOD PANTRY"
-                    groupColumns={[{"name": "Type", "length": 1}, 
-                        {"name": "Clients Services", "length": 5}, 
-                        {"name": "Homeless Services", "length": 2}, 
-                        {"name":"NonClients Services", "length": 2}]}
-                    columns={["USDA/Non USDA", "Households", "Indiv.", "Adults", "Children", "Seniors", "Families", "Indiv.", "Families", "Indiv."]} />
-            <TableBody>
-            {loading ? (
-                <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={13}>
-                        <CircularProgress color="secondary" />
-                    </TableCell>
-                </TableRow>) : null}
-            {monthGrid.map(month => RenderMonth(month))}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
+        <Box
+            sx={{
+                m: 1,
+                maxWidth: "100%"
+            }}>
+            <TableContainer align="center"> 
+                <Table className='fontFamily' size="small" align="center">
                     <style>
                         {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
                                 }
                             }`
                         }
                     </style>
-                    <strong>Annual Totals</strong>
-                </TableCell>
-            </TableRow>
-            {RenderListTotals(usdaTotals, "USDA Totals", true)}
-            {RenderListTotals(nonUsdaTotals, "Non USDA Totals", true)}
-            {RenderListTotals(yearTotals, "Grand Totals", true)}
-            {RenderListTotals(uniqueTotals, "Unique Totals", true)}
-            </TableBody>
-            </Table>
-        </TableContainer>
+                    <ReportsHeader reportDate={ reportYear }
+                        reportType="ANNUAL REPORT" 
+                        reportCategory="FOOD PANTRY"
+                        groupColumns={[{"name": "Type", "length": 1}, 
+                            {"name": "Clients Services", "length": 5}, 
+                            {"name": "Homeless Services", "length": 2}, 
+                            {"name":"NonClients Services", "length": 2}]}
+                        columns={["USDA/Non USDA", "Households", "Indiv.", "Adults", "Children", "Seniors", "Families", "Indiv.", "Families", "Indiv."]} />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={13}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
+                {monthGrid.map(month => RenderMonth(month))}
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <style>
+                            {`@media print { 
+                                .centerText { 
+                                    text-align: center;
+                                    font-size: 14px;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <strong>Annual Totals</strong>
+                    </TableCell>
+                </TableRow>
+                {RenderListTotals(usdaTotals, "USDA Totals", true)}
+                {RenderListTotals(nonUsdaTotals, "Non USDA Totals", true)}
+                {RenderListTotals(yearTotals, "Grand Totals", true)}
+                {RenderListTotals(uniqueTotals, "Unique Totals", true)}
+                </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

@@ -164,50 +164,54 @@ export default function ThanksgivingTurkeyReport(props) {
     }
 
     return (
-        <Box m={ 1 } maxWidth="100%">
-        <TableContainer align="center"> 
-            <Table className='fontFamily' size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportDate={ reportYear }
-                    reportType="TURKEY REPORT" 
-                    reportCategory="THANKSGIVING"
-                    groupColumns={[{"name": "Client", "length": 4}, 
-                    {"name": "Clients Served", "length": 5}, 
-                    {"name":"Status", "length": 1}]}
-                    columns={["ID", "Family", "Given", "Zip", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Picked Up?"]} />
-            <TableBody>
-            {loading ? (
-                <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={13}>
-                        <CircularProgress color="secondary" />
-                    </TableCell>
-                </TableRow>) : null}
-            {RenderSvcList(turkeyServices)}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
+        <Box
+            sx={{
+                m: 1,
+                maxWidth: "100%"
+            }}>
+            <TableContainer align="center"> 
+                <Table className='fontFamily' size="small" align="center">
                     <style>
                         {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
                                 }
                             }`
                         }
                     </style>
-                    <strong>Voucher Totals</strong>
-                </TableCell>
-            </TableRow>
-            {RenderListTotals(turkeyTotals)}
-            </TableBody>
-            </Table>
-        </TableContainer>
+                    <ReportsHeader reportDate={ reportYear }
+                        reportType="TURKEY REPORT" 
+                        reportCategory="THANKSGIVING"
+                        groupColumns={[{"name": "Client", "length": 4}, 
+                        {"name": "Clients Served", "length": 5}, 
+                        {"name":"Status", "length": 1}]}
+                        columns={["ID", "Family", "Given", "Zip", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Picked Up?"]} />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={13}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
+                {RenderSvcList(turkeyServices)}
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <style>
+                            {`@media print { 
+                                .centerText { 
+                                    text-align: center;
+                                    font-size: 14px;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <strong>Voucher Totals</strong>
+                    </TableCell>
+                </TableRow>
+                {RenderListTotals(turkeyTotals)}
+                </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

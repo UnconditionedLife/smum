@@ -13,23 +13,12 @@ module.exports = {
                 use: ["babel-loader"]
             },
             {
-                test: /\.svg$/,
-                use: [
-                {
-                    loader: 'svg-url-loader',
-                    options: {
-                    limit: 10000,
-                    },
-                },
-                ],
-            },
-            {
                 test: /\.css$/i,
                 use: ["style-loader", "css-loader"]
             },
             {
               test: /\.(gif|svg|jpg|png)$/,
-              loader: "file-loader",
+              type: "asset/resource",
             }
         ]
     },

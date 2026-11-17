@@ -237,15 +237,28 @@ export default function ClientsMain(props) {
     // if (getUserName() === null) return null 
 
     return (
-        <Box key={client.updatedDateTime} width="100%" px={0} py={2}  >
+        <Box
+            key={client.updatedDateTime}
+            sx={{
+                width: "100%",
+                px: 0,
+                py: 2
+            }}>
             <Snackbar open={openAlert} autoHideDuration={15000} onClose={handleAlertClose}>
                 <Alert onClose={handleAlertClose} severity={alertSeverity}>{alertMsg}</Alert>
             </Snackbar>
 
             <ClientsHeader {...passProps} />
-            <Box maxWidth="100%" display="flex" justifyContent="center" mt={0} pt={0}>
+            <Box
+                sx={{
+                    maxWidth: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    mt: 0,
+                    pt: 0
+                }}>
                 <ClientsContent {...passProps} showAlert={showAlert} />
             </Box>
         </Box>
-    )
+    );
 }

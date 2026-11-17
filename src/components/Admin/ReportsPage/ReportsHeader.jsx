@@ -63,13 +63,19 @@ export default function ReportsHeader(props) {
                                 }`
                             }
                         </style>
-                            <Box my={2}>
+                            <Box sx={{
+                                my: 2
+                            }}>
                                 <strong>In accordance with Federal law and U.S. Department of Agriculture (USDA) civil rights regulations and policies, this institution is prohibited from discriminating on the basis of race, color, national origin, sex, age, disability, and reprisal or retaliation for prior civil rights activity. (Not all prohibited bases apply to all programs.)</strong>
                             </Box>
-                            <Box my={2} style={{lineHeight: '24px'}}>
+                            <Box style={{lineHeight: '24px'}} sx={{
+                                my: 2
+                            }}>
                                 <strong>You self-declare that:</strong>
                            </Box>
-                           <Box ml={4}>
+                           <Box sx={{
+                               ml: 4
+                           }}>
                             <ol>
                                     <li>Your name and address listed is correct; if homeless, you can put homeless as the address.</li>
                                     <li>Your household size as stated and resides within this state and organization’s service area.</li>
@@ -124,5 +130,5 @@ export default function ReportsHeader(props) {
                 )}
             </TableRow>
         </TableHead>
-    )
+    );
 }

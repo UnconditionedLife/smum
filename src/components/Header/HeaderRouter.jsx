@@ -1,11 +1,11 @@
 import React from 'react';
-import { BrowserRouter as Router, useLocation, useHistory, matchPath } from "react-router-dom";
+import { BrowserRouter as Router, useLocation, useNavigate, matchPath } from "react-router";
 import { HeaderBar } from ".";
 import { getSession, isAdmin } from '../System/js/Database';
 
 export default function SearchNavBarContainer() {
     const route = useLocation();
-    const history = useHistory();
+    const navigate = useNavigate();
     
     const checkSectionURL = () => {
         const url = route.pathname;
@@ -14,27 +14,27 @@ export default function SearchNavBarContainer() {
             // Make no navigation changes until we have a valid session set up
             return -1;
         }
-        if (matchPath(url, { path: "/", exact: true, strict: false })) {
+        if (matchPath({ path: "/", end: true }, url)) {
             return 0;
         }
-        else if (matchPath(url, { path: "/clients", exact: true, strict: false }) || matchPath(url, { path: "/clients/*", exact: true, strict: false })) {
+        else if (matchPath({ path: "/clients", end: true }, url) || matchPath({ path: "/clients/*", end: true }, url)) {
             return 0;
         }
-        else if (matchPath(url, { path: "/admin", exact: true, strict: false }) || matchPath(url, { path: "/admin/*", exact: true, strict: false })) {
+        else if (matchPath({ path: "/admin", end: true }, url) || matchPath({ path: "/admin/*", end: true }, url)) {
             if (isAdmin()) {
                 return 1;
             } else {
-                // history.push("/clients");
+                // navigate("/clients");
                 return 0;
             }
         }
-        else if (matchPath(url, { path: "/today", exact: true, strict: false })) {
+        else if (matchPath({ path: "/today", end: true }, url)) {
             return 2;
         }
-        else if (matchPath(url, { path: "/user", exact: true, strict: false })) {
+        else if (matchPath({ path: "/user", end: true }, url)) {
             return 3;
         }
-        else if (matchPath(url, { path: "/nextvisit", exact: true, strict: false })) {
+        else if (matchPath({ path: "/nextvisit", end: true }, url)) {
             return 4;
         }
         else {
@@ -45,28 +45,28 @@ export default function SearchNavBarContainer() {
     }
 
     const handleLogout = () => {
-        history.push("/clients")
+        navigate("/clients")
     }
 
     const updateRoute = (newValue) => {
         const url = route.pathname;
         switch (newValue) {
           case 0:
-            if (!matchPath(url, { path: "/clients", exact: false, strict: false })) {
-                history.push("/clients");
+            if (!matchPath({ path: "/clients", end: false }, url)) {
+                navigate("/clients");
             }
             break;
           case 1:
-            if (isAdmin()) history.push("/admin");
+            if (isAdmin()) navigate("/admin");
             break;
           case 2:
-            history.push("/today");
+            navigate("/today");
             break;
           case 3:
-            history.push("/user");
+            navigate("/user");
             break;
           case 4:
-            history.push("/nextvisit");
+            navigate("/nextvisit");
             break;
         }
     }

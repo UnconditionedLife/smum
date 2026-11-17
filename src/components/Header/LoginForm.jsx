@@ -148,7 +148,7 @@ export default function LoginForm(props) {
                         <TextField ml='0' variant="outlined" margin="normal" required fullWidth 
                             name="password" label="Password" type={passwordDisplay ? "text" : "password"} 
                             id="password" autoComplete="current-password" {...passwordInput.bind}
-                            InputProps={{
+                            slotProps={{ input: {
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton
@@ -160,14 +160,16 @@ export default function LoginForm(props) {
                                         </IconButton>
                                     </InputAdornment>
                                 )
-                            }}
+                            } }}
                             onKeyDown={event => {
                                 if (event.key == "Enter") 
                                     doSubmit();
                             }}
                         />
-                        <Box ml={1}>
-                            <Grid item>
+                        <Box sx={{
+                            ml: 1
+                        }}>
+                            <Grid>
                                 <Link onClick={() => {
                                     if (usernameInput.value == "") {
                                         setMessage("Username is required.");
@@ -206,7 +208,7 @@ export default function LoginForm(props) {
                         <TextField ml='0' variant="outlined" margin="normal" required fullWidth
                             name="newPassword1" label="New Password" id="newPassword1" autoComplete="newPassword"
                             type={passwordDisplay ? "text" : "password"} {...newPassword1Input.bind}
-                            InputProps={{
+                            slotProps={{ input: {
                                 endAdornment: (
                                 <InputAdornment position="end">
                                     <IconButton
@@ -218,7 +220,7 @@ export default function LoginForm(props) {
                                     </IconButton>
                                 </InputAdornment>
                                 )
-                            }}
+                            } }}
                             onKeyDown={event => {
                                 if (event.key == "Enter")
                                     doSubmit();
@@ -227,7 +229,7 @@ export default function LoginForm(props) {
                         <TextField ml='0' variant="outlined" margin="normal" required fullWidth
                             name="newPassword2" label="Confirm Password" id="newPassword2" autoComplete="newPassword"
                             type={passwordDisplay ? "text" : "password"} {...newPassword2Input.bind}
-                            InputProps={{
+                            slotProps={{ input: {
                                 endAdornment: (
                                 <InputAdornment position="end">
                                     <IconButton
@@ -239,7 +241,7 @@ export default function LoginForm(props) {
                                     </IconButton>
                                 </InputAdornment>
                                 )
-                            }}
+                            } }}
                             onKeyDown={event => {
                                 if (event.key == "Enter")
                                     doSubmit();
@@ -282,7 +284,14 @@ export default function LoginForm(props) {
                     </Button>
                 ) : null}
 
-                <Box m={ 2 } display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
+                <Box
+                    sx={{
+                        m: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}>
                     <Button variant="contained" color="primary" style={{ textTransform: "none" }} onClick={ doSubmit } >
                         { buttonText }
                     </Button>
@@ -292,8 +301,22 @@ export default function LoginForm(props) {
     }
 
     return (
-        <Box m={ 2 } width="280px" display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
-            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
+        <Box
+            sx={{
+                m: 2,
+                width: "280px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center"
+            }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center"
+                }}>
                 <SmumLogo mb={ 1 } width='50px' height='50px' display="solid"/>
                 <Typography variant="h6" align="center">
                     Login to <br/> Santa Maria Urban Ministry
@@ -301,14 +324,25 @@ export default function LoginForm(props) {
                 <form noValidate> { displayLoginForms() } </form>
             </Box>
             { displaySubmitButtons() }
-            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" >
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center"
+                }}>
                 <Typography variant="subtitle2">
                     Version { getAppVersion() }
                 </Typography>
             </Box>
-            <Box width='100%' mt={ 1 } mb={ 1.5 }>
+            <Box
+                sx={{
+                    width: '100%',
+                    mt: 1,
+                    mb: 1.5
+                }}>
                 { message ? <Alert severity="error">{ message }</Alert> : '' }
             </Box>
         </Box>
-    )
+    );
 }

@@ -29,17 +29,9 @@ SaveCancel.propTypes = {
     message: PropTypes.object,
 }
 
-SaveCancel.defaultProps = {
-    saveLabel: 'Save',
-    cancelLabel: 'Cancel',
-    saveDisabled: false,
-    cancelDisabled: false,
-    disabled: false,
-}
-
 dayjs.extend(customParseFormat);
 
-export default function SaveCancel(props) {
+export default function SaveCancel({ saveLabel = 'Save', cancelLabel = 'Cancel', ...props }) {
     const saveDisabled = props.saveDisabled || props.disabled;
     const cancelDisabled = props.cancelDisabled || props.disabled;
 
@@ -62,23 +54,49 @@ export default function SaveCancel(props) {
     }
 
     const alertBox = (
-        <Box maxWidth='300px' height='38px' m={ 1 } alignContent="center" justifyContent="center">
+        <Box
+            sx={{
+                maxWidth: '300px',
+                height: '38px',
+                m: 1,
+                alignContent: "center",
+                justifyContent: "center"
+            }}>
             <Alert severity={ m.severity }> { m.text } </Alert>
         </Box>
     )
 
     return (
-        <Box display="flex" mt={ 2 } flexDirection="column" flexWrap="wrap" alignContent="center" justifyContent="center">
-            <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
+        <Box
+            sx={{
+                display: "flex",
+                mt: 2,
+                flexDirection: "column",
+                flexWrap: "wrap",
+                alignContent: "center",
+                justifyContent: "center"
+            }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    justifyContent: "center"
+                }}>
                 <Button variant="contained" color="primary"
-                    disabled={ saveDisabled } onClick={ () => props.onClick(true) }>{ props.saveLabel }</Button>
+                    disabled={ saveDisabled } onClick={ () => props.onClick(true) }>{ saveLabel }</Button>
                 <Button variant="outlined" color="secondary"
-                    disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ props.cancelLabel }</Button>
+                    disabled={ cancelDisabled } onClick={ () => props.onClick(false) }>{ cancelLabel }</Button>
             </Box>
-            <Box width={ 1 } display="flex" justifyContent="center">
+            <Box
+                sx={{
+                    width: 1,
+                    display: "flex",
+                    justifyContent: "center"
+                }}>
                 { (m.tooltip && m.text) && <Tooltip title={ m.tooltip } placement="right">{ alertBox }</Tooltip> }
                 { (!m.tooltip && m.text) && alertBox }
             </Box>
         </Box>
-    )
+    );
 }

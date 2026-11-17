@@ -200,55 +200,59 @@ export default function DailyDistributionReport(props) {
     }
 
     return (
-        <Box m={ 1 }>
-        <TableContainer align="center">
-            <Table className='fontFamily' padding="checkbox" size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportDate={ reportDay }
-                    reportType="DAILY REPORT"
-                    showEfa7Header={true} 
-                    reportCategory="FOOD BANK USDA EFA 7"
-                    groupColumns={[{"name": "Print Name (Clients)", "length": 3}, 
-                        {"name": "Address (Include Zip Code)", "length": 2}, 
-                        {"name": "Family Size", "length": 2}, 
-                        {"name": "Is this your 1st time receiving USDA food this month?", "length": 2}]}
-                    columns={["ID", "Given", "Family", "Address", "Zip", "A", "C", "USDA", "NonUSDA" ]} />
-            <TableBody>
-            {loading ? (
-                <TableRow>
-                    <TableCell className='centerText' align="center" colSpan={9}>
-                        <CircularProgress color="secondary" />
-                    </TableCell>
-                </TableRow>) : null}
-
-            {RenderSvcList(services)}
-            {/* {RenderListTotals(totalsUSDA, "USDA Totals")} */}
-            {RenderListTotals(totalsDay, 'Total the responses from the last three columns into the last row. i.e. total family size, how many "Yes", how many "No"' )}
-            
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={9}>
+        <Box sx={{
+            m: 1
+        }}>
+            <TableContainer align="center">
+                <Table className='fontFamily' padding="checkbox" size="small" align="center">
                     <style>
                         {`@media print { 
-                                .centerText { 
-                                    font-size: 15px;
-                                    line-height: 26px;
-                                    }
-                                }`
-                            }
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
+                                }
+                            }`
+                        }
                     </style>
-                    <Box my={2} ><i>This institution is an equal opportunity provider.</i></Box>
-                </TableCell>
-            </TableRow>
-            </TableBody>
-            </Table>
-        </TableContainer>
+                    <ReportsHeader reportDate={ reportDay }
+                        reportType="DAILY REPORT"
+                        showEfa7Header={true} 
+                        reportCategory="FOOD BANK USDA EFA 7"
+                        groupColumns={[{"name": "Print Name (Clients)", "length": 3}, 
+                            {"name": "Address (Include Zip Code)", "length": 2}, 
+                            {"name": "Family Size", "length": 2}, 
+                            {"name": "Is this your 1st time receiving USDA food this month?", "length": 2}]}
+                        columns={["ID", "Given", "Family", "Address", "Zip", "A", "C", "USDA", "NonUSDA" ]} />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={9}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
+
+                {RenderSvcList(services)}
+                {/* {RenderListTotals(totalsUSDA, "USDA Totals")} */}
+                {RenderListTotals(totalsDay, 'Total the responses from the last three columns into the last row. i.e. total family size, how many "Yes", how many "No"' )}
+                
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={9}>
+                        <style>
+                            {`@media print { 
+                                    .centerText { 
+                                        font-size: 15px;
+                                        line-height: 26px;
+                                        }
+                                    }`
+                                }
+                        </style>
+                        <Box sx={{
+                            my: 2
+                        }} ><i>This institution is an equal opportunity provider.</i></Box>
+                    </TableCell>
+                </TableRow>
+                </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, TextField, FormControl, InputLabel, Select, MenuItem,
+    Button, FormControl, InputLabel, Select, MenuItem,
     Box, Grid, Typography, Divider, Switch, FormControlLabel
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -48,6 +48,12 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
             return;
         }
 
+        // The pickers pass an invalid date while a time is only partly typed
+        if (!editedShift.TimestampIn.isValid() || (editedShift.TimestampOut && !editedShift.TimestampOut.isValid())) {
+            alert('Please enter a complete date and time');
+            return;
+        }
+
         // If check-out time exists, it must be after check-in time
         if (editedShift.TimestampOut && editedShift.TimestampIn) {
             if (editedShift.TimestampOut.isBefore(editedShift.TimestampIn)) {
@@ -91,12 +97,25 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
             <DialogTitle>Edit Shift</DialogTitle>
             <DialogContent>
                 <Box sx={{ mb: 3 }}>
-                    <Box display="flex" alignItems="center" gap={2} flexWrap="wrap" sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary">
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                            flexWrap: "wrap",
+                            mb: 2
+                        }}>
+                        <Typography variant="body2" sx={{
+                            color: "text.secondary"
+                        }}>
                             ID: <strong>{shift.ShiftId || 'Unknown'}</strong>
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">•</Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" sx={{
+                            color: "text.secondary"
+                        }}>•</Typography>
+                        <Typography variant="body2" sx={{
+                            color: "text.secondary"
+                        }}>
                             Date: {shift.Date || dayjs(shift.TimestampIn).format('YYYY-MM-DD') || 'Unknown'}
                         </Typography>
                         {(() => {
@@ -127,8 +146,12 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
 
                             return duration !== '-' ? (
                                 <>
-                                    <Typography variant="body2" color="text.secondary">•</Typography>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography variant="body2" sx={{
+                                        color: "text.secondary"
+                                    }}>•</Typography>
+                                    <Typography variant="body2" sx={{
+                                        color: "text.secondary"
+                                    }}>
                                         Duration: {duration}
                                     </Typography>
                                 </>
@@ -139,7 +162,7 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                 </Box>
                 <Box sx={{ mt: 2 }}>
                     <Grid container spacing={2}>
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <FormControl fullWidth>
                                 <InputLabel>Volunteer</InputLabel>
                                 <Select
@@ -156,31 +179,43 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                             </FormControl>
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 6
+                            }}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DateTimePicker
                                     label="Check In Time"
                                     value={editedShift.TimestampIn}
                                     onChange={(value) => handleChange('TimestampIn', value)}
-                                    renderInput={(params) => <TextField {...params} fullWidth />}
+                                    slotProps={{ textField: { fullWidth: true } }}
                                     ampm={true}
                                 />
                             </LocalizationProvider>
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 6
+                            }}>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DateTimePicker
                                     label="Check Out Time"
                                     value={editedShift.TimestampOut}
                                     onChange={(value) => handleChange('TimestampOut', value)}
-                                    renderInput={(params) => <TextField {...params} fullWidth />}
+                                    slotProps={{ textField: { fullWidth: true } }}
                                     ampm={true}
                                 />
                             </LocalizationProvider>
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 6
+                            }}>
                             <FormControl fullWidth>
                                 <InputLabel>Program</InputLabel>
                                 <Select
@@ -198,7 +233,11 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                             </FormControl>
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid
+                            size={{
+                                xs: 12,
+                                sm: 6
+                            }}>
                             <FormControl fullWidth>
                                 <InputLabel>Activity</InputLabel>
                                 <Select
@@ -216,9 +255,20 @@ export default function ShiftEditDialog({ open, shift, onClose, volunteers, prog
                             </FormControl>
                         </Grid>
 
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                             <Typography variant="subtitle1" sx={{ mt: 3, mb: 1, color: 'error.main' }}>Danger Zone</Typography>
-                            <Box display="flex" flexDirection="row" gap={2} flexWrap="wrap" sx={{ mb: 3, p: .5, border: '1px solid', borderColor: 'error.main', borderRadius: 1 }}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    gap: 2,
+                                    flexWrap: "wrap",
+                                    mb: 3,
+                                    p: .5,
+                                    border: '1px solid',
+                                    borderColor: 'error.main',
+                                    borderRadius: 1
+                                }}>
                                 <FormControlLabel
                                     control={
                                         <Switch
