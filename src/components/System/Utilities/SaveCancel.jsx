@@ -73,15 +73,15 @@ export default function SaveCancel({ saveLabel = 'Save', cancelLabel = 'Cancel',
                 mt: 2,
                 flexDirection: "column",
                 flexWrap: "wrap",
-                alignContent: "center",
-                justifyContent: "center"
+                alignContent: "flex-start",
+                justifyContent: "flex-start"
             }}>
             <Box
                 sx={{
                     display: "flex",
                     flexDirection: "row",
                     flexWrap: "wrap",
-                    justifyContent: "center"
+                    justifyContent: "flex-start"
                 }}>
                 <Button variant="contained" color="primary"
                     disabled={ saveDisabled } onClick={ () => props.onClick(true) }>{ saveLabel }</Button>
@@ -92,7 +92,7 @@ export default function SaveCancel({ saveLabel = 'Save', cancelLabel = 'Cancel',
                 sx={{
                     width: 1,
                     display: "flex",
-                    justifyContent: "center"
+                    justifyContent: "flex-start"
                 }}>
                 { (m.tooltip && m.text) && <Tooltip title={ m.tooltip } placement="right">{ alertBox }</Tooltip> }
                 { (!m.tooltip && m.text) && alertBox }

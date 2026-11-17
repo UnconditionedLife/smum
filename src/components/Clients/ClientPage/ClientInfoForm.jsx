@@ -101,7 +101,7 @@ export default function ClientInfoForm(props) {
             <form>
                 <Box sx={{
                     mt: 0
-                }} ><Typography>Account Holder</Typography></Box>
+                }} ><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Account Holder</Typography></Box>
                 <Box
                     sx={{
                         display: "flex",
@@ -148,7 +148,7 @@ export default function ClientInfoForm(props) {
                 {/* ADDRESS */ }
                 <Box sx={{
                     mt: 2
-                }} ><Typography>Address</Typography></Box>
+                }} ><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Address</Typography></Box>
         
                 <Box
                     sx={{
@@ -176,7 +176,7 @@ export default function ClientInfoForm(props) {
                 {/* CONTACT */ }
                 <Box sx={{
                     mt: 2
-                }} ><Typography>Contact Info</Typography></Box>
+                }} ><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Contact Info</Typography></Box>
 
                 <Box
                     sx={{

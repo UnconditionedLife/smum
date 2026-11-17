@@ -20,7 +20,8 @@ export default function SectionsContent(props) {
     if ( !getUserName() ) return null;
 
     return (
-        <Container ml={ 0 } style={{ overflowY: 'visible', margin:0, padding:0, maxWidth:'100%' }}>
+        <Container maxWidth={ false } disableGutters
+            sx={{ overflowY: 'visible', maxWidth: 1400, mx: 'auto', px: { xs: 0, sm: 2, md: 3 }, pb: 6 }}>
             <Routes>
                 <Route path="/" element={ <Navigate to="/clients" replace /> } />
                 <Route path="/clients/*" element={

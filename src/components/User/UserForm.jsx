@@ -135,7 +135,7 @@ export default function UserForm(props) {
                         display: "flex",
                         flexDirection: "row",
                         flexWrap: "wrap"
-                    }}><Typography>Account Holder</Typography></Box>
+                    }}><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Account Holder</Typography></Box>
                 { !props.selfEdit && 
                 <Box
                     sx={{
@@ -178,7 +178,7 @@ export default function UserForm(props) {
                         display: "flex",
                         flexDirection: "row",
                         flexWrap: "wrap"
-                    }}><Typography>Address</Typography></Box>
+                    }}><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Address</Typography></Box>
                 <Box
                     sx={{
                         display: "flex",
@@ -203,7 +203,7 @@ export default function UserForm(props) {
                         display: "flex",
                         flexDirection: "row",
                         flexWrap: "wrap"
-                    }}><Typography>Contact Info</Typography></Box>
+                    }}><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Contact Info</Typography></Box>
                 <Box
                     sx={{
                         display: "flex",

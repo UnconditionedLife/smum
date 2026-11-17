@@ -43,7 +43,7 @@ export default function FinancialInfoForm(props) {
             <form>
                 <Box sx={{
                     mt: 2
-                }} ><Typography>Monthly Amounts</Typography></Box>
+                }} ><Typography variant='overline' sx={{ color: 'text.secondary', lineHeight: 2.4 }}>Monthly Amounts</Typography></Box>
                 <Box
                     sx={{
                         display: "flex",

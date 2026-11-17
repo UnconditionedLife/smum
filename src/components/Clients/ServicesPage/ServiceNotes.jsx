@@ -56,7 +56,7 @@ export default function ServiceNotes(props) {
 
     return (
         <Fragment>
-            <Card height='72px'>
+            <Card height='72px' mb={ 1 }>
                 <Box
                     sx={{
                         display: 'flex',
@@ -68,7 +68,7 @@ export default function ServiceNotes(props) {
                     }}>
                     <Badge badgeContent={ noteCount } color="secondary">
                         <Typography variant='h6' noWrap>
-                            SERVICE NOTES&nbsp;
+                            Service Notes&nbsp;
                         </Typography>
                     </Badge>  
 
@@ -82,7 +82,7 @@ export default function ServiceNotes(props) {
             </Card>
             { editMode === 'add' &&
             <Fade in= { editMode === 'add' }  timeout={ 1500 }>
-                <Card width='300px'mb={ 1 } variant="elevation" elevation={ 8 }>
+                <Card mb={ 1 } variant="elevation" elevation={ 8 }>
                     <CardContent>
                         <NoteForm
                             client = { client } 

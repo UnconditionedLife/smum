@@ -49,7 +49,7 @@ export default function ClientPage(props) {
                 <Accordion key="ClientInfo" defaultExpanded={ true } onChange={handleChange('panel1')}>
                     <AccordionSummary style={{justifyContent: "center"}} expandIcon={<ExpandMore />} id="panel1bh-header" >
                         {/* <Typography  variant='button'>Client #{client.clientId}</Typography> */}
-                        <Typography  variant='button'>{ clientLable }</Typography>
+                        <Typography variant='h6'>{ clientLable }</Typography>
                     </AccordionSummary>
                     <AccordionDetails style={{justifyContent: "center"}}> 
                         <Box
@@ -67,7 +67,7 @@ export default function ClientPage(props) {
                     <AccordionSummary expandIcon={ <ExpandMore /> } id="panel2bh-header">
                         <Box style={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
                             <Box style={{ justifyContent: "flex-start" }}>
-                                <Typography variant='button' ><b>Dependents</b></Typography>
+                                <Typography variant='h6'>Dependents</Typography>
                             </Box>
                         </Box>
                     </AccordionSummary>
@@ -90,7 +90,7 @@ export default function ClientPage(props) {
 
                 <Accordion key="FamilyTotals" expanded={expanded === 'panel3'} onChange={ handleChange('panel3') }>
                     <AccordionSummary expandIcon={ <ExpandMore /> } id="panel3bh-header">
-                        <Typography variant='button' ><b>Family Totals</b></Typography>
+                        <Typography variant='h6'>Family Totals</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                         <FamilyTotalsForm client={ client }/>
@@ -99,7 +99,7 @@ export default function ClientPage(props) {
 
                 {/* <Accordion key="FinancialInfo" expanded={expanded === 'panel4'} onChange={ handleChange('panel4') }>
                     <AccordionSummary expandIcon={ <ExpandMore /> } id="panel4bh-header">
-                        <Typography variant='button' ><b>Financial Information</b></Typography>
+                        <Typography variant='h6'>Financial Information</Typography>
                     </AccordionSummary>
                         <Box ml={ 3 } mr={ 3 } mb={ 2 }>
                             <FinancialInfoForm client = { client } saveAndUpdateClient={ saveAndUpdateClient } 

@@ -5,7 +5,6 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { Box, Chip } from '@mui/material';
 import { Typography } from '../../System';
-import { useTheme } from '@mui/material/styles';
 import { House } from '@mui/icons-material';
 import { calcFamilyCounts } from '../../System/js/Clients/ClientUtils';
 
@@ -38,8 +37,6 @@ export default function HistoryHeader(props) {
         ? dayjs(displayDate).format("MMM DD, YYYY - h:mm a")
         : "** Never **"
 
-    const theme = useTheme()
-    const greenBorder = { borderColor: theme.palette.primary.light, borderWidth: "3px", borderStyle: "solid" }
 
     return (
         <Box sx={{
@@ -56,7 +53,7 @@ export default function HistoryHeader(props) {
                     flexWrap: "wrap"
                 }}>
                 <Chip icon={<House />} label={client.clientId} color="primary"
-                    style={{ width: '118px', fontSize: 'x-large', justifyContent: 'left', marginRight: '12px' }} />
+                    style={{ width: '118px', fontSize: '1.125rem', fontWeight: 700, justifyContent: 'left', marginRight: '12px' }} />
                 <Box sx={{ display: 'flex', justifyContent: 'left', alignItems: 'center' }}>
                     <Typography color='primary' variant='h6' noWrap>
                         <b>{client.givenName} {client.familyName}</b>
@@ -67,39 +64,38 @@ export default function HistoryHeader(props) {
                 </Box>
             </Box>
             <Box
-                style={greenBorder}
                 sx={{
                     display: "flex",
                     flexWrap: "wrap",
-                    justifyContent: "center",
-                    alignItems: "center"
+                    justifyContent: "space-around",
+                    alignItems: "center",
+                    mx: { xs: 0, sm: 2 },
+                    py: 0.5,
+                    bgcolor: 'background.paper',
+                    border: 1,
+                    borderColor: 'divider',
+                    borderRadius: '12px',
                 }}>
-                <Box
-                    sx={{
-                        px: 2,
-                        py: 0.5
-                    }}><Typography><strong>Created:</strong> {dayjs(client.createdDateTime).format("MMM DD, YYYY - h:mm a")}</Typography></Box>
-                <Box
-                    sx={{
-                        px: 2,
-                        py: 0.5
-                    }}><Typography><strong>Updated:</strong> {dayjs(client.updatedDateTime).format("MMM DD, YYYY - h:mm a")}</Typography></Box>
-                <Box
-                    sx={{
-                        px: 2,
-                        py: 0.5
-                    }}><Typography><strong>First Seen:</strong> {dayjs(client.firstSeenDate).format("MMM DD, YYYY - h:mm a")}</Typography></Box>
-                <Box
-                    sx={{
-                        px: 2,
-                        py: 0.5
-                    }}><Typography><strong>Last Served:</strong> {lsFoodDate}</Typography></Box>
-                <Box
-                    sx={{
-                        px: 2,
-                        py: 0.5
-                    }}><Typography><strong>Last ID Check:</strong> {dayjs(client.familyIdCheckedDate).format("MMM DD, YYYY")}</Typography></Box>
-
+                <Box sx={{ px: 2.5, py: 1 }}>
+                    <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block' }}>Created</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{dayjs(client.createdDateTime).format("MMM DD, YYYY - h:mm a")}</Typography>
+                </Box>
+                <Box sx={{ px: 2.5, py: 1 }}>
+                    <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block' }}>Updated</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{dayjs(client.updatedDateTime).format("MMM DD, YYYY - h:mm a")}</Typography>
+                </Box>
+                <Box sx={{ px: 2.5, py: 1 }}>
+                    <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block' }}>First Seen</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{dayjs(client.firstSeenDate).format("MMM DD, YYYY - h:mm a")}</Typography>
+                </Box>
+                <Box sx={{ px: 2.5, py: 1 }}>
+                    <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block' }}>Last Served</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{lsFoodDate}</Typography>
+                </Box>
+                <Box sx={{ px: 2.5, py: 1 }}>
+                    <Typography variant='caption' sx={{ color: 'text.secondary', display: 'block' }}>Last ID Check</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{dayjs(client.familyIdCheckedDate).format("MMM DD, YYYY")}</Typography>
+                </Box>
             </Box>
         </Box>
     );

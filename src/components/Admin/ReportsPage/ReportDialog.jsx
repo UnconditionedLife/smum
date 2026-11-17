@@ -5,6 +5,8 @@ import { Button,  } from '../../System';
 import { useReactToPrint } from 'react-to-print';
 import { useRef } from 'react';
 import { Print } from '@mui/icons-material';
+import { ThemeProvider } from '@mui/material/styles';
+import { reportTheme } from '../../Theme.jsx';
 
 ReportDialog.propTypes = {
     dialogOpen: PropTypes.bool,
@@ -27,7 +29,7 @@ export default function ReportDialog(props) {
         <Dialog fullWidth={true} maxWidth={'xl'} open={ props.dialogOpen } aria-labelledby="form-dialog-title"> 
             <DialogTitle id="form-dialog-title">{props.heading}</DialogTitle>
             <DialogContent ref={ref}>
-            {props.body}
+                <ThemeProvider theme={ reportTheme }>{props.body}</ThemeProvider>
             </DialogContent>
             <DialogActions>
             {props.actions}

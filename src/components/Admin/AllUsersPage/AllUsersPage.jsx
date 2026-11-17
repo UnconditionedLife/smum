@@ -37,10 +37,10 @@ function UserList(props) {
                 <Table>
                 <TableHead>
                     <TableRow>
-                    <TableCell align="center">Username</TableCell>
-                    <TableCell align="center">Given Name</TableCell>
-                    <TableCell align="center">Family Name</TableCell>
-                    <TableCell align="center">User Role</TableCell>
+                    <TableCell>Username</TableCell>
+                    <TableCell>Given Name</TableCell>
+                    <TableCell>Family Name</TableCell>
+                    <TableCell>User Role</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -51,9 +51,9 @@ function UserList(props) {
                         selected={ row.userName == userName }
                     >
                         <TableCell component="th" scope="row">{row.userName}</TableCell>
-                        <TableCell align="center">{row.givenName}</TableCell>
-                        <TableCell align="center">{row.familyName}</TableCell>
-                        <TableCell align="center">{row.userRole}</TableCell>
+                        <TableCell>{row.givenName}</TableCell>
+                        <TableCell>{row.familyName}</TableCell>
+                        <TableCell>{row.userRole}</TableCell>
                     </TableRow>
                     ))}
                     { editMode === 'edit' &&
@@ -108,7 +108,7 @@ export default function AllUsersPage(props) {
 
             <Accordion defaultExpanded={ true }>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
-                    <Typography variant='button' >Active Users</Typography>
+                    <Typography variant='h6'>Active Users</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <UserList 
@@ -118,7 +118,7 @@ export default function AllUsersPage(props) {
             </Accordion>
             <Accordion>
                 <AccordionSummary expandIcon={ <ExpandMore /> }>
-                    <Typography variant='button' >Inactive Users</Typography>
+                    <Typography variant='h6'>Inactive Users</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <UserList 

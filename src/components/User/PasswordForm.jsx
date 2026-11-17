@@ -69,13 +69,17 @@ export default function PasswordForm() {
                         control={ control } rules={ {required: 'New password is required'} }/>
                 </Box>
             </form>
-            <Typography>
-                Passwords must be 8 characters or more and contain at least: <br/>
-                - one upper case letter <br/>
-                - one lower case letter <br/>
-                - one digit <br/>
-                - one special character <br/>
-            </Typography>
+            <Box sx={{ mx: 1, mt: 1, p: 1.5, borderRadius: '10px', bgcolor: 'action.hover' }}>
+                <Typography variant='body2' sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Passwords must be 8 characters or more and contain at least:
+                </Typography>
+                <Box component='ul' sx={{ m: 0, pl: 2.5, color: 'text.secondary', typography: 'body2' }}>
+                    <li>one upper case letter</li>
+                    <li>one lower case letter</li>
+                    <li>one digit</li>
+                    <li>one special character</li>
+                </Box>
+            </Box>
             <SaveCancel saveDisabled={ !formState.isDirty } onClick={ (isSave) => { isSave ? doSubmit() : doCancel() } } 
                 message={ saveMessage } />
         </Fragment>

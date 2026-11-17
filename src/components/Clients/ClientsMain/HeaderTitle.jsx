@@ -73,7 +73,7 @@ export default function HeaderTitle(props) {
                         flexWrap: "wrap"
                     }}>
                     <Chip icon={ <House /> } label={ client.clientId } color="primary"
-                        style={{ width:'118px', fontSize:'x-large', justifyContent:'left', marginRight: '12px' }} /> 
+                        style={{ width:'118px', fontSize:'1.125rem', fontWeight: 700, justifyContent:'left', marginRight: '12px' }} /> 
                     <Box
                         sx={{
                             mt: 0,
