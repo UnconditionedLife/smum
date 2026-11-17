@@ -22,13 +22,6 @@ export default function VolunteersPage() {
         selectedTab = 0;
     }
 
-    // Redirect /admin/volunteers or /admin/volunteers/ to /admin/volunteers/volunteers
-    useEffect(() => {
-        if (pathname === '/admin/volunteers' || pathname === '/admin/volunteers/') {
-            history.replace('/admin/volunteers/volunteers');
-        }
-    }, [pathname, history]);
-
     const handleTabChange = (event, newValue) => {
         if (!navigationAllowed()) return;
 
