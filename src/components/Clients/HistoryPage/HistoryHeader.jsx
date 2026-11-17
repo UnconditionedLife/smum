@@ -42,8 +42,19 @@ export default function HistoryHeader(props) {
     const greenBorder = { borderColor: theme.palette.primary.light, borderWidth: "3px", borderStyle: "solid" }
 
     return (
-        <Box width={1}>
-            <Box mb={1} display='flex' flexDirection='row' height='44px' justifyContent='center' alignContent='center' flexWrap="wrap">
+        <Box sx={{
+            width: 1
+        }}>
+            <Box
+                sx={{
+                    mb: 1,
+                    display: 'flex',
+                    flexDirection: 'row',
+                    height: '44px',
+                    justifyContent: 'center',
+                    alignContent: 'center',
+                    flexWrap: "wrap"
+                }}>
                 <Chip icon={<House />} label={client.clientId} color="primary"
                     style={{ width: '118px', fontSize: 'x-large', justifyContent: 'left', marginRight: '12px' }} />
                 <Box sx={{ display: 'flex', justifyContent: 'left', alignItems: 'center' }}>
@@ -55,15 +66,41 @@ export default function HistoryHeader(props) {
                     </Typography>
                 </Box>
             </Box>
-            <Box display="flex" flexWrap="wrap" justifyContent="center"
-                alignItems="center" style={greenBorder}>
-                <Box px={2} py={0.5}><Typography><strong>Created:</strong> {dayjs(client.createdDateTime).format("MMM DD, YYYY - h:mm a")}</Typography></Box>
-                <Box px={2} py={0.5}><Typography><strong>Updated:</strong> {dayjs(client.updatedDateTime).format("MMM DD, YYYY - h:mm a")}</Typography></Box>
-                <Box px={2} py={0.5}><Typography><strong>First Seen:</strong> {dayjs(client.firstSeenDate).format("MMM DD, YYYY - h:mm a")}</Typography></Box>
-                <Box px={2} py={0.5}><Typography><strong>Last Served:</strong> {lsFoodDate}</Typography></Box>
-                <Box px={2} py={0.5}><Typography><strong>Last ID Check:</strong> {dayjs(client.familyIdCheckedDate).format("MMM DD, YYYY")}</Typography></Box>
+            <Box
+                style={greenBorder}
+                sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    alignItems: "center"
+                }}>
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 0.5
+                    }}><Typography><strong>Created:</strong> {dayjs(client.createdDateTime).format("MMM DD, YYYY - h:mm a")}</Typography></Box>
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 0.5
+                    }}><Typography><strong>Updated:</strong> {dayjs(client.updatedDateTime).format("MMM DD, YYYY - h:mm a")}</Typography></Box>
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 0.5
+                    }}><Typography><strong>First Seen:</strong> {dayjs(client.firstSeenDate).format("MMM DD, YYYY - h:mm a")}</Typography></Box>
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 0.5
+                    }}><Typography><strong>Last Served:</strong> {lsFoodDate}</Typography></Box>
+                <Box
+                    sx={{
+                        px: 2,
+                        py: 0.5
+                    }}><Typography><strong>Last ID Check:</strong> {dayjs(client.familyIdCheckedDate).format("MMM DD, YYYY")}</Typography></Box>
 
             </Box>
         </Box>
-    )
+    );
 }

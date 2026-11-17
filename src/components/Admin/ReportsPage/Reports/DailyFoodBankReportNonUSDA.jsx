@@ -170,60 +170,62 @@ export default function DailyFoodBankReportNonUSDA(props) {
     }
 
     return (
-        <Box m={ 1 }>
-        <TableContainer align="center">
-            <Table className='fontFamily' padding="checkbox" size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportDate={ reportDay }
-                    reportType="DAILY REPORT" 
-                    reportCategory="FOOD BANK NON USDA"
-                    groupColumns={[{"name": "Client", "length": 3}, 
-                        {"name": "Address (Include Zip Code)", "length": 2}, 
-                        {"name": "Family Size", "length": 2}]}
-                    columns={["ID", "Given Name", "Family Name", "Address", "Zip", "A", "C"]} />
-                <TableBody>
-                {loading ? (
-                    <TableRow>
-                        <TableCell className='centerText' align="center" colSpan={7}>
-                            <CircularProgress color="secondary" />
-                        </TableCell>
-                    </TableRow>) : null}
-                    {RenderSvcList(services)}
-                    <TableRow className="greenBackground centerText" style={{ backgroundColor: theme.palette.primary.light }}>
-                        <style>
-                            { `@media print { 
-                                    .greenBackground { 
-                                        text-align: right;
-                                        background-color: rgb(104, 179, 107);
-                                        -webkit-print-color-adjust: exact;
-                                        font-size: 14px;
-                                    },
-                                    .rightText { text-align: right; font-size: 14px; }
-                                }`
-                            }
-                        </style>
-                        <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
-                        <TableCell className='centerText' align="center" colSpan={7}>
-                            <strong>Office Use Only</strong>
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>  
-                        <TableCell colSpan={7} style={{ color:"white" }}>|</TableCell>
-                    </TableRow>
-                    {RenderListTotals(totals,'')}
-                    <TableRow>  
-                        <TableCell colSpan={7} style={{ color:"white" }}>|</TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
-        </TableContainer>
+        <Box sx={{
+            m: 1
+        }}>
+            <TableContainer align="center">
+                <Table className='fontFamily' padding="checkbox" size="small" align="center">
+                    <style>
+                        {`@media print { 
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
+                                }
+                            }`
+                        }
+                    </style>
+                    <ReportsHeader reportDate={ reportDay }
+                        reportType="DAILY REPORT" 
+                        reportCategory="FOOD BANK NON USDA"
+                        groupColumns={[{"name": "Client", "length": 3}, 
+                            {"name": "Address (Include Zip Code)", "length": 2}, 
+                            {"name": "Family Size", "length": 2}]}
+                        columns={["ID", "Given Name", "Family Name", "Address", "Zip", "A", "C"]} />
+                    <TableBody>
+                    {loading ? (
+                        <TableRow>
+                            <TableCell className='centerText' align="center" colSpan={7}>
+                                <CircularProgress color="secondary" />
+                            </TableCell>
+                        </TableRow>) : null}
+                        {RenderSvcList(services)}
+                        <TableRow className="greenBackground centerText" style={{ backgroundColor: theme.palette.primary.light }}>
+                            <style>
+                                { `@media print { 
+                                        .greenBackground { 
+                                            text-align: right;
+                                            background-color: rgb(104, 179, 107);
+                                            -webkit-print-color-adjust: exact;
+                                            font-size: 14px;
+                                        },
+                                        .rightText { text-align: right; font-size: 14px; }
+                                    }`
+                                }
+                            </style>
+                            <style> { `@media print { .centerText { text-align: center; font-size: 14px; }}` } </style>
+                            <TableCell className='centerText' align="center" colSpan={7}>
+                                <strong>Office Use Only</strong>
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>  
+                            <TableCell colSpan={7} style={{ color:"white" }}>|</TableCell>
+                        </TableRow>
+                        {RenderListTotals(totals,'')}
+                        <TableRow>  
+                            <TableCell colSpan={7} style={{ color:"white" }}>|</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }

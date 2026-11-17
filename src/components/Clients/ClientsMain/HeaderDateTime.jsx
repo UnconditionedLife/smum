@@ -21,7 +21,13 @@ export default function DateTime(props) {
     }, [])
     
     return (
-        <Box mt={ -1.5 } display='flex' width='100%' justifyContent='center'>
+        <Box
+            sx={{
+                mt: -1.5,
+                display: 'flex',
+                width: '100%',
+                justifyContent: 'center'
+            }}>
             <Typography variant={ size } color={ color } noWrap>
                 { dateTime }
             </Typography>

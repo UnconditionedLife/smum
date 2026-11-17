@@ -57,7 +57,15 @@ export default function ServiceNotes(props) {
     return (
         <Fragment>
             <Card height='72px'>
-                <Box display='flex' minWidth='300px' maxWidth='100%' p={ 2 } justifyContent='space-between' alignItems='center'>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        minWidth: '300px',
+                        maxWidth: '100%',
+                        p: 2,
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
                     <Badge badgeContent={ noteCount } color="secondary">
                         <Typography variant='h6' noWrap>
                             SERVICE NOTES&nbsp;
@@ -94,7 +102,7 @@ export default function ServiceNotes(props) {
                     </CardContent>
                 </Card>
             </Fade>
-            }   
+            }
             <NotesDisplay 
                 client={ client } updateClient = { updateClient }
                 handleNoteCountChange = { handleNoteCountChange }
@@ -105,5 +113,5 @@ export default function ServiceNotes(props) {
                 showAlert={ props.showAlert }
             />
         </Fragment>
-    )
+    );
 }

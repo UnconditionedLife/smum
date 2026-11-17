@@ -1,6 +1,5 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import makeStyles from '@mui/styles/makeStyles';
 import { Box, ButtonBase } from '@mui/material';
 import { Button, Typography } from '../../System';
 import { getButtonData } from '../../System/js/Clients/Services'
@@ -37,15 +36,8 @@ export default function PrimaryButtons(props) {
     let buttonSizes = [168, '168px !important', 176]
     if (UseWindowSize().width < 468) buttonSizes = [120, '120px !important', 128]
 
-    const useStyles = makeStyles((theme) => ({
-        root: {
-            display: 'flex',
-            flexWrap: 'wrap',
-            minWidth: 300,
-            width: '100%',
-            borderRadius: '20px',
-        },
-        image: {
+    const styles = {
+        image: (theme) => ({
             position: 'relative',
             margin: 0,
             width: buttonSizes[0],
@@ -54,20 +46,19 @@ export default function PrimaryButtons(props) {
                 width: buttonSizes[1], // Overrides inline-style
                 height: buttonSizes[0],
             },
-            '&:hover, &$focusVisible': {
+            '&:hover, &.Mui-focusVisible': {
                 zIndex: 1,
-                '& $imageBackdrop': {
+                '& .imageBackdrop': {
                     opacity: 0.15,
                 },
-                '& $imageMarked': {
+                '& .imageMarked': {
                     opacity: 0,
                 },
-                '& $imageTitle': {
+                '& .imageTitle': {
                     border: '4px solid currentColor',
                 },
             },
-        },
-        focusVisible: {},
+        }),
         imageButton: {
             position: 'absolute',
             left: 0,
@@ -77,7 +68,7 @@ export default function PrimaryButtons(props) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: theme.palette.common.white,
+            color: 'common.white',
             borderRadius: '16px',
         },
         imageSrc: {
@@ -89,7 +80,7 @@ export default function PrimaryButtons(props) {
             backgroundSize: 'cover',
             backgroundPosition: 'center 40%',
         },
-        imageBackdrop: {
+        imageBackdrop: (theme) => ({
             position: 'absolute',
             left: 0,
             right: 0,
@@ -98,12 +89,12 @@ export default function PrimaryButtons(props) {
             backgroundColor: theme.palette.common.black,
             opacity: 0.4,
             transition: theme.transitions.create('opacity'),
-        },
-        imageTitle: {
+        }),
+        imageTitle: (theme) => ({
             position: 'relative',
             padding: `${theme.spacing(2)} ${theme.spacing(2)} calc(${theme.spacing(1)} + 6px)`,
-        },
-        imageMarked: {
+        }),
+        imageMarked: (theme) => ({
             height: 3,
             width: 18,
             backgroundColor: theme.palette.common.red,
@@ -111,10 +102,8 @@ export default function PrimaryButtons(props) {
             bottom: -2,
             left: 'calc(50% - 9px)',
             transition: theme.transitions.create('opacity'),
-        },
-    }));
-
-    const classes = useStyles();
+        }),
+    };
 
     // wait for lastServedDay
     if (lastServedDays === null) return null
@@ -135,12 +124,17 @@ export default function PrimaryButtons(props) {
 
     if (buttons.length === 0) {
         return (
-            <Box height="168px" display="flex" alignItems="center" >
+            <Box
+                sx={{
+                    height: "168px",
+                    display: "flex",
+                    alignItems: "center"
+                }}>
                 <Box>
                     <Typography color="secondary"><strong>NO FOOD SERVICE AVAILABLE TODAY</strong></Typography>
                 </Box>
             </Box>
-        )
+        );
     }
 
     return (
@@ -152,11 +146,10 @@ export default function PrimaryButtons(props) {
                             <ButtonBase
                                 focusRipple
                                 key={svc.svcTypeId}
-                                className={classes.image}
-                                focusVisibleClassName={classes.focusVisible}
+                                sx={styles.image}
                                 onClick={() => handleAddSvc(svc)}>
                                 <>
-                                    <span className={classes.imageSrc}
+                                    <Box component="span" className="imageSrc" sx={styles.imageSrc}
                                         style={{
                                             backgroundImage: `url(${(svc.svcCat === "Food_Pantry") ? "/images/Food_Pantry.jpg" :
                                                     (svc.svcCat === "Clothes_Closet") ? "/images/Clothes_Closet.jpg" :
@@ -165,14 +158,14 @@ export default function PrimaryButtons(props) {
                                                                 (svc.svcCat === "Thanksgiving") ? "/images/Thanksgiving.jpg" :
                                                                     (svc.svcCat === "Christmas") ? "/images/Christmas.jpg" : ""})`
                                         }} />
-                                    <span className={classes.imageBackdrop} />
-                                    <span className={classes.imageButton}>
+                                    <Box component="span" className="imageBackdrop" sx={styles.imageBackdrop} />
+                                    <Box component="span" className="imageButton" sx={styles.imageButton}>
                                         <Typography component="span" variant="button" color="inherit"
-                                            className={classes.imageTitle} >
+                                            className="imageTitle" sx={styles.imageTitle} >
                                             <strong>{svc.svcName.toUpperCase()}</strong>
-                                            <span className={classes.imageMarked} />
+                                            <Box component="span" className="imageMarked" sx={styles.imageMarked} />
                                         </Typography>
-                                    </span>
+                                    </Box>
                                 </>
                             </ButtonBase>
                         </Box>
@@ -183,11 +176,10 @@ export default function PrimaryButtons(props) {
                             <ButtonBase
                                 focusRipple
                                 key={svc.svcTypeId}
-                                className={classes.image}
-                                focusVisibleClassName={classes.focusVisible}
+                                sx={styles.image}
                                 onClick={() => handleAddSvc(svc)}
                             >
-                                <span className={classes.imageSrc}
+                                <Box component="span" className="imageSrc" sx={styles.imageSrc}
                                     style={{
                                         backgroundImage: `url(${(svc.svcCat === "Food_Pantry") ? "/images/Food_Pantry.jpg" :
                                             (svc.svcCat === "Clothes_Closet") ? "/images/Clothes_Closet.jpg" :
@@ -196,20 +188,28 @@ export default function PrimaryButtons(props) {
                                                         (svc.svcCat === "Thanksgiving") ? "/images/Thanksgiving.jpg" :
                                                             (svc.svcCat === "Christmas") ? "/images/Christmas.jpg" : ""})`
                                     }} />
-                                <span className={classes.imageBackdrop} />
-                                <span className={classes.imageButton}>
+                                <Box component="span" className="imageBackdrop" sx={styles.imageBackdrop} />
+                                <Box component="span" className="imageButton" sx={styles.imageButton}>
                                     <Typography component="span" variant="button" color="inherit"
-                                        className={classes.imageTitle} >
+                                        className="imageTitle" sx={styles.imageTitle} >
                                         <strong>{svc.svcName.toUpperCase()}</strong>
-                                        <span className={classes.imageMarked} />
+                                        <Box component="span" className="imageMarked" sx={styles.imageMarked} />
                                     </Typography>
-                                </span>
+                                </Box>
                             </ButtonBase>
                         </Box>
                     }
 
                     {(svc.btnType === 'used') &&
-                        <Box m={.5} p={0} width={buttonSizes[2]} height={buttonSizes[2]} bgcolor='#FFF' display='flex' >
+                        <Box
+                            sx={{
+                                m: .5,
+                                p: 0,
+                                width: buttonSizes[2],
+                                height: buttonSizes[2],
+                                bgcolor: '#FFF',
+                                display: 'flex'
+                            }}>
                             <Button m={0} width={buttonSizes[2]} height={buttonSizes[2]} color='primary' style={{ borderRadius: '15px', border: '5px dashed #ddd' }}
                                 onClick={() => handleUndoSvc(svc)} startIcon={<ReplayIcon />}>
                                 <strong> {svc.svcName.toUpperCase()}</strong>

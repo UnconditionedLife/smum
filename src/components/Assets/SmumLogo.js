@@ -8,7 +8,9 @@ export default function SmumLogo(props) {
     const padding = (display === "solid") ? 0 : 5
 
     return (
-        <Box { ...props } pl={ padding }>
+        <Box { ...props } sx={[{
+            pl: padding
+        }, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}>
             <svg width={ width } height={ height } viewBox="0 0 325 425" version="1.1" xmlns="http://www.w3.org/2000/svg"
                 style={{ fillRule: 'evenodd', clipRule: 'evenodd', strokeMiterlimit: 10 }} >   
                 <g transform="matrix(.72292 0 0 .85069 -106.33 -36.427)">
@@ -62,5 +64,5 @@ export default function SmumLogo(props) {
                 </g>
             </svg>
         </Box>
-    )
+    );
 }

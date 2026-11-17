@@ -15,19 +15,21 @@ FormTextField.propTypes = {
     error: PropTypes.object,                // Error object for this field (i.e. errors.<name>)
     fieldsize: PropTypes.string,            // defines the width of the text field
 }
-// Additional props are passed through to the Controller component. 
-// See the API documentation for Controller for full details.
+// Additional props are passed through to the TextField component.
 
 export default function FormTextField(props) {
-    let textProps = { ...props };
-    textProps.error = Boolean(props.error);
-    const width = getFormFieldSize(props.fieldsize) // xs, sm, md, lg, xl
+    const { name, control, rules, defaultValue, error, fieldsize, ...textProps } = props;
+    const width = getFormFieldSize(fieldsize) // xs, sm, md, lg, xl
     
     return (
         <FormControl>
-            <Controller as={ TextField } m={ 0 } width={ width } size="small" { ...textProps } />
+            <Controller name={ name } control={ control } rules={ rules } defaultValue={ defaultValue }
+                render={ ({ field: { ref, ...field } }) => (
+                    <TextField m={ 0 } width={ width } size="small" { ...textProps } { ...field }
+                        inputRef={ ref } error={ Boolean(error) } />
+                ) } />
             <Typography ml={ 0.5 } variant='body2' color='error'>
-                { props.error ? props.error.message : '' }
+                { error ? error.message : '' }
             </Typography>
         </FormControl>
     )

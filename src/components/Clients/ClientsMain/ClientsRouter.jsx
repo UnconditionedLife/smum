@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useHistory, useLocation, matchPath } from "react-router-dom";
+import { useNavigate, useLocation, matchPath } from "react-router";
 import { ClientsMain } from '..';
 import { navigationAllowed } from '../../System/js/Database';
 
@@ -12,7 +12,7 @@ ClientsRouter.propTypes = {
 
 export default function ClientsRouter(props) {
     const { searchTerm, handleSearchTermChange } = props;
-    const history = useHistory();
+    const navigate = useNavigate();
     const route = useLocation();
     const url = route.pathname;
     const [ selectedTab, setSelectedTab ] = useState(0);
@@ -38,14 +38,14 @@ export default function ClientsRouter(props) {
                     break;
             }
             if (newURL != url) {
-                history.push(newURL)
+                navigate(newURL)
             }
             handleTabChange(newTab)
         }
     }
 
     const checkClientsURL = (client) => {
-        if (matchPath(url, { path: "/clients/found/:term", exact: true, strict: false }) || matchPath(url, { path: "/clients/found", exact: true, strict: false })) {
+        if (matchPath({ path: "/clients/found/:term", end: true }, url) || matchPath({ path: "/clients/found", end: true }, url)) {
             const splitUrl = url.split("/");
             const term = splitUrl.length == 4 ? splitUrl[3] : "";
             if (selectedTab != 0) {
@@ -56,18 +56,18 @@ export default function ClientsRouter(props) {
             }
 
         }
-        else if (matchPath(url, { path: "/clients/services/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/services", exact: true, strict: false })) {
+        else if (matchPath({ path: "/clients/services/:clientId", end: true }, url) || matchPath({ path: "/clients/services", end: true }, url)) {
             checkClient(client, 1);
         }
-        else if (matchPath(url, { path: "/clients/client/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/client", exact: true, strict: false })) {
+        else if (matchPath({ path: "/clients/client/:clientId", end: true }, url) || matchPath({ path: "/clients/client", end: true }, url)) {
             checkClient(client, 2);
         }
-        else if (matchPath(url, { path: "/clients/history/:clientId", exact: true, strict: false }) || matchPath(url, { path: "/clients/history", exact: true, strict: false })) {
+        else if (matchPath({ path: "/clients/history/:clientId", end: true }, url) || matchPath({ path: "/clients/history", end: true }, url)) {
             checkClient(client, 3);
         }
         else {
             // if path does not match a valid path default to /clients
-            history.push("/clients");
+            navigate("/clients");
         }
     }
 

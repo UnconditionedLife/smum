@@ -311,29 +311,53 @@ export default function ShiftsList() {
 
     function renderFilterControls() {
         return (
-            <Box mb={3} p={3} sx={{ backgroundColor: '#fafafa', borderRadius: 2, border: '1px solid #e0e0e0' }}>
-                <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} sm={6} md={3}>
+            <Box
+                sx={{
+                    mb: 3,
+                    p: 3,
+                    backgroundColor: '#fafafa',
+                    borderRadius: 2,
+                    border: '1px solid #e0e0e0'
+                }}>
+                <Grid container spacing={2} sx={{
+                    alignItems: "center"
+                }}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 3
+                        }}>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
                                 value={startDate}
                                 onChange={setStartDate}
-                                renderInput={(params) => <TextField {...params} size="small" fullWidth />}
+                                slotProps={{ textField: { size: "small", fullWidth: true } }}
                                 label="Start Date"
                             />
                         </LocalizationProvider>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 3
+                        }}>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
                                 value={endDate}
                                 onChange={setEndDate}
-                                renderInput={(params) => <TextField {...params} size="small" fullWidth />}
+                                slotProps={{ textField: { size: "small", fullWidth: true } }}
                                 label="End Date"
                             />
                         </LocalizationProvider>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 3
+                        }}>
                         <Autocomplete
                             options={volunteers}
                             getOptionLabel={(vol) =>
@@ -355,27 +379,34 @@ export default function ShiftsList() {
                                 );
                             }}
                             renderInput={(params) => {
-                                const { InputProps, ...restParams } = params;
                                 return (
                                     <TextField
-                                        {...restParams}
+                                        {...params}
                                         size="small"
                                         label="Volunteer"
                                         placeholder="Search volunteers..."
-                                        InputProps={{
-                                            ...InputProps,
-                                            startAdornment: (
-                                                <InputAdornment position="start" sx={{ pl: 1 }}>
-                                                    <Search color="action" />
-                                                </InputAdornment>
-                                            )
+                                        slotProps={{
+                                            ...params.slotProps,
+                                            input: {
+                                                ...params.slotProps.input,
+                                                startAdornment: (
+                                                    <InputAdornment position="start" sx={{ pl: 1 }}>
+                                                        <Search color="action" />
+                                                    </InputAdornment>
+                                                )
+                                            }
                                         }}
                                     />
                                 );
                             }}
                         />
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 3
+                        }}>
                         <FormControl fullWidth size="small">
                             <InputLabel>Program</InputLabel>
                             <Select
@@ -392,7 +423,12 @@ export default function ShiftsList() {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 3
+                        }}>
                         <FormControl fullWidth size="small">
                             <InputLabel>Activity</InputLabel>
                             <Select
@@ -409,13 +445,28 @@ export default function ShiftsList() {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 3
+                        }}>
                         <FormControlLabel
                             control={<Switch checked={showDeleted} onChange={(e) => setShowDeleted(e.target.checked)} color="error" size="small" />}
                             label="Show Deleted"
                         />
                     </Grid>
-                    <Grid item xs={12} sm={12} md={6} display="flex" justifyContent="flex-end" gap={2}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 12,
+                            md: 6
+                        }}
+                        sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: 2
+                        }}>
                         <Button
                             variant="outlined"
                             onClick={handleResetFilters}
@@ -441,7 +492,11 @@ export default function ShiftsList() {
     function renderShiftsTable() {
         if (loading) {
             return (
-                <Box p={3} textAlign="center">
+                <Box
+                    sx={{
+                        p: 3,
+                        textAlign: "center"
+                    }}>
                     <Typography>Loading shifts...</Typography>
                 </Box>
             );
@@ -449,7 +504,11 @@ export default function ShiftsList() {
 
         if (shifts.length === 0) {
             return (
-                <Box p={3} textAlign="center">
+                <Box
+                    sx={{
+                        p: 3,
+                        textAlign: "center"
+                    }}>
                     <Typography variant="body2" color="textSecondary">
                         No shifts found for the selected filter criteria
                     </Typography>
@@ -459,25 +518,32 @@ export default function ShiftsList() {
 
         return (
             <TableContainer>
-                <Box display="flex" justifyContent="flex-end" mb={2}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        mb: 2
+                    }}>
                     <TextField
                         size="small"
                         placeholder="Search shifts..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <Search />
-                                </InputAdornment>
-                            ),
-                            endAdornment: searchQuery && (
-                                <InputAdornment position="end">
-                                    <IconButton size="small" onClick={() => setSearchQuery('')}>
-                                        <Clear />
-                                    </IconButton>
-                                </InputAdornment>
-                            )
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Search />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: searchQuery && (
+                                    <InputAdornment position="end">
+                                        <IconButton size="small" onClick={() => setSearchQuery('')}>
+                                            <Clear />
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }
                         }}
                     />
                 </Box>
@@ -539,8 +605,16 @@ export default function ShiftsList() {
     };
 
     return (
-        <Box width="100%">
-            <Box display="flex" alignItems="center" gap={2} mb={2}>
+        <Box sx={{
+            width: "100%"
+        }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    mb: 2
+                }}>
                 <Typography variant="h6">Shift Records</Typography>
                 <Chip label={visibleShifts.length} color="secondary" size="small" />
                 <Tooltip title="Refresh List">

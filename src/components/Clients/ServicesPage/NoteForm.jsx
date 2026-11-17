@@ -96,8 +96,19 @@ export default function NoteForm(props) {
         <Fragment>
             <TextField width={ 1 } label={ textLabel } multiline rows={ 2 } variant="outlined" value= { noteText }
                 onChange={ event => { handleTextFieldChange(event.target.value) }} />
-            <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center" alignItems="center">
-                <Box ml= { 4 } mr= { -2 } >
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    alignItems: "center"
+                }}>
+                <Box
+                    sx={{
+                        ml: 4,
+                        mr: -2
+                    }}>
                     <NotificationImportant color="secondary"
                         onClick={ event => { handleNoteImportantChange(event.target.value) }} />
                 </Box>
@@ -107,12 +118,18 @@ export default function NoteForm(props) {
                         onChange={ event => { handleNoteImportantChange(event.target.checked) }} /> }
                     label="Important" />
             </Box>
-            <Box display="flex" flexDirection="row" flexWrap="wrap" justifyContent="center">
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    justifyContent: "center"
+                }}>
                 <Button variant="contained" color="primary"
                     onClick={ event => { handleNoteSave(event.target.value) }}>Save</Button>
                 <Button variant="outlined" color="secondary"
                     onClick={ event => { handleNoteCancel(event.target.value) }}>Cancel</Button>
             </Box>
         </Fragment>
-    )
+    );
 }

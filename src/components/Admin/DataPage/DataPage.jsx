@@ -229,25 +229,43 @@ export default function DataPage() {
     if (activeSection === 'dashboard') {
         return (
             <Container maxWidth="lg" style={{ paddingBottom: '32px' }}>
-                <Box mb={3} display="flex" alignItems="center" gap={1.5}>
+                <Box
+                    sx={{
+                        mb: 3,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5
+                    }}>
                     <Storage color="primary" fontSize="large" />
-                    <Typography variant="h4" component="h1" fontWeight="bold">Data Administration</Typography>
+                    <Typography variant="h4" component="h1" sx={{
+                        fontWeight: "bold"
+                    }}>Data Administration</Typography>
                 </Box>
 
                 <Grid container spacing={3}>
                     {/* Anonymization Note */}
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <Card style={{ 
                             borderLeft: '5px solid #2e7d32', 
                             boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                             background: 'linear-gradient(to right, #f4fbf4, #ffffff)' 
                         }}>
                             <CardContent>
-                                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1,
+                                        mb: 1
+                                    }}>
                                     <Shield color="primary" />
-                                    <Typography variant="h6" fontWeight="bold">Secure Data Management Portal</Typography>
+                                    <Typography variant="h6" sx={{
+                                        fontWeight: "bold"
+                                    }}>Secure Data Management Portal</Typography>
                                 </Box>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2" sx={{
+                                    color: "text.secondary"
+                                }}>
                                     Export database records in clean CSV formats. PII is automatically stripped or sanitized on the client side before downloading. Select a data module below to begin.
                                 </Typography>
                             </CardContent>
@@ -255,18 +273,37 @@ export default function DataPage() {
                     </Grid>
 
                     {/* Data Modules Grid */}
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 4
+                        }}>
                         <Card style={{ height: '100%', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
                             <CardContent style={{ flexGrow: 1 }}>
-                                <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.5,
+                                        mb: 2
+                                    }}>
                                     <People color="primary" fontSize="large" />
-                                    <Typography variant="h6" fontWeight="bold">Client Records</Typography>
+                                    <Typography variant="h6" sx={{
+                                        fontWeight: "bold"
+                                    }}>Client Records</Typography>
                                 </Box>
-                                <Typography variant="body2" color="text.secondary" style={{ marginBottom: '16px' }}>
+                                <Typography variant="body2" style={{ marginBottom: '16px' }} sx={{
+                                    color: "text.secondary"
+                                }}>
                                     Load, view and export anonymized client household details and individual listings. All direct identifiers are removed to guarantee client privacy.
                                 </Typography>
                             </CardContent>
-                            <Box p={2} pt={0}>
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    pt: 0
+                                }}>
                                 <Button 
                                     onClick={loadClientData} 
                                     variant="contained" 
@@ -281,18 +318,40 @@ export default function DataPage() {
                     </Grid>
 
                     {/* Service Logs Placeholder */}
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 4
+                        }}>
                         <Card style={{ height: '100%', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', opacity: 0.75 }}>
                             <CardContent style={{ flexGrow: 1 }}>
-                                <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.5,
+                                        mb: 2
+                                    }}>
                                     <Assignment color="disabled" fontSize="large" />
-                                    <Typography variant="h6" fontWeight="bold" color="text.secondary">Service Transaction Logs</Typography>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            fontWeight: "bold",
+                                            color: "text.secondary"
+                                        }}>Service Transaction Logs</Typography>
                                 </Box>
-                                <Typography variant="body2" color="text.secondary" style={{ marginBottom: '16px' }}>
+                                <Typography variant="body2" style={{ marginBottom: '16px' }} sx={{
+                                    color: "text.secondary"
+                                }}>
                                     Export logs of services distributed (Food Pantry, Turkeys, Gift Cards, Toys) over specific periods. Includes statistics on distributions.
                                 </Typography>
                             </CardContent>
-                            <Box p={2} pt={0}>
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    pt: 0
+                                }}>
                                 <Button 
                                     disabled 
                                     variant="outlined" 
@@ -306,18 +365,40 @@ export default function DataPage() {
                     </Grid>
 
                     {/* Volunteer Logs Placeholder */}
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid
+                        size={{
+                            xs: 12,
+                            sm: 6,
+                            md: 4
+                        }}>
                         <Card style={{ height: '100%', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', opacity: 0.75 }}>
                             <CardContent style={{ flexGrow: 1 }}>
-                                <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.5,
+                                        mb: 2
+                                    }}>
                                     <VolunteerActivism color="disabled" fontSize="large" />
-                                    <Typography variant="h6" fontWeight="bold" color="text.secondary">Volunteer Logs</Typography>
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            fontWeight: "bold",
+                                            color: "text.secondary"
+                                        }}>Volunteer Logs</Typography>
                                 </Box>
-                                <Typography variant="body2" color="text.secondary" style={{ marginBottom: '16px' }}>
+                                <Typography variant="body2" style={{ marginBottom: '16px' }} sx={{
+                                    color: "text.secondary"
+                                }}>
                                     Export volunteer logs, shift records, registrations and total hours. Allows analysis of volunteer attendance and program resource inputs.
                                 </Typography>
                             </CardContent>
-                            <Box p={2} pt={0}>
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    pt: 0
+                                }}>
                                 <Button 
                                     disabled 
                                     variant="outlined" 
@@ -338,15 +419,29 @@ export default function DataPage() {
     if (loading) {
         return (
             <Container maxWidth="lg">
-                <Box mb={3}>
+                <Box sx={{
+                    mb: 3
+                }}>
                     <Button startIcon={<ArrowBack />} onClick={handleBackToDashboard} variant="text" color="primary">
                         Cancel and Go Back
                     </Button>
                 </Box>
-                <Box display="flex" justifyContent="center" alignItems="center" minHeight="250px" flexDirection="column" gap={2}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        minHeight: "250px",
+                        flexDirection: "column",
+                        gap: 2
+                    }}>
                     <CircularProgress color="primary" size={50} />
-                    <Typography variant="body1" fontWeight="bold">Loading and preparing client records from the database...</Typography>
-                    <Typography variant="caption" color="text.secondary">This may take a moment depending on dataset size.</Typography>
+                    <Typography variant="body1" sx={{
+                        fontWeight: "bold"
+                    }}>Loading and preparing client records from the database...</Typography>
+                    <Typography variant="caption" sx={{
+                        color: "text.secondary"
+                    }}>This may take a moment depending on dataset size.</Typography>
                 </Box>
             </Container>
         );
@@ -355,36 +450,63 @@ export default function DataPage() {
     // RENDER: Client Data Section (Loaded / Config / Export)
     return (
         <Container maxWidth="lg" style={{ paddingBottom: '32px' }}>
-            <Box mb={3} display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
+            <Box
+                sx={{
+                    mb: 3,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 2
+                }}>
                 <Button startIcon={<ArrowBack />} onClick={handleBackToDashboard} variant="outlined" color="primary" style={{ fontWeight: 'bold' }}>
                     Back to Data Modules
                 </Button>
-                <Box display="flex" alignItems="center" gap={1}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1
+                    }}>
                     <People color="primary" />
-                    <Typography variant="h6" fontWeight="bold">Anonymized Client Data Export</Typography>
+                    <Typography variant="h6" sx={{
+                        fontWeight: "bold"
+                    }}>Anonymized Client Data Export</Typography>
                 </Box>
             </Box>
 
             {error && (
-                <Box mb={3}>
+                <Box sx={{
+                    mb: 3
+                }}>
                     <Alert severity="error">{error}</Alert>
                 </Box>
             )}
 
             <Grid container spacing={3}>
                 {/* 1. Anonymization Protocol Note */}
-                <Grid item xs={12}>
+                <Grid size={12}>
                     <Card style={{ 
                         borderLeft: '5px solid #2e7d32', 
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                         background: 'linear-gradient(to right, #f4fbf4, #ffffff)' 
                     }}>
                         <CardContent>
-                            <Box display="flex" alignItems="center" gap={1} mb={1}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                    mb: 1
+                                }}>
                                 <Shield color="primary" />
-                                <Typography variant="h6" fontWeight="bold">Client Anonymization Protocol</Typography>
+                                <Typography variant="h6" sx={{
+                                    fontWeight: "bold"
+                                }}>Client Anonymization Protocol</Typography>
                             </Box>
-                            <Typography variant="body2" color="text.secondary" style={{ lineHeight: 1.6 }}>
+                            <Typography variant="body2" style={{ lineHeight: 1.6 }} sx={{
+                                color: "text.secondary"
+                            }}>
                                 In compliance with data security and client privacy practices, all exports are fully anonymized.
                                 Personally Identifiable Information (PII) including <strong>Names (First/Last), Street Addresses, Phone Numbers, and Email Addresses</strong> are completely excluded.
                                 Street addresses are limited to city, state, and 5-digit zip code.
@@ -394,28 +516,68 @@ export default function DataPage() {
                 </Grid>
 
                 {/* 2. Export Configuration and Statistics */}
-                <Grid item xs={12} md={4}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 4
+                    }}>
                     <Card style={{ height: '100%', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                         <CardHeader 
                             title="Export Settings" 
-                            titleTypographyProps={{ variant: 'h6', fontWeight: 'bold' }}
+                            slotProps={{
+                                title: { variant: 'h6', sx: { fontWeight: 'bold' } }
+                            }}
                         />
                         <Divider />
                         <CardContent>
                             {/* Summary Stats */}
-                            <Box mb={3} display="flex" flexDirection="column" gap={1.5}>
-                                <Box display="flex" alignItems="center" gap={1.5} p={1.5} style={{ backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+                            <Box
+                                sx={{
+                                    mb: 3,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 1.5
+                                }}>
+                                <Box
+                                    style={{ backgroundColor: '#f5f5f5', borderRadius: '8px' }}
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.5,
+                                        p: 1.5
+                                    }}>
                                     <Home color="action" />
                                     <Box>
-                                        <Typography variant="caption" color="text.secondary" display="block">Households (Clients)</Typography>
-                                        <Typography variant="h6" fontWeight="bold">{clients.length}</Typography>
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                color: "text.secondary",
+                                                display: "block"
+                                            }}>Households (Clients)</Typography>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: "bold"
+                                        }}>{clients.length}</Typography>
                                     </Box>
                                 </Box>
-                                <Box display="flex" alignItems="center" gap={1.5} p={1.5} style={{ backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+                                <Box
+                                    style={{ backgroundColor: '#f5f5f5', borderRadius: '8px' }}
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.5,
+                                        p: 1.5
+                                    }}>
                                     <People color="action" />
                                     <Box>
-                                        <Typography variant="caption" color="text.secondary" display="block">Total Individuals Served</Typography>
-                                        <Typography variant="h6" fontWeight="bold">{totalIndividualsCount}</Typography>
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                color: "text.secondary",
+                                                display: "block"
+                                            }}>Total Individuals Served</Typography>
+                                        <Typography variant="h6" sx={{
+                                            fontWeight: "bold"
+                                        }}>{totalIndividualsCount}</Typography>
                                     </Box>
                                 </Box>
                             </Box>
@@ -433,8 +595,12 @@ export default function DataPage() {
                                         control={<Radio color="primary" />} 
                                         label={
                                             <Box>
-                                                <Typography variant="body2" fontWeight="bold">Household Summaries</Typography>
-                                                <Typography variant="caption" color="text.secondary">One row per client household including family demographic counts.</Typography>
+                                                <Typography variant="body2" sx={{
+                                                    fontWeight: "bold"
+                                                }}>Household Summaries</Typography>
+                                                <Typography variant="caption" sx={{
+                                                    color: "text.secondary"
+                                                }}>One row per client household including family demographic counts.</Typography>
                                             </Box>
                                         }
                                         style={{ marginBottom: '12px' }}
@@ -444,15 +610,24 @@ export default function DataPage() {
                                         control={<Radio color="primary" />} 
                                         label={
                                             <Box>
-                                                <Typography variant="body2" fontWeight="bold">Individuals List</Typography>
-                                                <Typography variant="caption" color="text.secondary">One row per household member (primary client + dependents).</Typography>
+                                                <Typography variant="body2" sx={{
+                                                    fontWeight: "bold"
+                                                }}>Individuals List</Typography>
+                                                <Typography variant="caption" sx={{
+                                                    color: "text.secondary"
+                                                }}>One row per household member (primary client + dependents).</Typography>
                                             </Box>
                                         }
                                     />
                                 </RadioGroup>
                             </FormControl>
 
-                            <Box mt={4} display="flex" justifyContent="center">
+                            <Box
+                                sx={{
+                                    mt: 4,
+                                    display: "flex",
+                                    justifyContent: "center"
+                                }}>
                                 <Button 
                                     onClick={handleDownload} 
                                     variant="contained" 
@@ -474,19 +649,30 @@ export default function DataPage() {
                 </Grid>
 
                 {/* 3. Live Data Preview Card */}
-                <Grid item xs={12} md={8}>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 8
+                    }}>
                     <Card style={{ height: '100%', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                        <CardHeader 
-                            title="Anonymized Data Preview" 
+                        <CardHeader
+                            title="Anonymized Data Preview"
                             subheader="Showing the first 5 records of the selected export structure"
-                            titleTypographyProps={{ variant: 'h6', fontWeight: 'bold' }}
-                            subheaderTypographyProps={{ variant: 'caption' }}
-                        />
+                            slotProps={{
+                                title: { variant: 'h6', sx: { fontWeight: 'bold' } },
+                                subheader: { variant: 'caption' }
+                            }} />
                         <Divider />
                         <CardContent style={{ padding: 0 }}>
                             {clients.length === 0 ? (
-                                <Box p={4} textAlign="center">
-                                    <Typography color="text.secondary">No client data available.</Typography>
+                                <Box
+                                    sx={{
+                                        p: 4,
+                                        textAlign: "center"
+                                    }}>
+                                    <Typography sx={{
+                                        color: "text.secondary"
+                                    }}>No client data available.</Typography>
                                 </Box>
                             ) : (
                                 <TableContainer component={Paper} style={{ elevation: 0, boxShadow: 'none', border: 'none' }}>

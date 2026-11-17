@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import { Route, Redirect } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router";
 import Container from '@mui/material/Container';
 import { ClientsRouter } from '../Clients';
 import { AdminMain } from '../Admin';
@@ -21,27 +21,19 @@ export default function SectionsContent(props) {
 
     return (
         <Container ml={ 0 } style={{ overflowY: 'visible', margin:0, padding:0, maxWidth:'100%' }}>
-            <Route exact path="/">
-                <Redirect to="/clients" />
-            </Route>
-            <Route path="/clients">
-                <ClientsRouter
-                    searchTerm={ searchTerm }
-                    handleSearchTermChange={ handleSearchTermChange }
-                />
-            </Route>
-            <Route path="/admin">
-                <AdminMain />
-            </Route>
-            <Route path="/user">
-                <UserMain />
-            </Route>
-            <Route path="/today">
-                <PageToday />
-            </Route>
-            <Route path="/nextvisit">
-                <NextVisit />
-            </Route>
+            <Routes>
+                <Route path="/" element={ <Navigate to="/clients" replace /> } />
+                <Route path="/clients/*" element={
+                    <ClientsRouter
+                        searchTerm={ searchTerm }
+                        handleSearchTermChange={ handleSearchTermChange }
+                    />
+                } />
+                <Route path="/admin/*" element={ <AdminMain /> } />
+                <Route path="/user/*" element={ <UserMain /> } />
+                <Route path="/today/*" element={ <PageToday /> } />
+                <Route path="/nextvisit/*" element={ <NextVisit /> } />
+            </Routes>
         </Container>
     );
 }

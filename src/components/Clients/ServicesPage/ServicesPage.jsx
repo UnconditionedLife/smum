@@ -126,37 +126,88 @@ export default function ServicesPage(props) {
     if (activeServiceTypes === null) return null
 
     if (clientInactive) return (
-        <Box key={ svcHistory } display="flex" justifyContent="space-around" flexWrap="wrap">
+        <Box
+            key={ svcHistory }
+            sx={{
+                display: "flex",
+                justifyContent: "space-around",
+                flexWrap: "wrap"
+            }}>
             <Typography variant='h3' color='secondary' style={{ lineHeight:"300px" }} noWrap>
                 CLIENT IS INACTIVE
             </Typography>
         </Box>
-    )
+    );
 
     return (
-        <Box key={ svcHistory } maxWidth='100%' display="flex" justifyContent="space-around" flexWrap="wrap">
-            <Box width='100%' maxWidth="1100px" mt={ 4 } pt={ 0 }>
-                <Box p={ 1 } pl={ 2 } pr={ 2 } display='flex' justifyContent="space-between" flexWrap="wrap" 
-                    style={{ borderRadius: "6px", backgroundColor:"#F3F3F3" }}>
+        <Box
+            key={ svcHistory }
+            sx={{
+                maxWidth: '100%',
+                display: "flex",
+                justifyContent: "space-around",
+                flexWrap: "wrap"
+            }}>
+            <Box
+                sx={{
+                    width: '100%',
+                    maxWidth: "1100px",
+                    mt: 4,
+                    pt: 0
+                }}>
+                <Box
+                    style={{ borderRadius: "6px", backgroundColor:"#F3F3F3" }}
+                    sx={{
+                        p: 1,
+                        pl: 2,
+                        pr: 2,
+                        display: 'flex',
+                        justifyContent: "space-between",
+                        flexWrap: "wrap"
+                    }}>
                     <HeaderTitle client={ client } clientsFound={ clientsFound } selectedTab = { selectedTab } />
                     {/* <LastServed lastServed={ lastServed } nextService={ nextService } /> */}
-                    <Box mt={ .75 } display='flex' flexDirection='column' key={ lastServedText + nextServiceText }>
-                        <Box display='flex' justifyContent='center'>
+                    <Box
+                        key={ lastServedText + nextServiceText }
+                        sx={{
+                            mt: .75,
+                            display: 'flex',
+                            flexDirection: 'column'
+                        }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center'
+                            }}>
                             <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
                                 <span style={{ color:"#ccc" }}>SERVED:&nbsp;</span>{ lastServedText }
                             </Typography>
                         </Box>
                         { !isAfter && 
-                            <Box ml={1.5} px={1} display='flex' border='1px solid #1976d2' borderRadius='4px'
-                                backgroundColor= '#ddd'
-                                justifyContent='center' style={{ cursor:'pointer'}} onClick={ printReminder }>
+                            <Box
+                                style={{ cursor:'pointer'}}
+                                onClick={ printReminder }
+                                sx={{
+                                    ml: 1.5,
+                                    px: 1,
+                                    display: 'flex',
+                                    border: '1px solid #1976d2',
+                                    borderRadius: '4px',
+                                    backgroundColor: '#ddd',
+                                    justifyContent: 'center'
+                                }}>
                                 <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
                                     <span style={{ color:"#555" }}>NEXT:&nbsp;</span><span style={{ color:"#CC0000" }}>{ nextServiceText } &nbsp; </span> 
                                 </Typography><PrintIcon color='error' mt={1}/>
                             </Box>
                         }
                         { isAfter &&
-                        <Box ml={1.5} display='flex' justifyContent='center'>
+                        <Box
+                            sx={{
+                                ml: 1.5,
+                                display: 'flex',
+                                justifyContent: 'center'
+                            }}>
                             <Typography variant='subtitle1' color='secondary' style={{ lineHeight:"24px" }} noWrap>
                                 <span style={{ color:"#ccc" }}>NEXT:&nbsp;</span>{ nextServiceText }
                             </Typography>
@@ -164,20 +215,37 @@ export default function ServicesPage(props) {
                         }
                     </Box>
                 </Box>
-                <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        flexWrap: 'wrap',
+                        mt: 4
+                    }}>
                     <PrimaryButtons { ...props } lastServedFoodDate={ lastServedFoodDate } lastServedDays={ lastServedDays }
                         handleAddSvc={ handleAddSvc } handleUndoSvc={ handleUndoSvc } activeServiceTypes={ activeServiceTypes }
                         targetServices={ targetServices } />
                 </Box>
-                <Box display="flex" justifyContent="center" flexWrap='wrap' mt={ 4 }>
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        flexWrap: 'wrap',
+                        mt: 4
+                    }}>
                     <SecondaryButtons { ...props } lastServedFoodDate={ lastServedFoodDate } lastServedDays={ lastServedDays }
                         handleAddSvc={ handleAddSvc } handleUndoSvc={ handleUndoSvc } activeServiceTypes={ activeServiceTypes }
                         targetServices={ targetServices } />
                 </Box>
             </Box>
-            <Box maxWidth="500px" mt={ 3 } justifyContent="center">
+            <Box
+                sx={{
+                    maxWidth: "500px",
+                    mt: 3,
+                    justifyContent: "center"
+                }}>
                 <ServiceNotes { ...props } />
             </Box>
         </Box>
-    )
+    );
 }

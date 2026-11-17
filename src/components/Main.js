@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import HeaderMain from './Header/HeaderMain.jsx';
 import { setAppVersion } from "./System/js/Database.js";
 
@@ -7,7 +7,4 @@ import { setAppVersion } from "./System/js/Database.js";
 const packJson = require('../../package.json');
 setAppVersion(packJson.version)
 
-ReactDOM.render(
-    <HeaderMain />,
-    document.getElementById("app")
-);
+createRoot(document.getElementById("app")).render(<HeaderMain />);

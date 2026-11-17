@@ -9,7 +9,7 @@ import { utilArrayToObject, utilCleanDate, utilChangeWordCase, utilDecodeStrings
 import { calDecodeRules, calEncodeRules } from './Calendar';
 // import { calcFamilyCounts, calcDependentsAges } from './Clients/ClientUtils';
 // import { searchClients } from './Clients/Clients';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 
 dayjs.extend(customParseFormat);
 
@@ -53,7 +53,7 @@ export function cacheSessionVar(newSession) {
 }
 
 export function sessionTimeRemaining() {
-    let decodedTkn = jwt_decode(cachedSession.auth.idToken);
+    let decodedTkn = jwtDecode(cachedSession.auth.idToken);
     return decodedTkn.exp * 1000 - new Date().getTime();
 }
 
@@ -77,7 +77,7 @@ export function navigationAllowed() {
 export function initCache() {
     dbGetSettingsAsync()
         .then(settings => {
-            cachedSettings = settings;
+            if (settings) cachedSettings = settings;
         });
 
     dbGetSvcTypesAsync()
@@ -165,25 +165,28 @@ export async function dbSaveSettingsAsync(settings) {
         });
 }
 
+// The getters below can run before initCache() has loaded the settings
+// (e.g. when the app is opened directly on a client URL), so they fall back
+// to safe defaults instead of throwing.
 export function SettingsSound() {
-    return (cachedSettings.sounds == 'YES');
+    return (cachedSettings?.sounds == 'YES');
 }
 
 export function SettingsSeniorAge() {
-    return (parseInt(cachedSettings.seniorAge, 10));
+    return (parseInt(cachedSettings?.seniorAge ?? 60, 10));
 }
 
 export function SettingsServiceCats() {
-    return (cachedSettings.serviceCat);
+    return (cachedSettings?.serviceCat ?? []);
 }
 
 export function SettingsZipcodes() {
-    return (cachedSettings.serviceZip);
+    return (cachedSettings?.serviceZip ?? []);
 }
 
 export function SettingsSchedule() {
     return {
-        calClosed: cachedSettings.calClosed,
+        calClosed: cachedSettings?.calClosed ?? [],
     };
 }
 
@@ -777,7 +780,7 @@ function makeOldServices(svcs) {
 
 export async function dbGetAllVolunteersAsync() {
     // GET /prod/volunteers (auth required)
-    const volunteers = await dbGetDataAsync("volunteers", "/volunteers") || [];
+    const volunteers = (await dbGetDataAsync("volunteers", "/volunteers")) || [];
     return volunteers.map(vol => ({
         VolunteerId: vol.VolunteerId,
         FirstName: vol.firstName || '',

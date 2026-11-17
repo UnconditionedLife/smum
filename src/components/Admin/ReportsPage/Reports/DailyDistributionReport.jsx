@@ -194,98 +194,100 @@ export default function DailyDistributionReport(props) {
     }
 
     return (
-        <Box m={ 1 }>
-        <TableContainer align="center">
-            <Table className='fontFamily' padding="checkbox" size="small" align="center">
-                <style>
-                    {`@media print { 
-                        .fontFamily {
-                            font-family: Arial, Helvetica, sans-serif;
-                            }
-                        }`
-                    }
-                </style>
-                <ReportsHeader reportDate={ reportDay }
-                    reportType="DAILY REPORT" 
-                    reportCategory="FOOD PANTRY"
-                    groupColumns={[{"name": "Client", "length": 4}, 
-                        {"name": "Clients Served", "length": 5}, 
-                        {"name": "Homeless", "length": 2}, 
-                        {"name":"NonClients", "length": 2}]}
-                    columns={["ID", "Given", "Family", "Zip", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Families", "Indiv", "Families", "Indiv"]} />
-            <TableBody>
-            {loading ? (
+        <Box sx={{
+            m: 1
+        }}>
+            <TableContainer align="center">
+                <Table className='fontFamily' padding="checkbox" size="small" align="center">
+                    <style>
+                        {`@media print { 
+                            .fontFamily {
+                                font-family: Arial, Helvetica, sans-serif;
+                                }
+                            }`
+                        }
+                    </style>
+                    <ReportsHeader reportDate={ reportDay }
+                        reportType="DAILY REPORT" 
+                        reportCategory="FOOD PANTRY"
+                        groupColumns={[{"name": "Client", "length": 4}, 
+                            {"name": "Clients Served", "length": 5}, 
+                            {"name": "Homeless", "length": 2}, 
+                            {"name":"NonClients", "length": 2}]}
+                        columns={["ID", "Given", "Family", "Zip", "Hholds", "Indiv", "Adults", "Children", "Seniors", "Families", "Indiv", "Families", "Indiv"]} />
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                        <TableCell className='centerText' align="center" colSpan={13}>
+                            <CircularProgress color="secondary" />
+                        </TableCell>
+                    </TableRow>) : null}
                 <TableRow>
                     <TableCell className='centerText' align="center" colSpan={13}>
-                        <CircularProgress color="secondary" />
+                        <style>{ `@media print { .centerText { text-align: center; font-size: 14px; }}` }</style>
+                        <strong>USDA Services</strong>
                     </TableCell>
-                </TableRow>) : null}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
-                    <style>{ `@media print { .centerText { text-align: center; font-size: 14px; }}` }</style>
-                    <strong>USDA Services</strong>
-                </TableCell>
-            </TableRow>
-            {RenderSvcList(servicesUSDA)}
-            {RenderListTotals(totalsUSDA, "USDA Totals")}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
-                    <style>{ `@media print { .centerText { text-align: center; font-size: 14px; }}` }</style>
-                    <strong>Non USDA Services</strong>
-                </TableCell>
-            </TableRow>
-            {RenderSvcList(servicesNonUSDA)}
-            {RenderListTotals(totalsNonUSDA, "Non USDA Totals")}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
-                    <style>
-                        {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
-                                }
-                            }`
-                        }
-                    </style>
-                    <strong>Day Total</strong>
-                </TableCell>
-            </TableRow>
-            {RenderListTotals(totalsDay, "Day Grand Totals")}
-            <TableRow>
-                <TableCell className='centerText' align="center" colSpan={13}>
-                    <style>
-                        {`@media print { 
-                            .centerText { 
-                                text-align: center;
-                                font-size: 14px;
-                                }
-                            }`
-                        }
-                    </style>
-                    <strong>•</strong>
-                </TableCell>
-            </TableRow>
-            <TableRow className='redBackground'>
-                <style>
-                    {`@media print { 
-                        .greenBackground { 
-                            background-color: rgb(104, 179, 107);
-                            text-align: right;
-                            -webkit-print-color-adjust: exact;
-                            break-before: avoid-page;
-                            break-after: avoid-page;
+                </TableRow>
+                {RenderSvcList(servicesUSDA)}
+                {RenderListTotals(totalsUSDA, "USDA Totals")}
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <style>{ `@media print { .centerText { text-align: center; font-size: 14px; }}` }</style>
+                        <strong>Non USDA Services</strong>
+                    </TableCell>
+                </TableRow>
+                {RenderSvcList(servicesNonUSDA)}
+                {RenderListTotals(totalsNonUSDA, "Non USDA Totals")}
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <style>
+                            {`@media print { 
+                                .centerText { 
+                                    text-align: center;
+                                    font-size: 14px;
+                                    }
+                                }`
                             }
-                        }`
-                    }
-                </style>
-                <TableCell style={ redBackground } align="center" colSpan={13}>
-                    <strong>DAY CANCELED SERVICES</strong>
-                </TableCell>
-            </TableRow>
-            {RenderSvcList(canceledFood)}
-            </TableBody>
-            </Table>
-        </TableContainer>
+                        </style>
+                        <strong>Day Total</strong>
+                    </TableCell>
+                </TableRow>
+                {RenderListTotals(totalsDay, "Day Grand Totals")}
+                <TableRow>
+                    <TableCell className='centerText' align="center" colSpan={13}>
+                        <style>
+                            {`@media print { 
+                                .centerText { 
+                                    text-align: center;
+                                    font-size: 14px;
+                                    }
+                                }`
+                            }
+                        </style>
+                        <strong>•</strong>
+                    </TableCell>
+                </TableRow>
+                <TableRow className='redBackground'>
+                    <style>
+                        {`@media print { 
+                            .greenBackground { 
+                                background-color: rgb(104, 179, 107);
+                                text-align: right;
+                                -webkit-print-color-adjust: exact;
+                                break-before: avoid-page;
+                                break-after: avoid-page;
+                                }
+                            }`
+                        }
+                    </style>
+                    <TableCell style={ redBackground } align="center" colSpan={13}>
+                        <strong>DAY CANCELED SERVICES</strong>
+                    </TableCell>
+                </TableRow>
+                {RenderSvcList(canceledFood)}
+                </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
-    )
+    );
 }
