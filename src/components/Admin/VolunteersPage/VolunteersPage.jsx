@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Box, Tabs, Tab } from '@mui/material';
 import { People, Schedule, Assessment } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router';
@@ -21,13 +21,6 @@ export default function VolunteersPage() {
     } else {
         selectedTab = 0;
     }
-
-    // Redirect /admin/volunteers or /admin/volunteers/ to /admin/volunteers/volunteers
-    useEffect(() => {
-        if (pathname === '/admin/volunteers' || pathname === '/admin/volunteers/') {
-            navigate('/admin/volunteers/volunteers', { replace: true });
-        }
-    }, [pathname, navigate]);
 
     const handleTabChange = (event, newValue) => {
         if (!navigationAllowed()) return;
