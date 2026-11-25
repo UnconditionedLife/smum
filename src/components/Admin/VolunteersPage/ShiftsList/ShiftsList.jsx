@@ -105,11 +105,13 @@ export default function ShiftsList() {
             let shiftsData = [];
 
             // Decide how to query based on filters
-            if (selectedVolunteerId) {
-                // Fetch shifts for the volunteer. To bypass the backend dual-date query bug, 
-                // we fetch all volunteer shifts and then filter them locally.
-                shiftsData = await dbGetShiftsByVolunteerAsync(selectedVolunteerId);
-            } else {
+            // if (selectedVolunteerId) {
+            //     // Fetch shifts for the volunteer. To bypass the backend dual-date query bug, 
+            //     // we fetch all volunteer shifts and then filter them locally.
+            //     console.log("selected id =", selectedVolunteerId)
+            //     shiftsData = await dbGetShiftsByVolunteerAsync(selectedVolunteerId);
+            //     console.log("Shifts returned", shiftsData)
+            // } else {
                 // Fetch by date range (enforced or default)
                 const startStr = startDate && dayjs(startDate).isValid()
                     ? dayjs(startDate).format('YYYY-MM-DD')
@@ -123,7 +125,7 @@ export default function ShiftsList() {
                 } catch (err) {
                     console.error("Failed to fetch shifts:", err);
                 }
-            }
+            // }
 
             const shiftsList = shiftsData || [];
 
@@ -131,19 +133,26 @@ export default function ShiftsList() {
             const localStartBoundary = startDate && dayjs(startDate).isValid() ? dayjs(startDate).startOf('day') : null;
             const localEndBoundary = endDate && dayjs(endDate).isValid() ? dayjs(endDate).endOf('day') : null;
 
+            console.log("Starting shifts list", shiftsList)
             const filtered = shiftsList.filter(shift => {
-                // 1. Date Range filtering (mandatory local step if volunteer is selected)
-                if (shift.TimestampIn) {
-                    const shiftTime = dayjs(shift.TimestampIn);
-                    if (localStartBoundary && shiftTime.isBefore(localStartBoundary)) return false;
-                    if (localEndBoundary && shiftTime.isAfter(localEndBoundary)) return false;
-                } else if (selectedVolunteerId) {
-                    // If no timestamp and filtering by volunteer, check Date field if exists
-                    if (shift.Date) {
-                        const shiftDate = dayjs(shift.Date);
-                        if (localStartBoundary && shiftDate.isBefore(localStartBoundary)) return false;
-                        if (localEndBoundary && shiftDate.isAfter(localEndBoundary)) return false;
-                    }
+                // // 1. Date Range filtering (mandatory local step if volunteer is selected)
+                // if (shift.TimestampIn) {
+                //     const shiftTime = dayjs(shift.TimestampIn);
+                //     if (localStartBoundary && shiftTime.isBefore(localStartBoundary)) return false;
+                //     if (localEndBoundary && shiftTime.isAfter(localEndBoundary)) return false;
+                // } else if (selectedVolunteerId) {
+                //     // If no timestamp and filtering by volunteer, check Date field if exists
+                //     if (shift.Date) {
+                //         const shiftDate = dayjs(shift.Date);
+                //         if (localStartBoundary && shiftDate.isBefore(localStartBoundary)) return false;
+                //         if (localEndBoundary && shiftDate.isAfter(localEndBoundary)) return false;
+                //     }
+                // }
+
+                // 1. Volunteer filter
+                if (selectedVolunteerId && shift.VolunteerId !== selectedVolunteerId) {
+                    console.log("Reject", shift.VolunteerId, "selected", selectedVolunteerId)
+                    return false;
                 }
 
                 // 2. Program ID filter
